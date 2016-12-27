@@ -1,0 +1,49 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-TTY.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "TTY": ### tty-related messages for all platforms
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-TTY.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "AUTOCONFIG":
+            
+            ##########
+            # Modem autoconfiguration has failed either because the
+            # modem rejected the configuration string or because of a
+            # timeout.
+            #
+            # %TTY-3-AUTOCONFIG : TTY[t-line]: Modem auto-configuration
+            # failed
+            ##########
+               
+            @AlertKey = "Modem: " + extract($Message, "(TTY[0-9/]+): Modem")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-TTY.include.syslog.rules >>>>>")

@@ -1,0 +1,181 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-WWNMGR-MIB.include.snmptrap.rules 2.1 
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-WWNMGR-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.286.1.2.1": ### Cisco World Wide Name Manager - Notifications from CISCO-WWNMGR-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-WWNMGR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-WWN Manager"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### wwnmType1WwnShortageNotify
+
+            ##########
+            # $1 = wwnmType1AvailableWwns
+            ##########
+
+            $wwnmType1AvailableWwns = $1
+            details($wwnmType1AvailableWwns)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-WWNMGR-MIB-wwnmType1WwnShortageNotify"
+
+            @AlertGroup = "NAA Type 1 WWN Availablity"
+            @AlertKey = ""
+            @Summary = "WWN Shortage, " + $1 + " NAA Type 1 WWNs Available"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            update(@Summary)
+
+        case "2": ### wwnmType1WwnAvailableNotify
+
+            ##########
+            # $1 = wwnmType1AvailableWwns 
+            ##########
+
+            $wwnmType1AvailableWwns = $1
+            details($wwnmType1AvailableWwns)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-WWNMGR-MIB-wwnmType1WwnAvailableNotify"
+
+            @AlertGroup = "NAA Type 1 WWN Availablity"
+            @AlertKey = ""
+            @Summary = "WWNs Available, " + $1 + " NAA Type 1 WWNs Available"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            update(@Summary)
+
+        case "3": ### wwnmTypeOtherWwnShortageNotify
+
+            ##########
+            # $1 = wwnmTypeOtherAvailableWwns
+            ##########
+
+            $wwnmTypeOtherAvailableWwns = $1
+            details($wwnmTypeOtherAvailableWwns)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-WWNMGR-MIB-wwnmTypeOtherWwnShortageNotify"
+
+            @AlertGroup = "NAA Type 2&5 WWN Availablity"
+            @AlertKey = ""
+            @Summary = "WWN Shortage, " + $1 + " NAA Type 2&5 WWNs Available"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            update(@Summary)
+
+        case "4": ### wwnmTypeOtherWwnAvailableNotify
+
+            ##########
+            # $1 = wwnmTypeOtherAvailableWwns
+            ##########
+
+            $wwnmTypeOtherAvailableWwns = $1
+            details($wwnmTypeOtherAvailableWwns)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-WWNMGR-MIB-wwnmTypeOtherWwnAvailableNotify"
+
+            @AlertGroup = "NAA Type 2&5 WWN Availablity"
+            @AlertKey = ""
+            @Summary = "WWNs Available, " + $1 + " NAA Type 2&5 WWNs Available"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            update(@Summary)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-WWNMGR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-WWNMGR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-WWNMGR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-WWNMGR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-WWNMGR-MIB.include.snmptrap.rules >>>>>")

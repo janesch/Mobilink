@@ -1,0 +1,80 @@
+////////////////////////////////////////////////
+//
+//	TxnX25Failures.ipl
+//
+//	Impact policy for Mobilink - X25 failures caused by TxN problems
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100518	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+
+// Event comes from event reader
+
+//lookup Enrichment data from CMDB
+
+DataType = "CMDB.TXNX25";		// this needs to be setup
+Filter = "Node ='" + EventContainer.Node + "'";
+CountOnly = False;
+CMDB_Results = GetByFilter(DataType, Filter, CountOnly);
+
+
+//Enrich the Event Data
+EventContainer.Domain = CMDB_Results.Domain;
+EventContainer.Region = CMDB_Results.Region;
+EventContainer.ManCity = CMDB_Results.ManCity;
+EventContainer.CovCity = CMDB_Results.CovCity;
+// There may be more fields
+//Get the BSC Name from CMDB
+BscName = CMDB_Results.BscName;
+
+//lookup Enrichment data from External Data
+
+DataType = "XXXX.YYYYYY";		// this needs to be setup
+Filter = "Node ='" + EventContainer.Node + "'";		/This may be wrong
+CountOnly = False;
+EXT_Results = GetByFilter(DataType, Filter, CountOnly);
+
+
+//Enrich the Event Data
+EventContainer.ZZZZ = EXT_Results.ZZZZ;
+// There may be more fields
+
+
+// Is there a synthetic event for thie BSC
+DataType = "Status";
+Filter = "Class = 200001 and AlertKey = '" + BscName + "'";// Note 200001 is the class for BSC X25 Synthetic Events
+CountOnly = False;
+
+BscSynEvents = GetByFilter(DataType, Filter, CountOnly);
+BscSynCount = Length(BscSynEvents);
+
+If (BscSynCount == 0)
+{
+	// Create a new event with TT
+
+}
+Else
+{
+	BscSynTTNum = BscSynEvents[0].MaximoInfo
+
+	// Are all OML's down?
+	
+	If
+	{
+		//All OMLS Down
+		// Update TT using BscSynTTNum 
+		// to indicate BSC Unreachable
+	
+	}
+	Else
+	{
+		// Update TT using BscSynTTNum 
+		// to indicate the additional OML down
+		
+	}
+
+
+
+}

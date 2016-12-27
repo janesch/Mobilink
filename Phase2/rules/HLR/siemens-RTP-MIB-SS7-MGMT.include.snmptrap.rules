@@ -1,0 +1,1103 @@
+###############################################################################
+# siemens-RTP-MIB-SS7-MGMT
+# Automatically created by mib2rules (http://www.ibm.com/software/tivoli/gat)
+# Fri Jun 24 13:33:41 2011
+###############################################################################
+
+case ".1.3.6.1.4.1.4329.2.1.1.1.1.12":  ### - rtpSS7Traps (from RTP-MIB-SS7-MGMT)
+
+	log(DEBUG, "<<<<< Entering... siemens-RTP-MIB-SS7-MGMT.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "Siemens"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "SIEMENS-RTP-MIB-SS7-MGMT"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_RTP_003"
+
+	switch($specific-trap) {
+		case "1": ### - rtpSS7LinkTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Link-related events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps. (Whether this trap is
+			# generated depends on the RTP subagent's configuration.)
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7LinkTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "2": ### - rtpSS7LinkSetTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Link Set-related events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps. (Whether this trap is
+			# generated depends on the RTP subagent's configuration.)
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7LinkSetTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "3": ### - rtpSS7CombinedLinkSetTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Combined Link Set-related
+			# events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps. (Whether this trap is
+			# generated depends on the RTP subagent's configuration.)
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7CombinedLinkSetTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "4": ### - rtpSS7RouteSetTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Route Set-related events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps. (Whether this trap is
+			# generated depends on the RTP subagent's configuration.)
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7RouteSetTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "5": ### - rtpSS7LocalSSNTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Local SSN-related events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps. (Whether this trap is
+			# generated depends on the RTP subagent's configuration.)
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7LocalSSNTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "6": ### - rtpSS7RemotePointcodeTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Remote Pointcode-related
+			# events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps. (Whether this trap is
+			# generated depends on the RTP subagent's configuration.)
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7RemotePointcodeTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "7": ### - rtpSS7GlobalTitleTrap
+			#######################
+			#
+			# Trap issued by the RTP upon SS7 Global Title-related
+			# events.
+			# This SS7-specific trap is generated instead of one of the
+			# generic traps defined in rtpEvtTraps.
+			# 
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			#
+			# $1 = rtpEvtSequenceNumberIndex
+			#
+			#      The cluster-wide unique event sequence number. Will be
+			#      incremented by one for each new event.
+			#      
+			#      Additional information related to notifications (traps) which
+			#      include this object (e.g. those defined in 'rtpEvtTraps'):
+			#      
+			#      A manager station can detect the loss of events when
+			#      subsequently received event traps do not have subsequent
+			#      indices (i.e. index2 - index1 > 1).
+			#      
+			#      The RTP Event Manager can be configured in a way that it uses
+			#      the RTP-internal high-priority-queue mechanism to forward
+			#      events with a severity level of 'critical' when the regular
+			#      message queue of the receiving process is full. Those events
+			#      will then break the above mentioned rule of continous indices.
+			#      (The Event Manager's behaviour is controlled by the following
+			#      configuration parameter:
+			#      Rtp/Evt/RtpEvtGetContigSequenceNumbers
+			#      This parameter is visible to RTP system integrators, only.)
+			#
+			# $2 = rtpEvtCurrId
+			#
+			#      The current log record Id of the event in the database.
+			#      (Currently, this object's value is always identical to
+			#      rtpEvtSequenceNumberIndex.)
+			#
+			# $3 = rtpEvtSet
+			#
+			#      NLS set number of the event
+			#
+			# $4 = rtpEvtNum
+			#
+			#      NLS id number of the event
+			#
+			# $5 = rtpEvtSeverity
+			#
+			#      the event's severity level
+			#
+			# $6 = rtpEvtEventTime
+			#
+			#      The time when the event occurred, in seconds since 1.Jan.1970
+			#      00:00:00h UTC.
+			#
+			# $7 = rtpEvtReportingObject
+			#
+			#      The reporting object is the process calling RtpEvtSendEventExt and
+			#      is a field in the event logged in the event log table. In the
+			#      extended notation mode, the new notation in the format
+			#      MOC[:node[.object]] applies to the reportingObject
+			#      (see rtpEvtFaultyObject).
+			#      In non extended notation mode, the reporting object only contains
+			#      the name of the reporting process. For the RtpEvtSendEvent call,
+			#      faultyObject is always identical to the reportingObject.
+			#
+			# $8 = rtpEvtFaultyObject
+			#
+			#      Specifies the faulty managed object. If the RTP configuration
+			#      parameter Rtp/Evt/RtpEvtNewManagedObjectNotation is set to RtpTrue,
+			#      an extended faulty object notation in the format MOC[:node[.object]]
+			#      is supported (called extended notation mode), where MOC means the
+			#      managed object class (i.e. one of the subsystems CS, OS, DB, RTP,
+			#      OMNI, APPL), in which the event occurred, and node.object the managed
+			#      object instance. node is the hostname of the faulty node (uname -n),
+			#      and object the faulty instance itself (e.g. the faulty process).
+			#
+			# $9 = rtpEvtEndkey
+			#
+			#      End Key no longer supported and always set to noRecoveryDefined.
+			#      
+			#      End Key as integer. This field indicates whether an automatic 
+			#      recovery action has been initiated at the RTP or not. If this 
+			#      action succeeds an appropriate clear message will be sent by 
+			#      the RTP. Otherwise no clear message will be sent.
+			#
+			# $10 = rtpEvtFormatText
+			#
+			#      Format string of the default short text with place holders like
+			#      printf format for variable parameters.
+			#      
+			#      Please note: as this is the default text, it is NOT localized.
+			#      The localized versions of short, long and repair texts are
+			#      accessible by NLS catalogues in source format that can be
+			#      downloaded from the RTP.
+			#
+			# $11 = rtpEvtParameters
+			#
+			#      Variable parts of event, encoded as follows:
+			#      rtpEvtParameters := /* empty */
+			#      | rtpEvtParameters parameter
+			#      parameter := type '=' value <null-byte>
+			#      type := 'c'  /* character */
+			#      | 's'  /* string */
+			#      | 'd'  /* integer/long integer */
+			#      | 'u'  /* unsigned integer/unsigned long integer */
+			#      | 'g'  /* float/double */
+			#      value := /* empty */
+			#      | value <non-null-character>
+			#
+			# $12 = rtpEvtAlarmType
+			#
+			#      The type of the Alarm Object which this event belongs to.
+			#
+			# $13 = rtpEvtShortText
+			#
+			#      Localized short text including all variable parameters.
+			#      
+			#      The locale that is used depends on the settings in the
+			#      runtime environment of the RTP.
+			#
+			#######################
+			$rtpEvtSequenceNumberIndex = $1
+			$rtpEvtCurrId = $2
+			$rtpEvtSet = $3
+			$rtpEvtNum = $4
+			[$rtpEvtSeverity, $rtpEvtType] = lookup($5,siemens-RTP-MIB-EVENT-MGMT-rtpEvtSeverity)
+			$rtpEvtEventTime = $6
+			$rtpEvtReportingObject = $7
+			$rtpEvtFaultyObject = $8
+			$rtpEvtEndkey = lookup($9,siemens-RTP-MIB-EVENT-MGMT-rtpEvtEndkey)
+			$rtpEvtFormatText = $10
+			$rtpEvtParameters = $11
+			$rtpEvtAlarmType = $12
+			$rtpEvtShortText = $13
+
+			@Type = $rtpEvtType
+			@Severity = $rtpEvtSeverity
+			@AlertKey = $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSet + " " + $rtpEvtNum + " " + $rtpEvtAlarmType
+			@Summary = "rtpSS7GlobalTitleTrap: " + $rtpEvtFaultyObject + " " + $rtpEvtReportingObject + " " + $rtpEvtSequenceNumberIndex + " " + $rtpEvtSet + " " + $rtpEvtNum
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "8": ### - rtpSS7UpdateTrap
+			#######################
+			#
+			# This Trap is sent when any of the SS7-related data
+			# (including Signalling Links, Link Set, Route Sets, etc.) has
+			# changed. This might be the case when some SS7 object has
+			# changed its availability state or some of the SS7-related
+			# configuration data has been updated.
+			# (Whether this trap is generated depends on the RTP subagent's
+			# configuration.)
+			# 
+			# 
+			# Discussion: rtpSS7UpdateTrap versus event-driven SS7 traps
+			# (rtpSS7LinkTrap, rtpSS7LinkSetTrap, etc.)
+			# 
+			# The event-driven SS7 traps are sent only if the SS7 runtime
+			# system of the RTP generates an event which is mapped to one
+			# of the SS7 object-specific traps. For the most critical state
+			# changes (e.g. availability changes link down / link up) this
+			# will be the case.
+			# However, there are situations (like configuration data updates
+			# by operator intervention, e.g. creation or deletion of a link)
+			# where no event will be generated and no SS7 object-specific
+			# trap will be sent.
+			# In contrast to the event-driven SS7 traps, rtpSS7UpdateTrap
+			# is generated each time when either the availability state has
+			# changed or the configuration data has been updated. While
+			# rtpSS7UpdateTrap is intended to signal to the manager station
+			# that it should retrieve some particular SS7 data (e.g. read
+			# again rtpSS7LinkTable), the event-driven traps will most
+			# probably be used for fault management purposes.
+			#
+			# $1 = rtpSS7UpdateTrapInfo
+			#
+			#      This object is sent as part of a rtpSS7UpdateTrap and indicates
+			#      which kind of SS7 objects has been updated.
+			#
+			#######################
+			$rtpSS7UpdateTrapInfo = lookup($1,siemens-RTP-MIB-SS7-MGMT-rtpSS7UpdateTrapInfo)
+		
+			@Type = 1
+			@Severity = 2
+			@ExpireTime = 18000
+			@AlertKey = "rtpSS7UpdateTrap: " + $rtpSS7UpdateTrapInfo
+			@Summary = "rtpSS7UpdateTrap: " + $rtpSS7UpdateTrapInfo
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... siemens-RTP-MIB-SS7-MGMT.include.snmptrap.rules >>>>>")

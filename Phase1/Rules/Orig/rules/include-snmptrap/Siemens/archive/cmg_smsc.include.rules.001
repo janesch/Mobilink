@@ -1,0 +1,1895 @@
+#############################################################################
+#
+#		cmg_smsc.include.rules
+#
+#		Netcool Mttrapd Rules Include File for CMG SMSC.
+#		This is based upon CMG SMSC Agent MIB
+#
+#	V0.0	20100401	Original						Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.119.2.3.9999999":	#
+    log(DEBUG, "<<<<< Entering... cmg_smsc..include.rules >>>>>")
+    @Agent = "CMG-SMSC-MIB"
+    $enterpriseName = "opcomAgent"
+    @Class = "100006"
+    $OS_ExpireTime = 600
+    $OPTION_TypeFieldUsage = "3.6"
+@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+    switch($specific-trap)
+    {
+
+        case "10": ### smscInternalTrap
+						$trapNotificationId = $1
+						$trapSeverity = $2
+						$trapData = $3 
+						$trapTimeStamp = $4
+##		        DESCRIPTION 		            "Internal status information of the agent
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+        case "50": ### smscInternalIndeterminateTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+        case "51": ### smscInternalCriticalTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+        case "52": ### smscInternalMajorTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+        case "53": ### smscInternalMinorTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+        case "54": ### smscInternalWarningTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+        case "55": ### smscInternalClearTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+					@AlertKey=$trapData
+
+
+		case "100": ###smscSmhTrap 
+					$trapNotificationId = $1					#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3									# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSmhName  = $4					# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup="SMSC entity"
+					@AlertKey=$specific-trap
+					@Identifier = @Node + @AlertGroup + @AlertKey
+					@AlertGroup = "Smh"
+					@AlertKey = $smscSmhName
+		
+					#		MANAGEDOBJECT-TABLE: smscSmh
+					#		MANAGEDOBJECT-DEFAULT: smscAgent"
+
+  case "4000":   #smscX25IndeterminateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X25"
+					@AlertKey = $smscX25Name
+
+
+  case "4001":  # smscX25CriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X25"
+					@AlertKey = $smscX25Name
+
+
+  case "4002":  # smscX25MajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X25"
+					@AlertKey = $smscX25Name
+
+
+  case "4003":   #smscX25MinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X25"
+					@AlertKey = $smscX25Name
+
+
+  case "4004":  # smscX25WarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X25"
+					@AlertKey = $smscX25Name
+
+
+  case "4005":   #smscX25ClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X25"
+					@AlertKey = $smscX25Name
+
+
+  case "401":   #smscTcpTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+  case "4010":   #smscTcpIndeterminateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+  case "4011":  # smscTcpCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+  case "4012":  # smscTcpMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+  case "4013":   #smscTcpMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+  case "4014":  # smscTcpWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+  case "4015":   #smscTcpClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Tcp"
+					@AlertKey = $smscTcpName
+
+
+
+  case "402":   #smscX29TrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "4020":   #smscX29IndeterminateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "4021":   #smscX29CriricalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "4022":   #smscX29MajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "4023":   #smscX29MinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "4024":   #smscX29WarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "4025":   #smscX29ClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "X29"
+					@AlertKey = $smscX29Name
+
+
+  case "403":   #smscEmapTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+  case "4030":   #smscEmapIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+  case "4031":   #smscEmapCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+  case "4032":   #smscEmapMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+  case "4033":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+  case "4034":   #smscEmapWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+  case "4035":   #smscEmapClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Emap"
+					@AlertKey = $smscEmapName
+
+
+case "404":   #smscPstnaTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+  case "4040":   #smscPstnaIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+  case "4041":   #smscPstnaCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+  case "4042":   #smscPstnaMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+  case "4043":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+  case "4044":   #smscPstnaWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+  case "4045":   #smscPstnaClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pstna"
+					@AlertKey = $smscPstnaName
+
+
+case "405":   #smscGiwTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+
+  case "4050":   #smscGiwIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+
+  case "4051":   #smscGiwCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+
+  case "4052":   #smscGiwMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+
+  case "4053":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+
+  case "4054":   #smscGiwWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+
+  case "4055":   #smscGiwClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Giw"
+					@AlertKey = $smscGiwName
+
+case "406":   #smscFax3srvTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+  case "4060":   #smscFax3srvIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+  case "4061":   #smscFax3srvCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+  case "4062":   #smscFax3srvMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+  case "4063":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+  case "4064":   #smscFax3srvWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+  case "4065":   #smscFax3srvClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Fax3srv"
+					@AlertKey = $smscFax3srvName
+
+
+case "407":   #smscEirTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+  case "4070":   #smscEirIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+  case "4071":   #smscEirCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+  case "4072":   #smscEirMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+  case "4073":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+  case "4074":   #smscEirWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+  case "4075":   #smscEirClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Eir"
+					@AlertKey = $smscEirName
+
+
+case "408":   #smscDlhTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+  case "4080":   #smscDlhIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+  case "4081":   #smscDlhCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+  case "4082":   #smscDlhMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+  case "4083":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+  case "4084":   #smscDlhWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+  case "4085":   #smscDlhClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Dlh"
+					@AlertKey = $smscDlhName
+
+
+case "409":   #smscSsdTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+  case "4090":   #smscSsdIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+  case "4091":   #smscSsdCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+  case "4092":   #smscSsdMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+  case "4093":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+  case "4094":   #smscSsdWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+  case "4095":   #smscSsdClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Ssd"
+					@AlertKey = $smscSsdName
+
+
+case "410":   #smscPrhTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+  case "4100":   #smscPrhIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+  case "4101":   #smscPrhCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+  case "4102":   #smscPrhMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+  case "4103":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+  case "4104":   #smscPrhWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+  case "4105":   #smscPrhClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Prh"
+					@AlertKey = $smscPrhName
+
+
+case "411":   #smscFrhTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+  case "4110":   #smscFrhIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+  case "4111":   #smscFrhCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+  case "4112":   #smscFrhMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+  case "4113":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+  case "4114":   #smscFrhWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+  case "4115":   #smscFrhClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Frh"
+					@AlertKey = $smscFrhName
+
+
+case "412":   #smscIsdnTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+  case "4120":   #smscIsdnIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+  case "4121":   #smscIsdnCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+  case "4122":   #smscIsdnMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+  case "4123":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+  case "4124":   #smscIsdnWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+  case "4125":   #smscIsdnClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Isdn"
+					@AlertKey = $smscIsdnName
+
+
+case "413":   #smscLogsrvTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+  case "4130":   #smscLogsrvIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+  case "4131":   #smscLogsrvCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+  case "4132":   #smscLogsrvMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+  case "4133":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+  case "4134":   #smscLogsrvWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+  case "4135":   #smscLogsrvClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Logsrv"
+					@AlertKey = $smscLogsrvName
+
+
+case "414":   #smscTrcsrvTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+  case "4140":   #smscTrcsrvIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+  case "4141":   #smscTrcsrvCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+  case "4142":   #smscTrcsrvMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+  case "4143":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+  case "4144":   #smscTrcsrvWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+  case "4145":   #smscTrcsrvClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Trcsrv"
+					@AlertKey = $smscTrcsrvName
+
+
+case "415":   #smscIs41TrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+  case "4150":   #smscIs41IndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+  case "4151":   #smscIs41CriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+  case "4152":   #smscIs41MajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+  case "4153":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+  case "4154":   #smscIs41WarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+  case "4155":   #smscIs41ClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Is41"
+					@AlertKey = $smscIs41Name
+
+
+case "416":   #smscPbrTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+  case "4160":   #smscPbrIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+  case "4161":   #smscPbrCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+  case "4162":   #smscPbrMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+  case "4163":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+  case "4164":   #smscPbrWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+  case "4165":   #smscPbrClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Pbr"
+					@AlertKey = $smscPbrName
+
+
+
+
+case "417":   #smscRtrTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+  case "4170":   #smscRtrIndeternimateTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+  case "4171":   #smscRtrCriticalTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+  case "4172":   #smscRtrMajorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+  case "4173":   #smscEmaMinorTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+  case "4174":   #smscRtrWarningTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+  case "4175":   #smscRtrClearTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($smsctrapSeverity, SeverityValue)
+
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup = "Rtr"
+					@AlertKey = $smscRtrName
+
+
+		default:
+			$OS_Severity = 1
+			$OS_Type =0
+			@AlertGroup="CMG-SMSC-MIB"
+			@AlertKey=$specific-trap
+			@Identifier = @Node + @AlertGroup + @AlertKey
+			@Summary = "Unknown Event from CMG-SMSC-MIB, Specific Trap " + @AlertKey
+			@URL = "1 = " + $1 + " 2 = " + $2 + " 3 = " + $3 + " 4 = " + $4 + " 5 = " + $5 + " 6 = " + $6 + " 7 = " + $7 + "8 = " + $8 
+			details($*)
+			
+}
+		$OS_Severity = $OS_Severity
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + $OS_Type
+		$OS_X733ProbableCause = $pnProbableCause
+		$OS_X733EventType = $pnAlarmType
+		update(@Summary)
+		details($*)
+

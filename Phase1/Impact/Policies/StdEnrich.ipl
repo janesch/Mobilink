@@ -1,0 +1,32 @@
+//Chris Janes of Innovise
+/*	This Policy is used to enrich Many ML Events with Domain
+	Region, ManCity and CovCity
+
+	V 1.0	20100521	Chris Janes	Original
+*/
+DomainLength = Length(EventContainer.Domain);
+if (DomainLength == 0)
+{
+	DataType = "CMDB_ENRICH";
+	Filter = "Node = '" + EventContainer.Node + "'";
+	CountOnly = False;
+
+	EnrichData = GetByFilter(DataType, Filter, CountOnly);
+	Num_CMDB_ENRICH = Num;
+	if (Num_CMDB_ENRICH == 0)
+	{
+		EventContainer.Domain= "Unknown";
+		EventContainer.Region= "Unknown";
+		EventContainer.ManCity= "Unknown";
+		EventContainer.CovCity= "Unknown";
+	}
+	else
+	{
+		EventContainer.Domain= EnrichData[0].Domain;
+		EventContainer.Region= EnrichData[0].Region;
+		EventContainer.ManCity= EnrichData[0].ManCity;
+		EventContainer.CovCity= EnrichData[0].CovCity;
+	}
+}
+
+ReturnEvent(EventContainer);

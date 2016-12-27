@@ -1,0 +1,114 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-HDSL2-SHDSL-LINE-MIB.include.snmptrap.lookup 1.0
+#    2004/11/17 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-HDSL2-SHDSL-LINE-MIB
+#
+###############################################################################
+table Hdsl2ShdslUnitId =
+{
+    ##########
+    # This is the unique identification for all units in a HDSL2/SHDSL Span.
+    # It is based on the EOC unit addressing scheme with reference to the xtuC.
+    ##########
+    
+    {"1","xtuC"}, ### xtuC
+    {"2","xtuR"}, ### xtuR
+    {"3","xtu1"}, ### xtu1
+    {"4","xru2"}, ### xru2
+    {"5","xru3"}, ### xru3
+    {"6","xru4"}, ### xru4
+    {"7","xru5"}, ### xru5
+    {"8","xru6"}, ### xru6
+    {"9","xru7"}, ### xru7
+    {"10","xru8"} ### xru8
+}
+default = "Unknown"
+
+table Hdsl2ShdslUnitSide =
+{
+    ##########
+    # This is the referenced side of a HDSL2/SHDSL unit - Network or Customer
+    # side. The side facing the Network is the Network side, while the side
+    # facing the Customer is the Customer side.
+    ##########
+    
+    {"1","Network Side"}, ### networkSide
+    {"2","Customer Side"} ### customerSide
+}
+default = "Unknown"
+
+table Hdsl2ShdslWirePair =
+{
+    ##########
+    # This is the referenced pair of wires in a HDSL2/SHDSL Segment. HDSL2 only
+    # supports a single pair (wirePair1), while SHDSL supports an optional
+    # second pair (wirePair2).
+    ##########
+    
+    {"1","Wire Pair 1"}, ### wirePair1
+    {"2","Wire Pair 2"} ### wirePair2
+}
+default = "Unknown"
+
+table hdsl2ShdslEndpointCurrStatus =
+{
+    ##########
+    # Contains the current state of the endpoint. This is a bitmap of possible
+    # conditions. The various bit positions are:
+    #
+    # noDefect - There no defects on the line.
+    # powerBackoff - Indicates enhanced Power Backoff.
+    # deviceFault - Indicates a vendor-dependent diagnostic or self-test fault
+    #   has been detected.
+    # dcContinuityFault - Indicates vendor-dependent conditions that interfere
+    #   with span powering such as short and open circuits.
+    # snrMarginAlarm - Indicates that the SNR margin has dropped below the
+    #   alarm threshold.
+    # loopAttenuationAlarm - Indicates that the loop attenuation exceeds the
+    #   alarm threshold.
+    # loswFailureAlarm - Indicates a forward LOSW alarm.
+    # configInitFailure - Endpoint failure during initialization due to paired
+    #   endpoint not able to support requested configuration.
+    # protocolInitFailure - Endpoint failure during initialization due to
+    #   incompatible protocol used by the paired endpoint.
+    # noNeighborPresent - Endpoint failure during initialization due to no
+    #   activation sequence detected from paired endpoint.
+    # loopbackActive - A loopback is currently active at this Segment Endpoint.
+    #
+    # This is intended to supplement ifOperStatus. Note that there is a 1-1
+    # relationship between the status bits defined in this object and the
+    # notification thresholds defined elsewhere in this MIB.
+    #
+    # REFERENCE: HDSL2 Section 7.5.3.7; SHDSL Section 9.5.5.7
+    ##########
+    
+    {"1","No Defect"}, ### noDefect
+    {"2","Power Backoff"}, ### powerBackoff
+    {"4","Device Fault"}, ### deviceFault
+    {"8","DC Continuity Fault"}, ### dcContinuityFault
+    {"16","SNR Margin Alarm"}, ### snrMarginAlarm
+    {"32","Loop Attenuation Alarm"}, ### loopAttenuationAlarm
+    {"64","LOSW Failure Alarm"}, ### loswFailureAlarm
+    {"128","Configuration Initialization Failure"}, ### configInitFailure
+    {"256","Protocol Initialization Failure"}, ### protocolInitFailure
+    {"512","No Neighbor Present"}, ### noNeighborPresent
+    {"1024","loopback Active"} ### loopbackActive
+}
+default = "Unknown"

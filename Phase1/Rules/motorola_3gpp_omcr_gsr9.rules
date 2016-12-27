@@ -1,0 +1,476 @@
+#
+#######################################################################
+#
+# (C) Copyright IBM Corp. 2007 ALL Rights Reserved
+#
+# Example rules file for the Netcool/OMNIbus Probe
+# for Motorola 3gpp Omcr Gsr9 
+#
+#
+#######################################################################
+#
+#Available tokens
+#
+#The following tokens come from the FilterableData name/value pairs:
+#NV_NOTIFICATION_ID
+#NV_EVENT_TIME
+#NV_SYSTEM_DN
+#NV_MANAGED_OBJECT_CLASS
+#NV_MANAGED_OBJECT_INSTANCE
+#NV_ALARM_ID
+#NV_PROBABLE_CAUSE
+#NV_PERCEIVED_SEVERITY
+#NV_SPECIFIC_PROBLEMS
+#NV_ADDITIONAL_TEXT
+#NV_ACK_TIME
+#NV_ACK_USER_ID
+#NV_ACK_SYSTEM_ID
+#NV_ACK_STATE
+#NV_COMMENTS
+#NV_BACKED_UP_STATUS
+#NV_BACK_UP_OBJECT
+#NV_THRESHOLD_INFO
+#NV_TREND_INDICATION
+#NV_STATE_CHANGE_DEFINITION
+#NV_MONITORED_ATTRIBUTES
+#NV_PROPOSED_REPAIR_ACTIONS
+#NV_CORRELATED_NOTIFICATIONS
+#NV_REASON
+#CLEAR_USER_ID
+#CLEAR_SYSTEM_ID
+#NV_ALARM_LIST_ALIGNMENT_REQUIREMENT
+#NV_SERVICE_USER
+#NV_SERVICE_PROVIDER
+#NV_SECURITY_ALARM_DETECTOR
+#NV_VENDOR_SPECIFIC_ALARM_TYPE
+#######################################################################
+#
+# This lookup will only work if the probe is run from $OMNIHOME/probes
+# If the probe is run elsewhere this path will need to be customised.
+include "$OMNIHOME/probes/includes/Corba_3gpp_V620.lookup"
+#
+#######################################################################
+@LastOccurrence = getdate
+@FirstOccurrence = getdate
+
+if(match(@Manager,"ProbeWatch"))
+{
+
+	@Agent = "Motorola 3GPP OMCR GSR9"
+
+	switch(@Summary)
+	{
+	case "Running ...":
+		@Severity = 0
+		@AlertGroup = "probestat"
+		@Type = 2
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+	case "Unable to get events":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@AlertKey = @Agent
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@Type = 1
+	case "Going Down ...":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@Type = 1
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+	case "START SYNCHRONIZATION":
+		@Type = 1
+		@Severity = 3
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+		@Summary = @Agent + " probe on " + @Node + ":START SYNCHRONIZATION"
+	case "END SYNCHRONIZATION":
+		@Type = 2
+		@Severity = 1
+		@Summary = @Agent + " probe on " + @Node + ":END SYNCHRONIZATION"
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+	default:
+		@Severity = 1
+	}
+} 
+else 
+{
+	log(DEBUG, "<<<<< Entering.... Motorola-3gpp-Omcr-Gsr9  rules >>>>>")
+
+	@Class = 2057
+#	@Class = 999999
+
+	#@Manager = @Manager + " probe running on " + hostname()
+#	20100929	Changes by Chris Janes of Innovise for Lack of OMC Policy
+#	@Manager = "motorola_3gpp_omcr_gsr9 Probe@" + hostname()
+	@Manager = "motorola"
+	@OmcEmc = "sunfire4"
+#	20100929	End of Changes
+	@EventId = $NV_ALARM_ID
+	@Agent = "Motorola 3GPP OMCR GSR9"
+	#@FirstOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+
+	if (regmatch( $NV_SYSTEM_DN, ".*IRPAgent.*"))
+	{
+			@Agent = "Motorola 3GPP OMCR GSR9 " + " : " + extract($NV_SYSTEM_DN, ".*IRPAgent=(.*)")
+	}
+
+
+#Extract Object details from Motorola 3GPP OMCR GSR9:
+		if( exists( $NV_MANAGED_OBJECT_INSTANCE))
+		{
+				if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*SubNetwork.*"))
+				{
+						#$UmtsRoot = extract($NV_MANAGED_OBJECT_INSTANCE,"^Root\=([A-Za-z0-9]+)\,SubNetwork.*")
+						$UmtsRoot = extract($NV_MANAGED_OBJECT_INSTANCE,"([A-Za-z0-9]+)=([A-Za-z0-9]+)")	
+				}
+
+				if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagedElement.*"))
+				{
+						#$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,SubNetwork\=(.*)\,ManagedElement\=.*")
+						$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\SubNetwork\=(.*)\,ManagedElement\=.*")	
+				}
+				else
+				{
+						$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,SubNetwork\=.*\,SubNetwork\=(.*)")
+				}
+
+				if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagedElement.*"))
+				{
+						$ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,ManagedElement\=(.*)")
+				}
+	}
+
+		#if( exists( $NV_SYSTEM_DN))
+		#{	
+		#		if( regmatch( $NV_SYSTEM_DN, ".*ManagementNode.*"))
+		#		{
+		#				$ManNode = extract($NV_SYSTEM_DN,".*\,ManagementNode\=(.*)\,IRPAgent\=.*")
+		#		}
+		#}
+    
+	
+#Set Node Field:
+#	if ( regmatch( $FullDN, ".*INode.*")) 
+#    {
+#			 @Node = $UmtsRoot + " " + extract($FullDN, ".*\(INode.neId\,(.*)\)") + " : " + $SubNetwork
+#    }
+#	else if( regmatch( $NV_SYSTEM_DN, ".*ManagementNode.*"))
+#    {
+#			 @Node = $UmtsRoot + " " + $ManNode + " : " + $SubNetwork
+#    }
+#  else
+#    {
+#			 @Node = "Unknown Node"
+#    }
+#        
+#  if ( exists($domain_name) && !match($domain_name,""))
+#    {
+#			  @Node = $UmtsRoot + " " + $ManNode + " : " + $SubNetwork + " (" + $domain_name + ")"
+#    }
+###############################################################################################################
+#Modified By FF Innovise: To include BtsSiteMgr, BSSFunction and HardwareType and Instance In Node for lookup
+###############################################################################################################  
+	if ( regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*Sub.*")) 
+    {
+	 $bscInstance = extract($NV_MANAGED_OBJECT_INSTANCE,",BssFunction=([0-9]+)") 
+	 $btcInstance = extract($NV_MANAGED_OBJECT_INSTANCE,",BtsSiteMgr=([a-zA-Z0-9]+)") 
+	 $hardwareType = extract($NV_MANAGED_OBJECT_INSTANCE,",vsMot[a-zA-Z0-9]+_([a-zA-Z0-9]+)") 
+	 $hardwareInstance = extract($NV_MANAGED_OBJECT_INSTANCE,".rdnInstance=([0-9]+)") 
+   
+	@Node = $bscInstance + ":" + $btcInstance + ":" + $hardwareType + ":" + $hardwareInstance  
+    }
+  else
+    {
+			 @Node = "Unknown Node"
+    }
+#        
+###############################################################################################################
+#Modified By FF Innovise: To include  OMC name in  OMCEMS for lookup
+###############################################################################################################  
+
+	if ( regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*Sub.*")) 
+	{
+
+	 $ems = extract($NV_MANAGED_OBJECT_INSTANCE,"SubNetwork=([a-zA-Z0-9]+)") 
+	 log(DEBUG, "OmcEms:" +  $ems)	
+	@OmcEms = $ems  
+	}
+
+	else
+	{
+	@OmcEms = "Unknown"
+	}
+
+
+
+#Reflect acknowledgement status from Motorola 3GPP OMCR GSR9:
+		if( exists( $NV_ACK_STATE))
+		{
+				switch($NV_ACK_STATE)
+				{
+							case "2":
+									@Acknowledged = 0
+							case "1":
+									@Acknowledged = 1
+							default:
+								@Acknowledged = 0         
+				}
+		update(@Acknowledged)
+		}
+	@Type = 1
+
+
+		#Handling events through lookup table and setting AlertGroup and AlertKey:
+		if (exists( $EVENT_TYPE) && !match($EVENT_TYPE,"notifyHeartbeat"))
+		{
+				$EVENT_TYPE = lookup($EVENT_TYPE,EventType_t)
+				$EVENT_NAME = lookup($EVENT_NAME,EventName_t)
+				@AlertGroup = $EVENT_NAME 
+		}
+
+		if( exists( $NV_PROBABLE_CAUSE))
+		{
+				$ProbCause = lookup($NV_PROBABLE_CAUSE, ProbableCause_t)
+		}
+
+		if (match( $EVENT_TYPE,"Unknown Event Type" ))
+		{
+				#		20100722	Change by Chris Janes of Innovise
+				#		@AlertKey = "Resync Alarm : " + $ManObj
+				@AlertKey =  @EventId
+				#		20100722	End f Change
+
+		}
+		else if (exists($EVENT_TYPE))
+		{
+				#		20100722	Change by Chris Janes of Innovise
+				#		@AlertKey = $EVENT_TYPE +  " : " + $ManObj
+				@AlertKey =  @EventId
+				#		20100722	End f Change
+		}
+
+
+		if( exists( $NV_SYSTEM_DN))
+		{
+				$SysDn = $NV_SYSTEM_DN
+		}
+		if( exists( $NV_PERCEIVED_SEVERITY))
+		{
+				@Severity = lookup($NV_PERCEIVED_SEVERITY, PerceivedSeverity_t)
+		}
+
+		switch ($SubNetwork)
+		{	
+				case "NW UTRAN":
+
+						if ( regmatch($ManObj, "EM RNC.*"))
+						{
+								@AlertGroup = "RNC : " + @AlertGroup 
+								@NodeAlias = extract ($ManObj, "^EM RNC(.*)")
+						}	
+						else if ( regmatch($ManObj, "EM BTS.*"))
+						{
+								@NodeAlias = extract ($ManObj, "^EM BTSEquipment(.*)")	
+								@AlertGroup = "BTS : " + @AlertGroup
+						}
+
+				case "NW CN":
+						if (match($ManObj, ""))
+						{
+								@NodeAlias = "NW CN"
+								@AlertGroup = @AlertGroup
+						}
+						else
+						{
+								@NodeAlias = extract ($ManObj, "^EM (.*)")
+								@AlertGroup = "EM : " + @AlertGroup
+						}
+
+				default:
+		}
+
+		#Build Summary:
+		if( !exists( $NV_SPECIFIC_PROBLEM_00 ))
+		{
+				@AddText = $ProbCause
+		}
+		else if(match( $NV_SPECIFIC_PROBLEM_00, "SpecificProblem= "))
+		{ 
+				if(match( $NV_SPECIFIC_PROBLEM_01, ""))
+				{
+						if(match( $NV_SPECIFIC_PROBLEM_02, ""))
+						{
+								@AddText = $ProbCause
+						}
+						else
+						{
+								@AddText = $ProbCause + " : " + $NV_SPECIFIC_PROBLEM_02				
+						}
+				}
+				else
+				{
+				@AddText = $ProbCause + " : " + $NV_SPECIFIC_PROBLEM_01
+				}
+		}
+		else if ( exists($NV_SPECIFIC_PROBLEM_00))
+		{
+				@AddText = $ProbCause + " : " + $NV_SPECIFIC_PROBLEM_00
+		}	
+	
+	
+		#convert integer enumerated types into text via lookup tables:
+		if( exists( $NV_TREND_INDICATION))
+		{
+				$NV_TREND_INDICATION = lookup($NV_TREND_INDICATION, TrendIndicationType_t)
+		}
+		if( exists( $NV_THRESHOLD_INFO))
+		{ 
+				$NV_THRESHOLD_INFO = lookup($NV_THRESHOLD_INFO, ThresholdIndicationType_t)
+		}
+		if(exists( $NV_ACK_STATE))
+		{ 
+				$NV_ACK_STATE = lookup($NV_ACK_STATE, AckState_t)
+		}     
+        
+
+		#Use the NV_EVENT_TIME timestamp to set FirstOccurrence and LastOccurrence:
+		#if ( exists($NV_EVENT_TIME))
+		#{
+			#	@FirstOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+			#	@LastOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+		#		@FirstOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y %I:%M:%S %p")
+                #		@LastOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y %I:%M:%S %p")
+	
+		#}
+
+		#Handle additional event types:  
+		switch($EVENT_TYPE)
+		{
+				case "notifyHeartbeat":
+						@Summary = "Heartbeat message"
+						@NodeAlias = extract($NV_MANAGED_OBJECT_INSTANCE, "IRPAgent=(.*)") 
+						@Severity = 1
+						@Type = 13
+						#@ExpireTime = 18700	
+
+				case "Alarm List Rebuilt":
+						@Summary = "Alarm List Rebuilt"
+
+				case "Potential Faulty Alarm List":
+						@Summary = "Potential Faulty Alarm List"
+						#@Node = $domain_name 
+
+				default:
+						if( exists($ManObj))
+						{
+						@NodeAlias = $ManObj
+						}
+		}
+
+		switch(@Severity)
+		{
+				case "1":
+						@Type = 2
+				default:
+						@Type = 1
+		}
+	# 		20100708	Change By Chris Janes of Innovise ESM
+	@EventType = $EVENT_NAME
+	@Summary = $NV_ADDITIONAL_TEXT
+	if(regmatch(@Summary, "^\[[0-9]*\] .*"))
+	{
+			@Summary = extract(@Summary, "^\[[0-9]*\] (.*)")
+	}
+ $SummaryLen = length(@Summary)
+    
+    if (int($SummaryLen) == 0)  
+    {
+		if(int(@Type) == 2)
+		{
+				@Summary = "Resolution for Event ID " + @AlertKey
+		}
+	}
+			
+			
+	@ExpireTime = 72000
+	@URL = "MO Class = " + $NV_MANAGED_OBJECT_CLASS + "    MO Instance =  " + $NV_MANAGED_OBJECT_INSTANCE 
+	#	20100708 End of Change
+	
+	@Identifier = $NV_MANAGED_OBJECT_INSTANCE +" "+ @AlertKey + " " + @AlertGroup + " " + @Type + " "  + @Agent + " " + @Manager 
+
+###############################################################
+#Load Function included by FF Innovise Aug 2010
+# To Measure Probe Performance
+##############################################################
+if ( match(%event_counter,"") )
+{
+%start_time=getdate
+%event_counter = 1
+}
+else
+{
+%end_time=getdate
+$time_elapsed = int(%end_time) - int(%start_time)
+
+# Choose a suitable period for the type of probe and event rate
+# e.g. 9,19,29,59 etc. seconds
+
+if (int($time_elapsed) > 59 )
+{
+$calculated_load = real(%event_counter) / real(int(%end_time) - int(%start_time))
+log(WARN,"Calculated events per second = " + $calculated_load)
+%event_counter = 1
+%start_time=getdate
+}
+else
+{
+%event_counter = int(%event_counter) + 1
+}
+}
+
+#For the per node load monitoring the following rulesfile code can be used;
+
+#array a_node_start_time;
+#array a_node_counter;
+
+
+#@Node = $Node
+
+
+#if ( match(a_node_counter[@Node],"") )
+#{
+#a_node_start_time[@Node] = getdate
+#a_node_counter[@Node] = 1
+#}
+#else
+#{
+#a_node_counter[@Node] = int(a_node_counter[@Node]) + 1
+
+# Choose a suitable counter value; e.g. 9,19,49,99 etc.
+
+#if (int(a_node_counter[@Node]) > 9 )
+#{
+#%end_time=getdate
+#$time_elapsed = int(%end_time) - int(a_node_start_time[@Node])
+#$calculated_load = real(a_node_counter[@Node]) / real(int(%end_time) - int(a_node_start_time[@Node]))
+#log(INFO,$time_elapsed)
+#log(WARN,"Calculated events per second for node " + @Node + " = " + $calculated_load)
+# Reset Node Counter and start time
+#a_node_counter[@Node] = 1
+#a_node_start_time[@Node] = getdate
+#}
+#}
+    ##########
+    # Enhancements to event-details
+    ##########
+
+   details($EVENT_NAME,$EVENT_TYPE,$FullSpecificProblem,$NV_ALARM_ID,$NV_NOTIFICATION_ID,$NV_MANAGED_OBJECT_INSTANCE,$NV_SYSTEM_DN,$VendorSpecificInfo,$NV_ACK_STATE)
+    
+	
+	log(DEBUG, "<<<<< Leaving.... Motorola-3gpp-Omcr-Gsr9 rules >>>>>")
+}
+
+#Uncomment the following line if full alarm details are required:
+details($*)

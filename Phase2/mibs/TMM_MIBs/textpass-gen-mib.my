@@ -1,0 +1,4975 @@
+------------------------------------------------------------------------------
+--
+-- (c) Copyright 2001-2009 mBalance.
+--
+--  This MIB is proprietary to and embodies the confidential technology of
+--  mBalance. Possession, use, duplication or dissemination of this MIB is
+--  authorized only pursuant to a valid written license from mBalance.
+--
+------------------------------------------------------------------------------
+--
+-- File    : textpass-gen-mib.my
+-- Release : R04.01
+-- $Id: textpass-gen-mib.my,v 1.133 2010/06/10 10:12:27 tjeger Exp $
+-- $Revision: 1.133 $
+------------------------------------------------------------------------------
+
+    TEXTPASS-GEN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        IpAddress, Gauge, Counter, TimeTicks
+            FROM RFC1155-SMI
+        TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        textpass
+            FROM MBALANCE-MIB
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215;
+
+    ----------------------------------------------------------------------------
+    --                                T Y P E S                               --
+    ----------------------------------------------------------------------------
+
+    AdminState ::=
+        INTEGER {
+            inactive(0),
+            active(1),
+            destroy(2)
+        }
+
+    AlarmStationIndexType ::=
+        Gauge(1..8)
+
+    AmsAbility ::=
+        INTEGER{
+            messageStore(0),
+            transactionStore(1),
+            messageAndTransactionStore(2)
+        }
+    
+    Boolean ::=
+        INTEGER {
+            false(0),
+            true(1)
+        }
+
+    DateTime ::=
+        INTEGER
+    -- Seconds since 1 Jan 1970 UTC
+
+
+    DeviceOperationalState ::=
+        INTEGER {
+            adminDisabled(0),
+            starting(1),
+            operating(2),
+            exiting(3),
+            synching(4)
+        }
+
+    ----------------------------------------------------------------------------
+    --
+    --  E164Address specifies a 'normal' telephone number
+    --
+    ----------------------------------------------------------------------------
+
+    E164Address ::=                                -- should contain digits only
+        OCTET STRING(SIZE (0..15))
+
+    ----------------------------------------------------------------------------
+    --
+    --  E164AddressLength specifies the length for an E164 address
+    --
+    ----------------------------------------------------------------------------
+
+    E164AddressLength ::=
+        Gauge(1..15)
+
+    ----------------------------------------------------------------------------
+    --  FileSpec specifies a full filename or full directory name.
+    ----------------------------------------------------------------------------
+    FileSpec ::=
+        OCTET STRING (SIZE (0..255))
+
+    FilterListIndexType ::=
+        Gauge(1..50)
+
+    FilterOidType ::=
+        Gauge(0..127)
+
+    IntervalTime ::= Gauge(0..3600)
+
+    LinkState ::=
+        INTEGER {
+            noLink(0),
+            linkDown(1),
+            linkUp(2)
+        }
+
+    ----------------------------------------------------------------------------
+    --  LogLevel defines the level of logging which can be enabled.
+    --  When configured all message up until a certain level will be logged.
+    ----------------------------------------------------------------------------
+    LogLevel ::=
+        INTEGER {
+            error(3),
+            warning(4),
+            info(6),
+            off(8)
+        }
+
+    LogTransparentUserDataLevel ::=
+        INTEGER{
+            always(0),
+            protocolViolationsOnly(1),
+            never(2)
+        }
+
+    ----------------------------------------------------------------------------
+    --
+    --  MaxLogEvents defines the maximum number of log events which can be
+    --  configured before writing again to the syslog.
+    --
+    ----------------------------------------------------------------------------
+    MaxLogEvents ::= Gauge(1..5000)
+
+    ----------------------------------------------------------------------------
+    --  NameString defines the string used for names.
+    ----------------------------------------------------------------------------
+    NameString ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "31a"
+        STATUS mandatory
+        DESCRIPTION "Represent names to identify objects"
+        SYNTAX OCTET STRING (SIZE (1..31))
+
+
+    NodeType ::=
+        INTEGER {
+            textpassHub(0),
+            textpassRouter(1),
+            textpassAms(2),
+            textpassCfg(3),
+            textpassBat(4),
+            textpassLgp(5),
+            textpassQcli(6)
+        }
+
+    ----------------------------------------------------------------------------
+    --
+    --  NumberingPlanIdentification defines the identifications used for
+    --  numbering plans.
+    --
+    --  For details, refer to GSM 03.40.
+    --
+    ----------------------------------------------------------------------------
+
+    NumberingPlanIdentification ::=
+        INTEGER {
+            unknown(0),
+            isdnTelephony(1),
+            reserved2(2),
+            data(3),
+            telex(4),
+            reserved5(5),
+            reserved6(6),
+            reserved7(7),
+            national(8),
+            private(9),
+            ermes(10),
+            reserved11(11),
+            reserved12(12),
+            reserved13(13),
+            reserved14(14),
+            reserved15(15)
+        }
+
+    OperationalState ::=
+        INTEGER {
+            adminDisabled(0),
+            unreachable(1),
+            throughputExceeded(2),
+            available(3),
+            testing(4),
+            destroyed(5)
+        }
+
+    ----------------------------------------------------------------------------
+    --
+    --  Priority is defined in the following matter:
+    --
+    --  1) The lowest possible priority has the minimum priority value
+    --  2) The highest possible priority has the maximum priority value
+    --
+    ----------------------------------------------------------------------------
+
+    Priority ::=
+        Gauge(0..99)
+
+
+    ProcessPriority ::=
+        INTEGER {
+            critical(0),
+            high(1),
+            normal(2),
+            low(3)
+        }
+    
+    Redundancy ::=
+        Gauge(0..7)
+
+    Role ::=
+        INTEGER {
+            client(0),
+            server(1)
+        }
+
+    ----------------------------------------------------------------------------
+    --  TcpPort defines the range for TCP port numbers.
+    ----------------------------------------------------------------------------
+    TcpPort ::=
+        Gauge(0..65535)
+
+    ----------------------------------------------------------------------------
+    --
+    --  Throughput defines the maximum number of SM/s per second that is
+    --  allowed.
+    --
+    ----------------------------------------------------------------------------
+
+    Throughput ::=
+        Gauge(0..65535)
+
+    ----------------------------------------------------------------------------
+    --  TraceConditionSpec specifies a condition that needs to be satisfied in
+    --  order for a Trace Filter to match.
+    --  An empty condition does not match any data.
+    --
+    --  =======================================================================
+    --  Format:
+    --      APPLICATION
+    --
+    --  Contents:
+    --      a) the letter A, followed by
+    --      b) the name of one of the applications defined in applicationTable
+    --
+    --      or 
+    --
+    --      a) the letter a, followed by
+    --      b) the SNMP-index of the applicable entry in the applicationTable
+    --
+    --  Evaluation:
+    --      The condition evaluates to true when:
+    --      a) the Application to which an inside outside session belongs is
+    --         the same as specified in the condition specification
+    --
+    --  Example:
+    --      The specification for an application called Big Brother looks like:
+    --          ABig Brother
+    --
+    --      Assuming that 963 is the SNMP index for the applicationTable entry 
+    --      representing Big Brother, then an alternative for the above 
+    --      specification is: a963.
+
+    --  ========================================================================
+    --
+    --  Format:
+    --      SINGLESHORTNUMBER
+    --
+    --  Contents:
+    --      a) the letter S, followed by
+    --      b) an E164 address of at least 1 and at most 38 digits.
+    --
+    --  Evaluation:
+    --      The condition evaluates to true when:
+    --      a) the configured short number of an Application to which an inside
+    --         outside session belongs is equal to the E164 address from the 
+    --         condition specification
+    --
+    --  Example:
+    --      The specification for short number 2200 looks like:
+    --          S2200
+    --
+    --  ========================================================================
+    --
+    --  Format:
+    --      SINGLETCPIPADDRESS
+    --
+    --  Contents:
+    --      a) the letter i, followed by
+    --      b) an IP address in the format x.x.x.x, or
+    --         a TCP/IP address in the format x.x.x.x:y
+    --
+    --  Evaluation:
+    --      When the condition contains an IP address, the condition evaluates
+    --      to true when:
+    --      a) the source address of an outside session matches the IP address
+    --         from the condition specification
+    --
+    --      When the condition contains a TCP/IP address, the condition
+    --      evaluates to true when:
+    --      a) the source address of an outside session matches the IP address
+    --         from the condition specification and
+    --      b) the source TCP port of that outside session is the same as the
+    --         TCP port from the condition specification
+    --
+    --  Example:
+    --      The specification for IP address 10.0.0.1 looks like:
+    --          i10.0.0.1
+    --
+    --  ========================================================================
+    --
+    --  Format:
+    --      UNAUTHENTICATEDTRAFFIC
+    --
+    --  Contents:
+    --      a) the letter U
+    --
+    --  Evaluation:
+    --      the condition evaluates to true when:
+    --      a) an outside session has not yet been authenticated, i.e. no
+    --         login request (e.g UCP 60 or SMPP bind request) has been
+    --         received which matches an configured, active Application
+    --
+    --  Example:
+    --      The specification to match all messages on unauthenticated sessions
+    --      looks like:
+    --          U
+    --
+    --  ========================================================================
+    --
+    --  Format:
+    --      ALLMXPTRAFFIC
+    --
+    --  Contents:
+    --      a) the letter X
+    --
+    --  Evaluation:
+    --      the condition evaluates to true:
+    --      a) for any MXP traffic send or received on a HUB
+    --
+    --  Example:
+    --      The specification to match all messages exchanged between HUB and
+    --      Router over MXP looks like:
+    --          X
+    --
+    --  ========================================================================
+    ----------------------------------------------------------------------------
+    TraceConditionSpec ::=
+        OCTET STRING (SIZE(0..32))      -- One TraceConditionSpec char + 31 char NameString
+
+    TraceFilterIndexType ::=
+        INTEGER(1..10)
+
+    TraceFilterConditionIndexType ::=
+        INTEGER(1..100)
+
+    ----------------------------------------------------------------------------
+    --
+    --  TypeOfNumber defines the identifications used to specify a type of
+    --  number.
+    --
+    --  For details, refer to GSM 03.40.
+    --
+    ----------------------------------------------------------------------------
+
+    TypeOfNumber ::=
+        INTEGER {
+            unknown(0),
+            international(1),
+            national(2),
+            networkActual(3),
+            subscriber(4),
+            alphanumeric(5),
+            abbreviated(6),
+            reserved7(7)
+        }
+
+    ----------------------------------------------------------------------------
+    --  UdpPort defines the range for UDP port numbers.
+    ----------------------------------------------------------------------------
+    UdpPort ::=
+        Gauge(0..65535)
+
+    ----------------------------------------------------------------------------
+    --
+    --  Weight defines the weight factor that is used for the load-balancing
+    --  scheme.
+    --
+    --  For details, refer to GSM 03.40.
+    --
+    ----------------------------------------------------------------------------
+
+    Weight ::=
+        Gauge(1..100)
+
+    ----------------------------------------------------------------------------
+    --                   Definition of the general subsystem
+    ----------------------------------------------------------------------------
+
+    gen OBJECT IDENTIFIER ::= { textpass 1 }
+
+    ----------------------------------------------------------------------
+    -- the alarm station group
+    ----------------------------------------------------------------------
+
+    alarmStationTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF AlarmStationEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing info of Alarm Stations. Whenever a trap
+            condition exists, each alarm station in this table will receive a
+            trap PDU.
+            So, in order for a system to receive traps from the mBalance
+            system, one should simply add an entry to this table."
+        ::= { gen 1 }
+
+    alarmStationEntry OBJECT-TYPE
+        SYNTAX  AlarmStationEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry of table containing info of Alarm Stations' service"
+        INDEX   { alarmStationIndex }
+        ::= { alarmStationTable 1 }
+
+    AlarmStationEntry ::=
+        SEQUENCE {
+            alarmStationIndex                     AlarmStationIndexType,
+            alarmStationIpAddress                 IpAddress,
+            alarmStationUdpPort                   UdpPort
+        }
+
+    alarmStationIndex OBJECT-TYPE
+        SYNTAX  AlarmStationIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of Alarm Stations"
+        ::= { alarmStationEntry 1 }
+
+    alarmStationIpAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address of Alarm Station"
+        ::= { alarmStationEntry 2 }
+
+    alarmStationUdpPort OBJECT-TYPE
+        SYNTAX  UdpPort
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "UDP port of Alarm Station to which traps should be sent"
+        ::= { alarmStationEntry 3 }
+
+
+    ----------------------------------------------------------------------
+    -- the startup group
+    ----------------------------------------------------------------------
+
+    startup OBJECT IDENTIFIER ::= { gen 2 }
+
+    bootFlag OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag provides a way to boot the device. When set to 1, the
+             device will start booting within 2 seconds"
+        ::= { startup 1 }
+
+    deviceAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Administrative state of the TextPass device."
+        ::= { startup 2 }
+
+    deviceOperationalState OBJECT-TYPE
+        SYNTAX  DeviceOperationalState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Operational state of the TextPass device."
+        ::= { startup 3 }
+
+    defaultConfigChanged OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag is read-only. It becomes true when the default
+            configuration changes."
+        ::= { startup 4 }
+
+    processPriority OBJECT-TYPE
+        SYNTAX  ProcessPriority
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Process priority of the TextPass device."
+        ::= { startup 5 }
+
+    deviceType OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Type of device to which this corresponds."
+        ::= { startup 6 }
+
+    tpManagerData OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..100))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Specifies the XML TextPass ManagerData file (filename + PATH).
+             This entity is only available in the following applications:
+             HUB, RTR, FAF and AMS"
+        ::= { startup 7 }
+
+    tpManagerIp OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..100))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Specifies IP number for the used device.
+             This entity is only available in the following applications:
+             HUB, RTR, FAF and AMS"
+        ::= { startup 8 }
+
+    maxAllowedConfigErrors OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum number of set errors which are allowed during start-up. 
+             The application will exit when the number of set errors 
+             exceeds this value.
+             Default is 0."
+        ::= { startup 9 }
+
+
+    ----------------------------------------------------------------------
+    -- the license group
+    ----------------------------------------------------------------------
+
+    license OBJECT IDENTIFIER ::= { gen 3 }
+---------------------------
+-- Basic License Information
+---------------------------
+    licGsdLicenseKey OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (34..44))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "License key that is active for a TextPass/GSD device. In order to
+            activate a new license key, one should write this variable.
+            Setting a Key  with length 34 or 44 will result in GSD License
+            key being set.
+            This is only possible in case this is a GSD textpass device."
+        ::= { license 1 }
+
+    licLicenseKey OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..99))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "License key that is active for a TextPass Router. In order to
+            activate a new license key, one should write this variable with
+            any value in case this is a none GSD textpass device.
+            The license key will be read from the license file."
+        ::= { license 2 }
+
+    licHardwareId OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Hardware Identifier used for License e.g. serial number."
+        ::= { license 3 }
+
+     licIssueDate OBJECT-TYPE
+        SYNTAX DateTime
+        ACCESS read-write
+        STATUS  mandatory
+        DESCRIPTION "The date the license is issued."
+        ::= { license 4 }
+
+    licStartDate OBJECT-TYPE
+        SYNTAX DateTime
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The start date/time of the validity period of the license (in
+            case of a time limited license).
+            A value of 0 indicates an unlimited license."
+        ::= { license 5 }
+
+    licEndDate OBJECT-TYPE
+        SYNTAX DateTime
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The end date/time of the validity period of the license. A value
+            of 2147483647 indicates a unlimited license."
+        ::= { license 6 }
+
+    licHourTimer OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION "Number of operational hours this license is still valid."
+        ::= { license 7 }
+
+    licNumber  OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE (1..10))
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION "A unique license identifier."
+        ::= { license 8 }
+
+    licLicenseeName  OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE (1..40))
+        ACCESS read-write
+        STATUS  mandatory
+        DESCRIPTION "Name and details of Licensee."
+        ::= { license 9 }
+
+    licEndUserName OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE (1..40))
+        ACCESS read-write
+        STATUS  mandatory
+        DESCRIPTION "Name and details of end user."
+        ::= { license 10 }
+
+    licIssueNo OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION "The version number of the license 0-65535."
+        ::= { license 19 }
+
+    --  Number 11 (licSmppAccess) is in between for compatibility reasons
+    --  Number 18 (is given for End User Location
+
+    licEndUserLocation OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE (1..40))
+        ACCESS read-write
+        STATUS  mandatory
+        DESCRIPTION "Location (city, country) of end user."
+        ::= { license 18 }
+
+    -- Trunk / Link (SS7 capacity) License Section
+
+    licMaxNumOfTrunks OBJECT-TYPE
+        SYNTAX  Gauge(0..31)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The maximum number of trunks as defined in the license for this
+             TextPass device."
+        ::= { license 12 }
+
+    licMaxNumOfLinks OBJECT-TYPE
+        SYNTAX  Gauge(0..512)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The maximum number of signalling links as defined in the license
+            for this TextPass device."
+        ::= { license 13 }
+
+     licHslLink OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for High speed links"
+        ::= { license 14 }
+
+     licTraceFramework OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             to use the tracing framework. So that it is is allowed
+             to send message towards the trace collector."
+        ::= { license 20 }
+
+-- SS7 Stack Section
+
+    licSs7ItuT  OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has for the ITU-T SS7
+            Stack."
+        ::= { license 21 }
+
+    licSs7Ansi  OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has for the ANSI SS7
+            Stack."
+      ::= { license 22}
+
+    licSs7China OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has for the China SS7
+            Stack."
+      ::= { license 23 }
+
+    licMapGsm OBJECT-TYPE
+
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has license for the
+            GSM MAP standard "
+      ::= { license 24 }
+
+    licTdmaIs136 OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has license for the
+            TDMA -IS136 standard "
+      ::= { license 25 }
+
+    licCdmaIs95 OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device allows messages
+            according to the CDMA -IS95 standard."
+      ::= { license 26 }
+
+     licSigtranSua OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean if this TextPass device can handle SIGTRAN SCCP User
+            Adaption Layer protocol."
+       ::= { license 27 }
+
+     licSigtranM3ua OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean if this TextPass device can handle SIGTRAN MTP3 User
+            Adaption Layer protocol."
+       ::= { license 28 }
+
+      licSigtranEthernet OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean if this TextPass device has license to send SS7 via
+            SIGTRAN over Ethernet."
+       ::= { license 29 }
+
+
+    --  Access Protocol Section
+
+    licSmppAccess OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the SMPP protocol."
+        ::= { license 11 }
+
+     -- Number 11 for compatibility purposes.
+
+     licUcpAccess OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the UCP protocol"
+        ::= { license 15 }
+
+     licCimd2Access OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the CIMD protocol"
+        ::= { license 16 }
+
+     licOisAccess OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the OIS protocol"
+        ::= { license 17 }
+
+    -- Transaction Performance Section
+
+    licMaxTransactionsPerSec OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The maximum number of transactions this TextPass device can
+            handle."
+        ::= { license 31 }
+
+    licComTransactionsPerSec OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The number of transactions as defined in the license for this
+            TextPass device."
+        ::= { license 32 }
+
+    -- GSD Feature Section
+
+    licGsdGetImsiEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for GetIMSI function of the Get Subscriber Details (GSD)
+             module."
+        ::= { license 33 }
+
+    licGsdGetMsrnEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for GetMSRN function of the Get Subscriber Details (GSD)
+             module."
+        ::= { license 34 }
+
+    licGsdMmQueryEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for MMquery function of the Get Subscriber Details (GSD)
+             module."
+        ::= { license 35 }
+
+    licGsdMmEventEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for MMevent function of the Get Subscriber Details (GSD)
+             module."
+        ::= { license 36 }
+
+    licGsdSmsAlertEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for SMSalert function of the Get Subscriber Details (GSD)
+             module."
+        ::= { license 37 }
+
+    -- Transaction Performance Section 2
+
+    licMaxCamelTransactionsPerSec OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The maximum number of Camel transactions this TextPass device
+            can handle."
+        ::= { license 38 }
+
+    licComCamelTransactionsPerSec OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The number of Camel transactions as defined in the license
+             for this TextPass device."
+        ::= { license 39 }
+
+    -- CDR File Format Section
+
+    licCdrSs8   OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the SS8 standard"
+      ::= { license 40 }
+
+    licCdrCmg   OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the CMG SMSC's "
+      ::= { license 41 }
+
+    licCdrLogica    OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the Logica Telepath SMSC's "
+      ::= { license 42 }
+
+    licCdrSema  OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the Sema SMSC's "
+      ::= { license 43 }
+
+    licCdrNokia OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the Nokia SMSC's "
+      ::= { license 44 }
+
+    licCdrEricsson OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the Ericsson SMSC's "
+      ::= { license 45 }
+
+    licCdrComverse OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the Comverse SMSC's "
+      ::= { license 46 }
+
+    -- Performance Counting section
+
+    licTotalCamelMessages OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of Camel license transactions since boot up."
+        ::= { license 47 }
+
+    licTotalCamelMessagesOverLicenseLimit OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of Camel transactions over license limit since
+             boot up."
+        ::= { license 48 }
+
+    licTotalCamelMessagesRejected OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of Camel transactions rejected due to license
+             limit since boot up."
+        ::= { license 49 }
+
+    licMeasurementPeriod OBJECT-TYPE
+        SYNTAX Gauge(0..3600)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Measurement period (in seconds) for license counters."
+        ::= { license 50 }
+
+    licPeriodCounter OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of measurement periods counted periods since boot up."
+        ::= { license 51 }
+
+    licTotalMessages OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of license transactions since boot up."
+        ::= { license 52 }
+
+    licTotalMessagesOverLicenseLimit OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of transactions over license limit since
+             boot up."
+        ::= { license 53 }
+
+    licTotalMessagesRejected OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of transactions rejected due to license
+             limit since boot up."
+        ::= { license 54 }
+
+    licTotalPeriodsOverLicenseLimit OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of measurement periods with more transactions."
+        ::= { license 55 }
+
+    licTotalPeriodsWithMessagesRejected OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of measurement periods with transactions rejected."
+        ::= { license 56 }
+
+    licGracePeriodTimer OBJECT-TYPE
+        SYNTAX  TimeTicks
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The total time left in the grace period in timeticks (1/100 th
+            of seconds).
+            In case the grace period has ended or is not active then the
+            value is 0."
+        ::= { license 57 }
+
+    licTotalCamelPeriodsOverLicenseLimit OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of measurement periods with more Camel
+            transactions."
+        ::= { license 58 }
+
+    licTotalCamelPeriodsWithMessagesRejected OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of measurement periods with Camel transactions
+            rejected."
+        ::= { license 59 }
+
+    licCdrHuawei    OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device can generate CDR
+            files compatible with the Huawei SMSC's "
+      ::= { license 60 }
+
+    -- Router Feature Section
+
+    licTprRoutingPathMoMo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+             receiving Mobile Originated messages and sending them again as
+             Mobile Originated message."
+        ::= { license 61 }
+
+    licTprRoutingPathMtMt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Terminated messages and sending them
+             again as Mobile Terminated message."
+        ::= { license 62 }
+
+    licTprRoutingPathMoAt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Mobile Originated messages and sending them again as an
+            Application Terminated Message."
+        ::= { license 63 }
+
+    licTprRoutingPathAoMt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Application Originated messages and sending them once as
+            an Mobile Terminated Message."
+        ::= { license 64 }
+
+    licTprRoutingPathAoMtAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Application Originated messages and sending them once as
+            an Mobile Terminated Message, if it fails resend it to the SMSC
+            over the Application Interface.
+            This is also known as Try-And-Forward-AO"
+        ::= { license 65 }
+
+    licTprRoutingPathMoMtMo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Mobile Originated messages and sending them once as an
+            Mobile Terminated Message, if it fails resend it to the SMSC over
+            the SS7 interface an Mobile Originated Message.
+            This is also known as Try-And-Forward-MO"
+        ::= { license 66 }
+
+    licTprRoutingPathMoMt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Originated messages and sending them once
+             as an Mobile Terminated Message."
+        ::= { license 67 }
+
+    licTprRoutingPathMoDiscard OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Originated messages and discarding them
+             depending on rules."
+        ::= { license 68 }
+
+    licTprRoutingPathMtDiscard OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Terminated messages and discarding them
+             depending on rules."
+        ::= { license 69 }
+
+    licTprDecimation OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             discarding a predefined percentage of messages towards the
+             application (Decimation)."
+        ::= { license 70 }
+
+    licTprExternalConditionInterfaceStandard OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for an External Condition Interface for the processing of MO
+             or MT messages"
+        ::= { license 71 }
+
+    licTprCheckImsi OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the IMSI retrieval function for incoming MO messages"
+        ::= { license 72 }
+
+    licTprStatisticsEntitiesMo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the gathering of detailed statistics for Mobile Originated
+             Messages per Country, Network, SMSC, Application-Country and
+             Application-Network. "
+        ::= { license 73 }
+
+    licTprStatisticsEntitiesMt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the gathering of detailed statistics for Mobile Terminated
+             Messages per Country, Network, SMSC, Application-Country and
+             Application-Network. "
+        ::= { license 74 }
+
+    licTprStatisticsMoCountingRules OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for creating Mobile Originated Counting Rules."
+        ::= { license 75 }
+
+    licTprStatisticsMtCountingRules OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for creating Mobile Terminated Counting Rules."
+        ::= { license 76 }
+
+    licTprRoutingPathMoMtAt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Originated messages and sending them once
+             as an Mobile Terminated Message, if it fails resend it to an
+             application over the Application Interface.
+             This is also known as Try-And-Forward-AT"
+        ::= { license 77 }
+
+    licRoutingPathAoAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Application Originated messages and sending them
+             to the SMSC over the Application Interface."
+        ::= { license 78 }
+
+    licRoutingPathAtAt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Application Terminated messages from the SMSC and
+             sending them to an application over the Application Interface."
+        ::= { license 79 }
+
+    licRoutingPathAtAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Application Terminated messages from a TextPassRouter
+            and sending them to an SMSC over the Application Interface."
+        ::= { license 80 }
+
+    licTprExternalConditionInterfaceAdvanced OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Advanced part of the External Condition Interface."
+        ::= { license 81 }
+
+    licTpfLoggingSupport OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Firewall Logging of messages"
+        ::= { license 82 }
+
+    licTpfAdditionalStatistics OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for additional Firewall Statistics"
+        ::= { license 83 }
+
+    -- was: licTpfMtScreening ::= { license 84 }
+
+    licTpfAntiMoSpoofing OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Firewall Anti-spoofing for MO messages feature"
+        ::= { license 85 }
+
+    licTpfAntiMtSpoofing OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Firewall Anti-spoofing for MT messages feature"
+        ::= { license 86 }
+
+    licTpfLoggingTransparentUserDataLevel OBJECT-TYPE
+        SYNTAX  LogTransparentUserDataLevel
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Identifier specifying in which cases the user data in log files
+            may be shown transparently."
+        ::= { license 87 }
+
+    licRoutingPathAoAoAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Application Originated messages and sending them
+             to the another device, using fallback if it is not delivered."
+        ::= { license 88 }
+
+    licRoutingPathAoAt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Application Originated messages and sending them to
+            another device while translating it into an Application Terminated
+            message."
+        ::= { license 89 }
+
+    licTprRoutingPathAoDiscard OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Application Originated messages and discarding them
+             depending on rules."
+        ::= { license 90 }
+
+    licTprRoutingPathAtDiscard OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Application Terminated messages and discarding them
+             depending on rules."
+        ::= { license 91 }
+
+    licStandardStatistics OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for standard Router/Hub Statistics"
+        ::= { license 92 }
+
+    licAdditionalStatistics OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for additional Router/Hub Statistics"
+        ::= { license 93 }
+
+    licExtendedApplicationSupport OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for more application support. Standard 1000 application are
+             supported. The number of application may be 10000 when this
+             license is available. Also the ammount of Service Centres
+             (from 25 to 250), ScNodes (from 100 to 500) and 
+             ScTerminationPoints (from 100 to 1000) is influenced
+             by this License."
+        ::= { license 94 }
+
+    licTprExternalConditionInterfaceCamelPhase2 OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Camel Phase2 part of the External Condition Interface."
+        ::= { license 95 }
+
+    licTprExternalConditionInterfaceCamelPhase3 OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Camel Phase3 part of the External Condition Interface."
+        ::= { license 96 }
+
+    licTprExternalConditionInterfaceTextInsertion OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Text Insertion part of the External Condition Interface."
+        ::= { license 97 }
+
+    licTprExternalConditionInterfaceCopy OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Copy part of the External Condition Interface."
+        ::= { license 98 }
+
+    licTprExternalConditionInterfaceForward OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Forward part of the External Condition Interface."
+        ::= { license 99 }
+
+    licSs7CardSerialNumber OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The serial number of the SS7 card (if available)."
+        ::= { license 100 }
+
+    licSs7CardMRL OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..5))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The MRL version of the SS7 card (if available)."
+        ::= { license 101 }
+
+    licEXTSerialNumber OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..12))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The external serial number (if available)."
+        ::= { license 105 }
+
+    licZoneSerialNumber OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..65))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The zone serial number (if available)."
+        ::= { license 106 }
+
+    -- Application Simulator Feature Section
+
+    licAsClientMode OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Client Mode feature. Which
+             mean the AS is able to setup sessions towards server
+             centres (or server applications)"
+        ::= { license 111 }
+
+    licAsEchoClientMode OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Echo Client Mode feature.
+             Which means the AS is able to setup sessions towards servers
+             and send a configured response upon receival of messages."
+        ::= { license 112 }
+
+    licAsServerMode OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Server Mode feature. Which
+             means the AS will act as a server and accept incoming
+             connections with login commands."
+        ::= { license 113 }
+
+    licAsEchoServerMode OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Echo Server Mode feature.
+             Which means the AS will act as a server and accept incoming
+             connections. Each received message will be 'echoed' towards
+             the sender. It is not possible to configure a response message
+             for the EchoServer (as it is for the EchoClient)."
+        ::= { license 114 }
+
+    licAsBurstMode OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Burst Mode feature.
+             See asPropBurstMode for more information on this feature."
+        ::= { license 121 }
+
+    licAsRoundTrip OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Round Trip feature.
+             See asPropMeasureRoundTrip for more information on this feature."
+        ::= { license 122 }
+
+    licAsResponseMeasure OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Response Measure Trip feature.
+             See asPropMeasureResponse for more information on this feature."
+        ::= { license 123 }
+
+    licAsInstableSessions OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Application Simulator Instable Sessions Trip feature.
+            See asApplicationInstableSessions for more information on this
+            feature."
+        ::= { license 124 }
+
+    licAsTextPassRequired OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device needs a license
+             another textpass device to operate. If set to TRUE then the
+             Application Simulator will only become active if a configured and
+             running TextPass Router or Hub is available."
+        ::= { license 125 }
+
+    licAsResponseRate OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Response Rate feature.
+             When this feature is set to TRUE then you will be able to define
+             a response rate (ack/nack/timeout)."
+        ::= { license 126 }
+
+    licAsECIAccess OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator ECI client feature.
+             When this feature is set to TRUE then the AS will be able
+             to be configured as ECI client."
+        ::= { license 127 }
+
+    licAsDiamAccess OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Diameter feature.
+             When this feature is set to TRUE then the AS will be able
+             to be configured as Diameter client/server."
+        ::= { license 128 }
+
+    licAsSipAccess OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator Sip server feature.
+             When this feature is set to TRUE then the AS will be able
+             to be configured as SIP server."
+        ::= { license 129 }
+
+    licAsReqSubmit OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator to use Submit request.
+             When set to TRUE then you are able to configure submit requests."
+        ::= { license 131 }
+
+    licAsReqDeliver OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the Application Simulator to use Deliver request.
+            When set to TRUE then you are able to configure deliver requests."
+        ::= { license 132 }
+
+    licAsReqResponse OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for the
+            Application Simulator to use Response (for EchoClient) request.
+            When set to TRUE then you are able to configure response
+            requests."
+        ::= { license 133 }
+
+    licAsReqModify OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Application Simulator to use Modify request.
+             When set to TRUE then you are able to configure modify requests."
+        ::= { license 134 }
+
+    licAsReqRequest OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the Application Simulator to use Request request.
+            When set to TRUE then you are able to configure request requests."
+        ::= { license 135 }
+
+    licAsReqMessage OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for the Application Simulator to use Message request.
+            When set to TRUE then you are able to configure Message requests."
+        ::= { license 136 }
+
+    -- Hub Feature Section
+
+    licTphInsideOnly OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for InsideOnly applications."
+        ::= { license 141 }
+
+    licTphOutsideOnly OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for OutsideOnly applications."
+        ::= { license 142 }
+
+    licTphPermDialout OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for Permanent Dialout applications."
+        ::= { license 143 }
+
+    licTphReplicate OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for Replicate applications."
+        ::= { license 144 }
+
+    licTphDistribute OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for Distribute applications."
+        ::= { license 145 }
+
+    licTphLearning OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for learning applications (UCP only)."
+        ::= { license 146 }
+
+    licTphIpFailoverControl OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for IP Failover Control."
+        ::= { license 147 }
+
+    -- Active Message Store Feature Section
+
+    licAmsAbility OBJECT-TYPE
+        SYNTAX  AmsAbility
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Identifies what the licensed abilities are of this AMS. They
+             can be set differently as long as the license allows the option."
+        ::= { license 160 }
+
+    licAmsScrambledStorageQueue OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+            for storing the message scrambled so that the contents can not
+            be read."
+        ::= { license 161 }
+
+    licAmsRedundancy OBJECT-TYPE
+        SYNTAX  Redundancy
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number specifying the number of redundant nodes this TextPass
+            device uses."
+        ::= { license 162 }
+
+    -- OID's license.163 and license.164 are reserved for future use
+
+    licAmsTotalBufferSize OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The maximum number of message this TextPass device can store."
+        ::= { license 165 }
+
+    licAmsQueueActivePeriod OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for defining a Queue Active Period."
+        ::= { license 166 }
+
+    licAmsErrorDependentDeliverySchemes OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for defining error dependent delivery schemes."
+        ::= { license 167 }
+
+    licAmsQueueQueryInterface OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the queue query interface."
+        ::= { license 168 }
+
+    licAmsQueryTypeOriginator OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             to do originator queries. The licAmsQueueQueryInterface is
+             needed as well."
+        ::= { license 169 }
+
+    licAmsQueryTypeQueue OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             to do complete queue queries. The licAmsQueueQueryInterface is
+             needed as well."
+        ::= { license 170 }
+
+    -- Prepaid Billing Controller Feature Section
+
+    licPbcSubcriberDBModule  OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the subcriber database module."
+        ::= { license 171 }
+
+    licPbcTransactionDBModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the transaction data base module."
+        ::= { license 172 }
+
+    licPbcCamelPh2Module OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the Camel Phase2 interface module."
+        ::= { license 173 }
+
+    licPbcCamelPh3Module OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the Camel Phase3 interface module."
+        ::= { license 174 }
+
+    licPbcLdapModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the LDAP interface module."
+        ::= { license 175 }
+
+        licPbcXmlModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the XML interface module."
+        ::= { license 176 }
+
+    licPbcHttpModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the HTTP interface module."
+        ::= { license 177 }
+
+    licPbcParlayModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the Parlay interface module."
+        ::= { license 178 }
+        
+    licPbcRefundModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the refund interface module."
+        ::= { license 179 }
+
+    licPbcRatingModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the rating interface module."
+        ::= { license 180 }
+
+    licPbcCDRModule OBJECT-TYPE -- DEPRICATED
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the CDR module."
+        ::= { license 181 }
+
+    licPbcDiameterModule OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the Diameter module."
+        ::= { license 182 }
+
+    licPbcSmppPlusModule OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the SMPP+ module."
+        ::= { license 183 }
+
+    -- Additional Router Feature Section
+
+    licTprRoutingPathMoMtSt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Originated messages and sending them once
+             as an Mobile Terminated Message, if it fails store the message
+             for later delivery."
+        ::= { license 191 }
+
+    licTprRoutingPathMoAtSt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Mobile Originated messages and sending them once as an
+            Application Terminated Message, if it fails store the message for
+            later delivery."
+        ::= { license 192 }
+
+    licTprRoutingPathAoMtSt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Application Originated messages and sending them
+             once as an Mobile Terminated Message, if it fails store the
+             message for later delivery."
+        ::= { license 193 }
+
+    licTprRoutingPathMoSt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Originated messages and store it for
+             later delivery. You will need the SoMt or SoAt license to
+             be able to deliver it toward a Mobile Station or an Application."
+        ::= { license 194 }
+
+    licTprRoutingPathAoSt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Application Originated messages and store it for later
+            delivery. You will need the SoMt or SoAt license to be able to
+            deliver it towards a Mobile Station or an Application."
+        ::= { license 195 }
+
+    licTprRoutingPathSoMt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for delivering stored messages towards
+             a Mobile Station. Only needed in combination with 
+             MoSt and AoSt licenses"
+        ::= { license 196 }
+
+    licTprRoutingPathSoAt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for delivering stored messages towards
+             an Application. Only needed in combination with 
+             MoSt and AoSt licenses"
+        ::= { license 197 }
+
+    licTprRoutingPathMoMtAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for receiving Mobile Originated messages and sending them once
+             as an Mobile Terminated Message, if it fails forward the message
+             as Application Originated toward another Service Centre."
+        ::= { license 198 }
+
+    licTprRoutingPathMoAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for catching MobileOriginated messages and forwarding the message
+             as Application Originated toward another Service Centre."
+        ::= { license 199 }
+
+    licTprRoutingPath3gMo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for catching MobileOriginated from the 3G network (IMS Gateway)
+             and forwarding the message as a MobileOriginated messages
+             towards a 2G Service Centre."
+        ::= { license 200 }
+
+    licTprRoutingPathMt3g OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for catching MobileTerminated message from the 2G network
+             and forwarding the message as a MobileTerminated messages
+             towards a 3G (IMS Gateway) Mobile subscriber."
+        ::= { license 201 }
+
+    licTprRoutingPathSoAo OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for forwarding temporary stored messages towards
+             an SMSC over the application interface. 
+             Only needed in combination with AoSt licenses."
+        ::= { license 202 }
+
+    licTprRoutingPathAtSt OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license for
+            receiving Application Terminated messages and store it for later
+            delivery. You will need the SoMt or SoAt license to be able to
+            deliver it towards a Mobile Station or an Application."
+        ::= { license 203 }
+
+    licTprMoScanTags OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for interperting Mobile Originated Messages which contain
+             Scantags."
+        ::= { license 206 }
+
+     licTprHomeRouting OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the Router Home Routing for MT messages feature."
+        ::= { license 207 }
+
+     licTprHlrProxy OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for the HLR Proxy functionality for use with the
+             IMS Gateway."
+        ::= { license 208 }
+
+     licIiwGsmEncapsulation OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the GSM Encapsulation feature."
+        ::= { license 221 }
+
+    licConfiguredNumNodesOfSite OBJECT-TYPE
+        SYNTAX  Gauge(0..63)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Specification of the configured number of nodes on the site of
+            same type as this TextPass device. The number includes this
+            TextPass device."
+        ::= { license 231 }
+
+    licAvailableNumNodesOfSite OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Specification of the available number of nodes on the site of
+            same type as this TextPass device. The number includes this
+            TextPass device."
+        ::= { license 232 }
+
+    licAdjustedComTransactionsPerSec OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..10))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Adjusted Commercial License Limit: The number of transactions as
+             defined in the license for this TextPass device corrected with a
+             multiplier that is determined by the rate of available/configured
+             nodes of the site."
+        ::= { license 233 }
+
+    licRejectOnBreachingAdjustedComTransactionsPerSec OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying whether a breach of the Adjusted Commercial
+             License Limit will lead to a reject of the message."
+        ::= { license 234 }
+
+    licServiceMessagesEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying whether Service Messages are being sent to
+            the mBalance head office."
+        ::= { license 235 }
+
+     licXsRMSAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service RMS."
+        ::= { license 241 }
+
+     licXsDILAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service DIL."
+        ::= { license 242 }
+
+     licXsMODAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service MOD."
+        ::= { license 243 }
+
+     licXsMLCAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service MLC."
+        ::= { license 244 }
+
+     licXsTIEAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service TIE."
+        ::= { license 245 }
+
+     licXsCPYAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service CPY."
+        ::= { license 246 }
+
+     licXsFWDAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service FWD."
+        ::= { license 247 }
+
+     licXsSPAAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service SPA."
+        ::= { license 248 }
+
+     licXsBWLAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service BWL."
+        ::= { license 249 }
+
+     licXsBIVAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service BIV."
+        ::= { license 250 }
+
+     licXsNumberOfServers OBJECT-TYPE
+        SYNTAX  Gauge(1..255)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Specification of maximum number of servers this eXternal Service
+            device can configure (see eciClientTable) and connect to."
+        ::= { license 251 }
+
+     licXsCRVAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service CRV."
+        ::= { license 252 }
+
+     licXsABMAllowed OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Boolean specifying if this TextPass device has a license
+             for using the eXternal Service ABM."
+        ::= { license 261 }
+
+    ----------------------------------------------------------------------
+    -- the manager group
+    ----------------------------------------------------------------------
+
+    manager OBJECT IDENTIFIER ::= { gen 4 }
+
+    currentManager OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..127))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Hostname of the Configuration Manager that is currently
+            controlling the configuration of the TextPass device. When
+            issuing SNMP requests, Configuration Managers are supposed to use
+            a community string which is equal to their hostname. Textpass
+            only accepts SNMP requests with a community string that is equal
+            to the value of this OID."
+        ::= { manager 1 }
+
+    lastSnmpErrorString OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..127))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Used for identifying the last error which occurred"
+        ::= { manager 2 }
+
+
+    ----------------------------------------------------------------------
+    -- Network Discovery group
+    ----------------------------------------------------------------------
+
+    networkDiscoveryProperties OBJECT IDENTIFIER ::= { gen 5 }
+
+    networkDiscoveryMulticastAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Multicast address used for network discovery.
+             May only be changed when the deviceAdminState is inactive."
+        ::= { networkDiscoveryProperties 1 }
+
+    networkDiscoveryNetworkAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Network address used for selecting network interfaces to be used
+             for network discovery.
+             May only be changed when the deviceAdminState is inactive."
+        ::= { networkDiscoveryProperties 2 }
+
+    networkDiscoveryNetworkMask OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Network mask used for selecting network interfaces to be used
+             for network discovery.
+             May only be changed when the deviceAdminState is inactive."
+        ::= { networkDiscoveryProperties 3 }
+
+    networkDiscoveryMulticastInterval OBJECT-TYPE
+        SYNTAX  IntervalTime
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Interval between sending multicast messages for network
+            discovery.
+             A node is considered to be down when no multicast message has
+             been received for 3 consequtive intervals.
+             May only be changed when the deviceAdminState is inactive.
+             Default is 5 seconds."
+        ::= { networkDiscoveryProperties 4 }
+
+    networkDiscoverySctpBundlingEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Flag specifying whether system will use bundling on SCTP layer.
+            Default is 'true' for systems that support SCTP bundling and
+            'false' for systems not supporting SCTP bundling.  
+            May only be changed when the deviceAdminState is inactive.
+            This flag cannot be enabled for systems that do not support SCTP 
+            bundling (i.e. all Solaris 8 systems). 
+            When a system is to interoperate with a system that does not
+            support bundling, it is advised to switch SCTP bundling off. Not
+            doing so results in problems for high load scenarios."
+        ::= { networkDiscoveryProperties 5 }
+
+
+    ----------------------------------------------------------------------
+    -- Network Discovery Status 1-dimensional table
+    ----------------------------------------------------------------------
+
+    networkDiscoveryTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF NetworkDiscoveryEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing information about the other nodes to which this
+             node has a network connection (created via discovery)."
+        ::= { gen 6 }
+
+    networkDiscoveryEntry OBJECT-TYPE
+        SYNTAX  NetworkDiscoveryEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table entry specifying a single connected node."
+        INDEX   { networkDiscoveryIndex }
+        ::= { networkDiscoveryTable 1 }
+
+    NetworkDiscoveryEntry ::=
+        SEQUENCE {
+            networkDiscoveryIndex               Gauge(1..100),
+            networkDiscoveryAddress1            IpAddress,
+            networkDiscoveryAddress2            IpAddress,
+            networkDiscoveryAddress3            IpAddress,
+            networkDiscoveryAddress4            IpAddress,
+            networkDiscoveryAddress5            IpAddress,
+            networkDiscoveryAddress6            IpAddress,
+            networkDiscoveryAddress7            IpAddress,
+            networkDiscoveryAddress8            IpAddress,
+            networkDiscoveryBasePort            Gauge(0..65535),
+            networkDiscoveryNodeType            NodeType,
+            networkDiscoveryHostId              Gauge,
+            networkDiscoverySubId               Gauge,
+            networkDiscoveryOperationalState    DeviceOperationalState,
+            networkDiscoveryLinkState           LinkState,
+            networkDiscoveryLocalRole           Role,
+            networkDiscoveryTraceFilter         OCTET STRING(SIZE (0..2048)),
+            networkDiscoveryCapabilities        OCTET STRING(SIZE (0..2048)),
+
+            networkDiscoveryCntStream0RxTotal   Counter,
+            networkDiscoveryCntStream0TxTotal   Counter,
+            networkDiscoveryCntStream0TxSuccess Counter,
+            networkDiscoveryCntStream0TxFailed  Counter,
+            networkDiscoveryCntStream1RxTotal   Counter,
+            networkDiscoveryCntStream1TxTotal   Counter,
+            networkDiscoveryCntStream1TxSuccess Counter,
+            networkDiscoveryCntStream1TxFailed  Counter
+        }
+
+    networkDiscoveryIndex OBJECT-TYPE
+        SYNTAX  Gauge(1..100)
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of connected nodes."
+        ::= { networkDiscoveryEntry 1 }
+
+    networkDiscoveryAddress1 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 2 }
+
+    networkDiscoveryAddress2 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 3 }
+
+    networkDiscoveryAddress3 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 4 }
+
+    networkDiscoveryAddress4 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 5 }
+
+    networkDiscoveryAddress5 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 6 }
+
+    networkDiscoveryAddress6 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 7 }
+
+    networkDiscoveryAddress7 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 8 }
+
+    networkDiscoveryAddress8 OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "One of the IPv4 addresses used for network connection."
+        ::= { networkDiscoveryEntry 9 }
+
+    networkDiscoveryBasePort OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Base SCTP port number used for network connection. Node might
+            use an offset to this base that is equal to a multitude of 100."
+        ::= { networkDiscoveryEntry 10 }
+
+    networkDiscoveryNodeType OBJECT-TYPE
+        SYNTAX  NodeType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Type of node."
+        ::= { networkDiscoveryEntry 11 }
+
+    networkDiscoveryHostId OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Host ID of the node."
+        ::= { networkDiscoveryEntry 12 }
+
+    networkDiscoverySubId OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Sub ID of the node. Together with the Host ID this should form a
+            unique ID of the node."
+        ::= { networkDiscoveryEntry 13 }
+
+    networkDiscoveryOperationalState OBJECT-TYPE
+        SYNTAX  DeviceOperationalState
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Operational state of the node, if known."
+        ::= { networkDiscoveryEntry 14 }
+
+    networkDiscoveryLinkState OBJECT-TYPE
+        SYNTAX  LinkState
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Operational state of the link to this node."
+        ::= { networkDiscoveryEntry 15 }
+
+    networkDiscoveryLocalRole OBJECT-TYPE
+        SYNTAX  Role
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Role of the local node in the setup of the SCTP association. If
+            the role is client the local node initiates the setup. If the
+            role is client the remote node initiates the setup."
+        ::= { networkDiscoveryEntry 16 }
+
+    networkDiscoveryTraceFilter OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..2048))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Filter expression that is to be used when tracing the SCTP
+            association."
+        ::= { networkDiscoveryEntry 17 }
+
+    networkDiscoveryCapabilities OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..2048))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Capabilities of the node."
+        ::= { networkDiscoveryEntry 18 }
+
+    networkDiscoveryCntStream0RxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of messages received on Stream 0 of this SCTP association.
+             This stream is used for MIP communication."
+        ::= { networkDiscoveryEntry 21 }
+
+    networkDiscoveryCntStream0TxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of messages transmitted on Stream 0 of this SCTP
+             association. This stream is used for MIP communication."
+        ::= { networkDiscoveryEntry 26 }
+
+    networkDiscoveryCntStream0TxSuccess OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of messages transmitted successfully on Stream 0 of this
+             SCTP association. This stream is used for MIP communication."
+        ::= { networkDiscoveryEntry 27 }
+
+    networkDiscoveryCntStream0TxFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of messages failed to be transmitted on Stream 0 of this
+             SCTP association. This stream is used for MIP communication."
+        ::= { networkDiscoveryEntry 28 }
+
+    networkDiscoveryCntStream1RxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION 
+            "Number of messages received on Stream 1 of this SCTP association.
+             This stream is used for MXP communication."
+        ::= { networkDiscoveryEntry 31 }
+
+    networkDiscoveryCntStream1TxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of messages transmitted on Stream 1 of this SCTP
+             association. This stream is used for MXP communication."
+        ::= { networkDiscoveryEntry 36 }
+
+    networkDiscoveryCntStream1TxSuccess OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of messages transmitted successfully on Stream 1 of this
+             SCTP association. This stream is used for MXP communication."
+        ::= { networkDiscoveryEntry 37 }
+
+    networkDiscoveryCntStream1TxFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of messages failed to be transmitted on Stream 1 of this
+             SCTP association. This stream is used for MXP communication."
+        ::= { networkDiscoveryEntry 38 }
+
+
+    ----------------------------------------------------------------------
+    -- White List 2-dimensional table
+    ----------------------------------------------------------------------
+
+    whiteListTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF WhiteListEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing the passthrough filter entries for the
+            corresponding alarm station"
+        ::= { gen 7 }
+
+    whiteListEntry OBJECT-TYPE
+        SYNTAX  WhiteListEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry of table containing the white list filters"
+        INDEX   { whiteListIndex1, whiteListIndex2 }
+        ::= { whiteListTable 1 }
+
+    WhiteListEntry ::=
+        SEQUENCE {
+            whiteListIndex1                     AlarmStationIndexType,
+            whiteListIndex2                     FilterListIndexType,
+            whiteListSubsystem                  OBJECT IDENTIFIER,
+            whiteListType                       FilterOidType,
+            whiteListAdminState                 AdminState 
+        }
+
+    whiteListIndex1 OBJECT-TYPE
+        SYNTAX  AlarmStationIndexType 
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of Alarm Stations
+             This index is actually a reference to the related alarm station.
+             Its value its equal to the index of the Alarm station entry."
+        ::= { whiteListEntry 1 }
+
+    whiteListIndex2 OBJECT-TYPE
+        SYNTAX  FilterListIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of white list items."
+        ::= { whiteListEntry 2 }
+    
+    whiteListSubsystem OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Object identifier for the subsystem on white list entry."
+        ::= { whiteListEntry 3 }
+     
+    whiteListType OBJECT-TYPE
+        SYNTAX FilterOidType 
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Type of trap inside the subsystem."
+        ::= { whiteListEntry 4 }
+     
+    whiteListAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Administrative state of the white list."
+        ::= { whiteListEntry 5 }
+
+
+    ----------------------------------------------------------------------
+    -- Black List 2-dimensional table
+    ----------------------------------------------------------------------
+
+    blackListTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF BlackListEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing the block filter entries for the corresponding
+            alarm station"
+        ::= { gen 8 }
+
+    blackListEntry OBJECT-TYPE
+        SYNTAX  BlackListEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry of table containing the white list filters"
+        INDEX   { whiteListIndex1, whiteListIndex2 }
+        ::= { blackListTable 1 }
+
+    BlackListEntry ::=
+        SEQUENCE {
+            blackListIndex1                     AlarmStationIndexType,
+            blackListIndex2                     FilterListIndexType,
+            blackListSubsystem                  OBJECT IDENTIFIER,
+            blackListType                       FilterOidType,
+            blackListAdminState                 AdminState
+        }
+
+    blackListIndex1 OBJECT-TYPE
+        SYNTAX  AlarmStationIndexType 
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of Alarm Stations
+             This index is actually a reference to the related alarm station.
+             Its value its equal to the index of the Alarm station entry."
+        ::= { blackListEntry 1 }
+
+    blackListIndex2 OBJECT-TYPE
+        SYNTAX  FilterListIndexType
+        ACCESS  not-accessible 
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of black list items."
+        ::= { blackListEntry 2 }
+    
+    blackListSubsystem OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Object identifier for sub system on black list entry."
+        ::= { blackListEntry 3 }
+
+    blackListType OBJECT-TYPE
+        SYNTAX  FilterOidType 
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Object identifier for trap type on black list entry."
+        ::= { blackListEntry 4 }
+
+    blackListAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Administrative state of the black list."
+        ::= { blackListEntry 5 }
+
+
+    ----------------------------------------------------------------------
+    -- SNMP configuration
+    ----------------------------------------------------------------------
+
+    snmpProperties OBJECT IDENTIFIER ::= { gen 9 }
+
+    snmpPropAlarmOwnIpAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The IP address of this TextPass node.
+            If set, this address will be used as source address for sending
+            SNMP traps."
+        ::= { snmpProperties 1 }
+
+    ----------------------------------------------------------------------
+    -- Generic Properties
+    ----------------------------------------------------------------------
+
+    genProperties OBJECT IDENTIFIER ::= { gen 10 }
+
+    genPropInternationalPrefix  OBJECT-TYPE
+        SYNTAX  E164Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "International prefix as used in country in which TextPass
+            operates. Typically equal to 00, which is also the default.
+            Prefix must be 1 to 6 digits in length."
+        ::= { genProperties 1 }
+
+    genPropNationalPrefix OBJECT-TYPE
+        SYNTAX  E164Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "National (trunk) prefix as used in country in which TextPass
+            operates. Typically equal to 0, which is also the default.
+            Prefix must be 0 to 6 digits in length."
+        ::= { genProperties 2 }
+
+    genPropCountryCode OBJECT-TYPE
+        SYNTAX  E164Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Country code for country in which TextPass operates.
+            Examples are:
+
+            31 for the Netherlands
+            32 for Belgium
+            33 for France
+            44 for United Kingdom
+            49 for Germany
+
+            Refer to http://www.lincmad.com/countrycodes.html for more
+            country codes. Default is 31. Country code must be 1 to 4
+            digits in length."
+        ::= { genProperties 3 }
+
+    genPropMaxLengthForShortNumber OBJECT-TYPE
+        SYNTAX  E164AddressLength
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum length for short number, which are used to address
+             applications. Should never exceed 6. Default is 5."
+        ::= { genProperties 4 }
+
+    genPropGenLogLevel OBJECT-TYPE
+        SYNTAX  LogLevel
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Defines the general loglevel for this device.
+            When a generic event occurs it is logged if
+            the level of the event is higher or equal to the configured one.
+            Message are logged to the system log. 
+            See also genPropGenLogEventCount and genPropGenLogEventInterval
+            for more information.
+            The default value is 'warning'. Event logging can be
+            disabled by setting this property to 'off'."
+        ::= { genProperties 11 }
+
+    genPropGenLogEventCount OBJECT-TYPE
+        SYNTAX  MaxLogEvents
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Defines the number of general events of the same type to be
+            triggered before a new event log is written in the syslog.
+            The default is 1. Setting this to 1 means every event will be
+            logged."
+        ::= { genProperties 12 }
+
+    genPropGenLogEventInterval OBJECT-TYPE
+        SYNTAX  IntervalTime
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Defines the number of seconds which has to be passed before
+            a general event of the same type will be written again in 
+            the syslog. The default is 5."
+        ::= { genProperties 13 }
+
+    genPropAppLogEventCount OBJECT-TYPE
+        SYNTAX  MaxLogEvents
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Defines the number of application events of the same type 
+            (and application) to be triggered before a new event log is 
+            written in the syslog. The default is 100."
+        ::= { genProperties 14 }
+
+    genPropAppLogEventInterval OBJECT-TYPE
+        SYNTAX  IntervalTime
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Defines the number of seconds which has to be passed before
+            an application event of the same type (and application) will
+            be written again in the syslog. The default is 5."
+        ::= { genProperties 15 }
+
+    ----------------------------------------------------------------------
+    -- MXIP counters
+    ----------------------------------------------------------------------
+
+    mxipCounters OBJECT IDENTIFIER ::= { gen 20 }
+    
+    mipCounterRxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of received MIP messages"
+        ::= { mxipCounters 1 }
+
+    mipCounterTxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of transmitted MIP messages"
+        ::= { mxipCounters 2 }
+
+    mipCounterTxTimeout OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of timed out transmitted MIP
+            messages"
+        ::= { mxipCounters 3 }
+
+    mipCounterTxPending OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of pending transmitted MIP
+            messages"
+        ::= { mxipCounters 4 }
+
+    mipCounterRxUnknown OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of received unknown MIP messages"
+        ::= { mxipCounters 5 }
+
+    mipCounterRxTooShort OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of received too short MIP messages"
+        ::= { mxipCounters 6 }
+
+     mipCounterTxFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of failed transmit attempts for
+            MIP messages"
+        ::= { mxipCounters 7 }
+
+    mxpCounterRxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of received MXP messages"
+        ::= { mxipCounters 11 }
+
+    mxpCounterTxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of transmitted MXP messages"
+        ::= { mxipCounters 12 }
+
+    mxpCounterTxTimeout OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of timed out transmitted MXP
+            messages"
+        ::= { mxipCounters 13 }
+
+    mxpCounterTxPending OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of pending transmitted MXP
+            messages"
+        ::= { mxipCounters 14 }
+
+    mxpCounterRxUnknown OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of received unknown MXP messages"
+        ::= { mxipCounters 15 }
+
+    mxpCounterRxTooShort OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of received too short MXP messages"
+        ::= { mxipCounters 16 }
+
+    mxpCounterTxFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the number of failed transmit attempts for
+            MXP messages"
+        ::= { mxipCounters 17 }
+
+
+    ----------------------------------------------------------------------
+    -- MXIP tag specific message counters
+    ----------------------------------------------------------------------
+
+    mxipTagCounters OBJECT IDENTIFIER ::= { gen 21 }
+    --  The index equals to:
+    --   Rx Counters: (tag * 2) + 1 
+    --   Tx Counters: (tag * 2) + 2 
+    
+    mxipTagCntRxReceivedSubmitSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received ReceivedSubmitSmRequest messages."
+        ::= { mxipTagCounters 1 }
+
+    mxipTagCntTxReceivedSubmitSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted ReceivedSubmitSmRequest messages."
+        ::= { mxipTagCounters 2 }
+
+    mxipTagCntRxReceivedDeliverSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received ReceivedDeliverSmRequest messages."
+        ::= { mxipTagCounters 3 }
+
+    mxipTagCntTxReceivedDeliverSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted ReceivedDeliverSmRequest messages."
+        ::= { mxipTagCounters 4 }
+
+    mxipTagCntRxReceivedNotificationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received ReceivedNotificationRequest messages."
+        ::= { mxipTagCounters 5 }
+
+    mxipTagCntTxReceivedNotificationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted ReceivedNotificationRequest messages."
+        ::= { mxipTagCounters 6 }
+
+    mxipTagCntRxReceivedUnknownAppRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received ReceivedUnknownAppRequest messages."
+        ::= { mxipTagCounters 7 }
+
+    mxipTagCntTxReceivedUnknownAppRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted ReceivedUnknownAppRequest messages."
+        ::= { mxipTagCounters 8 }
+
+    mxipTagCntRxReceivedUnknownScRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received ReceivedUnknownScRequest messages."
+        ::= { mxipTagCounters 9 }
+
+    mxipTagCntTxReceivedUnknownScRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted ReceivedUnknownScRequest messages."
+        ::= { mxipTagCounters 10 }
+
+    mxipTagCntRxSendSubmitSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received SendSubmitSmRequest messages."
+        ::= { mxipTagCounters 11 }
+
+    mxipTagCntTxSendSubmitSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted SendSubmitSmRequest messages."
+        ::= { mxipTagCounters 12 }
+
+    mxipTagCntRxSendDeliverSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received SendDeliverSmRequest messages."
+        ::= { mxipTagCounters 13 }
+
+    mxipTagCntTxSendDeliverSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted SendDeliverSmRequest messages."
+        ::= { mxipTagCounters 14 }
+
+    mxipTagCntRxSendNotificationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received SendNotificationRequest messages."
+        ::= { mxipTagCounters 15 }
+
+    mxipTagCntTxSendNotificationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted SendNotificationRequest messages."
+        ::= { mxipTagCounters 16 }
+
+    mxipTagCntRxReceivedModifySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received ReceivedModifySmRequest messages."
+        ::= { mxipTagCounters 17 }
+
+    mxipTagCntTxReceivedModifySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted ReceivedNotificationRequest messages."
+        ::= { mxipTagCounters 18 }
+
+    mxipTagCntRxSessionCounterRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of received SessionCounterRequest messages."
+        ::= { mxipTagCounters 19 }
+
+    mxipTagCntTxSessionCounterRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "Counter for number of transmitted SessionCounterRequest messages."
+        ::= { mxipTagCounters 20 }
+
+    mxipTagCntRxReceivedSubmitSmResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "10"
+        ::= { mxipTagCounters 21 }
+
+    mxipTagCntTxReceivedSubmitSmResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 22 }
+
+    mxipTagCntRxReceivedDeliverSmResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 23 }
+
+    mxipTagCntTxReceivedDeliverSmResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 24 }
+
+    mxipTagCntRxReceivedNotificationResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 25 }
+
+    mxipTagCntTxReceivedNotificationResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 26 }
+
+    mxipTagCntRxReceivedUnknownAppResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 27 }
+
+    mxipTagCntTxReceivedUnknownAppResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 28 }
+
+    mxipTagCntRxReceivedUnknownScResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 29 }
+
+    mxipTagCntTxReceivedUnknownScResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 30 }
+
+    mxipTagCntRxSessionCounterResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "19"
+        ::= { mxipTagCounters 39 }
+
+    mxipTagCntTxSessionCounterResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 40 }
+
+    mxipTagCntRxReceivedSubmitSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "20"
+        ::= { mxipTagCounters 41 }
+
+    mxipTagCntTxReceivedSubmitSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 42 }
+
+    mxipTagCntRxReceivedDeliverSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 43 }
+
+    mxipTagCntTxReceivedDeliverSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 44 }
+
+    mxipTagCntRxReceivedNotificationResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 45 }
+
+    mxipTagCntTxReceivedNotificationResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 46 }
+
+    mxipTagCntRxReceivedUnknownAppResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 47 }
+
+    mxipTagCntTxReceivedUnknownAppResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 48 }
+
+    mxipTagCntRxReceivedUnknownScResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 49 }
+
+    mxipTagCntTxReceivedUnknownScResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 50 }
+
+    mxipTagCntRxSendSubmitSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 51 }
+
+    mxipTagCntTxSendSubmitSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 52 }
+
+    mxipTagCntRxSendDeliverSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 53 }
+
+    mxipTagCntTxSendDeliverSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 54 }
+
+    mxipTagCntRxSendNotificationResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 55 }
+
+    mxipTagCntTxSendNotificationResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 56 }
+
+    mxipTagCntRxReceivedModifySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 57 }
+
+    mxipTagCntTxReceivedModifySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 58 }
+
+    mxipTagCntRxApplicationStatusIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 59 }
+
+    mxipTagCntTxApplicationStatusIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 60 }
+
+    mxipTagCntRxNewApplicationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "30"
+        ::= { mxipTagCounters 61 }
+
+    mxipTagCntTxNewApplicationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 62 }
+
+    mxipTagCntRxNewApplicationResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 63 }
+
+    mxipTagCntTxNewApplicationResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 64 }
+
+    mxipTagCntRxNewApplicationResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 65 }
+
+    mxipTagCntTxNewApplicationResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 66 }
+
+    mxipTagCntRxScTpCounterRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 67 }
+
+    mxipTagCntTxScTpCounterRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 68 }
+
+    mxipTagCntRxScTpCounterResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "34"
+        ::= { mxipTagCounters 69 }
+
+    mxipTagCntTxScTpCounterResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 70 }
+
+    mxipTagCntRxReceivedSubmitSmAckIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "40"
+        ::= { mxipTagCounters 81 }
+
+    mxipTagCntTxReceivedSubmitSmAckIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 82 }
+
+    mxipTagCntRxReceivedQuerySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 83 }
+
+    mxipTagCntTxReceivedQuerySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 84 }
+
+    mxipTagCntRxReceivedQuerySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 85 }
+
+    mxipTagCntTxReceivedQuerySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 86 }
+
+    mxipTagCntRxReceivedCancelSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 87 }
+
+    mxipTagCntTxReceivedCancelSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 88 }
+
+    mxipTagCntRxReceivedCancelSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 89 }
+
+    mxipTagCntTxReceivedCancelSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 90 }
+
+    mxipTagCntRxReceivedAlertSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 91 }
+
+    mxipTagCntTxReceivedAlertSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 92 }
+
+    mxipTagCntRxReceivedAlertSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "46"
+        ::= { mxipTagCounters 93 }
+
+    mxipTagCntTxReceivedAlertSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 94 }
+
+    mxipTagCntRxAmsUpdateMsgRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "61"
+        ::= { mxipTagCounters 123 }
+
+    mxipTagCntTxAmsUpdateMsgRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 124 }
+
+    mxipTagCntRxAmsUpdateMsgResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 125 }
+
+    mxipTagCntTxAmsUpdateMsgResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 126 }
+
+    mxipTagCntRxAmsGetPurgeListSizeRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 127 }
+
+    mxipTagCntTxAmsGetPurgeListSizeRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 128 }
+
+    mxipTagCntRxAmsGetPurgeListSizeResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 129 }
+
+    mxipTagCntTxAmsGetPurgeListSizeResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 130 }
+
+    mxipTagCntRxAmsGetPurgeListRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 131 }
+
+    mxipTagCntTxAmsGetPurgeListRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 132 }
+
+    mxipTagCntRxAmsGetPurgeListNextRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 133 }
+
+    mxipTagCntTxAmsGetPurgeListNextRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 134 }
+
+    mxipTagCntRxAmsGetPurgeListResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 135 }
+
+    mxipTagCntTxAmsGetPurgeListResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 136 }
+
+    mxipTagCntRxAmsDelPurgeListRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 137 }
+
+    mxipTagCntTxAmsDelPurgeListRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 138 }
+
+    mxipTagCntRxAmsDelPurgeListResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 139 }
+
+    mxipTagCntTxAmsDelPurgeListResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 140 }
+
+    mxipTagCntRxAmsGetMsgCountRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "70"
+        ::= { mxipTagCounters 141 }
+
+    mxipTagCntTxAmsGetMsgCountRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 142 }
+
+    mxipTagCntRxAmsGetMsgCountResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 143 }
+
+    mxipTagCntTxAmsGetMsgCountResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 144 }
+
+    mxipTagCntRxAmsPromoteRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "72"
+        ::= { mxipTagCounters 145 }
+
+    mxipTagCntTxAmsPromoteRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 146 }
+
+    mxipTagCntRxAmsPromoteResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 147 }
+
+    mxipTagCntTxAmsPromoteResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 148 }
+
+    mxipTagCntRxAmsActiveIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 149 }
+
+    mxipTagCntTxAmsActiveIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 150 }
+
+    mxipTagCntRxAmsSwitchIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 151 }
+
+    mxipTagCntTxAmsSwitchIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 152 }
+
+    mxipTagCntRxAmsNodeListIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 153 }
+
+    mxipTagCntTxAmsNodeListIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 154 }
+
+    mxipTagCntRxAmsGetInformationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 163 }
+
+    mxipTagCntTxAmsGetInformationRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 164 }
+
+    mxipTagCntRxAmsGetInformationResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 165 }
+
+    mxipTagCntTxAmsGetInformationResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 166 }
+
+    mxipTagCntRxAmsGetInformationNextRequest  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "83"
+        ::= { mxipTagCounters 167 }
+
+    mxipTagCntTxAmsGetInformationNextRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 168 }
+
+    mxipTagCntRxAmsDeleteMsgRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 169 }
+
+    mxipTagCntTxAmsDeleteMsgRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 170 }
+
+    mxipTagCntRxAmsDeleteMsgResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 171 }
+
+    mxipTagCntTxAmsDeleteMsgResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 172 }
+
+    mxipTagCntRxAmsAlertRecipientRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 173 }
+
+    mxipTagCntTxAmsAlertRecipientRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 174 }
+
+    mxipTagCntRxAmsAlertRecipientResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 175 }
+
+    mxipTagCntTxAmsAlertRecipientResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 176 }
+
+    mxipTagCntRxAlertRecipientIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 177 }
+
+    mxipTagCntTxAlertRecipientIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 178 }
+
+    mxipTagCntRxSmTerminatedIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 179 }
+
+    mxipTagCntTxSmTerminatedIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 180 }
+
+    mxipTagCntRxSmBufferedIndication  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "90"
+        ::= { mxipTagCounters 181 }
+
+    mxipTagCntTxSmBufferedIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 182 }
+
+    mxipTagCntRxRecipientStatusIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 183 }
+
+    mxipTagCntTxRecipientStatusIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 184 }
+
+    mxipTagCntRxAmsGetQueueSizeRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 185 }
+
+    mxipTagCntTxAmsGetQueueSizeRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 186 }
+
+    mxipTagCntRxAmsGetQueueSizeResponse  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 187 }
+
+    mxipTagCntTxAmsGetQueueSizeResponse OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 188 }
+
+    mxipTagCntRxStoreSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "100"
+        ::= { mxipTagCounters 201 }
+
+    mxipTagCntTxStoreSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 202 }
+
+    mxipTagCntRxStoreSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 203 }
+
+    mxipTagCntTxStoreSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 204 }
+
+    mxipTagCntRxDeliverSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 205 }
+
+    mxipTagCntTxDeliverSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 206 }
+
+    mxipTagCntRxDeliverSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 207 }
+
+    mxipTagCntTxDeliverSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 208 }
+
+    mxipTagCntRxReplicateSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 209 }
+
+    mxipTagCntTxReplicateSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 210 }
+
+    mxipTagCntRxReplicateSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 211 }
+
+    mxipTagCntTxReplicateSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 212 }
+
+    mxipTagCntRxModifySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 213 }
+
+    mxipTagCntTxModifySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 214 }
+
+    mxipTagCntRxModifySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 215 }
+
+    mxipTagCntTxModifySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 216 }
+
+    mxipTagCntRxQuerySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 217 }
+
+    mxipTagCntTxQuerySmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 218 }
+
+    mxipTagCntRxQuerySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 219 }
+
+    mxipTagCntTxQuerySmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 220 }
+
+    mxipTagCntRxForwardSmRequest  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 221 }
+
+    mxipTagCntTxForwardSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 222 }
+
+    mxipTagCntRxForwardSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 223 }
+
+    mxipTagCntTxForwardSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 224 }
+
+    mxipTagCntRxRecipientQueryRequest  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 225 }
+
+    mxipTagCntTxRecipientQueryRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 226 }
+
+    mxipTagCntRxRecipientQueryResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 227 }
+
+    mxipTagCntTxRecipientQueryResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 228 }
+
+    mxipTagCntRxCancelSmRequest  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 229 }
+
+    mxipTagCntTxCancelSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 230 }
+
+    mxipTagCntRxCancelSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 231 }
+
+    mxipTagCntTxCancelSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 232 }
+
+    mxipTagCntRxAlertSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 233 }
+
+    mxipTagCntTxAlertSmRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 234 }
+
+    mxipTagCntRxAlertSmResult  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 235 }
+
+    mxipTagCntTxAlertSmResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 236 }
+
+    mxipTagCntRxServiceMessageIndication  OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "120"
+        ::= { mxipTagCounters 241 }
+
+    mxipTagCntTxServiceMessageIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 242 }
+
+    mxipTagCntRxReceivedSubmitSmComplete OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "140"
+        ::= { mxipTagCounters 281 }
+
+    mxipTagCntTxReceivedSubmitSmComplete OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "140"
+        ::= { mxipTagCounters 282 }
+
+    mxipTagCntRxReceivedDeliverSmComplete OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "141"
+        ::= { mxipTagCounters 283 }
+
+    mxipTagCntTxReceivedDeliverSmComplete OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "141"
+        ::= { mxipTagCounters 284 }
+
+    mxipTagCntRxReceivedNotificationComplete OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "142"
+        ::= { mxipTagCounters 285 }
+
+    mxipTagCntTxReceivedNotificationComplete OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "142"
+        ::= { mxipTagCounters 286 }
+
+    mxipTagCntRxIcacheReserveIdRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION "200 "
+        ::= { mxipTagCounters 401 }
+
+    mxipTagCntTxIcacheReserveIdRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 402 }
+
+    mxipTagCntRxIcacheReserveIdResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 403 }
+
+    mxipTagCntTxIcacheReserveIdResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 404 }
+
+    mxipTagCntRxIcacheReleaseIdIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 405 }
+
+    mxipTagCntTxIcacheReleaseIdIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 406 }
+
+    mxipTagCntRxIcacheStoreRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 407 }
+
+    mxipTagCntTxIcacheStoreRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 408 }
+
+    mxipTagCntRxIcacheStoreResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 409 }
+
+    mxipTagCntTxIcacheStoreResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 410 }
+
+    mxipTagCntRxIcacheLookupAndDeleteRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 411 }
+
+    mxipTagCntTxIcacheLookupAndDeleteRequest OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 412 }
+
+    mxipTagCntRxIcacheLookupAndDeleteResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 413 }
+
+    mxipTagCntTxIcacheLookupAndDeleteResult OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 414 }
+
+    mxipTagCntRxIcacheTimeoutIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 415 }
+
+    mxipTagCntTxIcacheTimeoutIndication OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION ""
+        ::= { mxipTagCounters 416 }
+
+
+
+    ----------------------------------------------------------------------
+    -- the TraceFilter group
+    ----------------------------------------------------------------------
+
+    traceFilterTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF TraceFilterEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table defining a Trace Filter.
+            The Trace Filter forwards specific trace data to a remote
+            trace collector, as encapsulated PCAP packets over UDP.
+            An associated TraceFilterConditionTable defines the conditions
+            for selecting the trace data."
+        ::= { gen 26 }
+
+    traceFilterEntry OBJECT-TYPE
+        SYNTAX  TraceFilterEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry of table containing Trace Filter definition."
+        INDEX   { traceFilterIndex }
+        ::= { traceFilterTable 1 }
+
+    TraceFilterEntry ::=
+        SEQUENCE {
+            traceFilterIndex                        TraceFilterIndexType,
+            traceFilterAdminState                   AdminState,
+            traceFilterName                         NameString,
+            traceFilterServerIpAddress              IpAddress,
+            traceFilterServerUdpPort                UdpPort,
+            traceFilterCntTxTotal                   Counter,
+            traceFilterCntTxSuccess                 Counter,
+            traceFilterCntTxFailed                  Counter,
+            traceFilterCntTxBytes                   Counter
+        }
+
+    traceFilterIndex OBJECT-TYPE
+        SYNTAX  TraceFilterIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index for the TraceFilterTable."
+        ::= { traceFilterEntry 1 }
+
+    traceFilterAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The AdminState of the Trace Filter.
+            The AdminState can only be set to 'active' if:
+            - Name is set and unique,
+            - ServerIpAddress is set and
+            - ServerUdpPort is set.
+
+            The AdminState can be set to 'inactive' at any time to 
+            temporarely disable the Trace Filter.
+
+            The AdminState can be set to 'destroy' at any time to
+            permanently remove the Trace Filter from the configuration.
+            "
+        ::= { traceFilterEntry 2 }
+
+    traceFilterName OBJECT-TYPE
+        SYNTAX  NameString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The unique name of the Trace Filter.
+            # can only be changed when the AdminState is inactive #"
+        ::= { traceFilterEntry 3 }
+
+    traceFilterServerIpAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address of the server (trace collector) to which the traces of
+            this filter will be sent to.
+            # can only be changed when the AdminState is inactive #"
+        ::= { traceFilterEntry 4 }
+
+    traceFilterServerUdpPort OBJECT-TYPE
+        SYNTAX  UdpPort
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "UDP port of the server (trace collector) to which the traces of
+            this filter will be sent to.
+            # can only be changed when the AdminState is inactive #"
+        ::= { traceFilterEntry 5 }
+
+    traceFilterCntTxTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter for the number of packets matching the filter and
+            selected for sending to the trace collector."
+        ::= { traceFilterEntry 11 }
+
+    traceFilterCntTxSuccess OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter for the number of packets sent successfully to the
+            trace collector.
+            Note: as UDP is used for transport, this is no guarantee that
+            the packet is received."
+        ::= { traceFilterEntry 12 }
+
+    traceFilterCntTxFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter for the number of packets that could not be sent to the
+            trace collector."
+        ::= { traceFilterEntry 13 }
+
+    traceFilterCntTxBytes OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter for the number of bytes sent successfully to the
+            trace collector.
+            Note: as UDP is used for transport, this is no guarantee that
+            the packet is received."
+        ::= { traceFilterEntry 14 }
+
+
+    traceFilterConditionTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF TraceFilterConditionEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Two dimensional table defining the conditions for the Trace
+            Filters.  Entries can be added/removed to/from this table while
+            the adminState of the associated Trace Filter is 'active' or
+            'inactive'."
+        ::= { gen 27 }
+
+    traceFilterConditionEntry OBJECT-TYPE
+        SYNTAX  TraceFilterConditionEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry of table containing Trace Filter Condition definition."
+        INDEX   { traceFilterConditionIndex1, traceFilterConditionIndex2 }
+        ::= { traceFilterConditionTable 1 }
+
+    TraceFilterConditionEntry ::=
+        SEQUENCE {
+            traceFilterConditionIndex1              TraceFilterIndexType,
+            traceFilterConditionIndex2              TraceFilterConditionIndexType,
+            traceFilterConditionAdminState          AdminState,
+            traceFilterConditionSpec                TraceConditionSpec
+        }
+
+    traceFilterConditionIndex1 OBJECT-TYPE
+        SYNTAX  TraceFilterIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "First index for the TraceFilterConditionTable. This is the
+            reference to the associated TraceFilterTable."
+        ::= { traceFilterConditionEntry 1 }
+
+    traceFilterConditionIndex2 OBJECT-TYPE
+        SYNTAX  TraceFilterConditionIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Second index for the TraceFilterConditionTable. This index
+            identifies a single Condition of a TraceFilter."
+        ::= { traceFilterConditionEntry 2 }
+
+    traceFilterConditionAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "AdminState of a TraceFilterCondition.
+            This is used to remove a TraceFilterConditionEntry from the table
+            by setting the AdminState to 'destroy'.
+            When setting the value for a traceFilterConditionSpec, the
+            adminState is automatically set to 'active'. Setting to 'inactive'
+            is not allowed."
+        ::= { traceFilterConditionEntry 3 }
+
+    traceFilterConditionSpec OBJECT-TYPE
+        SYNTAX  TraceConditionSpec
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "A condition of a TraceFilter. Refere to the definition of the
+            TraceConditionSpec for details."
+        ::= { traceFilterConditionEntry 4 }
+
+
+    ----------------------------------------------------------------------
+    -- the general traps
+    ----------------------------------------------------------------------
+
+    memoryExhausted TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Memory of TextPass has exhausted"
+        ::= 1
+
+    attemptToExceedLicensedThroughput TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The throughput in terms of transactions per unit of time as
+             defined in the license for this TextPass device is not sufficient
+             to handle the actual load."
+        ::= 2
+
+    attemptToExceedNumOfLicensedTrunks TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The maximum number of trunks as defined in the license for this
+             TextPass device does not allow the activation of any additional
+             trunk."
+        ::= 3
+
+    attemptToExceedNumOfLicensedLinks TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The maximum number of links as defined in the license for this
+             TextPass device does not allow the activation of any additional
+             link."
+        ::= 4
+
+    attemptToUseNonLicensedFeature TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "A non licensed feature is being configured. This is denied."
+        ::= 5
+
+
+    deviceOperationalStateChanged TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceOperationalState, deviceType }
+        DESCRIPTION
+            "Operational state of the TextPass device has changed."
+        ::= 6
+
+    licenseExpired TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The validity period of the license has been expired."
+        ::= 7
+
+    licenseWillExpire TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { licHourTimer, deviceType }
+        DESCRIPTION
+            "The License will expire within the given hours."
+        ::= 8
+
+    networkDiscoveryNodeAdded TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "A TextPass node has been added to the TextPass solution"
+        ::= 9
+
+    networkDiscoveryNodeLeft TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "A TextPass node has left from the TextPass solution"
+        ::= 10
+
+    sctpCongestionStarted TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "SCTP network layer is congested"
+        ::= 11
+
+    sctpCongestionCeased TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "SCTP network layer congestion has ended"
+        ::= 12
+
+    unableToAcceptConnection TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "An error occurred while accepting a new connection. See the error
+            sting for more information on the listener and the error"
+        ::= 13
+
+    applicationUnknown TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "An unknown (not configured) application tried to login.
+            See error string for more information.
+            The application has been refused."
+        ::= 14
+
+    applicationNotMatch TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { lastSnmpErrorString, deviceType }
+        DESCRIPTION
+            "An application which is recognised by CLI uses a different login
+            name.
+            See error string for more information.
+            The application has been refused."
+        ::= 15
+
+    licGracePeriodStarted TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Some of the hardware serial numbers has changed (e.g. you
+            swapped the SS7 card because of a defect). This means the grace
+            period now started. During the grace period you will have time to
+            request a new license with the new hardware serial numbers. The
+            previous license will be active for 14 days. After this period
+            the TextPass device will cease to work. While the grace period is
+            active you will receive a licGracePeriodActive every hour."
+        ::= 16
+
+    licGracePeriodActive TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { licGracePeriodTimer, deviceType }
+        DESCRIPTION
+            "The Grace Period is active because a serial number changed (e.g.
+            you swapped the SS7 card because of a defect). You will need to
+            request a new license before the end of the grace period,
+            otherwise the TextPass device will stop working. See the
+            licGracePeriodTimer to see how much time is left. Request a new
+            license with the new serial numbers. This trap will be repeated
+            every hour, until the grace period has ended by activating a new
+            license."
+        ::= 17
+
+    licGracePeriodPassed TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The Grace Period is over, the Textass device will cease working.
+            A new license needs to be installed before starting the product
+            again."
+        ::= 18
+
+    licGracePeriodRevoked TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "A new license has been installed with the new serial numbers.
+            The Grace Period has now ended and the TextPass device will
+            continue to work without interruption."
+        ::= 19
+
+    invalidProcessCount TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The process instances count for the configured processes is
+            outside parameters."
+        ::= 20
+
+    invalidCpuLoad  TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The CPU load is outside the configured parameters for this host"
+        ::= 21
+
+    invalidDiskUsage TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The disk(s) usage is outside the configured parameters for this
+            host"
+        ::= 22
+
+    lowAvailableMemory TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Indicates very little swap space left."
+        ::= 23
+
+    ifOperationalStateChanged TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The network interface(s) operational state has changed."
+        ::= 24
+
+    invalidProcessMemoryUsage TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Process(es) memory usage exceeds pre-defined limit for this
+            host."
+        ::= 25
+    
+    systemLogError TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "An error was detected on the system log."
+        ::= 26
+  
+    -- Watchdog traps --
+    watchdogStarted TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The watchdog process has been started."
+        ::= 31
+
+    watchdogStopped TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The watchdog process has been stopped on user request or after
+             shutdown of the application process."
+        ::= 32
+
+    applicationStartFailure TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Starting the application process by the watchdog failed."
+        ::= 33
+
+    applicationStarted TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The application process has been started by the watchdog."
+        ::= 34
+
+    applicationConfigFailure TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Configuration of the application process failed."
+        ::= 35
+
+    applicationHeartBeatMissed TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The application process failed to send its heartbeat in time."
+        ::= 36
+
+    applicationExited TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The application process has exited on user request."
+        ::= 37
+
+    applicationTerminated TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The application process has been terminated by the watchdog."
+        ::= 38
+
+    applicationShutdown TRAP-TYPE
+        ENTERPRISE gen
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The application process has been shutdown by the watchdog
+             because of too many failures."
+        ::= 39
+  
+END

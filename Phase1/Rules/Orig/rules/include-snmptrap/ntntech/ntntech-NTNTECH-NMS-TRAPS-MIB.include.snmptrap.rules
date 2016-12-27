@@ -1,0 +1,241 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    ntntech-NTNTECH-NMS-TRAPS-MIB.include.snmptrap.rules 1.0
+#    2007/06/05 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  NTNTECH-NMS-TRAPS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.8059.1.3.1.1.1.1": ### Ntntech Network Management Services - Traps from NTNTECH-NMS-TRAPS-MIB 
+
+    log(DEBUG, "<<<<< Entering... ntntech-NTNTECH-NMS-TRAPS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Ntntech-Network Management Services"
+    @Class = "87015"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### envFanTrap
+
+            ##########
+            # $1 = mumStaFanState 
+            ##########
+
+            $mumStaFanState = $1
+
+            $OS_EventId = "SNMPTRAP-ntntech-NTNTECH-NMS-TRAPS-MIB-envFanTrap"
+
+            @AlertGroup = "Chassis Environment Status"
+            @AlertKey = ""
+            @Summary = "Change in Fan State"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($mumStaFanState)
+
+        case "2": ### envTempNormal
+
+            ##########
+            # $1 = mumStaFanState 
+            ##########
+
+            $mumStaFanState = $1
+
+            $OS_EventId = "SNMPTRAP-ntntech-NTNTECH-NMS-TRAPS-MIB-envTempNormal"
+
+            @AlertGroup = "Chassis Environment Status"
+            @AlertKey = ""
+            @Summary = "Chassis Returned to Normal Operating Temperature"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($mumStaFanState)
+
+        case "3": ### envTempExceeded
+
+            ##########
+            # $1 = mumStaFanState 
+            ##########
+
+            $mumStaFanState = $1
+
+            $OS_EventId = "SNMPTRAP-ntntech-NTNTECH-NMS-TRAPS-MIB-envTempExceeded"
+
+            @AlertGroup = "Chassis Environment Status"
+            @AlertKey = ""
+            @Summary = "Chassis Exceeded Normal Operating Temperature"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($mumStaFanState)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, ntntech-NTNTECH-NMS-TRAPS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, ntntech-NTNTECH-NMS-TRAPS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+###########
+# End of Severity via Lookup.
+###########
+
+###########
+# Enter "Advanced" and "User" includes.
+###########
+
+include "$NC_RULES_HOME/include-snmptrap/ntntech/ntntech-NTNTECH-NMS-TRAPS-MIB_env.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/ntntech/ntntech-NTNTECH-NMS-TRAPS-MIB_env.user.include.snmptrap.rules"
+
+###########
+# End of "Advanced" and "User" includes.
+###########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... ntntech-NTNTECH-NMS-TRAPS-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.8059.1.3.1.1.1.2": ### Ntntech Network Management Services - Traps from NTNTECH-NMS-TRAPS-MIB
+
+    log(DEBUG, "<<<<< Entering... ntntech-NTNTECH-NMS-TRAPS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Ntntech-Network Management Services"
+    @Class = "87015"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### invIfModPresentTrap
+
+            ##########
+            # $1 = ifStaSlotIndex 
+            # $2 = ifStaType 
+            ##########
+
+            $ifStaSlotIndex = $1
+            $ifStaType = $2
+
+            $OS_EventId = "SNMPTRAP-ntntech-NTNTECH-NMS-TRAPS-MIB-invIfModPresentTrap"
+
+            @AlertGroup = "Chassis Inventory Status"
+            @AlertKey = "ifStaEntry." + $1
+            @Summary = "Population State of a Slot Transitioned from Vacant to Present"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifStaSlotIndex,$ifStaType)
+
+        case "2": ### invIfModRemovedTrap
+
+            ##########
+            # $1 = ifStaSlotIndex 
+            # $2 = ifStaType 
+            ##########
+
+            $ifStaSlotIndex = $1
+            $ifStaType = $2
+
+            $OS_EventId = "SNMPTRAP-ntntech-NTNTECH-NMS-TRAPS-MIB-invIfModRemovedTrap"
+
+            @AlertGroup = "Chassis Inventory Status"
+            @AlertKey = "ifStaEntry." + $1
+            @Summary = "Population State of a Slot Transitioned from Present to Vacant"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifStaSlotIndex,$ifStaType)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, ntntech-NTNTECH-NMS-TRAPS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, ntntech-NTNTECH-NMS-TRAPS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/ntntech/ntntech-NTNTECH-NMS-TRAPS-MIB_inv.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/ntntech/ntntech-NTNTECH-NMS-TRAPS-MIB_inv.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... ntntech-NTNTECH-NMS-TRAPS-MIB.include.snmptrap.rules >>>>>")

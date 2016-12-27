@@ -1,0 +1,204 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-DIALSHELF.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "DIALSHELF": ### Dial shelf messages
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-DIALSHELF.include.syslog.rules >>>>>")
+
+    ##########
+    # The following are messages relating to chassis on the dial switch
+    # controller (DSC) for the Cisco AS5800 or the route switch controller
+    # (RSC) for the Cisco AS5850.
+    ##########
+    
+    switch($Mnemonic)
+    {
+        case "DSCDOWN":
+        
+            ##########
+            # The DSC (if the system is an AS5800) or RSC (if the system is an
+            # AS5850) in the dial shelf has failed.
+            #
+            # %DIALSHELF-2-DSCDOWN: DSC in slot [dec] changes state to down.
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) changes"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "EVENT":
+        
+            ##########
+            # The software has generated an unknown event for the specified
+            # slot. An internal software error has occurred.
+            #
+            # %DIALSHELF-3-EVENT: Unknown event [dec] for slot [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "event ([0-9]+) for")
+        
+        case "INVALIDMSG":
+        
+            ##########
+            # The router shelf has received an invalid message from the DSC in
+            # the dial shelf. This is a software error or compatibility issue.
+            # Check the software versions on the router shelf and the DSC.
+            #
+            # %DIALSHELF-3-INVALIDMSG: [chars] ([dec])
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "MSG":
+            
+            ##########
+            # The router shelf has received an unknown message from the
+            # DSC in the dial shelf. This is a software error or
+            # compatibility issue. Check the software versions on the
+            # router shelf and the DSC.
+            #
+            # %DIALSHELF-3-MSG : Unknown message type [dec] from DSC
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "type (.*) from")
+        
+        case "RELOAD":
+        
+            ##########
+            # The hw-module slot [shelf] | [slot] reload command was entered.
+            # This message is a confirmation that the command is being
+            # processed.
+            #
+            # %DIALSHELF-6-RELOAD: Reload requested for card in shelf [dec]
+            # slot [dec].
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "SLOTSTATUS":
+        
+            ##########
+            # The software has detected an invalid state change for the
+            # specified slot. This is a software error.
+            #
+            # %DIALSHELF-3-SLOTSTATUS: Invalid change from [chars] ([dec]) to
+            # [chars] ([dec]) for slot [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, " to (.*) .* for slot ")
+        
+        case "TIMEOUT":
+        
+            ##########
+            # The specified dial shelf slot has timed out. A software
+            # or hardware component has failed.
+            #
+            # %DIALSHELF-2-TIMEOUT : [chars] slot [dec] after [dec]
+            # secs in state '[chars]'
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "in state '?(.*)'?")
+        
+        case "UNDEFCARD":
+        
+            ##########
+            # The software does not have a driver for the card in the specified
+            # slot.
+            #
+            # %DIALSHELF-2-UNDEFCARD: Card type [dec] in slot [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "UNKNOWN":
+        
+            ##########
+            # The system could not find the microcode for the line card in the
+            # slot specified in the error message.
+            #
+            # %DIALSHELF-4-UNKNOWN: UCODE not found for card in slot [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "UNRECOMMENDED":
+        
+            ##########
+            # On NPE200, more than one CT3 or more than two T1s or E1s are
+            # installed, exceeding the recommended configuration parameters.
+            #
+            # %DIALSHELF-4-UNRECOMMENDED: Number of [chars] may exceed
+            # recommended configuration
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, " of (.*) may ")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-DIALSHELF.include.syslog.rules >>>>>")

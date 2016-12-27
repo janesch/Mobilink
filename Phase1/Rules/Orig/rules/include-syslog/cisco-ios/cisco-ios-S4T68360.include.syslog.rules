@@ -1,0 +1,60 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-S4T68360.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "S4T68360": ### Four port synchronous serial adapter based on the 68360 processor
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-S4T68360.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "PANIC":
+            
+            ##########
+            # The S4T68360 firmware has detected an unexpected CPU
+            # exception or condition. This condition might be caused by
+            # a software error or by a hardware failure.
+            #
+            # %S4T68360-3-PANIC: Bay [dec], Exception [dec], trace [dec]
+            ##########
+            
+            @AlertKey = "Bay: " + extract(@Summary, "Bay ([0-9]+) ")
+        
+        case "RESTART":
+            
+            ##########
+            # The S4T68360 port adapter hardware has failed. The
+            # periodic check routine detected the failure and restarted
+            # it.
+            #
+            # %S4T68360-1-RESTART : Bay [dec] port adaptor
+            ##########
+            
+            @AlertKey = "Bay: " + extract(@Summary, "Bay ([0-9]+) ")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-S4T68360.include.syslog.rules >>>>>")

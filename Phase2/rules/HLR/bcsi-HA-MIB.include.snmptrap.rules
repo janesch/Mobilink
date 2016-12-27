@@ -1,0 +1,202 @@
+###############################################################################
+#
+#	bcsi-HA-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for BCSI HA alarms
+#
+#       V0.1	20110711	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.1588.2.1.2.2":  ### - haMIBTraps (from HA-MIB)
+
+	log(DEBUG, "<<<<< Entering... bcsi-HA-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "BCSI"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "bcsi-HA-MIB"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_BCSI_001"
+
+	switch($specific-trap) {
+		case "1": ### - fruStatusChanged
+			#######################
+			#
+			# This trap is sent when status of any FRU object is changed
+			#
+			# $1 = entPhysicalName
+			#
+			#      The textual name of the physical entity.  The value of this
+			#      object should be the name of the component as assigned by
+			#      the local device and should be suitable for use in commands
+			#      entered at the device's `console'.  This might be a text
+			#      name, such as `console' or a simple component number (e.g.,
+			#      port or module number), such as `1', depending on the
+			#      physical component naming syntax of the device.
+			#      
+			#      If there is no local name, or this object is otherwise not
+			#      applicable, then this object contains a zero-length string.
+			#      
+			#      Note that the value of entPhysicalName for two physical
+			#      entities will be the same in the event that the console
+			#      interface does not distinguish between them, e.g., slot-1
+			#      and the card in slot-1.
+			#
+			# $2 = fruStatus
+			#
+			#      The current status of the FRU object in the slot
+			#
+			#######################
+			$entPhysicalName = $1
+			$fruStatus = lookup($2,bcsi-HA-MIB-fruStatus)
+			
+			if (int($2)==1 || int($2)==2 || int($2)==4 || int($2)==5)
+			{
+				@Type = 1
+				@Severity = 3
+			}
+			else if (int($2)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				@ExpireTime = 18000
+			}
+			@AlertKey = "fruStatusChanged " + $entPhysicalName
+			@Summary = "fruStatusChanged: # Status of FRU object: " + $entPhysicalName + " is changed to: " + $fruStatus
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "2": ### - cpStatusChanged
+			#######################
+			#
+			# This trap is sent when status of any CP object is changed
+			#
+			# $1 = cpStatus
+			#
+			#      Gives the current status of the CP
+			#
+			# $2 = cpLastEvent
+			#
+			#      The last event related to this CP
+			#
+			# $3 = swID
+			#
+			#      The number of the logical switch (0/1)
+			#
+			# $4 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			#######################
+			$cpStatus = lookup($1,bcsi-HA-MIB-cpStatus)
+			$cpLastEvent = lookup($2,bcsi-HA-MIB-cpLastEvent)
+			$swID = $3
+			$swSsn = $4
+			
+			if (int($1)==1 || int($1)==2 || int($1)==4 || int($1)==5)
+			{
+				@Type = 1
+				@Severity = 3
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				@ExpireTime = 18000
+			}
+			@AlertKey = "cpStatusChanged " + $swID + " " + $swSsn
+			@Summary = "cpStatusChanged: # Status of CP object: " + $swID + " " + $swSsn + " is changed to: " + $cpStatus
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "3": ### - fruHistoryTrap
+			#######################
+			#
+			# This trap is sent when a FRU is added or removed
+			#
+			# $1 = fruHistoryClass
+			#
+			#      The type of the FRU object related to the event
+			#
+			# $2 = fruHistoryObjectNum
+			#
+			#      Gives the slot number of the blade and unit number for
+			#      everything else
+			#
+			# $3 = fruHistoryEvent
+			#
+			#      The type of the FRU event
+			#
+			# $4 = fruHistoryTime
+			#
+			#      Gives the time at which this event happened
+			#
+			# $5 = fruHistoryFactoryPartNum
+			#
+			#      Gives the factory part num of the FRU object
+			#
+			# $6 = fruHistoryFactorySerialNum
+			#
+			#      Gives the factory serial num of the FRU object
+			#
+			#######################
+			$fruHistoryClass = lookup($1,bcsi-HA-MIB-fruHistoryClass)
+			$fruHistoryObjectNum = $2
+			$fruHistoryEvent = lookup($3,bcsi-HA-MIB-fruHistoryEvent)
+			$fruHistoryTime = $4
+			$fruHistoryFactoryPartNum = $5
+			$fruHistoryFactorySerialNum = $6
+		
+			if (int($3)==2 || int($3)==3)
+			{
+				@Type = 1
+				@Severity = 3
+			}
+			else if (int($3)==1)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				@ExpireTime = 18000
+			}
+			@AlertKey = "fruHistoryTrap " + $fruHistoryClass + " " + $fruHistoryObjectNum + " " + $fruHistoryFactoryPartNum + " " + $fruHistoryFactorySerialNum
+			@Summary = "fruHistoryTrap: # FRU: " + $fruHistoryClass + " " + $fruHistoryObjectNum + " " + $fruHistoryFactoryPartNum + " " + $fruHistoryFactorySerialNum + " is " + $fruHistoryEvent 
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... bcsi-HA-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,2674 @@
+
+------------------------------------------------------------------------------
+--
+-- (c) Copyright 2001-2007 mBalance.
+--
+--  This MIB is proprietary to and embodies the confidential technology of
+--  mBalance. Possession, use, duplication or dissemination of this MIB is
+--  authorized only pursuant to a valid written license from mBalance.
+--
+------------------------------------------------------------------------------
+-- $Id: textpass-faf-mib.my,v 1.4.2.35 2009/09/21 13:01:08 pknetsch Exp $
+------------------------------------------------------------------------------
+
+
+TEXTPASS-FAF-MIB DEFINITIONS ::= BEGIN
+
+    ----------------------------------------------------------------------------
+    --                              I M P O R T S                             --
+    ----------------------------------------------------------------------------
+
+    IMPORTS
+        IpAddress, Gauge, Counter, TimeTicks, enterprises
+            FROM RFC1155-SMI
+        TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        textpass
+            FROM MBALANCE-MIB
+        AdminState, NameString, deviceType
+            FROM TEXTPASS-GEN-MIB
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215 ;
+
+    ----------------------------------------------------------------------------
+    --                         S U B S Y S T E M S                            --
+    ----------------------------------------------------------------------------
+
+    faf OBJECT IDENTIFIER ::= { textpass 61 }
+
+    ----------------------------------------------------------------------------
+    --                                T Y P E S                               --
+    ----------------------------------------------------------------------------
+
+    Boolean ::= INTEGER { false(0), true(1) }
+
+    TriggerOnly ::= INTEGER (0..1) -- 1 to start, readback 0
+
+    FafAction ::= INTEGER
+    {
+        deliver     ( 1),
+        blockAck    ( 2),
+        blockNack   ( 3),
+        blockSilent ( 4),
+        continue    (10)
+    }
+
+    FafStorage ::= INTEGER
+    {
+        no  (1),
+        yes (2),
+        log (3)
+    }
+
+    FafModuleId ::= INTEGER
+    {
+        fafEval     (21),
+        fafString   (22),
+        fafBayes    (23),
+        fafDups     (24),
+        fafFlooding (25),
+        fafEms      (26),
+        fafReturn   (37),
+        fafBulk     (41)
+    }
+
+    FafMsgvar ::= INTEGER
+    {
+        path        ( 1),
+        dummy1      ( 2),   -- not decoded, obsolete --
+        submit      ( 3),
+        uniq        ( 4),
+        deliv       ( 5),
+        orig        ( 6),
+        origImsi    ( 7),
+        smsc        ( 8),
+        msc         ( 9),
+        recip       (10),
+        recipImsi   (11),
+        segTotal    (12),
+        segId       (13),
+        segLeft     (14),
+        len         (15),
+        lenBytes    (16),   -- not decoded, obsolete --
+        header      (17),
+        encoding    (18),
+        data        (19),
+        statrepinfo (20),
+        smppMsgId   (21),
+        dataorg     (22),
+        segRef      (23),
+        notifreq    (24),
+        callingGt   (25),
+        calledGt    (26),
+        append      (27),   -- not decoded, obsolete --
+        prepaid     (28),   -- not decoded, obsolete --
+        prepaidInfo (29),   -- not decoded, obsolete --
+        delstat     (42),
+        type        (43),
+        chargeInd   (51),   -- not decoded, obsolete --
+        diamResult  (54),   -- not decoded, obsolete --
+        exconrule   (55)
+    }
+
+    FafStringAccuracy ::= INTEGER
+    {
+        exact  (1),
+        case   (2),
+        token  (3),
+        repeat (4),
+        regexp (5)
+    }
+
+    FafStringModify ::= INTEGER
+    {
+        none           (1),
+        maskString     (2),
+        replaceString  (3),
+        replaceMessage (4)
+    }
+
+    FafBayesMargin ::= INTEGER
+    {
+        exp0 ( 0),
+        exp1 (10),
+        exp2 (20),
+        exp3 (30),
+        exp4 (40),
+        exp5 (50),
+        exp6 (60),
+        exp7 (70),
+        exp8 (80),
+        exp9 (90)
+    }
+
+    FafEciOperationalState ::= INTEGER
+    {
+        uninitlialised (0),
+        disconnected (1),
+        connecting (2),
+        connected (3),
+        reconnecting (4)
+    }
+
+    MaxNumberDigits ::= INTEGER(1..16)
+
+    FafListIndex1Type        ::= INTEGER (1..100)
+    FafListIndex2Type        ::= INTEGER (1..1000)
+    FafModulesIndex1Type     ::= INTEGER (1..100)
+    FafChainsIndex1Type      ::= INTEGER (1..100)
+    FafBlocksIndex1Type      ::= INTEGER (1..100)
+    FafBlocksIndex2Type      ::= INTEGER (1..100)
+    FafEciIndex1Type         ::= INTEGER (1..10)
+    FafFeaturePoolIndex1Type ::= INTEGER (1..10)
+    FafEvalIndex1Type        ::= INTEGER (1..100)
+    FafStringIndex1Type      ::= INTEGER (1..100)
+    FafBayesIndex1Type       ::= INTEGER (1..10)
+    FafDupsIndex1Type        ::= INTEGER (1..10)
+    FafFloodIndex1Type       ::= INTEGER (1..10)
+    FafEmsIndex1Type         ::= INTEGER (1..100)
+    FafReturnIndex1Type      ::= INTEGER (1..100)
+    FafBulkIndex1Type        ::= INTEGER (1..100)
+    FafDupsCountIndex2Type   ::= INTEGER (1..500)
+    FafFloodCountIndex1Type  ::= INTEGER (1..10000)
+    FafBulkCountIndex2Type   ::= INTEGER (1..500)
+
+    DisplayStringX ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT    "1a"
+        STATUS          mandatory
+        DESCRIPTION     "Undefined Length String"
+        SYNTAX          OCTET STRING
+
+    DisplayString160 ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT    "160a"
+        STATUS          mandatory
+        DESCRIPTION     "Later dude"
+        SYNTAX          OCTET STRING (SIZE (0..160))
+
+    DisplayString1000 ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT    "1000a"
+        STATUS          mandatory
+        DESCRIPTION     "Later dude"
+        SYNTAX          OCTET STRING (SIZE (0..1000))
+
+    DisplayString64998 ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT    "64998a"
+        STATUS          mandatory
+        DESCRIPTION     "Later dude"
+        SYNTAX          OCTET STRING (SIZE (0..64998))
+    
+    ----------------------------------------------------------------------------
+    --  fafProperties variables                                               --
+    ----------------------------------------------------------------------------
+
+    fafProperties OBJECT IDENTIFIER ::= { faf 1 }
+
+    fafPropertiesNormalise OBJECT-TYPE
+        SYNTAX    DisplayString1000
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The normalisation string map. Each mapping is separated by
+             a line-feed character."
+        ::= { fafProperties 2 }
+
+    ----------------------------------------------------------------------------
+    --  fafList table                                                         --
+    ----------------------------------------------------------------------------
+
+    fafListTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafListEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 4 }
+
+    fafListEntry OBJECT-TYPE
+        SYNTAX    FafListEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of text lists. The first index is the list id.
+             Each list contains of several chunk addressed by the
+             second index. Each chunk may contains several entries.
+             There is usually no order in the list, although some
+             custom filter may assume one."
+        INDEX     { fafListIndex1, fafListIndex2 }
+        ::= { fafListTable 1 }
+
+    FafListEntry ::= SEQUENCE
+    {
+        fafListIndex1       FafListIndex1Type,
+        fafListIndex2       FafListIndex2Type,
+        fafListAdminState   AdminState,
+        fafListLastUpdated  INTEGER,
+        fafListName         OCTET STRING,
+        fafListDescription  OCTET STRING,
+        fafListChunk        DisplayString64998
+    }
+
+    fafListIndex1 OBJECT-TYPE
+        SYNTAX    FafListIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP index of the list."
+        ::= { fafListEntry 1 }
+
+    fafListIndex2 OBJECT-TYPE
+        SYNTAX    FafListIndex2Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP index of the chunk in the list."
+        ::= { fafListEntry 2 }
+
+    fafListAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "State of this chunk: inactive, active. When set
+             to 'destroy', this chunk is removed."
+        ::= { fafListEntry 3 }
+
+    fafListLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafListEntry 4 }
+
+    fafListName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "List name, used for identification."
+        ::= { fafListEntry 5 }
+
+    fafListDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Chunk description, purely explanatory."
+        ::= { fafListEntry 6 }
+
+    fafListChunk OBJECT-TYPE
+        SYNTAX    DisplayString64998
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Text entry in the list (one word or one message).
+             The order in the second dimension is not relevant."
+        ::= { fafListEntry 7 }
+
+    ----------------------------------------------------------------------------
+    --  fafModules table                                                      --
+    ----------------------------------------------------------------------------
+
+    fafModulesTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafModulesEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Read-only table of available (loaded) module."
+        ::= { faf 6 }
+
+    fafModulesEntry OBJECT-TYPE
+        SYNTAX    FafModulesEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of modules types."
+        INDEX     { fafModulesIndex1 }
+        ::= { fafModulesTable 1 }
+
+    FafModulesEntry ::= SEQUENCE
+    {
+        fafModulesIndex1      FafModulesIndex1Type,
+        fafModulesAdminState  AdminState,
+        fafModulesName        OCTET STRING
+    }
+
+    fafModulesIndex1 OBJECT-TYPE
+        SYNTAX    FafModulesIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP index of the module."
+        ::= { fafModulesEntry 1 }
+
+    fafModulesAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "State of the module: off, on, invisible."
+        ::= { fafModulesEntry 2 }
+
+    fafModulesName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (1..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Name of the module"
+        ::= { fafModulesEntry 3 }
+
+    ----------------------------------------------------------------------------
+    --  fafChains table                                                       --
+    ----------------------------------------------------------------------------
+
+    fafChainsTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafChainsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 7 }
+
+    fafChainsEntry OBJECT-TYPE
+        SYNTAX    FafChainsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of filters (condition chains)."
+        INDEX     { fafChainsIndex1 }
+        ::= { fafChainsTable 1 }
+
+    FafChainsEntry ::= SEQUENCE
+    {
+        fafChainsIndex1       FafChainsIndex1Type,
+        fafChainsAdminState   AdminState,
+        fafChainsName         OCTET STRING,
+        fafChainsDescription  OCTET STRING,
+        fafChainsLastUpdated  INTEGER,
+        fafChainsPriority     INTEGER,
+        fafChainsAction       FafAction,
+        fafChainsStorage      FafStorage,
+        fafChainsAppend       DisplayString160,
+        fafChainsCounter      Counter,
+        fafChainsTrap         INTEGER,
+        fafChainsDebug        INTEGER,
+        fafChainsFalse        Counter,
+        fafChainsTrue         Counter,
+        fafChainsRet          Counter
+    }
+
+    fafChainsIndex1 OBJECT-TYPE
+        SYNTAX    FafChainsIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index."
+        ::= { fafChainsEntry 1 }
+
+    fafChainsAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "State of this chain: off, on, invisible."
+        ::= { fafChainsEntry 2 }
+
+    fafChainsName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Chain name, used for identification."
+        ::= { fafChainsEntry 3 }
+
+    fafChainsDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Chain description, purely explanatory."
+        ::= { fafChainsEntry 4 }
+
+    fafChainsLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafChainsEntry 5 }
+
+    fafChainsPriority OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Priority of this chain: higher comes first. Each chain must
+             have an unique priority."
+        ::= { fafChainsEntry 6 }
+
+    fafChainsAction OBJECT-TYPE
+        SYNTAX    FafAction
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The action that must be applied when all the blocks in the
+             chain have returned true. When the action is not 'continue',
+             the action is translated to the evaluation result, which is
+             'true' (1) for 'deliver' or 'false' (0) for anything else.
+             If this is the last chain and there are no more subsequent
+             chains to be active, the message is evaluated to 'true' (1)
+             by default."
+        ::= { fafChainsEntry 7 }
+
+    fafChainsStorage OBJECT-TYPE
+        SYNTAX    FafStorage
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "NOT IMPLEMENTED."
+        ::= { fafChainsEntry 8 }
+
+    fafChainsAppend OBJECT-TYPE
+        SYNTAX    DisplayString160
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Append text: this text is added to the message as an
+            explanatory note."
+        ::= { fafChainsEntry 9 }
+
+    fafChainsCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every application of this action."
+        ::= { fafChainsEntry 10 }
+
+    fafChainsTrap OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Send a trap after this many applications of this action."
+        ::= { fafChainsEntry 11 }
+
+    fafChainsDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level for this chain."
+        ::= { fafChainsEntry 12 }
+
+    fafChainsFalse OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every time this chain is false."
+        ::= { fafChainsEntry 13 }
+
+    fafChainsTrue OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every time this chain is true."
+        ::= { fafChainsEntry 14 }
+
+    fafChainsRet OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every time this chain causes an immediate return."
+        ::= { fafChainsEntry 15 }
+
+    ----------------------------------------------------------------------------
+    --  fafBlocks table                                                       --
+    ----------------------------------------------------------------------------
+
+    fafBlocksTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafBlocksEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 8 }
+
+    fafBlocksEntry OBJECT-TYPE
+        SYNTAX    FafBlocksEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of condition blocks."
+        INDEX     { fafBlocksIndex1, fafBlocksIndex2 }
+        ::= { fafBlocksTable 1 }
+
+    FafBlocksEntry ::= SEQUENCE
+    {
+        fafBlocksIndex1       FafBlocksIndex1Type,
+        fafBlocksIndex2       FafBlocksIndex2Type,
+        fafBlocksAdminState   AdminState,
+        fafBlocksName         OCTET STRING,
+        fafBlocksDescription  OCTET STRING,
+        fafBlocksLastUpdated  INTEGER,
+        fafBlocksType         FafModuleId,
+        fafBlocksConfig       INTEGER,
+        fafBlocksInvert       Boolean,
+        fafBlocksFalse        Counter,
+        fafBlocksTrue         Counter,
+        fafBlocksRet          Counter
+    }
+
+    fafBlocksIndex1 OBJECT-TYPE
+        SYNTAX    FafBlocksIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of the chain where this block belongs to."
+        ::= { fafBlocksEntry 1 }
+
+    fafBlocksIndex2 OBJECT-TYPE
+        SYNTAX    FafBlocksIndex2Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of the block."
+        ::= { fafBlocksEntry 2 }
+
+    fafBlocksAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "State of this chain: off, on, invisible."
+        ::= { fafBlocksEntry 3 }
+
+    fafBlocksName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafBlocksEntry 4 }
+
+    fafBlocksDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafBlocksEntry 5 }
+
+    fafBlocksLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafBlocksEntry 6 }
+
+    fafBlocksType OBJECT-TYPE
+        SYNTAX    FafModuleId
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition type:  number (group number) of the loadable
+             module."
+        ::= { fafBlocksEntry 7 }
+
+    fafBlocksConfig OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition index: number (SNMP index) of the module
+             configuration."
+        ::= { fafBlocksEntry 8 }
+
+    fafBlocksInvert OBJECT-TYPE
+        SYNTAX    Boolean
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Invert the result if true."
+        ::= { fafBlocksEntry 9 }
+
+    fafBlocksFalse OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every time this module evaluates to false."
+        ::= { fafBlocksEntry 10 }
+
+    fafBlocksTrue OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every time this module evaluates to true."
+        ::= { fafBlocksEntry 11 }
+
+    fafBlocksRet OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counts every time this module causes an immediate return."
+        ::= { fafBlocksEntry 12 }
+
+    ----------------------------------------------------------------------------
+    --  fafEci table                                                          --
+    ----------------------------------------------------------------------------
+
+    fafEciTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafEciEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 9 }
+
+    fafEciEntry OBJECT-TYPE
+        SYNTAX    FafEciEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of ECI connections."
+        INDEX     { fafEciIndex1 }
+        ::= { fafEciTable 1 }
+
+    FafEciEntry ::= SEQUENCE
+    {
+        fafEciIndex1                FafEciIndex1Type,
+        fafEciAdminState            AdminState,
+        fafEciHost                  OCTET STRING,
+        fafEciPort                  INTEGER,
+        fafEciUser                  OCTET STRING,
+        fafEciPass                  OCTET STRING,
+        fafEciInactivityPing        INTEGER,
+        fafEciInactivityDisconnect  INTEGER,
+        fafEciOperationalState      FafEciOperationalState,
+        fafEciProtocolState         INTEGER,
+        fafEciInactivity            INTEGER,
+        fafEciSentConnects          Counter,
+        fafEciRcvdConnects          Counter,
+        fafEciGotConnects           Counter,
+        fafEciSentClose             Counter,
+        fafEciRcvdClose             Counter,
+        fafEciSentBytes             Counter,
+        fafEciRcvdBytes             Counter,
+        fafEciSentMsgs              Counter,
+        fafEciRcvdMsgs              Counter,
+        fafEciSentPartial           Counter,
+        fafEciRcvdPartial           Counter,
+        fafEciTimeDisconnected      Counter,
+        fafEciTimeConnecting        Counter,
+        fafEciTimeConnected         Counter,
+        fafEciTimeCongested         Counter,
+        fafEciDebug                 INTEGER,
+        fafEciRcvdRequests          Counter,
+        fafEciSentResponses         Counter,
+        fafEciReqdNotifications     Counter,
+        fafEciRcvdNotifications     Counter,
+        fafEciMissNotifications     Counter,
+        fafEciSentLogin             Counter,
+        fafEciRcvdLogin             Counter,
+        fafEciRefusedLogin          Counter,
+        fafEciGrantedLogin          Counter,
+        fafEciSentLifecheck         Counter,
+        fafEciRcvdLifecheck         Counter,
+        fafEciSentLogout            Counter,
+        fafEciRcvdLogout            Counter,
+        fafEciLostSync              Counter,
+        fafEciSentConfirmations     Counter,
+        fafEciRcvdErrors            Counter,
+        fafEciUnknownTags           Counter
+    }
+
+    fafEciIndex1 OBJECT-TYPE
+        SYNTAX    FafEciIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP Index of this ECI connection."
+        ::= { fafEciEntry 1 }
+
+    fafEciAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable/Disable the connection."
+        ::= { fafEciEntry 2 }
+
+    fafEciHost OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The host to connect to."
+        ::= { fafEciEntry 3 }
+
+    fafEciPort OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The port to connect to."
+        ::= { fafEciEntry 4 }
+
+    fafEciUser OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The username for account."
+        ::= { fafEciEntry 5 }
+
+    fafEciPass OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The password for account."
+        ::= { fafEciEntry 6 }
+
+    fafEciInactivityPing OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "After this interval of inactivity, a ping is sent.
+            Zero means never."
+        ::= { fafEciEntry 7 }
+
+    fafEciInactivityDisconnect OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "After this interval of inactivity, the connection is dropped.
+            Should be larger than inactivityPing."
+        ::= { fafEciEntry 8 }
+
+    fafEciOperationalState OBJECT-TYPE
+        SYNTAX    FafEciOperationalState
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "State of the connection."
+        ::= { fafEciEntry 9 }
+
+    fafEciProtocolState OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "State of the application protocol."
+        ::= { fafEciEntry 10 }
+
+    fafEciInactivity OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Time without receive activity."
+        ::= { fafEciEntry 11 }
+
+    fafEciSentConnects OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of connection requests sent."
+        ::= { fafEciEntry 12 }
+
+    fafEciRcvdConnects OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of connection requests received."
+        ::= { fafEciEntry 13 }
+
+    fafEciGotConnects OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of successful connections."
+        ::= { fafEciEntry 14 }
+
+    fafEciSentClose OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of close requests sent."
+        ::= { fafEciEntry 15 }
+
+    fafEciRcvdClose OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of close requests received."
+        ::= { fafEciEntry 16 }
+
+    fafEciSentBytes OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of bytes sent."
+        ::= { fafEciEntry 17 }
+
+    fafEciRcvdBytes OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of bytes received."
+        ::= { fafEciEntry 18 }
+
+    fafEciSentMsgs OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of packages sent."
+        ::= { fafEciEntry 19 }
+
+    fafEciRcvdMsgs OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of packages received."
+        ::= { fafEciEntry 20 }
+
+    fafEciSentPartial OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of congestions."
+        ::= { fafEciEntry 21 }
+
+    fafEciRcvdPartial OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of partial receives."
+        ::= { fafEciEntry 22 }
+
+    fafEciTimeDisconnected OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Duration spent disconnected, in seconds."
+        ::= { fafEciEntry 23 }
+
+    fafEciTimeConnecting OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Duration spent connecting, in seconds."
+        ::= { fafEciEntry 24 }
+
+    fafEciTimeConnected OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Duration spent connected, in seconds."
+        ::= { fafEciEntry 25 }
+
+    fafEciTimeCongested OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Duration spent in congestion, in seconds. This time is also
+            counted as connected."
+        ::= { fafEciEntry 26 }
+
+    fafEciDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level."
+        ::= { fafEciEntry 27 }
+
+    fafEciRcvdRequests OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received evaluation requests."
+        ::= { fafEciEntry 28 }
+
+    fafEciSentResponses OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of sent evaluation responses."
+        ::= { fafEciEntry 29 }
+
+    fafEciReqdNotifications OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of requested notification indications."
+        ::= { fafEciEntry 30 }
+
+    fafEciRcvdNotifications OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received notification indications."
+        ::= { fafEciEntry 31 }
+
+    fafEciMissNotifications OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of missed notification indications."
+        ::= { fafEciEntry 32 }
+
+    fafEciSentLogin OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of sent login requests."
+        ::= { fafEciEntry 33 }
+
+    fafEciRcvdLogin OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received login confirmations."
+        ::= { fafEciEntry 34 }
+
+    fafEciRefusedLogin OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received negative login responses."
+        ::= { fafEciEntry 35 }
+
+    fafEciGrantedLogin OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received positive login responses."
+        ::= { fafEciEntry 36 }
+
+    fafEciSentLifecheck OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of sent lifechecks."
+        ::= { fafEciEntry 37 }
+
+    fafEciRcvdLifecheck OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received lifecheck confirmations."
+        ::= { fafEciEntry 38 }
+
+    fafEciSentLogout OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of sent logout requests."
+        ::= { fafEciEntry 39 }
+
+    fafEciRcvdLogout OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received logout confirmations."
+        ::= { fafEciEntry 40 }
+
+    fafEciLostSync OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of disconnections due to lost synchronisation."
+        ::= { fafEciEntry 41 }
+
+    fafEciSentConfirmations OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of sent notification confirmations."
+        ::= { fafEciEntry 42 }
+
+    fafEciRcvdErrors OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of received error messages."
+        ::= { fafEciEntry 43 }
+
+    fafEciUnknownTags OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of unknown ASN.1 tags received."
+        ::= { fafEciEntry 44 }
+
+    ----------------------------------------------------------------------------
+    --  fafEval
+    ----------------------------------------------------------------------------
+    
+    fafEvalTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafEvalEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 21 }
+
+    fafEvalEntry OBJECT-TYPE
+        SYNTAX    FafEvalEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The Eval module is able to set and check messagefields by
+             evaluating expressions. Expressions may be nested by
+             parantheses. For example:
+             '(messagetype > 1 && messagetype < 4) || eciattribute1 == 1'"
+        INDEX     { fafEvalIndex1 }
+        ::= { fafEvalTable 1 }
+
+    FafEvalEntry ::= SEQUENCE
+    {
+        fafEvalIndex1                           FafEvalIndex1Type,
+        fafEvalAdminState                       AdminState,
+        fafEvalName                             OCTET STRING,
+        fafEvalDescription                      OCTET STRING,
+        fafEvalTestExpression                   OCTET STRING,
+        fafEvalAssignmentExpression             OCTET STRING,
+        fafEvalCountTestExpressionErrors        Counter,
+        fafEvalCountAssignmentExpressionErrors  Counter
+    }
+
+    fafEvalIndex1 OBJECT-TYPE
+        SYNTAX    FafEvalIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index for this fafEval instance."
+        ::= { fafEvalEntry 1 }
+
+    fafEvalAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable the condition."
+        ::= { fafEvalEntry 2 }
+
+    fafEvalName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafEvalEntry 3 }
+
+    fafEvalDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafEvalEntry 4 }
+
+    fafEvalTestExpression OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Assignment expression (e.g. 'eciattribute2 = 1')."
+        ::= { fafEvalEntry 11 }
+
+    fafEvalAssignmentExpression OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Assignment expression (e.g. 'eciattribute2 = 1')."
+        ::= { fafEvalEntry 12 }
+        
+    fafEvalCountTestExpressionErrors OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of malformed test expressions evaluated."
+        ::= { fafEvalEntry 21 }
+    
+    fafEvalCountAssignmentExpressionErrors OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of malformed assignment expressions evaluated."
+        ::= { fafEvalEntry 22 }
+        
+    ----------------------------------------------------------------------------
+    --  fafString table                                                       --
+    ----------------------------------------------------------------------------
+
+    fafStringTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafStringEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 22 }
+
+    fafStringEntry OBJECT-TYPE
+        SYNTAX    FafStringEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of content conditions. The filters are processed
+             in the order of this table, unless specified otherwise."
+        INDEX     { fafStringIndex1 }
+        ::= { fafStringTable 1 }
+
+    FafStringEntry ::= SEQUENCE
+    {
+        fafStringIndex1       FafStringIndex1Type,
+        fafStringAdminState   AdminState,
+        fafStringName         OCTET STRING,
+        fafStringDescription  OCTET STRING,
+        fafStringLastUpdated  INTEGER,
+        fafStringDebug        INTEGER,
+        fafStringVar          FafMsgvar,
+        fafStringList         INTEGER,
+        fafStringStart        INTEGER,
+        fafStringEnd          INTEGER,
+        fafStringAccuracy     FafStringAccuracy,
+        fafStringModify       FafStringModify,
+        fafStringReplace      DisplayString160,
+        fafStringMatches      Counter
+    }
+
+    fafStringIndex1 OBJECT-TYPE
+        SYNTAX    FafStringIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of this string filter."
+        ::= { fafStringEntry 1 }
+
+    fafStringAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable the condition."
+        ::= { fafStringEntry 2 }
+
+    fafStringName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafStringEntry 3 }
+
+    fafStringDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafStringEntry 4 }
+
+    fafStringLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafStringEntry 5 }
+
+    fafStringDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level."
+        ::= { fafStringEntry 6 }
+
+    fafStringVar OBJECT-TYPE
+        SYNTAX    FafMsgvar
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Relevant part of the message. The string fiter is most
+             useful for DATA, but it can be applied to other fields
+             of the message, too."
+        ::= { fafStringEntry 7 }
+
+    fafStringList OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Index into fafLists. The corresponding row contains the
+             words to string."
+        ::= { fafStringEntry 8 }
+
+    fafStringStart OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Position of first character of message part to check. 1
+             is the first character of the message. 0 means 1.."
+        ::= { fafStringEntry 9 }
+
+    fafStringEnd OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Position of last character of message part to check. 1
+             is the first character of the message. 0 is handled the
+             same as 1."
+        ::= { fafStringEntry 10 }
+
+    fafStringAccuracy OBJECT-TYPE
+        SYNTAX    FafStringAccuracy
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The accuracy setting is defining the way how to match the target
+             string with the entries from the provisioning list. There are
+             5 ways to handle this:             
+             * exact
+                Target text must contain an exact match to an entry in the
+                list.
+             * case insensitive
+                Target text must contain an case-insensitive match to an
+                entry in the list.
+             * tokenised
+                Target text and list entries are tokenised first, prior to
+                matching with the entries in the list.
+             * normalised
+                Target and list entries are normalised first, prior to
+                matching with the entries in the list
+             * regular expression
+                Target text is matched using regular expression
+                statements, provisioned by the list. Any non-regexp. strings
+                from the list are ignored."
+        ::= { fafStringEntry 11 }
+
+    fafStringModify OBJECT-TYPE
+        SYNTAX    FafStringModify
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Modification action: no action, replace strings, mask
+             strings (do not make longer), or replace the whole message."
+        ::= { fafStringEntry 12 }
+
+    fafStringReplace OBJECT-TYPE
+        SYNTAX    DisplayString160
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Replacement text: use instead of the matched words."
+        ::= { fafStringEntry 13 }
+
+    fafStringMatches OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Total number of matched strings."
+        ::= { fafStringEntry 14 }
+
+    ----------------------------------------------------------------------------
+    --  fafBayes table                                                        --
+    ----------------------------------------------------------------------------
+
+    fafBayesTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafBayesEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 23 }
+
+    fafBayesEntry OBJECT-TYPE
+        SYNTAX    FafBayesEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of Bayes filters and message collections. In
+             the standard scenario, two collections are used: Spam
+             and Ham (not Spam). Each entry is processed separately,
+             but the resulting probability depends also depends on
+             all messages in all filters. The entries are processed
+             in the order of this table, unless specified otherwise.."
+        INDEX     { fafBayesIndex1 }
+        ::= { fafBayesTable 1 }
+
+    FafBayesEntry ::= SEQUENCE
+    {
+        fafBayesIndex1       FafBayesIndex1Type,
+        fafBayesAdminState   AdminState,
+        fafBayesName         OCTET STRING,
+        fafBayesDescription  OCTET STRING,
+        fafBayesLastUpdated  INTEGER,
+        fafBayesDebug        INTEGER,
+        fafBayesVar          FafMsgvar,
+        fafBayesList         INTEGER,
+        fafBayesStart        INTEGER,
+        fafBayesEnd          INTEGER,
+        fafBayesMargin       FafBayesMargin,
+        fafBayesResult       INTEGER
+    }
+
+    fafBayesIndex1 OBJECT-TYPE
+        SYNTAX    FafBayesIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of this Bayes filter."
+        ::= { fafBayesEntry 1 }
+
+    fafBayesAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable the condition."
+        ::= { fafBayesEntry 2 }
+
+    fafBayesName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafBayesEntry 3 }
+
+    fafBayesDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafBayesEntry 4 }
+
+    fafBayesLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafBayesEntry 5 }
+
+    fafBayesDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level."
+        ::= { fafBayesEntry 6 }
+
+    fafBayesVar OBJECT-TYPE
+        SYNTAX    FafMsgvar
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Relevant part of the message. The Bayes fiter
+             is most useful for ORIG, DATA and HEADER, but it
+             can be applied to other fields of the message, too."
+        ::= { fafBayesEntry 7 }
+
+    fafBayesList OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Index into fafLists. The corresponding row contains
+             the example messages for this category."
+        ::= { fafBayesEntry 8 }
+
+    fafBayesStart OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "NOT IMPLEMENTED."
+        ::= { fafBayesEntry 9 }
+
+    fafBayesEnd OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "NOT IMPLEMENTED."
+        ::= { fafBayesEntry 10 }
+
+    fafBayesMargin OBJECT-TYPE
+        SYNTAX    FafBayesMargin
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Probability level from which the filter becomes active.
+             -20=1% -10=10% 0=50% 10=90% 20=99% etc."
+        ::= { fafBayesEntry 11 }
+
+    fafBayesResult OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Debugging output: result for the last message."
+        ::= { fafBayesEntry 12 }
+
+    ----------------------------------------------------------------------------
+    --  fafDups table                                                         --
+    ----------------------------------------------------------------------------
+
+    fafDupsTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafDupsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 24 }
+
+    fafDupsEntry OBJECT-TYPE
+        SYNTAX    FafDupsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of duplicates filters. Each entry is processed
+             separately. It is recommended that only one filter
+             per variable is used, and in the standard scenario
+             only one filter is used at all. The entries are
+             processed in the order of this table, unless
+             specified otherwise.."
+        INDEX     { fafDupsIndex1 }
+        ::= { fafDupsTable 1 }
+
+    FafDupsEntry ::= SEQUENCE
+    {
+        fafDupsIndex1          FafDupsIndex1Type,
+        fafDupsAdminState      AdminState,
+        fafDupsName            OCTET STRING,
+        fafDupsDescription     OCTET STRING,
+        fafDupsLastUpdated     INTEGER,
+        fafDupsDebug           INTEGER,
+        fafDupsVar             FafMsgvar,
+        fafDupsSimilarity      INTEGER,
+        fafDupsLength          INTEGER,
+        fafDupsSpacing         INTEGER,
+        fafDupsMinSize         INTEGER,
+        fafDupsThresholdSize   INTEGER,
+        fafDupsDeleteAge       INTEGER
+    }
+
+    fafDupsIndex1 OBJECT-TYPE
+        SYNTAX    FafDupsIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of this SNMP entry."
+        ::= { fafDupsEntry 1 }
+
+    fafDupsAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable the condition."
+        ::= { fafDupsEntry 2 }
+
+    fafDupsName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafDupsEntry 3 }
+
+    fafDupsDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafDupsEntry 4 }
+
+    fafDupsLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafDupsEntry 5 }
+
+    fafDupsDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level. "
+        ::= { fafDupsEntry 6 }
+
+    fafDupsVar OBJECT-TYPE
+        SYNTAX    FafMsgvar
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Relevant part of the message. The duplicates filter is most
+             useful for DATA, but it can be applied to other fields of
+             the message, too."
+        ::= { fafDupsEntry 7 }
+
+    fafDupsSimilarity OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Similarity required for clustering in percent. The similarity
+             is calculated as an percentage of equal features."
+        ::= { fafDupsEntry 8 }
+
+    fafDupsLength OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Minimum number of featurisations required for a message to be
+             considered for duplicate detection. By default, this setting
+             is set to 4."
+        ::= { fafDupsEntry 9 }
+
+    fafDupsSpacing OBJECT-TYPE
+        SYNTAX    INTEGER (1..99999)
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The amount of seconds a feature stays in the cluster-detection
+             feature pool after creation or duplicate match. This is
+             typically used to avoid cluster triggering upon old features
+             and to reduce memory usage.
+             By default this setting is set to 1000."
+        ::= { fafDupsEntry 10 }
+
+    fafDupsMinSize OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Minimum number of duplicate messages to start a cluster."
+        ::= { fafDupsEntry 11 }
+
+    fafDupsThresholdSize OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The minimum amount of messages in a cluster required to
+             perform the filter action."
+        ::= { fafDupsEntry 12 }
+
+    fafDupsDeleteAge OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Cluster age in seconds, after which an unused
+             cluster is removed. Zero means never."
+        ::= { fafDupsEntry 13 }
+
+
+    ----------------------------------------------------------------------------
+    --  fafFlood table                                                        --
+    ----------------------------------------------------------------------------
+
+    fafFloodTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafFloodEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 25 }
+
+    fafFloodEntry OBJECT-TYPE
+        SYNTAX    FafFloodEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of flooding filters. Each entry is processed
+             separately. It is recommended that only one filter
+             per variable is used, and in the standard scenario
+             only one filter is used at all. The entries are
+             processed in the order of this table, unless
+             specified otherwise. Note that only the first
+             entry works so far."
+        INDEX     { fafFloodIndex1 }
+        ::= { fafFloodTable 1 }
+
+    FafFloodEntry ::= SEQUENCE
+    {
+        fafFloodIndex1          FafFloodIndex1Type,
+        fafFloodAdminState      AdminState,
+        fafFloodName            OCTET STRING,
+        fafFloodDescription     OCTET STRING,
+        fafFloodLastUpdated     INTEGER,
+        fafFloodDebug           INTEGER,
+        fafFloodVar             FafMsgvar,
+        fafFloodDigits          MaxNumberDigits,
+        fafFloodMargin          INTEGER,
+        fafFloodThresholdRate   INTEGER,
+        fafFloodThresholdSlope  INTEGER,
+        fafFloodThresholdTime   INTEGER,
+        fafFloodTimeRangeShort  INTEGER,
+        fafFloodTimeRangeLong   INTEGER,
+        fafFloodTimeOn          INTEGER
+    }
+
+    fafFloodIndex1 OBJECT-TYPE
+        SYNTAX    FafFloodIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP Index of this Flooding condition instance."
+        ::= { fafFloodEntry 1 }
+
+    fafFloodAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable/Disable the condition."
+        ::= { fafFloodEntry 2 }
+
+    fafFloodName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafFloodEntry 3 }
+
+    fafFloodDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafFloodEntry 4 }
+
+    fafFloodLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafFloodEntry 5 }
+
+    fafFloodDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level."
+        ::= { fafFloodEntry 6 }
+
+    fafFloodVar OBJECT-TYPE
+        SYNTAX    FafMsgvar
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Relevant part of the message. The flooding filter is
+             most useful for SMSC, but it can be applied to other
+             fields of the message, too."
+        ::= { fafFloodEntry 7 }
+
+    fafFloodDigits OBJECT-TYPE
+        SYNTAX    MaxNumberDigits
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of relevant digits of the field. More digits
+             may be taken into account if strong traffic is found."
+        ::= { fafFloodEntry 9 }
+
+    fafFloodMargin OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "This is the minimum traffic that is registered/1000s.
+             Entries with lower values are deleted."
+        ::= { fafFloodEntry 10 }
+
+    fafFloodThresholdRate OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Traffic level in messages per 10 seconds required for
+             the filter to go active."
+        ::= { fafFloodEntry 11 }
+
+    fafFloodThresholdSlope OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Traffic increase in percent that triggers the filter."
+        ::= { fafFloodEntry 12 }
+
+    fafFloodThresholdTime OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Time in seconds before the threshold has to be passed
+             before an action is taken."
+        ::= { fafFloodEntry 14 }
+
+    fafFloodTimeRangeShort OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Time in seconds for the noise filter. The system will
+             generally not react faster than this time."
+        ::= { fafFloodEntry 15 }
+
+    fafFloodTimeRangeLong OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Time in seconds for the base-line filter. Traffic
+             changes slower than this are not considered flooding."
+        ::= { fafFloodEntry 16 }
+
+    fafFloodTimeOn OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Time since the filter was switched on. During a
+             startup period, the filter cannot detect flooding."
+        ::= { fafFloodEntry 17 }
+
+    ----------------------------------------------------------------------------
+    --  fafEms table                                                          --
+    ----------------------------------------------------------------------------
+
+    fafEmsTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafEmsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 26 }
+
+    fafEmsEntry OBJECT-TYPE
+        SYNTAX    FafEmsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of EMS filters. This allows to filter EMS
+             based on their type (EIE). Only one filter should
+             be necessary."
+        INDEX     { fafEmsIndex1 }
+        ::= { fafEmsTable 1 }
+
+    FafEmsEntry ::= SEQUENCE
+    {
+        fafEmsIndex1       FafEmsIndex1Type,
+        fafEmsAdminState   AdminState,
+        fafEmsName         OCTET STRING,
+        fafEmsDescription  OCTET STRING,
+        fafEmsLastUpdated  INTEGER,
+        fafEmsDebug        INTEGER,
+        fafEmsIei          OCTET STRING
+    }
+
+    fafEmsIndex1 OBJECT-TYPE
+        SYNTAX    FafEmsIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP index of this EMS condition instance."
+        ::= { fafEmsEntry 1 }
+
+    fafEmsAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable/Disable the condition."
+        ::= { fafEmsEntry 2 }
+
+    fafEmsName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafEmsEntry 3 }
+
+    fafEmsDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafEmsEntry 4 }
+
+    fafEmsLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafEmsEntry 5 }
+
+    fafEmsDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level."
+        ::= { fafEmsEntry 6 }
+
+    fafEmsIei OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..256))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Bit set of EMS types to filter. The string consists
+             of '0' and '1' characters. The first character is
+             for EMS type (EIE) = 0, the next for type 1 etc. A
+             '1' means the filter matches, and a '0' means it
+             does not.If several EIEs are in the message, only
+             one needs to match."
+        ::= { fafEmsEntry 7 }
+
+    ----------------------------------------------------------------------------
+    --  fafReturn table                                                       --
+    ----------------------------------------------------------------------------
+
+    fafReturnTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafReturnEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 37 }
+
+    fafReturnEntry OBJECT-TYPE
+        SYNTAX    FafReturnEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of return filters. ."
+        INDEX     { fafReturnIndex1 }
+        ::= { fafReturnTable 1 }
+
+    FafReturnEntry ::= SEQUENCE
+    {
+        fafReturnIndex1               FafReturnIndex1Type,
+        fafReturnAdminState           AdminState,
+        fafReturnName                 OCTET STRING,
+        fafReturnDescription          OCTET STRING,
+        fafReturnLastUpdated          INTEGER,
+        fafReturnDebug                INTEGER,
+        fafReturnAction               FafAction
+    }
+
+    fafReturnIndex1 OBJECT-TYPE
+        SYNTAX    FafReturnIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP index of this return condition instance."
+        ::= { fafReturnEntry 1 }
+
+    fafReturnAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Enable/Disable the condition."
+        ::= { fafReturnEntry 2 }
+
+    fafReturnName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafReturnEntry 3 }
+
+    fafReturnDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafReturnEntry 4 }
+
+    fafReturnLastUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafReturnEntry 5 }
+
+    fafReturnDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Debug level."
+        ::= { fafReturnEntry 6 }
+
+    fafReturnAction OBJECT-TYPE
+        SYNTAX    FafAction
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Action to return."
+        ::= { fafReturnEntry 7 }
+        
+    ----------------------------------------------------------------------------
+    --  fafBulk table                                                         --
+    ----------------------------------------------------------------------------
+
+    fafBulkTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafBulkEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 41 }
+
+    fafBulkEntry OBJECT-TYPE
+        SYNTAX    FafBulkEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of Bulk filters. Each entry is processed
+             separately. It is recommended that only one filter
+             per variable is used.
+             When this filter detects a bulk message, it is creating
+             an entry in the readonly fafBulkCount table."
+        INDEX     { fafBulkIndex1 }
+        ::= { fafBulkTable 1 }
+
+    FafBulkEntry ::= SEQUENCE
+    {
+        fafBulkIndex1               FafBulkIndex1Type,
+        fafBulkAdminState           AdminState,
+        fafBulkName                 OCTET STRING,
+        fafBulkDescription          OCTET STRING,
+        fafBulkDebug                INTEGER,
+        fafBulkVar                  FafMsgvar,
+        fafBulkThreshold            INTEGER,
+        fafBulkWindowSize           INTEGER,
+        fafBulkExpirationPeriod     INTEGER,
+        fafBulkLastVarValue         DisplayStringX,
+        fafBulkMarkedRecords        Gauge,
+        fafBulkTrackedRecords       Gauge,
+        fafBulkLastUpdated          Gauge
+    }
+
+    fafBulkIndex1 OBJECT-TYPE
+        SYNTAX    FafBulkIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index."
+        ::= { fafBulkEntry 1 }
+
+    fafBulkAdminState OBJECT-TYPE
+        SYNTAX    AdminState
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Administrative state of this bulkFilter. A bulkFilter is only
+             enabled when its administrative state is set to 'active'.
+             If the bulkFilter is created, its state is initialised to
+             'inactive'.
+             Transition to the 'active' state is possible if all of the
+             following conditions are met:
+
+             1) A variable must be specified
+
+             The transition from 'active' to 'inactive' is possible
+             at any time."
+        ::= { fafBulkEntry 2 }
+
+    fafBulkName OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition name, used for identification."
+        ::= { fafBulkEntry 3 }
+
+    fafBulkDescription OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..1000))
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Condition description, purely explanatory."
+        ::= { fafBulkEntry 4 }
+
+    fafBulkDebug OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "When not 0, the Bulk module starts logging debug information"
+        ::= { fafBulkEntry 5 }
+
+    fafBulkVar OBJECT-TYPE
+        SYNTAX    FafMsgvar
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The message field to which the Bulk filter is applied. The 
+             default setting is the Originator, but it can be applied to
+             other fields too."
+        ::= { fafBulkEntry 7 }
+
+    fafBulkThreshold OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Minimum amount of timespan in seconds to mark a message as bulk.
+             When the average timespan between subsequent messages becomes
+             lower than this threhold, the message is regarded as bulk and
+             the filter will return false. Also a trap is sent and an entry
+             in the fafBulkCount will be created.
+             By default this value is set to 10."
+        ::= { fafBulkEntry 11 }
+
+    fafBulkWindowSize OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Actually: Low pass filter timeconstant.
+             The time constant is used for the auto-regressive low-pass
+             filter. It is analog to 'tau' in analog filters representing
+             the RC-time. The higher this value is, the 'slower' the low-pass
+             filter becomes, that means, the less responsive the LPF becomes
+             for quick changes in value.
+            
+             The LPF is applied on the timespan measurement between 2
+             messages. It is based on an IIR digital filter principle,
+             working as follows:
+            
+             1. Take the current LPF value.
+             2. Do some calculations with the measured timespan and
+                timeconstant.
+             3. Store it as current LPF value.
+            
+             Mathematically:
+
+             new_value = old_value * C + timespan * (1 - C);
+
+             where:
+             C        = exp(-timespan/window).
+             timespan = the time between two subsequent messages.
+             window   = this parameter.
+            
+             By default, this object is set to 64."
+        ::= { fafBulkEntry 12 }
+
+    fafBulkExpirationPeriod OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "Expiration time in seconds. Each time a record matches, its
+             timestamp is updated. When this timestamp is exceeding the
+             expiration time, the record is removed from the internal
+             datastructure.
+             By default, this object is set to 3600."
+        ::= { fafBulkEntry 13 }
+
+    fafBulkLastVarValue OBJECT-TYPE
+        SYNTAX    DisplayStringX
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Value of the filter variable for the last received message."
+        ::= { fafBulkEntry 21 }
+
+    fafBulkMarkedRecords OBJECT-TYPE
+        SYNTAX    Gauge
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counter indicating the current amount of detected Bulk records as
+             displayed in the fafBulkCount table."
+        ::= { fafBulkEntry 31 }
+
+    fafBulkTrackedRecords OBJECT-TYPE
+        SYNTAX    Gauge
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Counter indicating the current amount of tracked records. The
+             counter excludes the records that are marked as Bulk."
+        ::= { fafBulkEntry 32 }
+
+    fafBulkLastUpdated OBJECT-TYPE
+        SYNTAX    Gauge
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last update."
+        ::= { fafBulkEntry 41 }
+
+    ----------------------------------------------------------------------------
+    --  fafDupsCount table                                                         --
+    ----------------------------------------------------------------------------
+
+    fafDupsCountTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafDupsCountEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 124 }
+
+    fafDupsCountEntry OBJECT-TYPE
+        SYNTAX    FafDupsCountEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of clusters found."
+        INDEX     { fafDupsCountIndex1, fafDupsCountIndex2 }
+        ::= { fafDupsCountTable 1 }
+
+    FafDupsCountEntry ::= SEQUENCE
+    {
+        fafDupsCountIndex1           FafDupsIndex1Type,
+        fafDupsCountIndex2           FafDupsCountIndex2Type,
+        fafDupsCountMsgs             Counter,
+        fafDupsCountFeatures         INTEGER,
+        fafDupsCountLastTime         INTEGER,
+        fafDupsCountLastMessage      DisplayStringX,        
+        fafDupsCountLastMscAddress   DisplayStringX,
+        fafDupsCountLastSmscAddress  DisplayStringX,
+        fafDupsCountLastOrigMsisdn   DisplayStringX,
+        fafDupsCountLastOrigImsi     DisplayStringX,
+        fafDupsCountConfig           INTEGER
+    }
+
+    fafDupsCountIndex1 OBJECT-TYPE
+        SYNTAX    FafDupsIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of the filter that 'owns' this record."
+        ::= { fafDupsCountEntry 1 }
+
+    fafDupsCountIndex2 OBJECT-TYPE
+        SYNTAX    FafDupsCountIndex2Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of this count record."
+        ::= { fafDupsCountEntry 2 }
+
+    fafDupsCountMsgs OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Total number of messages that have matched this cluster."
+        ::= { fafDupsCountEntry 3 }
+
+    fafDupsCountFeatures OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Total number of features that are bundled in this cluster."
+        ::= { fafDupsCountEntry 4 }
+
+    fafDupsCountLastTime OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Timestamp of the last message that is matched by this
+             cluster."
+        ::= { fafDupsCountEntry 5 }
+
+    fafDupsCountLastMessage OBJECT-TYPE
+        SYNTAX    DisplayStringX
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Content of the last message that is matched by this cluster."
+        ::= { fafDupsCountEntry 6 }
+
+
+    fafDupsCountLastMscAddress OBJECT-TYPE
+        SYNTAX    DisplayStringX
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "MSC address for last message in this cluster."
+        ::= { fafDupsCountEntry 8 }
+
+    fafDupsCountLastSmscAddress OBJECT-TYPE
+        SYNTAX    DisplayStringX
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SMSC address for last message in this cluster."
+        ::= { fafDupsCountEntry 9 }
+
+    fafDupsCountLastOrigMsisdn OBJECT-TYPE
+        SYNTAX    DisplayStringX
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Originator MSISDN for last message in this cluster."
+        ::= { fafDupsCountEntry 10 }
+
+    fafDupsCountLastOrigImsi OBJECT-TYPE
+        SYNTAX    DisplayStringX
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Originator IMSI for last message in this cluster."
+        ::= { fafDupsCountEntry 11 }
+
+    fafDupsCountConfig OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The ID (-1) of the configuration that 'owns' this cluster."
+        ::= { fafDupsCountEntry 12 }
+
+    ----------------------------------------------------------------------------
+    --  fafFlood table (DEPRICATED)                                           --
+    ----------------------------------------------------------------------------
+
+    fafFloodCountTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafFloodCountEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            " ** THIS TABLE IS DEPRICATED AND PLANNED TO BE CHANGED ** "
+        ::= { faf 125 }
+
+    fafFloodCountEntry OBJECT-TYPE
+        SYNTAX    FafFloodCountEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of addresses encountered."
+        INDEX     { fafFloodCountIndex1 }
+        ::= { fafFloodCountTable 1 }
+
+    FafFloodCountEntry ::= SEQUENCE
+    {
+        fafFloodCountIndex1    FafFloodCountIndex1Type,
+        fafFloodCountAdmin     INTEGER,
+        fafFloodCountAddress   OCTET STRING,
+        fafFloodCountCount     INTEGER,
+        fafFloodCountTime      INTEGER,
+        fafFloodCountFiltered  INTEGER,
+        fafFloodCountTshort    INTEGER,
+        fafFloodCountTlong     INTEGER,
+        fafFloodCountThresh    INTEGER,
+        fafFloodCountAge       INTEGER,
+        fafFloodCountConfig    INTEGER
+    }
+
+    fafFloodCountIndex1 OBJECT-TYPE
+        SYNTAX    FafFloodCountIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "SNMP index of the flooding count entry."
+        ::= { fafFloodCountEntry 1 }
+
+    fafFloodCountAdmin OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "DEPRICATED: State of this flooding count entry."
+        ::= { fafFloodCountEntry 2 }
+
+    fafFloodCountAddress OBJECT-TYPE
+        SYNTAX    OCTET STRING (SIZE (0..80))
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Address(prefix)."
+        ::= { fafFloodCountEntry 3 }
+
+    fafFloodCountCount OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Messages during this second."
+        ::= { fafFloodCountEntry 4 }
+
+    fafFloodCountTime OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Duration of current traffic spike."
+        ::= { fafFloodCountEntry 5 }
+
+    fafFloodCountFiltered OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Messages marked as flooding."
+        ::= { fafFloodCountEntry 6 }
+
+    fafFloodCountTshort OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Short term average traffic/1000s."
+        ::= { fafFloodCountEntry 7 }
+
+    fafFloodCountTlong OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Long term average traffic/1000s."
+        ::= { fafFloodCountEntry 8 }
+
+    fafFloodCountThresh OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Threshold for flooding/1000s."
+        ::= { fafFloodCountEntry 9 }
+
+    fafFloodCountAge OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Debugging output: age of this entry in seconds."
+        ::= { fafFloodCountEntry 10 }
+
+    fafFloodCountConfig OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The ID (-1) of the configuration that 'owns' this record."
+        ::= { fafFloodCountEntry 11 }
+
+    ----------------------------------------------------------------------------
+    --  fafBulk table                                                        --
+    ----------------------------------------------------------------------------
+
+    fafBulkCountTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF FafBulkCountEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table type"
+        ::= { faf 141 }
+
+    fafBulkCountEntry OBJECT-TYPE
+        SYNTAX    FafBulkCountEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "Table of filtered enties (like f.e. originators when the filter
+             variable is 'orig'). This table is read-only. Removing from the
+             table is done automatically when the record is expired."
+        INDEX     { fafBulkCountIndex1, fafBulkCountIndex2 }
+        ::= { fafBulkCountTable 1 }
+
+    FafBulkCountEntry ::= SEQUENCE
+    {
+        fafBulkCountIndex1              FafBulkIndex1Type,
+        fafBulkCountIndex2              FafBulkCountIndex2Type,
+        
+        fafBulkCountVarValue            OCTET STRING,
+        
+        fafBulkCountFirstTimeUpdated    INTEGER,
+        fafBulkCountLastTimeUpdated     INTEGER,
+
+        fafBulkCountMessages            Counter
+    }
+
+    fafBulkCountIndex1 OBJECT-TYPE
+        SYNTAX    FafBulkIndex1Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of the filter that 'owns' this record."
+        ::= { fafBulkCountEntry 1 }
+
+    fafBulkCountIndex2 OBJECT-TYPE
+        SYNTAX    FafBulkCountIndex2Type
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Index of this count record."
+        ::= { fafBulkCountEntry 2 }
+
+    fafBulkCountVarValue OBJECT-TYPE
+        SYNTAX    OCTET STRING
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Value of the filter variable when creating this record."
+        ::= { fafBulkCountEntry 11 }
+
+    fafBulkCountFirstTimeUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "First time that this record has been updated."
+        ::= { fafBulkCountEntry 21 }
+
+    fafBulkCountLastTimeUpdated OBJECT-TYPE
+        SYNTAX    INTEGER
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Last time that this record has been updated."
+        ::= { fafBulkCountEntry 22 }
+
+    fafBulkCountMessages OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Amount of mesages that has been filtered out for this
+             particular variable value."
+        ::= { fafBulkCountEntry 31 }
+
+    ----------------------------------------------------------------------------
+    --  Traps                                                                 --
+    ----------------------------------------------------------------------------
+
+    actionApplied TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafChainsAdminState, deviceType }
+        DESCRIPTION
+            "Raised when a chain applies, and the action is
+             taken. This trap is configurable in the chain
+             table. Severity: informational."
+        ::= 1
+
+    eciConnectionsFailed TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { deviceType }
+        DESCRIPTION
+            "No ECI connections could be established. The
+             TextPass FAF may be only partially operational.
+             This is probably caused by a network problem.
+             Check the TextPass Routers for further information.
+             Severity: error."
+        ::= 2
+
+    eciLoginFailed TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafEciAdminState, fafEciUser, deviceType }
+        DESCRIPTION
+            "The ECI login was refused by the TPR. The TextPass
+             FAF may be only partially operational. Check the
+             External Condition Application account and password
+             settings. Severity: error."
+        ::= 3
+
+    floodingStartDetected TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafFloodCountConfig, fafFloodCountIndex1, fafFloodCountAddress, fafFloodCountFiltered, fafFloodCountTime, deviceType }
+        DESCRIPTION
+            "Flooding from a foreign network has been detected.
+             This trap is raised when the traffic from a foreign
+             network has increased significantly. Depending on
+             the configuration, further messages from this origin
+             may be blocked or delayed. Severity: warning."
+        ::= 7
+
+    floodingEndDetected TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafFloodCountConfig, fafFloodCountIndex1, fafFloodCountAddress, fafFloodCountFiltered, fafFloodCountTime, deviceType }
+        DESCRIPTION
+            "Flooding from a foreign network is over. This trap
+             is raised when the traffic from a foreign network
+             has normalised again. This trap corresponds to
+             floodingStartDetected. Severity: informational."
+        ::= 8
+
+    clusterStarted TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafDupsCountMsgs, fafDupsCountLastTime, fafDupsCountLastMessage, fafDupsCountLastMscAddress, fafDupsCountLastSmscAddress, fafDupsCountLastOrigMsisdn, fafDupsCountLastOrigImsi, deviceType }
+        DESCRIPTION
+            "Duplicate messages have been found, and a new
+             cluster is started. Severity: informational."
+        ::= 21
+
+    clusterThreshold TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafDupsCountMsgs, fafDupsCountLastTime, fafDupsCountLastMessage, deviceType }
+        DESCRIPTION
+            "A cluster has grown beyond the size threshold.
+             Depending on the configuration, further duplicate
+             messages may be blocked or delayed now. Severity:
+             warning."
+        ::= 22
+
+    clusterExpired TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafDupsCountMsgs, fafDupsCountLastTime, fafDupsCountLastMessage, deviceType }
+        DESCRIPTION
+            "A cluster has expired, because no similar message
+             has been found for the configured duration. Further
+             similar messages will have to start a new cluster
+             before they are detected again. This trap clears
+             both clusterStarted and clusterThreshold. Severity:
+             informational."
+        ::= 23
+
+    eciConnectionEstablished TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafEciAdminState, deviceType }
+        DESCRIPTION
+            "An ECI connection was established. This trap clears
+             the condition for eciConnectionsFailed. Severity:
+             informational."
+        ::= 25
+
+    eciLoginSuccess TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafEciAdminState, fafEciUser, deviceType }
+        DESCRIPTION
+            "The ECI login was successful at the TPR. This trap
+             clears the condition from eciLoginFailed for the
+             given index. Severity: informational."
+        ::= 28
+        
+    bulkStartDetected TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafBulkLastVarValue, deviceType }
+        DESCRIPTION
+            "Bulk messages has been detected for this value of the filter
+             variable. Severity: informational."
+        ::= 31
+
+    bulkEndDetected TRAP-TYPE
+        ENTERPRISE    faf
+        VARIABLES     { fafBulkLastVarValue, deviceType }
+        DESCRIPTION
+            "No more bulk messages has been detected for this value of the
+             filter variable. Severity: informational."
+        ::= 32
+END
+
+

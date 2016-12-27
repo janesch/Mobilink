@@ -1,0 +1,95 @@
+###############################################################################
+#
+# decodeOid2MacAddr.include.snmptrap.rules 1.0 2007/09/06 Robert Cowart
+#
+###############################################################################
+#
+# 1.0 - Initial Release
+#
+###############################################################################
+#
+# This rulesfile segment will take an SNMP OID segment (dot separated integers)
+# consisting of 6 integers (must be contained in the token $MacAddrOid) and
+# convert it to a MAC address in the more traditional hex representation
+# (output as the token $MacAddrHex). If the OID segement passed is not of the
+# of the correct syntax, $MacAddrHex will be set to "INVALID MAC ADDRESS".
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... decodeOid2MacAddr.include.snmptrap.rules >>>>>")
+
+$MacAddrHex = ""
+
+if(regmatch($MacAddrOid, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"))
+{
+    $Temp = extract($MacAddrOid, "^([0-9]+)") ### get 1st integer
+    if(int($Temp) > 255) ### check if 1st integer value is valid
+    {
+        $InvalidMacAddr = 1
+    }
+    else
+    {
+        $MacAddrHex1 = lookup($Temp, hexDec2Hex) ### convert 1st integer to hex and append to MAC address
+        
+        $Temp = extract($MacAddrOid, "^[0-9]+\.([0-9]+)") ### get 2nd integer
+        if(int($Temp) > 255) ### check if 2nd integer value is valid
+        {
+            $InvalidMacAddr = 1
+        }
+        else
+        {
+            $MacAddrHex2 = $MacAddrHex1 + ":" + lookup($Temp, hexDec2Hex) ### convert 2nd integer to hex and append to MAC address
+            
+            $Temp = extract($MacAddrOid, "^[0-9]+\.[0-9]+\.([0-9]+)") ### get 3rd integer
+            if(int($Temp) > 255) ### check if 3rd integer value is valid
+            {
+                $InvalidMacAddr = 1
+            }
+            else
+            {
+                $MacAddrHex3 = $MacAddrHex2 + ":" + lookup($Temp, hexDec2Hex) ### convert 3rd integer to hex and append to MAC address
+                
+                $Temp = extract($MacAddrOid, "^[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)") ### get 4th integer
+                if(int($Temp) > 255) ### check if 4th integer value is valid
+                {
+                    $InvalidMacAddr = 1
+                }
+                else
+                {
+                    $MacAddrHex4 = $MacAddrHex3 + ":" + lookup($Temp, hexDec2Hex) ### convert 4th integer to hex and append to MAC address
+                    
+                    $Temp = extract($MacAddrOid, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)") ### get 5th integer
+                    if(int($Temp) > 255) ### check if 5th integer value is valid
+                    {
+                        $InvalidMacAddr = 1
+                    }
+                    else
+                    {
+                        $MacAddrHex5 = $MacAddrHex4 + ":" + lookup($Temp, hexDec2Hex) ### convert 5th integer to hex and append to MAC address
+                        
+                        $Temp = extract($MacAddrOid, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)") ### get 6th integer
+                        if(int($Temp) > 255) ### check if 6th integer value is valid
+                        {
+                            $InvalidMacAddr = 1
+                        }
+                        else
+                        {
+                            $MacAddrHex = $MacAddrHex5 + ":" + lookup($Temp, hexDec2Hex) ### convert 6th integer to hex and append to MAC address
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+else
+{
+    $InvalidMacAddr = 1
+}
+
+if(match($InvalidMacAddr, "1"))
+{
+    $MacAddrHex = "INVALID MAC ADDRESS"
+}
+
+log(DEBUG, "<<<<< Leaving... decodeOid2MacAddr.include.snmptrap.rules >>>>>")

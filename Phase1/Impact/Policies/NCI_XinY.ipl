@@ -1,0 +1,213 @@
+// An X in Y type policy allows you to analyze an event stream 
+// that Impact is processing. It will update
+// the event (and create a new one if required) in the  object server
+// if the threshold of X events within Y TimeWindow is reached.
+// The template will first try to distinguish between deleted, updated
+// and inserted events (GetEventData). Based on the result, it will call
+// the appropriate functions to keep the proper tally.
+// After recording the tally, the policy will hibernate for as long as 
+// the TimeWindow variable is set (check in the user parameters section).
+// Upon waking up, the policy will check whether the threshold has been
+// been reached. If so, the Object server event will be updated.
+
+/**
+*Gets the incoming event holding the current states for X
+*/
+function GetEventData_XinY() {
+  Type=XinY_EventStatusTallyType;
+  Key=XinY_EventKey;
+  MaxNum=1;
+  GetByKeyOrgNodes = GetByKey(Type, Key, MaxNum);
+  Num = length(GetByKeyOrgNodes);
+
+  if ((Num>0) and (@Deleted=true)) {
+    DeleteEventData_XinY(GetByKeyOrgNodes);
+  }
+  if ((Num=0) and (@Deleted!=true)) {
+    InsertNewTallyStatus_XinY();
+  }
+  if (@Deleted!=true) {
+    UpdateTallyStatus_XinY(GetByKeyOrgNodes);
+  }
+}
+
+/*
+Calculates the number of occurrence of the event from the last test.
+The value is stored into XinY_TallyDelta variable.
+Sets the relevant variables in the incoming event data set.
+*/
+function UpdateTallyStatus_XinY(OrgNodes) {
+  OrgNode = OrgNodes[0];
+  XinY_TallyStatus=OrgNode;
+  XinY_TallyDelta=@Tally - XinY_TallyStatus.PreviousTally; 
+  log(1,"<XinY> ["+XinY_EventKey+"] XinY_TallyDelta="+XinY_TallyDelta);
+  XinY_RunningTally=XinY_TallyStatus.RunningTally+XinY_TallyDelta;
+  if(XinY_RunningTally >= XinY_Threshold) {
+   XinY_TallyStatus.RunningTally=0;
+   Summary=XinY_PolicyName+" Threshold Exceeded: "+XinY_RunningTally+" >= "+XinY_Threshold;
+  } else {
+   XinY_TallyStatus.RunningTally=XinY_RunningTally;
+  }
+  Summary=Summary+", over the last "+XinY_TimeWindow+"s "+XinY_TimeWindowSummary;
+  XinY_TallyStatus.PreviousTally=@Tally;
+  XinY_TallyStatus.LastOccurrence=XinY_CurrentTime;
+
+  if (XinY_RunningTally >= XinY_Threshold) {
+    UpdateEvent_XinY(Summary);
+  }
+  if (XinY_RunningTally < XinY_Threshold) {
+    HibernateForY_XinY(XinY_TallyStatus, XinY_TallyDelta);
+  }
+}
+
+/*
+*Waits to drop out of the time window.
+*/
+function HibernateForY_XinY(XinY_TallyStatus, XinY_TallyDelta) {
+  ActionKey=XinY_EventKey+":"+getdate()+":"+random(10000);
+  Timeout=XinY_TimeWindow;
+  Reason=XinY_PolicyName+": Waiting for "+Timeout+" seconds to expire";
+  Hibernate(ActionKey, Reason, Timeout);
+  WakeUpInY_XinY(ActionKey, XinY_TallyStatus, XinY_TallyDelta);
+}
+
+/*
+Cleanup the previous hibernation
+*/
+function WakeUpInY_XinY(ActionKey, XinY_TallyStatus, XinY_TallyDelta) {
+  log(1,"<XinY> ["+XinY_EventKey+"] Deleting Hibernation with ActionKey="+ActionKey);
+  RemoveHibernation(ActionKey);
+  RecalcRunningTally_XinY(XinY_TallyStatus, XinY_TallyDelta);
+}
+
+/*
+Updates the number of occurrences for the current time window by substracting
+the ones that have dropped out of it
+*/
+function RecalcRunningTally_XinY(XinY_TallyStatus, XinY_TallyDelta) {
+  if(XinY_TallyStatus.RunningTally >= XinY_TallyDelta) {
+    XinY_RunningTally=XinY_TallyStatus.RunningTally-XinY_TallyDelta; 
+  } else {
+    XinY_RunningTally=0;
+  }
+  XinY_TallyStatus.RunningTally=XinY_RunningTally;
+  log(1,"<XinY> ["+XinY_EventKey+"] Updating XinY_TallyStatus.RunningTally="+XinY_TallyStatus.RunningTally);
+}
+
+/*
+Threshold exceeded.
+Flag the event as such and add a Journal entry if required
+*/
+function UpdateEvent_XinY(Summary) {
+  EventContainer[XinY_FlagField]=1;
+  if(XinY_GenerateJournalFlag = true) {
+   @JournalEntry=Summary;
+  }
+  ReturnEvent(EventContainer);
+
+  if (XinY_GenerateNewEventFlag=true) {
+    NewEvent_XinY();
+  }
+}
+
+/*
+*Threshold exceeded.
+Create a notification event if necessary
+*/
+function NewEvent_XinY() {
+  Type=XinY_ObjectServerEvents;
+  ObjectToCopy=NewObject();
+  ObjectToCopy.Identifier="ImpactXinY:"+XinY_CurrentTime+":"+XinY_EventKey;
+  ObjectToCopy.FirstOccurrence=XinY_CurrentTime;
+  ObjectToCopy.LastOccurrence=XinY_CurrentTime;
+  ObjectToCopy.Manager="Netcool/Impact";
+  ObjectToCopy.Class=XinY_Class;
+  ObjectToCopy.Agent=XinY_PolicyName;
+  ObjectToCopy[XinY_ThresholdField]=XinY_RunningTally;
+  ObjectToCopy[XinY_ValueField]=XinY_Threshold;
+  ObjectToCopy[XinY_EventKeyField]=XinY_EventKey;
+  ObjectToCopy.Summary=Summary;
+  ObjectToCopy.Severity=5;
+  ObjectToCopy.Type=1;
+  ObjectToCopy.Node=@Node;
+  ObjectToCopy.AlertGroup=@AlertGroup;
+  ObjectToCopy.AlertKey=@AlertKey;
+  ObjectToCopy.Manager=@Manager;
+  AddDataItem(Type, ObjectToCopy);
+}
+
+/*
+Creates the data set for the incoming event
+*/
+function InsertNewTallyStatus_XinY() {
+  Type=XinY_EventStatusTallyType;
+  ObjectToCopy=NewObject();
+  ObjectToCopy.Name=XinY_EventKey;
+  ObjectToCopy.RunningTally=0;
+  ObjectToCopy.PreviousTally=0;
+  ObjectToCopy.LastOccurrence=XinY_CurrentTime;
+  AddDataItem(Type, ObjectToCopy);
+}
+
+/*
+Alarm was deleted, hence clean up the data
+*/
+function DeleteEventData_XinY(OrgNodes) {
+  OrgNode = OrgNodes[0];
+  log(1,"<XinY> ["+XinY_EventKey+"] Deleting "+OrgNode);
+  DeleteDataItem(OrgNode);
+
+  if (XinY_DeleteXinYEventsFlag=true) {
+    DeleteXinYEvents_XinY();
+  }
+}
+
+/*
+Clears the old notification events.
+*/
+function DeleteXinYEvents_XinY() {
+  Type=XinY_ObjectServerEvents;
+  Filter="Class="+XinY_Class+" and "+XinY_EventKeyField+"='"+XinY_EventKey+"'";
+  UpdateExpression="Severity=0";
+  BatchUpdate(Type, Filter, UpdateExpression);
+}
+
+/* User parameters */
+XinY_TimeWindow=10;
+XinY_Threshold=3;
+XinY_GenerateNewEventFlag=true;
+XinY_GenerateJournalFlag=true;
+XinY_DeleteXinYEventsFlag=true;
+
+/* ObjectServer related parameters */
+XinY_ObjectServerEvents="NCOMS_alerts.status";
+XinY_FlagField="Grade";
+XinY_ThresholdField="Poll";
+XinY_ValueField="Grade";
+XinY_EventKeyField="Location";
+XinY_Class=7010;
+XinY_PolicyName="XinY Policy";
+
+/* There should be no need to modify the parameters below */
+XinY_EventKey=@ServerName+@ServerSerial;
+XinY_EventStatusTallyType="XinYEventTallyStatus";
+XinY_CurrentTime=getdate();
+XinY_TimeWindowMin=XinY_CurrentTime-XinY_TimeWindow;
+XinY_TimeWindowSummary="("+localtime(XinY_TimeWindowMin)+" -> "+localtime(XinY_CurrentTime)+")";
+log(1,"<XinY> ["+XinY_EventKey+"] Starting...");
+
+if ((@Class!=XinY_Class) or (@Deleted=true)) {
+  GetEventData_XinY();
+}
+
+
+
+
+
+
+
+
+
+
+
+

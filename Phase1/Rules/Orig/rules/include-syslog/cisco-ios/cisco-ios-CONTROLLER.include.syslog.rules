@@ -1,0 +1,178 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CONTROLLER.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CONTROLLER": ### Controller
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CONTROLLER.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CALLDROP":
+        
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %CONTROLLER-5-CALLDROP: Controller [chars], [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Cc]ontroller ([^,]*),? .*")
+            $MOIType_Local = "controller"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "[Cc]ontroller .*,? (.*)")
+        
+        case "CRASHED":
+        
+            ##########
+            # A controller has stopped responding to commands over the CBUS and
+            # has been put into shutdown mode.
+            #
+            # %CONTROLLER-2-CRASHED: Interface Processor in slot [dec] not
+            # responding ([hex]): shutting it down
+            ##########
+            
+            $MOI_Local = extract($Message, " slot ([0-9]+) not ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+        
+        case "FIRMWARE":
+        
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %CONTROLLER-2-FIRMWARE: Controller [chars], [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Cc]ontroller (.*),? ")
+            $MOIType_Local = "controller"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "[Cc]ontroller .*,? (.*)")
+        
+        case "HDLC_INSUFF_RESOURCE":
+        
+            ##########
+            # A limited number of HDLC channels can be allocated for this
+            # trunk.
+            #
+            # %CONTROLLER-5-HDLC_INSUFF_RESOURCE: Insufficient HDLC resources
+            # to enable channel [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "enable channel ([0-9]+)")
+            
+            @AlertKey = "Channel: " + $MOI_Local
+        
+        case "LOOPSTATUS":
+        
+            ##########
+            # This message is a configurable controller loopback status message
+            # and is informational only.
+            #
+            # %CONTROLLER-5-LOOPSTATUS: Controller [chars], [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Cc]ontroller (.*),? ")
+            $MOIType_Local = "controller"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "[Cc]ontroller .*,? (.*)")
+        
+        case "NOTFOUND":
+        
+            ##########
+            # An internal software error has occurred.
+            #
+            # %CONTROLLER-2-NOTFOUND: For controller [chars]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Cc]ontroller (.*)"))
+            $MOIType_Local = "controller"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+        
+        case "REMLOOP":
+        
+            ##########
+            # A configurable controller has entered remote loopback.
+            #
+            # %CONTROLLER-5-REMLOOP: Controller [chars], remote loop [chars]
+            # [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Cc]ontroller (.*),? remote")
+            $MOIType_Local = "controller"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+            
+            $CLARIFIER = rtrim(extract($Message, "remote loop (.*)$"))
+        
+        case "UPDOWN":
+        
+            ##########
+            # A configurable controller has changed its state.
+            #
+            # %CONTROLLER-5-UPDOWN: Controller [chars], changed state to
+            # [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Cc]ontroller ([^,]*),? changed")
+            $MOIType_Local = "controller"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Controller: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "to ([A-Za-z]+)")
+            
+            switch($CLARIFIER)
+            {
+                case "Up"|"UP"|"up":
+                    @Severity = 1
+                    @Type = 2
+                case "Down"|"DOWN"|"down":
+                default:
+                    @Severity = 2
+                    @Type = 1
+            }
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CONTROLLER.include.syslog.rules >>>>>")

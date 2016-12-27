@@ -1,0 +1,352 @@
+#
+#######################################################################
+#
+# (C) Copyright IBM Corp. 2007 ALL Rights Reserved
+#
+# Example rules file for the Netcool/OMNIbus Probe
+# for Motorola 3gpp Omcr Gsr9 
+#
+#
+#######################################################################
+#
+#Available tokens
+#
+#The following tokens come from the FilterableData name/value pairs:
+#NV_NOTIFICATION_ID
+#NV_EVENT_TIME
+#NV_SYSTEM_DN
+#NV_MANAGED_OBJECT_CLASS
+#NV_MANAGED_OBJECT_INSTANCE
+#NV_ALARM_ID
+#NV_PROBABLE_CAUSE
+#NV_PERCEIVED_SEVERITY
+#NV_SPECIFIC_PROBLEMS
+#NV_ADDITIONAL_TEXT
+#NV_ACK_TIME
+#NV_ACK_USER_ID
+#NV_ACK_SYSTEM_ID
+#NV_ACK_STATE
+#NV_COMMENTS
+#NV_BACKED_UP_STATUS
+#NV_BACK_UP_OBJECT
+#NV_THRESHOLD_INFO
+#NV_TREND_INDICATION
+#NV_STATE_CHANGE_DEFINITION
+#NV_MONITORED_ATTRIBUTES
+#NV_PROPOSED_REPAIR_ACTIONS
+#NV_CORRELATED_NOTIFICATIONS
+#NV_REASON
+#CLEAR_USER_ID
+#CLEAR_SYSTEM_ID
+#NV_ALARM_LIST_ALIGNMENT_REQUIREMENT
+#NV_SERVICE_USER
+#NV_SERVICE_PROVIDER
+#NV_SECURITY_ALARM_DETECTOR
+#NV_VENDOR_SPECIFIC_ALARM_TYPE
+#######################################################################
+#
+# This lookup will only work if the probe is run from $OMNIHOME/probes
+# If the probe is run elsewhere this path will need to be customised.
+include "$OMNIHOME/probes/includes/Corba_3gpp_V620.lookup"
+#
+#######################################################################
+
+
+
+if(match(@Manager,"ProbeWatch"))
+{
+#
+# This section deals with internal probe events
+#
+
+	switch(@Summary)
+	{
+	case "Running ...":
+		@Severity = 0
+		@AlertGroup = "probestat"
+		@Type = 2
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+	case "Unable to get events":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@AlertKey = @Agent
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@Type = 1
+	case "Going Down ...":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@Type = 1
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+	case "START SYNCHRONIZATION":
+		@Type = 1
+		@Severity = 3
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+		@Summary = @Agent + " probe on " + @Node + ":START SYNCHRONIZATION"
+	case "END SYNCHRONIZATION":
+		@Type = 2
+		@Severity = 1
+		@Summary = @Agent + " probe on " + @Node + ":END SYNCHRONIZATION"
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+	default:
+		@Severity = 1
+	}
+} 
+else 
+{
+	log(DEBUG, "<<<<< Entering.... Motorola-3gpp-Omcr-Gsr9  rules >>>>>")
+
+	@Class = 2057
+
+	@Manager = @Manager + " probe running on " + hostname()
+	@EventId = $NV_ALARM_ID
+	@Agent = "Motorola 3GPP OMCR GSR9"
+	
+	if (regmatch( $NV_SYSTEM_DN, ".*IRPAgent.*"))
+	{
+  	@Agent = "Motorola 3GPP OMCR GSR9 " + " : " + extract($NV_SYSTEM_DN, ".*IRPAgent=(.*)")
+	}
+
+
+#Extract Object details from Motorola 3GPP OMCR GSR9:
+	if( exists( $NV_MANAGED_OBJECT_INSTANCE))
+	{
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*SubNetwork.*"))
+		{
+		#$UmtsRoot = extract($NV_MANAGED_OBJECT_INSTANCE,"^Root\=([A-Za-z0-9]+)\,SubNetwork.*")
+	        $UmtsRoot = extract($NV_MANAGED_OBJECT_INSTANCE,"([A-Za-z0-9]+)=([A-Za-z0-9]+)")	
+                }
+		
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagedElement.*"))
+		{
+		#$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,SubNetwork\=(.*)\,ManagedElement\=.*")
+                $SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\SubNetwork\=(.*)\,ManagedElement\=.*")	
+	        }
+		else
+		{
+		$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,SubNetwork\=.*\,SubNetwork\=(.*)")
+    }
+		
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagedElement.*"))
+		{
+		$ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,ManagedElement\=(.*)")
+		}
+	}
+
+  if( exists( $NV_SYSTEM_DN))
+  {	
+		if( regmatch( $NV_SYSTEM_DN, ".*ManagementNode.*"))
+    {
+     $ManNode = extract($NV_SYSTEM_DN,".*\,ManagementNode\=(.*)\,IRPAgent\=.*")
+    }
+  }
+    
+	
+#Set Node Field:
+	if ( regmatch( $FullDN, ".*INode.*")) 
+    {
+     @Node = $UmtsRoot + " " + extract($FullDN, ".*\(INode.neId\,(.*)\)") + " : " + $SubNetwork
+    }
+	else if( regmatch( $NV_SYSTEM_DN, ".*ManagementNode.*"))
+    {
+     @Node = $UmtsRoot + " " + $ManNode + " : " + $SubNetwork
+    }
+  else
+    {
+     @Node = "Unknown Node"
+    }
+        
+  if ( exists($domain_name) && !match($domain_name,""))
+    {
+      @Node = $UmtsRoot + " " + $ManNode + " : " + $SubNetwork + " (" + $domain_name + ")"
+    }
+  
+
+#Reflect acknowledgement status from Motorola 3GPP OMCR GSR9:
+	if( exists( $NV_ACK_STATE))
+	{
+		switch($NV_ACK_STATE)
+		{
+                	case "2":
+                        	@Acknowledged = 0
+                	case "1":
+                        	@Acknowledged = 1
+                	default:
+               			@Acknowledged = 0         
+		}
+		update(@Acknowledged)
+       	}
+	@Type = 1
+
+
+#Handling events through lookup table and setting AlertGroup and AlertKey:
+	if (exists( $EVENT_TYPE) && !match($EVENT_TYPE,"notifyHeartbeat"))
+	{
+	 	$EVENT_TYPE = lookup($EVENT_TYPE,EventType_t)
+	 	$EVENT_NAME = lookup($EVENT_NAME,EventName_t)
+	 	
+     @AlertGroup = $EVENT_NAME 
+	}
+
+	if( exists( $NV_PROBABLE_CAUSE))
+	{
+		$ProbCause = lookup($NV_PROBABLE_CAUSE, ProbableCause_t)
+	}
+        
+ 
+  if (match( $EVENT_TYPE,"Unknown Event Type" ))
+  {
+	@AlertKey = "Resync Alarm : " + $ManObj
+  }
+  else if (exists($EVENT_TYPE))
+  {
+  @AlertKey = $EVENT_TYPE +  " : " + $ManObj
+  }
+
+
+	if( exists( $NV_SYSTEM_DN))
+	{
+		$SysDn = $NV_SYSTEM_DN
+	}
+	if( exists( $NV_PERCEIVED_SEVERITY))
+	{
+		@Severity = lookup($NV_PERCEIVED_SEVERITY, PerceivedSeverity_t)
+	}
+	
+	switch ($SubNetwork)
+	{	
+	        case "NW UTRAN":
+	        
+			if ( regmatch($ManObj, "EM RNC.*"))
+	        	{
+	        		@AlertGroup = "RNC : " + @AlertGroup 
+	                	@NodeAlias = extract ($ManObj, "^EM RNC(.*)")
+			}	
+		  	else if ( regmatch($ManObj, "EM BTS.*"))
+		    {
+	            	       	@NodeAlias = extract ($ManObj, "^EM BTSEquipment(.*)")	
+	            		@AlertGroup = "BTS : " + @AlertGroup
+	         }
+	
+	     	case "NW CN":
+	     	       if (match($ManObj, ""))
+	     	        {
+                 @NodeAlias = "NW CN"
+                 @AlertGroup = @AlertGroup
+                }
+	     	       else
+	     	        {
+	               @NodeAlias = extract ($ManObj, "^EM (.*)")
+	               @AlertGroup = "EM : " + @AlertGroup
+	              }
+	              
+	        default:
+	}
+
+#Build Summary:
+   if( !exists( $NV_SPECIFIC_PROBLEM_00 ))
+    {
+			@Summary = $ProbCause
+		}
+ 	 else if(match( $NV_SPECIFIC_PROBLEM_00, "SpecificProblem= "))
+		    { 
+			if(match( $NV_SPECIFIC_PROBLEM_01, ""))
+			{
+				if(match( $NV_SPECIFIC_PROBLEM_02, ""))
+				{
+					@Summary = $ProbCause
+				}
+				else
+				{
+					@Summary = $ProbCause + " : " + $NV_SPECIFIC_PROBLEM_02				
+				}
+			}
+			else
+			{
+				@Summary = $ProbCause + " : " + $NV_SPECIFIC_PROBLEM_01
+			}
+		    }
+ 	 else if ( exists($NV_SPECIFIC_PROBLEM_00))
+		    {
+			@Summary = $ProbCause + " : " + $NV_SPECIFIC_PROBLEM_00
+		    }	
+	
+	
+#convert integer enumerated types into text via lookup tables:
+  if( exists( $NV_TREND_INDICATION))
+  {
+    $NV_TREND_INDICATION = lookup($NV_TREND_INDICATION, TrendIndicationType_t)
+  }
+  if( exists( $NV_THRESHOLD_INFO))
+  { 
+    $NV_THRESHOLD_INFO = lookup($NV_THRESHOLD_INFO, ThresholdIndicationType_t)
+  }
+  if(exists( $NV_ACK_STATE))
+  { 
+    $NV_ACK_STATE = lookup($NV_ACK_STATE, AckState_t)
+  }     
+        
+
+#Use the NV_EVENT_TIME timestamp to set FirstOccurrence and LastOccurrence:
+  if ( exists($NV_EVENT_TIME))
+  {
+    @FirstOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+    @LastOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+  }
+
+#Handle additional event types:  
+	switch($EVENT_TYPE)
+	{
+		case "notifyHeartbeat":
+			@Summary = "Heartbeat message"
+			@NodeAlias = extract($NV_MANAGED_OBJECT_INSTANCE, "IRPAgent=(.*)") 
+			@Severity = 1
+			@Type = 13
+			@ExpireTime = 1800	
+						
+		case "Alarm List Rebuilt":
+		  @Summary = "Alarm List Rebuilt"
+		  		  
+		case "Potential Faulty Alarm List":
+		  @Summary = "Potential Faulty Alarm List"
+		  @Node = $domain_name 
+		 
+		default:
+			if( exists($ManObj))
+			{
+			@NodeAlias = $ManObj
+			}
+	}
+
+	switch(@Severity)
+	{
+		case "1":
+			@Type = 2
+		default:
+			@Type = 1
+	}
+	# 		20100708	Change By Chris Janes of Innovise ESM
+	@EventType = $EVENT_NAME
+	@AddText = $NV_ADDITIONAL_TEXT
+	@ExpireTime = 72000
+	
+	#	20100708 End of Change
+	
+	@Identifier = @Node +" "+ @AlertKey + " " + @AlertGroup + " " + @Type + " "  + @Agent + " " + @Manager + " " + @Summary
+	
+	
+    ##########
+    # Enhancements to event-details
+    ##########
+
+    details($EVENT_NAME,$EVENT_TYPE,$FullSpecificProblem,$NV_ALARM_ID,$NV_NOTIFICATION_ID,$NV_MANAGED_OBJECT_INSTANCE,$NV_SYSTEM_DN,$VendorSpecificInfo,$NV_ACK_STATE)
+    
+	
+	log(DEBUG, "<<<<< Leaving.... Motorola-3gpp-Omcr-Gsr9 rules >>>>>")
+}
+
+#Uncomment the following line if full alarm details are required:
+details($*)

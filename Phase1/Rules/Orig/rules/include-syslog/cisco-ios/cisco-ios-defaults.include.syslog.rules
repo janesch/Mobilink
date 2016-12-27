@@ -1,0 +1,158 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-defaults.include.syslog.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+#       
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-ios-defaults.include.syslog.rules >>>>>")
+
+[$AlertGroup,$ObjType] = lookup($OS_EventId, ciscoIosDefaults)
+
+switch($AlertGroup)
+{
+    case "Unknown"|"":
+    default:
+        @AlertGroup = $AlertGroup
+}
+
+@AlertGroup = @AlertGroup + "**"
+
+switch($ObjType)
+{
+    case "bay":
+        $MOI_Local = extract($Message, "[Bb]ay[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Bay: " + $MOI_Local
+    case "card":
+        $MOI_Local = extract($Message, "[Cc]ard[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = "slot"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Slot: " + $MOI_Local
+    case "circuit":
+        $MOI_Local = extract($Message, "[Cc]ircuit[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Circuit: " + $MOI_Local
+    case "controller":
+        $MOI_Local = extract($Message, "[Cc]ontroller[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = "controller"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Controller: " + $MOI_Local
+    case "fan":
+        $MOI_Local = extract($Message, "[Ff]an[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Fan: " + $MOI_Local
+    case "interface":
+        $MOI_Local = extract($Message, "[Ii]nterface[ :\(]+([^ \),;]*)")
+        switch($MOI_Local)
+        {
+            case "IF Voice":
+                $MOI_Local = extract($Message, "[Ii]nterface[ :\(]+(Voice .*Peer: *[^ \),;]*)")
+            case "IF E1":
+                $MOI_Local = extract($Message, "[Ii]nterface[ :\(]+(E1 [^ \),;]*)")
+            default:
+        }
+        $MOIType_Local = "interface"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Interface: " + $MOI_Local
+    case "interface first": ### The first thing in the message is the interface name.
+        $MOI_Local = extract($Message, "([^ ,;]*)")
+        switch($MOI_Local)
+        {
+            case "IF Voice":
+                $MOI_Local = extract($Message, "[Ii]nterface[ :\(]+(Voice .*Peer: *[^ \),;]*)")
+            case "IF E1":
+                $MOI_Local = extract($Message, "[Ii]nterface[ :\(]+(E1 [^ \),;]*)")
+            default:
+        }
+        $MOIType_Local = "interface"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Interface: " + $MOI_Local
+    case "module":
+        $MOI_Local = extract($Message, "[Mm]odule[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Module: " + $MOI_Local
+    case "modems":
+        $MOI_Local = extract($Message, "Modems (\(.*\) and \(.*\)) ")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Modems: " + $MOI_Local
+    case "port":
+        $MOI_Local = extract($Message, "[Pp]ort[ :\(]+([^ \),;]*)")
+        $MOIType_Local = "port"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Port: " + $MOI_Local
+    case "port slot":
+        $Slot = extract($Message, "[Ss]lot ([0-9]+),? ")
+        $Port = extract($Message, "[Pp]ort ([0-9]+)")
+        $MOI_Local = "Port" + $Slot + "/" + $Port
+        $MOIType_Local = "interface"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Slot: " + $Slot + ", Port: " + $Port
+    case "psu":
+        $MOI_Local = extract($Message, "[Pp]ower +[Ss][uy][ps][pt][le][ym][ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Power Supply: " + $MOI_Local
+    case "shelf":
+        $MOI_Local = extract($Message, "[Ss]helf ([0-9]+) ")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Shelf: " + $MOI_Local
+    case "slot":
+        $MOI_Local = extract($Message, "[Ss]lot[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = "slot"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Slot: " + $MOI_Local
+    case "topnreport":
+        $MOI_Local = extract($Message, "[Rr]eport ([0-9]+) ")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "TopN Report: " + $MOI_Local
+    case "unit":
+        $MOI_Local = extract($Message, "[Uu]nit[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "Unit: " + $MOI_Local
+    case "user":
+        $MOI_Local = extract($Message, "[Uu]ser ([A-Za-z0-9_-]+) ")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "User: " + $MOI_Local
+    case "vtt":
+        $MOI_Local = extract($Message, "VTT[ :\(]+([^ \),:.;]*)")
+        $MOIType_Local = ""
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+        @AlertKey = "VTT: " + $MOI_Local
+    default:
+        @AlertKey = ""
+        
+        $CLARIFIER = $Message
+}
+
+if(regmatch(@AlertGroup, ".*[_ ]Status")||regmatch($Mnemonic, ".*UPDOWN$")||regmatch($Mnemonic, ".*CHANGED?$")||regmatch($Mnemonic, ".*CHG$")||regmatch($Mnemonic, ".*STATE")||regmatch($Mnemonic, ".*STATUS")||regmatch($Mnemonic, ".*FAULT")||regmatch($Mnemonic, ".*ALARM$"))
+{
+    if(regmatch($Message, " [Uu][Pp]$")||regmatch($Message, " [Oo][Kk]$")||regmatch($Message, " [Cc][Ll][Ee][Aa][Rr][Ee][Dd]$")||regmatch($Message, " [Rr][Ee][Cc][Oo][Vv][Ee][Rr][Ee][Dd]$"))
+    {
+        @Severity = 1
+        @Type = 2
+    }
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-defaults.include.syslog.rules >>>>>")

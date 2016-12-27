@@ -1,0 +1,1346 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-MPLS-TE-STD-MIB.include.snmptrap.rules 1.2 
+#    2006/03/30 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  MPLS-TE-STD-MIB
+#
+###############################################################################
+#
+# 1.2 - Some of the objects removed in new version of MPLS-TE-MIB. So changed 
+#       the logic for @AlertKey of MPLS-TE-MIB in all the traps.
+#
+# 1.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+#     - Added details() statements to pass varbind data to alerts.details.
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.10.166.3"|".1.3.6.1.3.95.3": ### MPLS Traffic Engineering - Notifications from MPLS-TE-STD-MIB and MPLS-TE-MIB (20001121)
+
+    log(DEBUG, "<<<<< Entering... IETF-MPLS-TE-STD-MIB.include.snmptrap.rules >>>>>")
+
+    switch($enterprise)
+    {
+        case ".1.3.6.1.2.1.10.166.3":
+            @Agent = "IETF-MPLS-TE-STD-MIB"
+        case ".1.3.6.1.3.95.3":
+            @Agent = "IETF-MPLS-TE-MIB"
+        default:
+    }
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch($specific-trap)
+    {
+        case "1": ### mplsTunnelUp
+
+            ##########
+            # $1 = mplsTunnelAdminStatus
+            # $2 = mplsTunnelOperStatus
+            ##########
+
+            $mplsTunnelAdminStatus = lookup($1, mplsTunnelAdminStatus) + " ( " + $1 + " )"
+            $mplsTunnelOperStatus = lookup($2, mplsTunnelOperStatus) + " ( " + $2 + " )"
+            switch($enterprise)
+            {
+                case ".1.3.6.1.2.1.10.166.3":
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                case ".1.3.6.1.3.95.3": 
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                default:
+            }
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-TE-STD-MIB-mplsTunnelUp"
+
+            @AlertGroup = "MPLS Tunnel Status"
+            @AlertKey = "mplsTunnelEntry." + $mplsTunnelIndex + "." + $mplsTunnelInstance + "." + $mplsTunnelIngressLSRId + "." + $mplsTunnelEgressLSRId
+            switch($2)
+            {
+                case "1": ### up
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS Tunnel Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS Tunnel Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS Tunnel Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS Tunnel Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down 
+                    switch($1)
+                     {
+                       case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS Tunnel Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS Tunnel Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS Tunnel Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Tunnel Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "3": ### testing 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS Tunnel Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS Tunnel Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS Tunnel Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS Tunnel Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "4": ### unknown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }  
+                case "5": ### dormant 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "6": ### notPresent 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "7": ### lowerLayerDown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+
+                default:  
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+              }
+
+            @Summary = @Summary + "  ( Ingress LSR: " + $mplsTunnelIngressLSRId + ", Egress LSR: " + $mplsTunnelEgressLSRId + ", Tunnel Index: " + $mplsTunnelIndex + ", Tunnel Instance: " + $mplsTunnelInstance + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+            details($mplsTunnelIndex,$mplsTunnelInstance,$mplsTunnelIngressLSRId,$mplsTunnelEgressLSRId,$mplsTunnelAdminStatus,$mplsTunnelOperStatus)
+
+        case "2": ### mplsTunnelDown
+
+            ##########
+            # $1 = mplsTunnelAdminStatus 
+            # $2 = mplsTunnelOperStatus
+            ##########
+
+            $mplsTunnelAdminStatus = lookup($1, mplsTunnelAdminStatus) + " ( " + $1 + " )"
+            $mplsTunnelOperStatus = lookup($2, mplsTunnelOperStatus) + " ( " + $2 + " )"
+            switch($enterprise)
+            {
+                case ".1.3.6.1.2.1.10.166.3":
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                case ".1.3.6.1.3.95.3": 
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                default:
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-TE-STD-MIB-mplsTunnelDown"
+
+            @AlertGroup = "MPLS Tunnel Status"
+            @AlertKey = "mplsTunnelEntry." + $mplsTunnelIndex + "." + $mplsTunnelInstance + "." + $mplsTunnelIngressLSRId + "." + $mplsTunnelEgressLSRId
+            switch($2)
+            {
+                case "1": ### up
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS Tunnel Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS Tunnel Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS Tunnel Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS Tunnel Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down 
+                    switch($1)
+                     {
+                       case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS Tunnel Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS Tunnel Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS Tunnel Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Tunnel Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "3": ### testing 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS Tunnel Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS Tunnel Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS Tunnel Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS Tunnel Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "4": ### unknown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }  
+                case "5": ### dormant 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS Tunnel Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "6": ### notPresent 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS Tunnel Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "7": ### lowerLayerDown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS Tunnel Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                default:  
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Tunnel Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+              }
+            
+            @Summary = @Summary + "  ( Ingress LSR: " + $mplsTunnelIngressLSRId + ", Egress LSR: " + $mplsTunnelEgressLSRId + ", Tunnel Index: " + $mplsTunnelIndex + ", Tunnel Instance: " + $mplsTunnelInstance + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+            details($mplsTunnelIndex,$mplsTunnelInstance,$mplsTunnelIngressLSRId,$mplsTunnelEgressLSRId,$mplsTunnelAdminStatus,$mplsTunnelOperStatus)
+
+        case "3": ### mplsTunnelRerouted
+
+            ##########
+            # $1 = mplsTunnelAdminStatus 
+            # $2 = mplsTunnelOperStatus
+            ##########
+
+            $mplsTunnelAdminStatus = lookup($1, mplsTunnelAdminStatus)
+            $mplsTunnelOperStatus = lookup($2, mplsTunnelOperStatus)
+            switch($enterprise)
+            {
+                case ".1.3.6.1.2.1.10.166.3":
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                case ".1.3.6.1.3.95.3": 
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                default:
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-TE-STD-MIB-mplsTunnelRerouted"
+
+            @AlertGroup = "MPLS Tunnel Status"
+            @AlertKey = "mplsTunnelEntry." + $mplsTunnelIndex + "." + $mplsTunnelInstance + "." + $mplsTunnelIngressLSRId + "." + $mplsTunnelEgressLSRId
+            switch($2)
+            {
+                case "1": ### up
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_up_up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_up_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down 
+                    switch($1)
+                     {
+                       case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Tunnel Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "3": ### testing 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "4": ### unknown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }  
+                case "5": ### dormant 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "6": ### notPresent 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "7": ### lowerLayerDown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                default:  
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+              }
+
+            @Summary = "MPLS Tunnel Re-Routed, Operational Status: " + $mplsTunnelOperStatus + ", Admin Status: " + $mplsTunnelAdminStatus + "  ( Ingress LSR: " + $mplsTunnelIngressLSRId + ", Egress LSR: " + $mplsTunnelEgressLSRId + ", Tunnel Index: " + $mplsTunnelIndex + ", Tunnel Instance: " + $mplsTunnelInstance + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+            $mplsTunnelAdminStatus = $mplsTunnelAdminStatus + " ( " + $1 + " )"
+            $mplsTunnelOperStatus = $mplsTunnelOperStatus + " ( " + $2 + " )"
+            details($mplsTunnelIndex,$mplsTunnelInstance,$mplsTunnelIngressLSRId,$mplsTunnelEgressLSRId,$mplsTunnelAdminStatus,$mplsTunnelOperStatus)
+
+        case "4": ### mplsTunnelReoptimized
+
+            ##########
+            # $1 = mplsTunnelAdminStatus
+            # $2 = mplsTunnelOperStatus
+            ##########
+
+            $mplsTunnelAdminStatus = lookup($1, mplsTunnelAdminStatus)
+            $mplsTunnelOperStatus = lookup($2, mplsTunnelOperStatus)
+            switch($enterprise)
+            {
+                case ".1.3.6.1.2.1.10.166.3":
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.2\.1\.10\.166\.3\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                case ".1.3.6.1.3.95.3": 
+                    $mplsTunnelIndex = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.([0-9]+)\.")
+                    $mplsTunnelInstance = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.([0-9]+)\.")
+                    if(regmatch($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+                      {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+$")
+                       
+                         $Integer = $mplsTunnelIngressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelIngressLSRId = $IPv4addr
+                        
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+                        
+                         $Integer = $mplsTunnelEgressLSRId
+                         include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                         $mplsTunnelEgressLSRId = $IPv4addr
+                       }
+                    else
+                       {
+                         $mplsTunnelIngressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+                         $mplsTunnelEgressLSRId = extract($OID1, "3\.6\.1\.3\.95\.2\.2\.1\.34\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+                       }
+                default:
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-TE-STD-MIB-mplsTunnelReoptimized"
+
+            @AlertGroup = "MPLS Tunnel Status"
+            @AlertKey = "mplsTunnelEntry." + $mplsTunnelIndex + "." + $mplsTunnelInstance + "." + $mplsTunnelIngressLSRId + "." + $mplsTunnelEgressLSRId
+            switch($2)
+            {
+                case "1": ### up
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_up_up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_up_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down 
+                    switch($1)
+                     {
+                       case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "3": ### testing 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+               case "4": ### unknown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }  
+                case "5": ### dormant 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "6": ### notPresent 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                case "7": ### lowerLayerDown 
+                    switch($1)
+                     {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                     }
+                default:  
+                    switch($1)
+                    {
+                        case "1": ### up 
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down 
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+              }
+
+            @Summary = "MPLS Tunnel Re-Optimized, Operational Status: " + $mplsTunnelOperStatus + ", Admin Status: " + $mplsTunnelAdminStatus + "  ( Ingress LSR: " + $mplsTunnelIngressLSRId + ", Egress LSR: " + $mplsTunnelEgressLSRId + ", Tunnel Index: " + $mplsTunnelIndex + ", Tunnel Instance: " + $mplsTunnelInstance + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $mplsTunnelAdminStatus + " " + $mplsTunnelOperStatus
+
+            $mplsTunnelAdminStatus = $mplsTunnelAdminStatus + " ( " + $1 + " )"
+            $mplsTunnelOperStatus = $mplsTunnelOperStatus + " ( " + $2 + " )"
+            details($mplsTunnelIndex,$mplsTunnelInstance,$mplsTunnelIngressLSRId,$mplsTunnelEgressLSRId,$mplsTunnelAdminStatus,$mplsTunnelOperStatus)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-MPLS-TE-STD-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-MPLS-TE-STD-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-MPLS-TE-STD-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-MPLS-TE-STD-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-MPLS-TE-STD-MIB.include.snmptrap.rules >>>>>")

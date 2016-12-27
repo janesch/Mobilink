@@ -1,0 +1,77 @@
+###############################################################################
+#
+#	sun-SUN-FM-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for SUN FM alarms
+#
+#       V0.1	20110713	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.42.2.195.1.7":  ### -  (from SUN-FM-MIB)
+
+	log(DEBUG, "<<<<< Entering... sun-SUN-FM-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "SUN"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "SUN-FM-NOTIFICATION-MIB"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_FM_001"
+	
+	switch($specific-trap) {
+		case "1": ### - sunFmProblemTrap
+			#######################
+			#
+			# Trap notification that a diagnosis has been made or the
+			# fault manager fmd(1M) has restarted and the corresponding
+			# problem is still believed to be present in the managed entity.
+			#
+			# $1 = sunFmProblemUUID
+			#
+			#      The Universal Unique Identifier (UUID) for this problem, as
+			#      recorded by fmd(1M) and shown by fmadm(1M) or fmdump(1M).
+			#
+			# $2 = sunFmProblemCode
+			#
+			#      The SUNW-MSG-ID static message identifier for this class of
+			#      problem, as recorded by fmd(1M) and shown by fmdump(1M).  The
+			#      message identifier can be used as a key at http://sun.com/msg/
+			#
+			# $3 = sunFmProblemURL
+			#
+			#      The URL of an appropriate knowledge article providing more
+			#      detailed information about this problem.
+			#
+			#######################
+			$sunFmProblemUUID = $1
+			$sunFmProblemCode = $2
+			$sunFmProblemURL = $3
+			
+			@Type = 1
+			@Severity = 3
+			@ExpireTime = 18000
+			@AlertKey = $sunFmProblemUUID + $sunFmProblemCode + $sunFmProblemURL
+			@Summary = "sunFmProblemTrap: # A diagnosis has been made or the fault manager fmd(1M) has restarted. Problem is still believed to be present in the managed entity: " + $sunFmProblemUUID + " " + $sunFmProblemCode + " " + $sunFmProblemURL
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... sun-SUN-FM-MIB.include.snmptrap.rules >>>>>")

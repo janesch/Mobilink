@@ -1,0 +1,675 @@
+//------------------------------------------------------------------------------------------------------- 
+// Policy Name:  ML_IP_CORE
+//
+// Author: Mihai Strava, Innovise 07/09/2011
+// Description: This policy processes non-SONET ITMM MPLS link down events.
+// 
+//
+//    EventId in ('NmosLinkState', 'NmosPingFail') and Class=8000 and Type=1 and MaintFlag in (1,2) and ((Severity>0 and ImpactFlag=4) or (Severity=0 and ImpactFlag=6 and SyntheticServerSerial > 0)) and ParentChild=0
+//    
+//    V 1.0  2011/09/07  Mihai Strava  
+//------------------------------------------------------------------------------------------------------- 
+log("------------Starting ML_IP_CORE------------------");
+isClear = false;
+if(@Severity==0)
+{
+    isClear = true;
+}
+if(!isClear)
+{
+ log("Serial: " + @Serial + " is active");
+ @ImpactFlag = 5;
+ type = 1;
+ CurrentSerial = @Serial;
+ @HibernateFlag = 2; 
+ ReturnEvent(EventContainer);
+ 
+// Updating HibernateFlag and return event
+//sleep_time = 120; 
+if(@EventId=="NmosLinkState")
+{
+ //sleep_time = 120; 
+ sleep_time = 3; 
+}
+else
+{
+ //sleep_time = 300; 
+ sleep_time = 5;
+}
+Action_key = 'IP_CORE_' + CurrentSerial;
+Log("Current Serial: "+CurrentSerial+"#Action_key = " + Action_key);
+Hibernate(Action_key, "Sleeping", sleep_time);
+// Return from hibernation
+RemoveHibernation(Action_key); 
+// Check if event still exists and still active 
+EventDB = "OS_Status";
+EventFilter = "Serial = " + CurrentSerial + " and Severity>0";
+EventOutput = GetByFilter(EventDB,EventFilter,false);
+NumEventOutput = Length(EventOutput);
+log("IBMDEBUG: IP_CORE11 # Number of rows: " + NumEventOutput);
+if(NumEventOutput==0)
+{
+ Log("Serial: " + CurrentSerial + " is not in OS anymore or was cleared. Exiting...");
+ exit();
+}
+@HibernateFlag = 3;
+ReturnEvent(EventContainer);
+lastocc = @LastOccurrence;
+}
+else
+{
+ log("Serial: " + @Serial + " is clear");
+ @ImpactFlag = 99;
+ type = 2;
+ lastocc = @ClearTime;
+ ReturnEvent(EventContainer);
+}
+
+// Check if RemoteInterface is set and if not, exit
+/*
+if ((@RemoteInterface=="") || (@RemoteInterface=="N/A"))
+{
+ if(!isClear)
+ {
+  log("Serial: " + @Serial + " has RemoteInterface not set: " + @RemoteInterface + ". Exiting...");
+  @ImpactFlag = 6;
+  @RemoteInterface="N/A";
+ }
+ else
+ {
+  log("Serial: " + @Serial + " has RemoteInterface not available: " + @RemoteInterface + ". Exiting...");
+  @ImpactFlag = 100;
+ } 
+ ReturnEvent(EventContainer);
+ exit();
+}
+else
+{
+ log("Serial: " + @Serial + " has RemoteInterface set to: " + @RemoteInterface);
+ @Information = @RemoteInterface;
+ ReturnEvent(EventContainer);
+}
+*/ 
+
+// Check if RemoteInterface is set and if not set it to default value
+if (@RemoteInterface=="")
+{
+  log("Serial: " + @Serial + " # RemoteInterface is not set. Setting it to NONE");
+  @RemoteInterface="NONE";
+  ReturnEvent(EventContainer);
+}
+
+log("Serial: " + @Serial + " # NodeAlias: " + @NodeAlias + " # RemoteInterface: " + @RemoteInterface);
+// Extract A node & Z node values from @NodeAlias & @RemoteInterface
+if(@EventId=="NmosLinkState")
+{
+ NodeAliasString = split(@NodeAlias,"[");
+ if (NodeAliasString[0] not like NULL)
+ {
+  A_Node=NodeAliasString[0];
+ }
+ else
+ {
+  log("Serial: " + @Serial + " # NodeAlias has wrong format: " + @NodeAlias);
+  exit();
+ }
+
+ if(@RemoteInterface like "Connected to")
+ {
+  RemoteInterfaceString = split(@RemoteInterface," ");
+  if (RemoteInterfaceString[4] not like NULL)
+  {
+   Z_Node=RemoteInterfaceString[4];
+  }
+ }
+ elseif(@RemoteInterface like "di=")
+ {
+ RemoteInterfaceString = split(@RemoteInterface,":");
+ if (RemoteInterfaceString[1] not like NULL)
+ {
+  znode = split(RemoteInterfaceString[1],"#");
+  znode1 = split(znode[0],"=");
+  Z_Node=znode1[1];
+ }
+ }
+ else
+ {
+  Z_Node=@RemoteInterface;
+ }
+}
+else
+{
+ A_Node=@NodeAlias;
+ Z_Node=@RemoteInterface;
+}
+@Z_Node = Z_Node;
+ReturnEvent(EventContainer);
+log("Serial: " + @Serial + " # EventId: " + @EventId + " # A_Node: " + A_Node + " # Z_Node: " + Z_Node);
+
+// Check if A node is from CE, AGGREGATION or CORE layer and if not, exit
+if ((A_Node like "-L3-") || (A_Node like "-JL3-") || (A_Node like "-JRT-"))
+{
+ log("Serial: " + @Serial + " is from CE, AGGREGATION or CORE layer. NodeAlias: " + @NodeAlias); 
+}
+else
+{
+ if(!isClear)
+ {
+  @ImpactFlag = 6;
+ }
+ else
+ {
+  @ImpactFlag = 100;
+ } 
+ log("Serial: " + @Serial + " is not from CE, AGGREGATION or CORE layer. NodeAlias: " + @NodeAlias + ". Exiting...");
+ ReturnEvent(EventContainer);
+ exit();
+}
+
+// Check if Z node is from CE, AGGREGATION or CORE layer and if not, exit
+/*
+if ((Z_Node like "-L3-") || (Z_Node like "-JL3-") || (Z_Node like "-JRT-"))
+{
+ log("Serial: " + @Serial + " Z Node is from CE, AGGREGATION or CORE layer. Z_Node: " + Z_Node); 
+}
+else
+{
+ if(!isClear)
+ {
+  @ImpactFlag = 6;
+ }
+ else
+ {
+  @ImpactFlag = 100;
+ } 
+ log("Serial: " + @Serial + " Z Node is not from CE, AGGREGATION or CORE layer. Z_Node: " + Z_Node + ". Exiting...");
+ ReturnEvent(EventContainer);
+ exit();
+}
+*/
+
+// Extract downstream information for CORE-AGG events
+if ((A_Node like "-JRT-") && (Z_Node like "-JL3-"))
+{
+ Info="";
+ ITNMDB = "mpls_connections";
+ DownstreamFilter = "LocalNodeName='" + Z_Node + "'";
+ DownstreamFilterOutput = GetByFilter(ITNMDB,DownstreamFilter,false);
+ NumDownstreamFilterOutput = Length(DownstreamFilterOutput);
+ log("IBMDEBUG: IP_CORE12 # Number of rows: " + NumDownstreamFilterOutput + " for Serial: " + @Serial);
+ 
+ i=0;
+ while (i<NumDownstreamFilterOutput)
+ {
+    DownNode = DownstreamFilterOutput[i].RemoteNodeName;
+ log("Serial: " + @Serial + " DownNode is: " + DownNode);
+    DownMPLSDB = "OS_Status";
+ DownMPLSFilter = "NodeAlias like '" + DownNode + "' and EventId='NmosLinkState' and Class=8000 and Type=1 and Severity>2 and ParentChild=0 and Domain='IP MPLS'";
+ DownMPLSFilterOutput = GetByFilter(DownMPLSDB, DownMPLSFilter, False);
+ NumDownMPLSFilterOutput = Length(DownMPLSFilterOutput);
+ log("IBMDEBUG: IP_CORE13 # Number of rows: " + NumDownMPLSFilterOutput + " for Serial: " + @Serial);
+ 
+ if(NumDownMPLSFilterOutput==0) 
+ {
+  log("Serial: " + @Serial + " No downstream active alarms found for DownNode: " + DownNode);
+ }
+ else
+ {
+  log("Serial: " + @Serial + " There are downstream active alarms for DownNode: " + DownNode);
+ }
+ 
+ j=0;
+ while (j<NumDownMPLSFilterOutput)
+ {
+  DownInterface = DownMPLSFilterOutput[j].RemoteInterface;
+  if (DownInterface=="")
+  {
+   log("Serial: " + DownMPLSFilterOutput[j].Serial + " # RemoteInterface is not set. Setting it to NONE");
+   DownInterface="NONE";
+  }
+  
+  if(DownInterface like "Connected to")
+  {
+   RemoteInterfaceString = split(DownInterface," ");
+   if (RemoteInterfaceString[4] not like NULL)
+   {
+    NodeInfo=RemoteInterfaceString[4];
+   }
+  }
+  elseif(DownInterface like "di=")
+  {
+   RemoteInterfaceString = split(DownInterface,":");
+   if (RemoteInterfaceString[1] not like NULL)
+   {
+    znode = split(RemoteInterfaceString[1],"#");
+    znode1 = split(znode[0],"=");
+    NodeInfo=znode1[1];
+   }
+  }
+  else
+  {
+   NodeInfo=DownInterface;
+  }
+  
+  if(Info=="")
+  {
+   Info = Z_Node + ">" + DownNode + ">" + NodeInfo;
+  }
+  else
+  {
+   Info = Info + ";" + Z_Node + ">" + DownNode + ">" + NodeInfo;
+  }
+  j = j + 1;
+ }
+ i = i + 1;
+ }
+ 
+ log("Serial: " + @Serial + " This is CORE-AGG event - downstream check. Information is: " + Info);
+ if(Info=="")
+ {
+ @Information = Z_Node;
+ }
+ else
+ {
+ @Information = Info;
+ }
+ ReturnEvent(EventContainer);
+}
+else
+{
+ log("Serial: " + @Serial + " No downstream check. Information is: " + Z_Node);
+ @Information = Z_Node;
+ ReturnEvent(EventContainer);
+}
+
+paramSummary=@Summary;
+paramType=type;
+paramNodeAlias=A_Node;
+paramLastOcc=lastocc;
+paramSerial=@Serial;
+// Starting synchronized block
+synchronized(IP_CORE_SE_block)
+{
+if(@EventId=="NmosLinkState")
+{
+// Count number of physical connections between A_Node & Z_Node in ITNM
+ITNMDB = "mpls_connections";
+ITNMFilter = "LocalNodeName='" + A_Node + "' and RemoteNodeName='" + Z_Node + "'";
+ITNMFilterOutput = GetByFilter(ITNMDB,ITNMFilter,false);
+NumITNMFilterOutput = Length(ITNMFilterOutput);
+log("IBMDEBUG: IP_CORE1 # Number of rows: " + NumITNMFilterOutput + " for Serial: " + @Serial);
+// Check for other MPLS link down alarms between the A node and the Z node layer in OS
+MPLSDB = "OS_Status";
+MPLSFilter = "NodeAlias like '" + A_Node + "' and RemoteInterface like '" + Z_Node + "' and EventId='NmosLinkState' and Class=8000 and Type=1 and Severity>2 and ParentChild=0 and Domain='IP MPLS'";
+MPLSFilterOutput = GetByFilter(MPLSDB, MPLSFilter, False);
+NumMPLSFilterOutput = Length(MPLSFilterOutput);
+log("IBMDEBUG: IP_CORE2 # Number of rows: " + NumMPLSFilterOutput + " for Serial: " + @Serial);
+}
+// Check for a SE already raised
+SE_A_Node = A_Node + ":" + Z_Node;
+OSDB = "OS_Status";
+OSFilter = "NodeAlias='" + SE_A_Node + "' And EventId in ('SYN_IP_MPLS_001','SYN_IP_MPLS_002') And Severity = 5";
+OSFilterOutput = GetByFilter(OSDB, OSFilter, False);
+NumOSFilterOutput = Length(OSFilterOutput); 
+log("IBMDEBUG: IP_CORE3 # Number of rows: " + NumOSFilterOutput + " for Serial: " + @Serial);
+if (!isClear)
+{
+if ((NumOSFilterOutput>0) && (@LogTicket==0))
+{
+ SEServerSerial = OSFilterOutput[0].ServerSerial;
+ SEServerName = OSFilterOutput[0].ServerName;
+ SEeventId = OSFilterOutput[0].EventId;
+ log("Serial: " + @Serial + " # SE found: " + SEServerSerial + " EventId: " + SEeventId);
+ 
+ @SyntheticServerSerial = SEServerSerial;
+ @SyntheticServerName = SEServerName;
+ ReturnEvent(EventContainer);
+ MobiLib.AddGenericJournal(SEServerSerial,paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+ log("Serial: " + @Serial + " # " + SEServerSerial + "-" + paramSummary + "-" + paramSerial + "-" +paramLastOcc+"-"+paramNodeAlias+"-"+paramType);
+ 
+ log("SE information before: " + OSFilterOutput[0].Information + " # NE information: " + @Information);
+ if (OSFilterOutput[0].Information not like @Information)
+ {
+  OSFilterOutput[0].Information = OSFilterOutput[0].Information + ":" + @Information;
+ }
+ log("SE information after: " + OSFilterOutput[0].Information);
+ 
+ if (@EventId=="NmosLinkState")
+ {
+  if ((SEeventId=="SYN_IP_MPLS_001") and (NumITNMFilterOutput==NumMPLSFilterOutput))
+  {
+   OSFilterOutput[0].EventId = "SYN_IP_MPLS_002";
+   OSFilterOutput[0].Class = 201202;
+   OSFilterOutput[0].Summary = "MPLS node isolated: " + Z_Node;
+   log("Serial: " + @Serial + " # SE SYN_IP_MPLS_001: " + SEServerSerial + " upgraded to SYN_IP_MPLS_002");
+  }
+ }
+}
+else
+{
+if(@EventId=="NmosLinkState")
+{
+ if (NumITNMFilterOutput==NumMPLSFilterOutput)
+ {
+  SynthEvent = NewObject();
+    SynthEvent.Node = SE_A_Node;
+                SynthEvent.NodeAlias = SE_A_Node;
+                SynthEvent.Z_Node = Z_Node;
+                SynthEvent.Agent = "Netcool Impact";
+                SynthEvent.Manager = "Netcool Impact";
+                SynthEvent.Summary = "MPLS node isolated: " + Z_Node;
+                SynthEvent.AlertGroup = @AlertGroup;
+                SynthEvent.AlertKey = @AlertKey;
+                SynthEvent.EventType = @EventType;
+                SynthEvent.EventId = "SYN_IP_MPLS_002";
+                SynthEvent.Severity = 5;
+                SynthEvent.Type = 1;
+                SynthEvent.Identifier = getdate() + SynthEvent.Node + SynthEvent.Summary + SynthEvent.EventId;
+                SynthEvent.FirstOccurrence = @LastOccurrence;
+                SynthEvent.LastOccurrence = @LastOccurrence;
+                SynthEvent.LogTicket = 1;
+                SynthEvent.Class = 201202;
+                SynthEvent.ImpactFlag = 4;
+                SynthEvent.MaintFlag = @MaintFlag;
+                SynthEvent.Site = @Site;
+                SynthEvent.SiteCode = @SiteCode;
+                SynthEvent.Domain = @Domain;
+                SynthEvent.Region = @Region;
+                SynthEvent.ManCity = @ManCity;
+                SynthEvent.CovCity = @CovCity;
+                SynthEvent.OutsourceContractor = @OutsourceContractor;
+                SynthEvent.BusImportance = @BusImportance;
+                SynthEvent.Vendor = @Vendor;
+                SynthEvent.OmcEms = @OmcEms;
+                SynthEvent.BSC_Name = @BSC_Name;
+                SynthEvent.BTS_Name = @BTS_Name;
+                SynthEvent.AdvCorrServerSerial = @Serial;
+    SynthEvent.Information = @Information;
+                // 20110718 INC22618 Chris Janes 
+                SynthEvent.OwnerUID = 65534;
+                // 20110718 End Change
+          AddDataItem('OS_Status', SynthEvent );
+    
+  // Find SE that was created  
+  IPDB = "OS_Status";
+  IPFilter = "NodeAlias='" + SE_A_Node + "' And EventId = 'SYN_IP_MPLS_002' And Severity = 5";
+  IPFilterOutput = GetByFilter(IPDB, IPFilter, False);
+  NumIPFilterOutput = Length(IPFilterOutput); 
+  log("IBMDEBUG: IP_CORE4 # Number of rows: " + NumIPFilterOutput + " for Serial: " + @Serial);
+  
+  if(NumIPFilterOutput>0)
+  {
+   @SyntheticServerSerial = IPFilterOutput[0].ServerSerial;
+   @SyntheticServerName = IPFilterOutput[0].ServerName;
+   ReturnEvent(EventContainer);
+   ExistingIPOutputSerial=IPFilterOutput[0].ServerSerial;
+   log("Serial: " + @Serial + " # SYN_IP_MPLS_002 SE created: " + ExistingIPOutputSerial);
+   MobiLib.AddGenericJournal(ExistingIPOutputSerial,paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+   log("Serial: " + @Serial + " # " + ExistingIPOutputSerial + "-" + paramSummary + "-" + paramSerial + "-" +paramLastOcc+"-"+paramNodeAlias+"-"+paramType);
+  }
+  else
+  {
+   log("Serial: " + @Serial + " # SE SYN_IP_MPLS_002 could not be created. Exiting...");
+   exit();
+  }
+  
+  PINGDB = "OS_Status";
+  PINGFilter = "NodeAlias='" + A_Node + "' and RemoteInterface='" + Z_Node + "' and EventId='NmosPingFail' and Class=8000 and Type=1 and Severity>2 and Domain='IP MPLS' and LogTicket = 0";
+  PINGFilterOutput = GetByFilter(PINGDB, PINGFilter, False);
+  NumPINGFilterOutput = Length(PINGFilterOutput);
+  log("IBMDEBUG: IP_CORE6 # Number of rows: " + NumPINGFilterOutput + " for Serial: " + @Serial);
+  
+  i=0;
+  while (i<NumPINGFilterOutput)
+  {
+   PINGFilterOutput[i].SyntheticServerSerial = IPFilterOutput[0].ServerSerial;
+   PINGFilterOutput[i].SyntheticServerName = IPFilterOutput[0].ServerName;
+   ReturnEvent(EventContainer);
+   paramSummary=PINGFilterOutput[i].Summary;
+   paramType=1;
+   paramNodeAlias=PINGFilterOutput[i].NodeAlias;
+   paramLastOcc=PINGFilterOutput[i].LastOccurrence;
+   paramSerial=PINGFilterOutput[i].Serial;
+   MobiLib.AddGenericJournal(ExistingIPOutputSerial,paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+   log("Serial: " + @Serial + " # " + ExistingIPOutputSerial + "-" + paramSummary + "-" + paramSerial + "-" +paramLastOcc+"-"+paramNodeAlias+"-"+paramType);
+   
+   log("SE information before: " + IPFilterOutput[0].Information + " # NE information: " + PINGFilterOutput[i].Information);
+   if (IPFilterOutput[0].Information not like PINGFilterOutput[i].Information)
+   {
+    IPFilterOutput[0].Information = IPFilterOutput[0].Information + ":" + @Information;
+   }
+   log("SE information after: " + IPFilterOutput[0].Information);
+   
+   i = i + 1;
+  }
+ }
+ else
+ {
+  SynthEvent = NewObject();
+    SynthEvent.Node = SE_A_Node;
+                SynthEvent.NodeAlias = SE_A_Node;
+                SynthEvent.Z_Node = Z_Node;
+                SynthEvent.Agent = "Netcool Impact";
+                SynthEvent.Manager = "Netcool Impact";
+                SynthEvent.Summary = "MPLS interface down between: " + A_Node + " and " + Z_Node;
+                SynthEvent.AlertGroup = @AlertGroup;
+                SynthEvent.AlertKey = @AlertKey;
+                SynthEvent.EventType = @EventType;
+                SynthEvent.EventId = "SYN_IP_MPLS_001";
+                SynthEvent.Severity = 5;
+                SynthEvent.Type = 1;
+                SynthEvent.Identifier = getdate() + SynthEvent.Node + SynthEvent.Summary + SynthEvent.EventId;
+                SynthEvent.FirstOccurrence = @LastOccurrence;
+                SynthEvent.LastOccurrence = @LastOccurrence;
+                SynthEvent.LogTicket = 1;
+                SynthEvent.Class = 201201;
+                SynthEvent.ImpactFlag = 4;
+                SynthEvent.MaintFlag = @MaintFlag;
+                SynthEvent.Site = @Site;
+                SynthEvent.SiteCode = @SiteCode;
+                SynthEvent.Domain = @Domain;
+                SynthEvent.Region = @Region;
+                SynthEvent.ManCity = @ManCity;
+                SynthEvent.CovCity = @CovCity;
+                SynthEvent.OutsourceContractor = @OutsourceContractor;
+                SynthEvent.BusImportance = @BusImportance;
+                SynthEvent.Vendor = @Vendor;
+                SynthEvent.OmcEms = @OmcEms;
+                SynthEvent.BSC_Name = @BSC_Name;
+                SynthEvent.BTS_Name = @BTS_Name;
+                SynthEvent.AdvCorrServerSerial = @Serial;
+    SynthEvent.Information = @Information;
+                // 20110718 INC22618 Chris Janes 
+                SynthEvent.OwnerUID = 65534;
+                // 20110718 End Change
+          AddDataItem('OS_Status', SynthEvent );
+    
+  // Find SE that was created  
+  IPDB = "OS_Status";
+  IPFilter = "NodeAlias='" + SE_A_Node + "' And EventId = 'SYN_IP_MPLS_001' And Severity = 5";
+  IPFilterOutput = GetByFilter(IPDB, IPFilter, False);
+  NumIPFilterOutput = Length(IPFilterOutput); 
+  log("IBMDEBUG: IP_CORE5 # Number of rows: " + NumIPFilterOutput + " for Serial: " + @Serial);
+  
+  if(NumIPFilterOutput>0)
+  {
+   @SyntheticServerSerial = IPFilterOutput[0].ServerSerial;
+   @SyntheticServerName = IPFilterOutput[0].ServerName;
+   ReturnEvent(EventContainer);
+   ExistingIPOutputSerial=IPFilterOutput[0].ServerSerial;
+   log("Serial: " + @Serial + " # SYN_IP_MPLS_001 SE created: " + ExistingIPOutputSerial);
+   MobiLib.AddGenericJournal(ExistingIPOutputSerial,paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+   log("Serial: " + @Serial + " # " + ExistingIPOutputSerial + "-" + paramSummary + "-" + paramSerial + "-" +paramLastOcc+"-"+paramNodeAlias+"-"+paramType);
+  }
+  else
+  {
+   log("Serial: " + @Serial + " # SE SYN_IP_MPLS_001 could not be created. Exiting...");
+   exit();
+  }
+  
+  PINGDB = "OS_Status";
+  PINGFilter = "NodeAlias='" + A_Node + "' and RemoteInterface='" + Z_Node + "' and EventId='NmosPingFail' and Class=8000 and Type=1 and Severity>2 and Domain='IP MPLS' and LogTicket = 0";
+  PINGFilterOutput = GetByFilter(PINGDB, PINGFilter, False);
+  NumPINGFilterOutput = Length(PINGFilterOutput);
+  log("IBMDEBUG: IP_CORE7 # Number of rows: " + NumPINGFilterOutput + " for Serial: " + @Serial);
+  
+  i=0;
+  while (i<NumPINGFilterOutput)
+  {
+   PINGFilterOutput[i].SyntheticServerSerial = IPFilterOutput[0].ServerSerial;
+   PINGFilterOutput[i].SyntheticServerName = IPFilterOutput[0].ServerName;
+   ReturnEvent(EventContainer);
+   paramSummary=PINGFilterOutput[i].Summary;
+   paramType=1;
+   paramNodeAlias=PINGFilterOutput[i].NodeAlias;
+   paramLastOcc=PINGFilterOutput[i].LastOccurrence;
+   paramSerial=PINGFilterOutput[i].Serial;
+   MobiLib.AddGenericJournal(ExistingIPOutputSerial,paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+   log("Serial: " + @Serial + " # " + ExistingIPOutputSerial + "-" + paramSummary + "-" + paramSerial + "-" +paramLastOcc+"-"+paramNodeAlias+"-"+paramType);
+   
+   log("SE information before: " + IPFilterOutput[0].Information + " # NE information: " + PINGFilterOutput[i].Information);
+   if (IPFilterOutput[0].Information not like PINGFilterOutput[i].Information)
+   {
+    IPFilterOutput[0].Information = IPFilterOutput[0].Information + ":" + @Information;
+   }
+   log("SE information after: " + IPFilterOutput[0].Information);
+   
+   i = i + 1;
+  }
+ }
+}
+else
+{
+ if ((@SyntheticServerSerial==0) && (@LogTicket==0))
+ {
+  @LogTicket = 1;
+  ReturnEvent(EventContainer);
+  log("NmosPingFail: " + @Serial + " is a standalone event. Raising TT against it");
+ }
+ else
+ {
+  log("NmosPingFail event: " + @Serial + " was already flagged as child of an SE");
+ }
+}
+}
+}
+else
+{
+if (NumOSFilterOutput>0)
+{
+ SEServerSerial = OSFilterOutput[0].ServerSerial;
+ SEeventId = OSFilterOutput[0].EventId;
+ MobiLib.AddGenericJournal(SEServerSerial,paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+ log("Serial: " + @Serial + " # " + SEServerSerial + "-" + paramSummary + "-" + paramSerial + "-" +paramLastOcc+"-"+paramNodeAlias+"-"+paramType);
+ 
+ if(@EventId=="NmosLinkState")
+ {
+ if (SEeventId=="SYN_IP_MPLS_002") 
+ {
+  if ((NumITNMFilterOutput!=NumMPLSFilterOutput) && (NumMPLSFilterOutput>0))
+  {
+   OSFilterOutput[0].EventId = "SYN_IP_MPLS_001";
+   OSFilterOutput[0].Class = 201201;
+   OSFilterOutput[0].Summary = "MPLS interface down between: " + A_Node + " and " + Z_Node;
+   log("Serial: " + @Serial + " # SE SYN_IP_MPLS_002: " + SEServerSerial + " downgraded to SYN_IP_MPLS_001");
+  }
+  elseif (NumMPLSFilterOutput==0)
+  {
+   PINGDB = "OS_Status";
+   PINGFilter = "NodeAlias='" + A_Node + "' and RemoteInterface='" + Z_Node + "' and EventId='NmosPingFail' and Class=8000 and Type=1 and Severity>2 and Domain='IP MPLS' and SyntheticServerSerial = " + OSFilterOutput[0].Serial;
+   PINGFilterOutput = GetByFilter(PINGDB, PINGFilter, False);
+   NumPINGFilterOutput = Length(PINGFilterOutput);
+   log("IBMDEBUG: IP_CORE8 # Number of rows: " + NumPINGFilterOutput + " for Serial: " + @Serial);
+  
+   if (NumPINGFilterOutput==0)
+   {
+    OSFilterOutput[0].Severity = 0;
+    OSFilterOutput[0].ExpireID = 65574;
+    OSFilterOutput[0].ClearTime = @ClearTime;
+    OSFilterOutput[0].ImpactDate = getdate();
+    OSFilterOutput[0].ImpactFlag = 6;
+    log("Serial: " + @Serial + " # SE SYN_IP_MPLS_002: " + SEServerSerial + " cleared");
+   }
+   else
+   {
+    OSFilterOutput[0].EventId = "SYN_IP_MPLS_001";
+    OSFilterOutput[0].Class = 201201;
+    OSFilterOutput[0].Summary = "MPLS interface down between: " + A_Node + " and " + Z_Node;
+    log("Serial: " + @Serial + " # SE SYN_IP_MPLS_002: " + SEServerSerial + " downgraded to SYN_IP_MPLS_001. No LinkState child active, PingFail child events active");
+   }
+  }
+ }
+ elseif (SEeventId=="SYN_IP_MPLS_001") 
+ {
+  if (NumMPLSFilterOutput==0)
+  {
+   PINGDB = "OS_Status";
+   PINGFilter = "NodeAlias='" + A_Node + "' and RemoteInterface='" + Z_Node + "' and EventId='NmosPingFail' and Class=8000 and Type=1 and Severity>2 and Domain='IP MPLS' and SyntheticServerSerial = " + OSFilterOutput[0].Serial;
+   PINGFilterOutput = GetByFilter(PINGDB, PINGFilter, False);
+   NumPINGFilterOutput = Length(PINGFilterOutput);
+   log("IBMDEBUG: IP_CORE9 # Number of rows: " + NumPINGFilterOutput + " for Serial: " + @Serial);
+  
+   if (NumPINGFilterOutput==0)
+   {
+    OSFilterOutput[0].Severity = 0;
+    OSFilterOutput[0].ExpireID = 65574;
+    OSFilterOutput[0].ClearTime = @ClearTime;
+    OSFilterOutput[0].ImpactDate = getdate();
+    OSFilterOutput[0].ImpactFlag = 6;
+    log("Serial: " + @Serial + " # SE SYN_IP_MPLS_001: " + SEServerSerial + " cleared");
+   }
+   else
+   {
+    log("Serial: " + @Serial + " # SE SYN_IP_MPLS_001: " + SEServerSerial + " # No LinkState child active, PingFail child events active");
+   }
+  }
+  else
+  {
+   log("Serial: " + @Serial + " # SE SYN_IP_MPLS_001: " + SEServerSerial + " still has active children");
+  }
+ }
+ }
+ else
+ {
+  PINGDB = "OS_Status";
+  PINGFilter = "EventId in ('NmosLinkState','NmosPingFail') and Class=8000 and Type=1 and Severity>2 and Domain='IP MPLS' and SyntheticServerSerial = " + OSFilterOutput[0].Serial;
+  PINGFilterOutput = GetByFilter(PINGDB, PINGFilter, False);
+  NumPINGFilterOutput = Length(PINGFilterOutput);
+  log("IBMDEBUG: IP_CORE10 # Number of rows: " + NumPINGFilterOutput + " for Serial: " + @Serial);
+  
+  if (NumPINGFilterOutput==0)
+  {
+   OSFilterOutput[0].Severity = 0;
+   OSFilterOutput[0].ExpireID = 65574;
+   OSFilterOutput[0].ClearTime = @ClearTime;
+   OSFilterOutput[0].ImpactDate = getdate();
+   OSFilterOutput[0].ImpactFlag = 6;
+   log("Serial: " + @Serial + " # SE: " + SEServerSerial + " cleared");
+  }
+  else
+  {
+   log("Serial: " + @Serial + " # SE: " + SEServerSerial + " still has active children");
+  }
+ }
+}
+else
+{
+ log("Serial: " + @Serial + " # SyntheticServerSerial: " + @SyntheticServerSerial + " doesn't have any active parent. Exiting...");
+}
+}
+ 
+if(!isClear)
+{
+ @ImpactFlag = 6;
+}
+else
+{
+ @ImpactFlag = 100;
+}
+ReturnEvent(EventContainer); 
+  
+// Ending synchronized block
+}
+  
+Log("ImpactFlag=" + @ImpactFlag + " for serial: "+@Serial);  
+log("------------Stopping ML_IP_CORE------------------"); 

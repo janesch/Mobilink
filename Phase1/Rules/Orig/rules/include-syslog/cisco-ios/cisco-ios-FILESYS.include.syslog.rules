@@ -1,0 +1,122 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-FILESYS.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "FILESYS": ### File system
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-FILESYS.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CF":
+    
+            ##########
+            # The status of a file system has changed.
+            #
+            # %FILESYS-5-CF: [chars] [chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+
+        case "DEV":
+    
+            ##########
+            # The system status of a file has changed. Follow any
+            # instructions provided with the message.
+            #
+            # %FILESYS-5-DEV: PCMCIA flash card [chars] [chars]
+            ##########
+    
+            if (regmatch($Message, "inserted"))
+            {
+                $MOI_Local = extract($Message, "into [Ss]lot ?([0-9]+)")
+                $MOIType_Local = "slot"
+                include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+                
+                @AlertKey = "Slot: " + $MOI_Local
+                @Severity = 1
+                @Type = 2
+            }
+            else if (regmatch($Message, "removed"))
+            {
+                $MOI_Local = extract($Message, "from [Ss]lot ?([0-9]+)")
+                $MOIType_Local = "slot"
+                include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+                
+                @AlertKey = "Slot: " + $MOI_Local
+            }
+            else
+            {
+                @AlertKey = ""
+
+                $CLARIFIER = $Message
+            }
+    
+        case "FLASH":
+    
+            ##########
+            # A file system error has occurred.
+            #
+            # %FILESYS-3-FLASH: [chars] [chars] error [dec]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+
+        case "IFLASH":
+    
+            ##########
+            # A file system status has changed.
+            #
+            # %FILESYS-5-IFLASH: Internal Flash [chars] [chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+
+        case "UNKNDEV":
+    
+            ##########
+            # A file system status has changed.
+            #
+            # %FILESYS-5-UNKNDEV: Unknown device [chars] [chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+
+        default:
+    
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-FILESYS.include.syslog.rules >>>>>")

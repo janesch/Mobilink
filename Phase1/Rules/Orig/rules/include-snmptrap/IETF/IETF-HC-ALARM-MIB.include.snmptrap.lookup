@@ -1,0 +1,80 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-HC-ALARM-MIB.include.snmptrap.lookup 1.0
+#    2004/12/02 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-HC-ALARM-MIB
+#
+###############################################################################
+table hcAlarmSampleType =
+{
+    ##########
+    # The method of sampling the selected variable and calculating the value to
+    # be compared against the thresholds. If the value of this object is
+    # absoluteValue(1), the value of the selected variable will be compared
+    # directly with the thresholds at the end of the sampling interval. If the
+    # value of this object is deltaValue(2), the value of the selected variable
+    # at the last sample will be subtracted from the current value, and the
+    # difference compared with the thresholds.
+    #
+    # If the associated hcAlarmVariable instance could not be obtained at the
+    # previous sample interval, then a delta sample is not possible, and the
+    # value of the associated hcAlarmValueStatus object for this interval will
+    # be valueNotAvailable(1).
+    #
+    # This object may not be modified if the associated hcAlarmStatus object is
+    # equal to active(1).
+    ##########
+
+    {"1", "Absolute Value"}, ### absoluteValue
+    {"2", "Delta Value"} ### deltaValue
+}
+default = "Unknown"
+
+table HcValueStatus =
+{
+    ##########
+    # This data type indicates the validity and sign of the data in associated
+    # object instances which represent the absolute value of a high capacity
+    # numeric quantity. Such an object may be represented with one or more
+    # object instances. An object of type HcValueStatus MUST be defined within
+    # the same structure as the object(s) representing the high capacity
+    # absolute value.
+    #
+    # If the associated object instance(s) representing the high capacity
+    # absolute value could not be accessed during the sampling interval, and is
+    # therefore invalid, then the associated HcValueStatus object will contain
+    # the value 'valueNotAvailable(1)'.
+    #
+    # If the associated object instance(s) representing the high capacity
+    # absolute value are valid and actual value of the sample is greater than
+    # or equal to zero, then the associated HcValueStatus object will contain
+    # the value 'valuePositive(2)'.
+    #
+    # If the associated object instance(s) representing the high capacity
+    # absolute value are valid and the actual value of the sample is less than
+    # zero, then the associated HcValueStatus object will contain the value
+    # 'valueNegative(3)'. The associated absolute value should be multiplied by
+    # -1 to obtain the true sample value.
+    ##########
+
+    {"1","Value Not Available"}, ### valueNotAvailable
+    {"2","Value Positive"}, ### valuePositive
+    {"3","Value Negative"} ### valueNegative
+}
+default = "Unknown"

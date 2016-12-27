@@ -1,0 +1,159 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    isco-CISCO-FCTRACEROUTE-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-FCTRACEROUTE-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.296.1.3": ### Cisco Fibre Channel Traceroute - Notifications from CISCO-FCTRACEROUTE-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-FCTRACEROUTE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Fibre Channel Traceroute"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### fcTraceRouteCompletionNotify
+
+            ##########
+            # $1 = fcTraceRouteTargetAddr 
+            # $2 = fcTraceRouteOperStatus
+            ##########
+
+            $fcTraceRouteTargetAddr = $1
+            $fcTraceRouteOperStatus = lookup($2, fcTraceRouteOperStatus) + " ( " + $2 + " )"
+            $fcTraceRouteIndex = extract($OID1, "\.([0-9]+)$")
+            details($fcTraceRouteTargetAddr,$fcTraceRouteOperStatus,$fcTraceRouteIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-FCTRACEROUTE-MIB-fcTraceRouteCompletionNotify"
+
+            @AlertGroup = "Fibre Channel Traceroute Status"
+            @AlertKey = "fcTraceRouteEntry." + $fcTraceRouteIndex
+            switch($2)
+            {
+                case "1": ### inProgress
+                    @Summary = "Fibre Channel Traceroute In Progress"
+                    
+                    $SEV_KEY = $OS_EventId + "_inProgress"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### success
+                    @Summary = "Fibre Channel Traceroute Successful"
+                    
+                    $SEV_KEY = $OS_EventId + "_success"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### partialSuccess
+                    @Summary = "Fibre Channel Traceroute Partially Successful"
+                    
+                    $SEV_KEY = $OS_EventId + "_partialSuccess"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### failure
+                    @Summary = "Fibre Channel Traceroute Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_failure"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### disabled
+                    @Summary = "Fibre Channel Traceroute Disabled"
+                    
+                    $SEV_KEY = $OS_EventId + "_disabled"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Fibre Channel Traceroute Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( Target: " + $1 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-FCTRACEROUTE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-FCTRACEROUTE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-FCTRACEROUTE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-FCTRACEROUTE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-FCTRACEROUTE-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,91 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-DLSW-MIB.include.snmptrap.lookup 1.0
+#    2004/11/05 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-DLSW-MIB
+#
+###############################################################################
+table dlswTConnOperState =
+{
+    ##########
+    # The state of this transport connection. The transport connection enters
+    # `connecting' state when DLSw makes a connection request to the transport
+    # layer. Once initial Capabilities Exchange is sent, the transport
+    # connection enters enters `initCapExchange' state. When partner
+    # capabilities have been determined and the transport connection is ready
+    # for sending CanUReach (CUR) messages, it moves to the `connected' state.
+    #
+    # When DLSw is in the process of bringing down the connection, it is in the
+    # `disconnecting' state. When the transport layer indicates one of its
+    # connections is disconnected, the transport connection moves to the
+    # `disconnected' state.
+    #
+    # Whereas all of the values will be returned in response to a management
+    # protocol retrieval operation, only two values may be specified in a
+    # management protocol set operation: `quiescing' and `disconnecting'.
+    # Changing the value to `quiescing' prevents new circuits from being
+    # established, and will cause a transport disconnect when the last circuit
+    # on the connection goes away. Changing the value to `disconnecting' will
+    # force off all circuits immediately and bring the connection to
+    # `disconnected' state.
+    ##########
+         
+    {"1","Connecting"}, ### connecting
+    {"2","Initial Capabilities Exchange"}, ### initCapExchange
+    {"3","Connected"}, ### connected
+    {"4","Quiescing"}, ### quiescing
+    {"5","Disconnecting"}, ### disconnecting
+    {"6","Disconnected"} ### disconnected
+}
+default = "Unknown"
+
+table dlswCircuitState =
+{
+    ##########
+    # The current state of this circuit. The agent, implementation specific,
+    # may choose to keep entries for some period of time after circuit
+    # disconnect, so the manager can gather the time and cause of
+    # disconnection.
+    #
+    # While all of the specified values may be returned from a GET operation,
+    # the only SETable value is `disconnectPending'. When this value is set,
+    # DLSw should perform the appropriate action given its previous state
+    # (e.g., send HALT_DL if the state was `connected') to bring the circuit
+    # down to the `disconnected' state. Both the partner DLSw and local end
+    # station(s) should be notified as appropriate.
+    #
+    # This MIB provides no facility to re-establish a disconnected circuit,
+    # because in DLSw this should be an end station-driven function.
+    ##########
+    
+    {"1","Disconnected"}, ### disconnected
+    {"2","Circuit Start"}, ### circuitStart
+    {"3","Resolve Pending"}, ### resolvePending
+    {"4","Circuit Pending"}, ### circuitPending
+    {"5","Circuit Established"}, ### circuitEstablished
+    {"6","Connect Pending"}, ### connectPending
+    {"7","Contact Pending"}, ### contactPending
+    {"8","Connected"}, ### connected
+    {"9","Disconnect Pending"}, ### disconnectPending
+    {"10","Halt Pending"}, ### haltPending
+    {"11","Halt Pending Noack"}, ### haltPendingNoack
+    {"12","Circuit Restart"}, ### circuitRestart
+    {"13","Restart Pending"} ### restartPending
+}
+default = "Unknown"

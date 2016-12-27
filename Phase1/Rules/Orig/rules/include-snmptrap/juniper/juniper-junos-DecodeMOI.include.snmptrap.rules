@@ -1,0 +1,100 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    juniper-junos-DecodeMOI.include.snmptrap.rules 1.1
+#    2005/1/21 Rob Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#       
+###############################################################################
+
+switch($MOIType)
+{
+    case "interface":
+
+        $InterfaceType = extract($MOI, "^([A-Za-z]+)")
+                
+        if(regmatch($MOI, "^[a-z]+-[0-9]+/[0-9]+/[0-9]+"))
+        {
+            if(regmatch($MOI, "^[a-z]+-[0-9]+/[0-9]+/[0-9]+\.[0-9]+$"))
+            {
+                $MOI_PriObj = $MOI
+                # $MOI_PriObj = "Unit: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+/[0-9]+\.[0-9]+)$")
+                $MOI_SecObj = "PIC: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+)/[0-9]+\.[0-9]+$")
+                $MOI_RootObj = "Slot: " + extract($MOI, "^[a-z]+-([0-9]+)/[0-9]+/[0-9]+\.[0-9]+$")
+                $VAR_RelateRO2PO = 3
+                $VAR_RelateRO2SO = 3
+                $VAR_RelateSO2PO = 3
+            }
+            else if(regmatch($MOI, "^[a-z]+-[0-9]+/[0-9]+/[0-9]+:[0-9]+$"))
+            {
+                $MOI_PriObj = $MOI
+                # $MOI_PriObj = "Channel: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+/[0-9]+:[0-9]+)$")
+                $MOI_SecObj = "PIC: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+)/[0-9]+:[0-9]+$")
+                $MOI_RootObj = "Slot: " + extract($MOI, "^[a-z]+-([0-9]+)/[0-9]+/[0-9]+:[0-9]+$")
+                $VAR_RelateRO2PO = 3
+                $VAR_RelateRO2SO = 3
+                $VAR_RelateSO2PO = 3
+            }
+            else if(regmatch($MOI, "^[a-z]+-[0-9]+/[0-9]+/[0-9]+:[0-9]+:[0-9]+$"))
+            {
+                $MOI_PriObj = $MOI
+                # $MOI_PriObj = "Channel: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+/[0-9]+:[0-9]+:[0-9]+)$")
+                $MOI_SecObj = "PIC: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+)/[0-9]+:[0-9]+:[0-9]+$")
+                $MOI_RootObj = "Slot: " + extract($MOI, "^[a-z]+-([0-9]+)/[0-9]+/[0-9]+:[0-9]+:[0-9]+$")
+                $VAR_RelateRO2PO = 3
+                $VAR_RelateRO2SO = 3
+                $VAR_RelateSO2PO = 3
+            }
+            else if(regmatch($MOI, "^[a-z]+-[0-9]+\.[0-9]+$"))
+            {
+                $MOI_PriObj = $MOI
+                $MOI_RootObj = $MOI_PriObj
+                $VAR_RelateRO2PO = 1
+                $VAR_RelateRO2SO = 0
+                $VAR_RelateSO2PO = 0
+            }
+            else
+            {
+                $MOI_PriObj = $MOI
+                # $MOI_PriObj = "Port: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+/[0-9]+)")
+                $MOI_SecObj = "PIC: " + extract($MOI, "^[a-z]+-([0-9]+/[0-9]+)/[0-9]+")
+                $MOI_RootObj = "Slot: " + extract($MOI, "^[a-z]+-([0-9]+)/[0-9]+/[0-9]+")
+                $VAR_RelateRO2PO = 3
+                $VAR_RelateRO2SO = 3
+                $VAR_RelateSO2PO = 3
+            }
+        }
+
+    case "ipaddress":
+    
+        $MOI_NodeAlias = $MOI
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    case "miscobj":
+    
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    default:
+    
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+}

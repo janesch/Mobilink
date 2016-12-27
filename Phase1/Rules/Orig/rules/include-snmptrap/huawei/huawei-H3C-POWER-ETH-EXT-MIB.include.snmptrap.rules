@@ -1,0 +1,898 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-POWER-ETH-EXT-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-POWER-ETH-EXT-MIB release V1.5
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-POWER-ETH-EXT-MIB release V1.2
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.2.14.6": ### Huawei - Notifications from H3C-POWER-ETH-EXT-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-POWER-ETH-EXT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cpsePDChangeNotification
+
+            ##########
+            # This notification indicates if PD bas been
+            # inserted or pulled out.
+            #
+            # $1 = pethPsePortDetectionStatus - Describes the operational
+            #        state of the port PD detection.
+            ##########
+
+            $pethPsePortDetectionStatus = lookup($1,h3cpethPsePortDetectionStatus)
+            $pethPsePortGroupIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $pethPsePortIndex = extract($OID1, "\.[0-9]+\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cpsePDChangeNotification"
+
+            @AlertGroup = "Port Detection Status"
+            @AlertKey = "pethPsePortEntry." + $pethPsePortGroupIndex + "." + $pethPsePortIndex
+            @Summary = "Port Detection Status Changed to: " + $pethPsePortDetectionStatus + "  ( " + @AlertKey + " )"
+
+            switch($1)
+            {
+                case "3": ### deliveringPower
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $1
+
+            $pethPsePortDetectionStatus = $h3cpethPsePortDetectionStatus + " ( " + $1 + " )"
+            details($pethPsePortDetectionStatus,$pethPsePortGroupIndex,$pethPsePortIndex)
+
+        case "2": ### h3cPOEDisconnectNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # does not disconnect.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleDisconnect - The node specifies the alarm state:
+            #        normal (1), alarm (2)
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleDisconnect = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEDisconnectNotification"
+
+            @AlertGroup = "Power Disconnect Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Disconnect Status Changed to: " + $h3cPOEModuleDisconnect + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleDisconnect = $h3cPOEModuleDisconnect + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleDisconnect)
+
+        case "3": ### h3cPOEInputErrorNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # input error.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleInputError - The node specifies the alarm state:
+            #        Input error
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleInputError = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEInputErrorNotification"
+
+            @AlertGroup = "Power Input Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Input Status Changed to: " + $h3cPOEModuleInputError + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleInputError = $h3cPOEModuleInputError + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleInputError)
+
+        case "4": ### h3cPOEOutputErrorNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # output error.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleOutputError - The node specifies the alarm state:
+            #        Output error
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleOutputError = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEOutputErrorNotification"
+
+            @AlertGroup = "Power Output Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Output Status Changed to: " + $h3cPOEModuleInputError + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleOutputError = $h3cPOEModuleOutputError + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleOutputError)
+
+        case "5": ### h3cPOEOverVoltageNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # overruns the voltage limit.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleOverVoltage - The node specifies the alarm state:
+            #        The voltage is too high
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleOverVoltage = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEOverVoltageNotification"
+
+            @AlertGroup = "Power Voltage Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Voltage Status Changed to: " + $h3cPOEModuleOverVoltage + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleOverVoltage = $h3cPOEModuleOverVoltage + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleOverVoltage)
+
+        case "6": ### h3cPOEOverTempNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # overruns the temperature limit.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleOverTemp - The node specifies the alarm state:
+            #        The temperature is too high
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleOverTemp = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEOverTempNotification"
+
+            @AlertGroup = "Power Temperature Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Temperature Status Changed to: " + $h3cPOEModuleOverTemp + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleOverTemp = $h3cPOEModuleOverTemp + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleOverTemp)
+
+        case "7": ### h3cPOEFanErrorNotification
+
+            ##########
+            # This notification indicates the POE power
+            # module fan error.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleFanError - The node specifies the alarm state:
+            #        The fan error
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleFanError = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEFanErrorNotification"
+
+            @AlertGroup = "Power Fan Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Fan Status Changed to: " + $h3cPOEModuleFanError + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleFanError = $h3cPOEModuleFanError + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleFanError)
+
+        case "8": ### h3cPOEModuleShutdownNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # is closed.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleShutdown - The node specifies the alarm state:
+            #        The module is shutdown.
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleShutdown = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEModuleShutdownNotification"
+
+            @AlertGroup = "Power Shutdown Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Shutdown Status Changed to: " + $h3cPOEModuleShutdown + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleShutdown = $h3cPOEModuleShutdown + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleShutdown)
+
+        case "9": ### h3cPOECurRestrictedNotification
+
+            ##########
+            # This notification indicates the POE power module
+            # current is restricted.
+            #
+            # $1 = h3cPOEAlarmModuleInfoIndex - The index of the
+            #        H3cPOEAlarmStateInfoEntry table
+            # $2 = h3cPOEModuleCurRestricted - The node specifies the alarm state:
+            #        The module limit the current.
+            ##########
+
+            $h3cPOEAlarmModuleInfoIndex = $1
+            $h3cPOEModuleCurRestricted = lookup($2,ModuleAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOECurRestrictedNotification"
+
+            @AlertGroup = "Power Current Restricted Status"
+            @AlertKey = "h3cPOEAlarmStateInfoEntry." + $h3cPOEAlarmModuleInfoIndex
+            @Summary = "POE Power Current Restricted Status Changed to: " + $h3cPOEModuleShutdown + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEModuleCurRestricted = $h3cPOEModuleCurRestricted + " ( " + $2 + " )"
+            details($h3cPOEAlarmModuleInfoIndex,
+                    $h3cPOEModuleCurRestricted)
+
+       case "10": ### h3cPOEACSwitchNotification
+
+            ##########
+            # This notification indicates the AC input switch
+            # alarm of this POE power.
+            #
+            # $1 = h3cPOEACSwitchStateIndex - The index of the AC switch
+            #        state on this POE power.
+            # $2 = h3cPOEACSwitchState - The AC switch state on this POE power.
+            ##########
+
+            $h3cPOEACSwitchStateIndex = $1
+            $h3cPOEACSwitchState = lookup($2,SwitchState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACSwitchNotification"
+
+            @AlertGroup = "Power AC Input Switch"
+            @AlertKey = "h3cPOEACSwitchStateEntry." + $h3cPOEACSwitchStateIndex
+            @Summary = "POE Power AC Input Switch Status Changed to: " + $h3cPOEModuleShutdown + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### on
+
+                    $OS_EventId = $OS_EventId + "_on"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### off
+
+                    $OS_EventId = $OS_EventId + "_off"
+
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEACSwitchState = $h3cPOEACSwitchState + " ( " + $2 + " )"
+            details($h3cPOEACSwitchStateIndex,
+                    $h3cPOEACSwitchState)
+
+        case "11": ### h3cPOEACInCurANotification
+
+            ##########
+            # This notification indicates the AC input current A
+            # alarm state of this POE power.
+            #
+            # $1 = h3cPOEInCurAState - The current A state in the AC
+            #        input on this POE power.
+            ##########
+
+            $h3cPOEInCurAState = lookup($1,ACAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACInCurANotification"
+
+            @AlertGroup = "POE AC Input Current A"
+            @AlertKey = ""
+            @Summary = "POE Power AC Input Current A Changed to: " + $h3cPOEInCurAState
+
+            switch($1)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $1
+
+            $h3cPOEInCurAState = $h3cPOEInCurAState + " ( " + $1 + " )"
+            details($h3cPOEInCurAState)
+
+        case "12": ### h3cPOEACInCurBNotification
+
+            ##########
+            # This notification indicates the AC input current B
+            # alarm state of this POE power.
+            #
+            # $1 = h3cPOEInCurBState - The current B state in the AC
+            #        input on this POE power.
+            ##########
+
+            $h3cPOEInCurBState = lookup($1,ACAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACInCurBNotification"
+
+            @AlertGroup = "POE AC Input Current B"
+            @AlertKey = ""
+            @Summary = "POE Power AC Input Current B Changed to: " + $h3cPOEInCurBState
+
+            switch($1)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $1
+
+            $h3cPOEInCurBState = $h3cPOEInCurBState + " ( " + $1 + " )"
+            details($h3cPOEInCurBState)
+
+        case "13": ### h3cPOEACInCurCNotification
+
+            ##########
+            # This notification indicates the AC input current C
+            # alarm state of this POE power.
+            #
+            # $1 = h3cPOEInCurCState - The current C state in the AC
+            #        input on this POE power.
+            ##########
+
+            $h3cPOEInCurCState = lookup($1,ACAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACInCurCNotification"
+
+            @AlertGroup = "POE AC Input Current C"
+            @AlertKey = ""
+            @Summary = "POE Power AC Input Current C Changed to: " + $h3cPOEInCurCState
+
+            switch($1)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $1
+
+            $h3cPOEInCurCState = $h3cPOEInCurCState + " ( " + $1 + " )"
+            details($h3cPOEInCurCState)
+
+        case "14": ### h3cPOEACSwitchVolABNotification
+
+            ##########
+            # This notification indicates the AC input voltage AB
+            # alarm state of this POE power.
+            #
+            # $1 = h3cPOESwitchStateVolExIndex - The object species the
+            #        index of the VOL status.
+            # $2 = h3cPOESwitchStateInVolAB - The object specifies the
+            #        VOL AB alarm in each VOL status.
+            ##########
+
+            $h3cPOESwitchStateVolExIndex = $1
+            $h3cPOESwitchStateInVolAB = lookup($2,ACAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACSwitchVolABNotification"
+
+            @AlertGroup = "POE AC Input Voltage AB"
+            @AlertKey = "h3cPOESwitchStateVolExEntry." + $h3cPOESwitchStateVolExIndex
+            @Summary = "POE Power AC Input Voltage AB Changed to: " + $h3cPOESwitchStateInVolAB + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOESwitchStateInVolAB = $h3cPOESwitchStateInVolAB + " ( " + $2 + " )"
+            details($h3cPOESwitchStateVolExIndex,
+                    $h3cPOESwitchStateInVolAB)
+
+        case "15": ### h3cPOEACSwitchVolBCNotification
+
+            ##########
+            # This notification indicates the AC input voltage BC
+            # alarm state of this POE power.
+            #
+            # $1 = h3cPOESwitchStateVolExIndex - The object species the
+            #        index of the VOL status.
+            # $2 = h3cPOESwitchStateInVolBC - The object specifies the
+            #        VOL BC alarm in each VOL status.
+            ##########
+
+            $h3cPOESwitchStateVolExIndex = $1
+            $h3cPOESwitchStateInVolBC = lookup($2,ACAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACSwitchVolBCNotification"
+
+            @AlertGroup = "POE AC Input Voltage BC"
+            @AlertKey = "h3cPOESwitchStateVolExEntry." + $h3cPOESwitchStateVolExIndex
+            @Summary = "POE Power AC Input Voltage BC Changed to: " + $h3cPOESwitchStateInVolBC + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOESwitchStateInVolBC = $h3cPOESwitchStateInVolBC + " ( " + $2 + " )"
+            details($h3cPOESwitchStateVolExIndex,
+                    $h3cPOESwitchStateInVolBC)
+
+        case "16": ### h3cPOEACSwitchVolCANotification
+
+            ##########
+            # This notification indicates the AC input voltage CA
+            # alarm state of this POE power.
+            #
+            # $1 = h3cPOESwitchStateVolExIndex - The object species the
+            #        index of the VOL status.
+            # $2 = h3cPOESwitchStateInVolCA - The object specifies the
+            #        VOL CA alarm in each VOL status
+            ##########
+
+            $h3cPOESwitchStateVolExIndex = $1
+            $h3cPOESwitchStateInVolCA = lookup($2,ACAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEACSwitchVolCANotification"
+
+            @AlertGroup = "POE AC Input Voltage CA"
+            @AlertKey = "h3cPOESwitchStateVolExEntry." + $h3cPOESwitchStateVolExIndex
+            @Summary = "POE Power AC Input Voltage CA Changed to: " + $h3cPOESwitchStateInVolCA + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOESwitchStateInVolCA = $h3cPOESwitchStateInVolCA + " ( " + $2 + " )"
+            details($h3cPOESwitchStateVolExIndex,
+                    $h3cPOESwitchStateInVolCA)
+
+        case "17": ### h3cPOEDCOutVolNotification
+
+            ##########
+            # This notification indicates the DC output
+            # alarm of this POE power.
+            #
+            # $1 = h3cPOEDCOutStateIndex - The entry of the DC output power
+            #        state on this POE power
+            # $2 = h3cPOEDCOutDCVolAlarm - The DC output alarm of the DC
+            #        output power state on this POE power
+            ##########
+
+            $h3cPOEDCOutStateIndex = $1
+            $h3cPOEDCOutDCVolAlarm = lookup($2,DCAlarmState)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEDCOutVolNotification"
+
+            @AlertGroup = "POE DC Output Status"
+            @AlertKey = "h3cPOEDCOutStateEntry." + $h3cPOEDCOutStateIndex
+            @Summary = "POE Power DC Output Status Changed to: " + $h3cPOEDCOutDCVolAlarm + "  ( " + @AlertKey + " )" 
+
+            switch($2)
+            {
+                case "1": ### Normal
+
+                    $OS_EventId = $OS_EventId + "_resolution"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+
+                    $OS_EventId = $OS_EventId + "_problem"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $2
+
+            $h3cPOEDCOutDCVolAlarm = $h3cPOEDCOutDCVolAlarm + " ( " + $2 + " )"
+            details($h3cPOEDCOutStateIndex,
+                    $h3cPOEDCOutDCVolAlarm)
+
+        case "18": ### h3cPOEShutdownNotification
+
+            ##########
+            # This notification indicates the whole POE power
+            # has been shutdown.
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-POWER-ETH-EXT-MIB-h3cPOEShutdownNotification"
+
+            @AlertGroup = "POE DC Shutdown"
+            @AlertKey = ""
+            @Summary = "POE Power has been Shutdown"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+#########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-POWER-ETH-EXT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-POWER-ETH-EXT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-POWER-ETH-EXT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-POWER-ETH-EXT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-H3C-POWER-ETH-EXT-MIB.include.snmptrap.rules >>>>>")

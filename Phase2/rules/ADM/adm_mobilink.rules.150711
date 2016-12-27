@@ -1,0 +1,34 @@
+@Agent = @Manager + "@" + hostname()
+@Vendor= "ADM"
+# @OmcEms = @Manager
+@Class = 303001
+@Information = $*
+@ExpireTime = 604800
+@AddText = $msgDescr
+@EventId = "NET_VAS_IMP_001"
+@NodeAlias = $appName
+switch($3)
+{
+case "3":
+	@Severity = 5
+	@Type = 1
+case "2":
+	@Severity = 4
+	@Type = 1
+case "1":
+	@Severity = 3
+	@Type = 1
+case "0":
+	@Severity = 1
+	@Type = 2
+default:
+	@Severity = 1
+	@Type = 1
+}
+# if match(@Severity,"2") {
+# discard }
+# if (int(@Severity) = 2) { @ExpireTime = 120 }
+# if @Severity = 2 { @ExpireTime = 120 }
+# if (int(@Severity) = 2) { discard }
+# if match(@Severity,"Warning") { @ExpireTime = 120 }
+# if nmatch(@Severity,"Warning") { discard }

@@ -1,0 +1,513 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-Printer-MIB.include.snmptrap.rules 3.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  Printer-MIB
+#
+###############################################################################
+#
+# 3.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+#     - Corrected numerous Type values that were still using OMNIbus 3.5
+#       semantics.
+#
+# 3.0 - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 2.1 - Assigned Class# 40086 - IETF (Internet Engineering Task Force)
+#
+# 2.0 - Completely rewritten based on draft-ietf-printmib-mib-info-12.txt
+#       (5 August 2002)
+#
+#     - Enhanced for compliance with the Netcool Rules File Standards
+#       (MUSE-STD-RF-01, May 2002)
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.43.18.2": ### Printer Management - Notifications from Printer-MIB (RFC1759)
+
+    log(DEBUG, "<<<<< Entering... IETF-Printer-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-Printer-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### printerV2Alert
+
+            ##########
+            # $1 = prtAlertIndex
+            # $2 = prtAlertSeverityLevel 
+            # $3 = prtAlertGroup
+            # $4 = prtAlertGroupIndex
+            # $5 = prtAlertLocation 
+            # $6 = prtAlertCode
+            ##########
+
+            $prtAlertIndex = $1
+            $prtAlertSeverityLevel = lookup($2, PrtAlertSeverityLevelTC) + " ( " + $2 + " )"
+            $prtAlertGroup = lookup($3, PrtAlertGroupTC)
+            $prtAlertGroupIndex = $4
+            $prtAlertLocation = $5
+            $prtAlertCode = lookup($6, PrtAlertCodeTC) + " ( " + $6 + " )"
+            
+            $OS_EventId = "SNMPTRAP-IETF-Printer-MIB-printerV2Alert"
+            
+            if (match($4, "-1"))
+            {
+                @AlertKey = $prtAlertGroup
+            }
+            else
+            {
+                @AlertKey = $prtAlertGroup + " " + $4
+            }
+            if (!match($4, "-1"))
+            {
+                @AlertKey = $prtAlertGroup + ", Location " + $5
+            }
+            
+            switch($2)
+            {
+                case "1": ### other
+                    $SEV_KEY = $OS_EventId + "_other"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### warningBinaryChangeEvent
+                    $SEV_KEY = $OS_EventId + "_warningBinaryChangeEvent"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            
+            switch($6)
+            {
+                case "1": ### Other
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Other Printer Status"
+                case "2": ### Unknown
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Printer Status Unknown"
+                case "3": ### Cover Open
+                    @AlertGroup = "Cover Status"
+                    @Summary = "Printer Cover Open"
+                case "4": ### Cover Closed
+                    @AlertGroup = "Cover Status"
+                    @Summary = "Printer Cover Closed"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "5": ### Interlock Open
+                    @AlertGroup = "Interlock Status"
+                    @Summary = "Printer Interlock Open"
+                case "6": ### Interlock Closed
+                    @AlertGroup = "Interlock Status"
+                    @Summary = "Printer Interlock Closed"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "7": ### Configuration Change
+                    @AlertGroup = "Printer Interlock"
+                    @Summary = "Printer Configuration Change"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "8": ### Jam
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Printer Jam"
+                case "9": ### Sub-Unit Missing
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Missing"
+                case "10": ### Sub-Unit Life Almost Over
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Life Almost Over"
+                case "11": ### Sub-Unit Life Over
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Life Over"
+                case "12": ### Sub-Unit Almost Empty
+                    @AlertGroup = "Sub-Unit Full/Empty"
+                    @Summary = "Printer Sub-Unit Almost Empty"
+                case "13": ### Sub-Unit Empty
+                    @AlertGroup = "Sub-Unit Full/Empty"
+                    @Summary = "Printer Sub-Unit Empty"
+                case "14": ### Sub-Unit Almost Full
+                    @AlertGroup = "Sub-Unit Full/Empty"
+                    @Summary = "Printer Sub-Unit Almost Full"
+                case "15": ### Sub-Unit Full
+                    @AlertGroup = "Sub-Unit Full/Empty"
+                    @Summary = "Printer Sub-Unit Full"
+                case "16": ### Sub-Unit Near Limit
+                    @AlertGroup = "Sub-Unit Limit"
+                    @Summary = "Printer Sub-Unit Near Limit"
+                case "17": ### Sub-Unit At Limit
+                    @AlertGroup = "Sub-Unit Limit"
+                    @Summary = "Printer Sub-Unit At Limit"
+                case "18": ### Sub-Unit Opened
+                    @AlertGroup = "Sub-Unit Open/Close"
+                    @Summary = "Printer Sub-Unit Opened"
+                case "19": ### Sub-Unit Closed
+                    @AlertGroup = "Sub-Unit Open/Close"
+                    @Summary = "Printer Sub-Unit Closed"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "20": ### Sub-Unit Turned On
+                    @AlertGroup = "Sub-Unit On/Off"
+                    @Summary = "Printer Sub-Unit Turned On"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "21": ### Sub-Unit Turned Off
+                    @AlertGroup = "Sub-Unit On/Off"
+                    @Summary = "Printer Sub-Unit Turned Off"
+                case "22": ### Sub-Unit Offline
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Offline"
+                case "23": ### Sub-Unit Power Saver
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Power Saver"
+                case "24": ### Sub-Unit Warming Up
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Warming Up"
+                case "25": ### Sub-Unit Added
+                    @AlertGroup = "Sub-Unit Add/Remove"
+                    @Summary = "Printer Sub-Unit Added"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "26": ### Sub-Unit Removed
+                    @AlertGroup = "Sub-Unit Add/Remove"
+                    @Summary = "Printer Sub-Unit Removed"
+                case "27": ### Sub-Unit Resource Added
+                    @AlertGroup = "Sub-Unit Resource Add/Remove"
+                    @Summary = "Printer Sub-Unit Resource Added"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "28": ### Sub-Unit Resource Removed
+                    @AlertGroup = "Sub-Unit Resource Add/Remove"
+                    @Summary = "Printer Sub-Unit Resource Removed"
+                case "29": ### Sub-Unit Recoverable Failure
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Recoverable Failure"
+                case "30": ### Sub-Unit Unrecoverable Failure
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Unrecoverable Failure"
+                case "31": ### Sub-Unit Recoverable Storage Error
+                    @AlertGroup = "Sub-Unit Storage Status"
+                    @Summary = "Printer Sub-Unit Recoverable Storage Error"
+                case "32": ### Sub-Unit Unrecoverable Storage Error
+                    @AlertGroup = "Sub-Unit Storage Status"
+                    @Summary = "Printer Sub-Unit Unrecoverable Storage Error"
+                case "33": ### Sub-Unit Motor Failure
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Motor Failure"
+                case "34": ### Sub-Unit Memory Exhausted
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Memory Exhausted"
+                case "35": ### Sub-Unit Under Temperature
+                    @AlertGroup = "Sub-Unit Temperature"
+                    @Summary = "Printer Sub-Unit Under Temperature"
+                case "36": ### Sub-Unit Over Temperature
+                    @AlertGroup = "Sub-Unit Temperature"
+                    @Summary = "Printer Sub-Unit Over Temperature"
+                case "37": ### Sub-Unit Timing Failure
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Timing Failure"
+                case "38": ### Sub-Unit Thermistor Failure
+                    @AlertGroup = "Sub-Unit Status"
+                    @Summary = "Printer Sub-Unit Thermistor Failure"
+                case "501": ### Door Open
+                    @AlertGroup = "Door Status"
+                    @Summary = "Printer Door Open"
+                case "502": ### Door Closed
+                    @AlertGroup = "Door Status"
+                    @Summary = "Printer Door Closed"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "503": ### Power Up
+                    @AlertGroup = "Power Status"
+                    @Summary = "Printer Power Up"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "504": ### Power Down
+                    @AlertGroup = "Power Status"
+                    @Summary = "Printer Power Down"
+                case "505": ### Printer NMS Reset
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Printer Reset by NMS"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "506": ### Printer Manual Reset
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Printer Reset Manually"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "507": ### Printer Ready To Print
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Printer Ready To Print"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "801": ### Input-Media Tray Missing
+                    @AlertGroup = "Input Media Status"
+                    @Summary = "Printer Input Media Tray Missing"
+                case "802": ### Input-Media Size Change
+                    @AlertGroup = "Input Media Change"
+                    @Summary = "Printer Input Media Size Change"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "803": ### Input-Media Weight Change
+                    @AlertGroup = "Input Media Change"
+                    @Summary = "Printer Input Media Weight Change"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "804": ### Input-Media Type Change
+                    @AlertGroup = "Input Media Change"
+                    @Summary = "Printer Input Media Type Change"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "805": ### Input-Media Color Change
+                    @AlertGroup = "Input Media Change"
+                    @Summary = "Printer Input Media Color Change"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "806": ### Input-Media Form Parts Change
+                    @AlertGroup = "Input Media Change"
+                    @Summary = "Printer Input Media Form Parts Change"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "807": ### Input-Media Supply Low
+                    @AlertGroup = "Input Media Status"
+                    @Summary = "Printer Input Media Supply Low"
+                case "808": ### Input-Media Supply Empty
+                    @AlertGroup = "Input Media Status"
+                    @Summary = "Printer Input Media Supply Empty"
+                case "809": ### Input-Media Change Request
+                    @AlertGroup = "Input Media Change"
+                    @Summary = "Printer Input Media Change Request"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "810": ### Input-Manual Input Request
+                    @AlertGroup = "Manual Input"
+                    @Summary = "Printer Manual Input Request"
+                case "811": ### Input-Tray Position Failure
+                    @AlertGroup = "Input Tray Status"
+                    @Summary = "Printer Input Tray Position Failure"
+                case "812": ### Input-Tray Elevation Failure
+                    @AlertGroup = "Input Tray Status"
+                    @Summary = "Printer Input Tray Elevation Failure"
+                case "813": ### Input-Cannot Feed Size Selected
+                    @AlertGroup = "Input Media Status"
+                    @Summary = "Printer Cannot Feed Size Selected"
+                case "901": ### Output-Media Tray Missing
+                    @AlertGroup = "Output Media Status"
+                    @Summary = "Printer Output Media Tray Missing"
+                case "902": ### Output-Media Tray Almost Full
+                    @AlertGroup = "Output Media Status"
+                    @Summary = "Printer Output Media Tray Almost Full"
+                case "903": ### Output-Media Tray Full
+                    @AlertGroup = "Output Media Status"
+                    @Summary = "Printer Output Media Tray Full"
+                case "904": ### Output-Mailbox Select Failure
+                    @AlertGroup = "Output Mailbox Status"
+                    @Summary = "Printer Output Mailbox Select Failure"
+                case "1001": ### Marker-Fuser Under Temperature
+                    @AlertGroup = "Fuser Status"
+                    @Summary = "Printer Fuser Under Temperature"
+                case "1002": ### Marker-Fuser Over Temperature
+                    @AlertGroup = "Fuser Status"
+                    @Summary = "Printer Fuser Over Temperature"
+                case "1003": ### Marker-Fuser Timing Failure
+                    @AlertGroup = "Fuser Status"
+                    @Summary = "Printer Fuser Timing Failure"
+                case "1004": ### Marker-Fuser Thermistor Failure
+                    @AlertGroup = "Fuser Status"
+                    @Summary = "Printer Fuser Thermistor Failure"
+                case "1005": ### Marker-Adjusting Print Quality
+                    @AlertGroup = "Marker Status"
+                    @Summary = "Printer Marker Adjusting Print Quality"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 900
+                case "1101": ### Marker-Toner Empty
+                    @AlertGroup = "Toner Status"
+                    @Summary = "Printer Toner Empty"
+                case "1102": ### Marker-Ink Empty
+                    @AlertGroup = "Ink Status"
+                    @Summary = "Printer Ink Empty"
+                case "1103": ### Marker-Print Ribbon Empty
+                    @AlertGroup = "Print Ribbon Status"
+                    @Summary = "Printer Ribbon Empty"
+                case "1104": ### Marker-Toner Almost Empty
+                    @AlertGroup = "Toner Status"
+                    @Summary = "Printer Toner Almost Empty"
+                case "1105": ### Marker-Ink Almost Empty
+                    @AlertGroup = "Ink Status"
+                    @Summary = "Printer Ink Almost Empty"
+                case "1106": ### Marker-Print Ribbon Almost Empty
+                    @AlertGroup = "Print Ribbon Status"
+                    @Summary = "Printer Ribbon Almost Empty"
+                case "1107": ### Marker-Waste Toner Receptacle Almost Full
+                    @AlertGroup = "Waste Toner Status"
+                    @Summary = "Printer Waste Toner Receptacle Almost Full"
+                case "1108": ### Marker-Waste Ink Receptacle Almost Full
+                    @AlertGroup = "Waste Ink Status"
+                    @Summary = "Printer Waste Ink Receptacle Almost Full"
+                case "1109": ### Marker-Waste Toner Receptacle Full
+                    @AlertGroup = "Waste Toner Status"
+                    @Summary = "Printer Waste Toner Receptacle Full"
+                case "1110": ### Marker-Waste Ink Receptacle Full
+                    @AlertGroup = "Waste Ink Status"
+                    @Summary = "Printer Waste Ink Receptacle Full"
+                case "1111": ### Marker-OPC Life Almost Over
+                    @AlertGroup = "OPC Status"
+                    @Summary = "Printer OPC Life Almost Over"
+                case "1112": ### Marker-OPC Life Over
+                    @AlertGroup = "OPC Status"
+                    @Summary = "Printer OPC Life Over"
+                case "1113": ### Marker-Developer Almost Empty
+                    @AlertGroup = "Developer Status"
+                    @Summary = "Printer Developer Almost Empty"
+                case "1114": ### Marker-Developer Empty
+                    @AlertGroup = "Developer Status"
+                    @Summary = "Printer Developer Empty"
+                case "1115": ### Marker-Toner Cartridge Missing
+                    @AlertGroup = "Toner Status"
+                    @Summary = "Printer Toner Cartridge Missing"
+                case "1301": ### Media Path-Media Tray Missing
+                    @AlertGroup = "Media Path Media Status"
+                    @Summary = "Printer Media Path Media Tray Missing"
+                case "1302": ### Media Path-Media Tray Almost Full
+                    @AlertGroup = "Media Path Media Status"
+                    @Summary = "Printer Media Path Media Tray Almost Full"
+                case "1303": ### Media Path-Media Tray Full
+                    @AlertGroup = "Media Path Media Status"
+                    @Summary = "Printer Media Path Media Tray Full"
+                case "1304": ### Media Path-Cannot Duplex Media Selected
+                    @AlertGroup = "Media Path Media Status"
+                    @Summary = "Printer Media Path Cannot Select Duplex Media"
+                case "1501": ### Interpreter-Memory Increase
+                    @AlertGroup = "Interpreter Memory Status"
+                    @Summary = "Printer Interpreter Memory Increase"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "1502": ### Interpreter-Memory Decrease
+                    @AlertGroup = "Interpreter Memory Status"
+                    @Summary = "Printer Interpreter Memory Decrease"
+                case "1503": ### Interpreter-Cartridge Added
+                    @AlertGroup = "Interpreter Cartridge Status"
+                    @Summary = "Printer Interpreter Cartridge Added"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "1504": ### Interpreter-Cartridge Deleted
+                    @AlertGroup = "Interpreter Cartridge Status"
+                    @Summary = "Printer Interpreter Cartridge Deleted"
+                case "1505": ### Interpreter-Resource Added
+                    @AlertGroup = "Interpreter Resource Status"
+                    @Summary = "Printer Interpreter Resource Added"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                case "1506": ### Interpreter-Resource Deleted
+                    @AlertGroup = "Interpreter Resource Status"
+                    @Summary = "Printer Interpreter Resource Deleted"
+                case "1507": ### Interpreter-Resource Unavailable
+                    @AlertGroup = "Interpreter Resource Status"
+                    @Summary = "Printer Interpreter Resource Unavailable"
+                case "1509": ### Interpreter-Complex Page Encountered
+                    @AlertGroup = "Interpreter Resource Status"
+                    @Summary = "Insufficient Printer Interpreter Resources, Complex Page"
+                case "1801": ### Alert Removal Of Binary Change Entry
+                    @AlertGroup = "Alert Status"
+                    @Summary = "Printer Alert Removal Of Binary Change Entry"
+                default:
+                    @AlertGroup = "Printer Status"
+                    @Summary = "Printer Status Unknown  ( " + @AlertKey + " )"
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+            
+            $prtAlertGroup = $prtAlertGroup + " ( " + $3 + " )"
+            details($prtAlertIndex,$prtAlertSeverityLevel,$prtAlertGroup,$prtAlertGroupIndex,$prtAlertLocation,$prtAlertCode)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-Printer-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-Printer-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-Printer-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-Printer-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-Printer-MIB.include.snmptrap.rules >>>>>")

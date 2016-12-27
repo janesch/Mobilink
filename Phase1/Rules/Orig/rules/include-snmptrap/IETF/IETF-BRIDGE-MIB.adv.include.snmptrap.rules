@@ -1,0 +1,95 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-BRIDGE-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-BRIDGE-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-BRIDGE-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### newRoot
+
+        $OS_X733SpecificProb = "newRoot"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1010
+        $OS_OsiLayer = 2
+        
+        if(exists($OID1))
+        {
+            if(nmatch($OID1, "1.3.6.1.4.1.9.9.46.1.3.1.1.1")) ### from Cisco, CISCO-VTP-MIB
+            {
+                $OS_LocalPriObj = "vtpVlanEntry." + $managementDomainIndex + "." + $vtpVlanIndex
+                $OS_LocalRootObj = "managementDomainEntry." + $managementDomainIndex
+                $VAR_RelateLRO2LPO = 3
+                $VAR_RelateLRO2LSO = 0
+                $VAR_RelateLSO2LPO = 0
+            }
+            else if(nmatch($OID1, "1.3.6.1.4.1.114.1.4.10.2.1.1")) ### from Synernetics, SWITCHING-SYSTEMS-MIB
+            {
+                $OS_LocalPriObj = "swSysBridgeEntry." + $1
+                $OS_LocalRootObj = $OS_LocalPriObj
+                $VAR_RelateLRO2LPO = 1
+                $VAR_RelateLRO2LSO = 0
+                $VAR_RelateLSO2LPO = 0
+            }
+        }
+
+    case "2": ### topologyChange
+
+        $OS_X733SpecificProb = "topologyChange"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1010
+        $OS_OsiLayer = 2
+        
+        if(exists($OID1))
+        {
+            if(nmatch($OID1, "1.3.6.1.2.1.17.1.4.1.1"))
+            {
+                $OS_LocalPriObj = "dot1dBasePortEntry." + $1
+                $OS_LocalRootObj = $OS_LocalPriObj
+                $VAR_RelateLRO2LPO = 1
+                $VAR_RelateLRO2LSO = 0
+                $VAR_RelateLSO2LPO = 0
+            }
+            else if(nmatch($OID1, "1.3.6.1.4.1.9.9.46.1.3.1.1.1")) ### from Cisco, CISCO-VTP-MIB
+            {
+                $OS_LocalPriObj = "ifEntry." + $ifIndex
+                $OS_LocalSecObj = "ifXEntry." + $ifIndex
+                $OS_LocalRootObj = $OS_LocalPriObj
+                $VAR_RelateLRO2LPO = 1
+                $VAR_RelateLRO2LSO = 2
+                $VAR_RelateLSO2LPO = 2
+            }
+            else if(nmatch($OID1, "1.3.6.1.4.1.114.1.4.10.2.1.1")) ### from Synernetics, SWITCHING-SYSTEMS-MIB
+            {
+                $OS_LocalPriObj = "swSysBridgeEntry." + $1
+                $OS_LocalRootObj = $OS_LocalPriObj
+                $VAR_RelateLRO2LPO = 1
+                $VAR_RelateLRO2LSO = 0
+                $VAR_RelateLSO2LPO = 0
+            }
+        }
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-BRIDGE-MIB.adv.include.snmptrap.rules >>>>>")

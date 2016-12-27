@@ -1,0 +1,866 @@
+--
+-- File        : OPCOMAGENT.MIB
+-- MIB Module  : CMG-OPCOM-MIB
+-- Description :
+--       This SNMP MIB describes the CMG OPCOM SNMP agent.
+--
+-- Changes:
+-- Date       User Description
+-- 18/01/2001 CZEE    IPR 38070: MIB issues.
+-- 12/02/2001 CZEE    IPR 38073: Correlation problems on internal Traps.
+-- 28/02/2001 CZEE    Updated layout and comments.
+-- 23/04/2002 SGIBNEY SPR 16719: Variable Bindings.
+-- 23/04/2002 SGIBNEY CR  2002_013: Alternative Trap Format.
+CMG-OPCOM-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Imported objects needed from the local definitions.
+--
+    IMPORTS
+        enterprises
+            FROM RFC1155-SMI
+        DisplayString 
+            FROM RFC1213-MIB
+        TRAP-TYPE           
+            FROM RFC-1215
+        OBJECT-TYPE
+            FROM RFC-1212
+        opcomAgent,
+        trapData, trapSeverity, trapNotificationId, trapEventType,
+        trapProbableCause, trapSpecificProblem, trapTimeStamp,
+        trapEntityName,trapNodeName
+           FROM CMG-TRAP-MIB;               
+
+--
+-- OPCOM subagent base classes
+--
+
+    opcomAgentInfo       OBJECT IDENTIFIER ::= { opcomAgent 1 }
+    opcomAgentCfg        OBJECT IDENTIFIER ::= { opcomAgent 2 }
+    opcomServiceCfg      OBJECT IDENTIFIER ::= { opcomAgent 3 }
+    opcomTrapFilterCfg   OBJECT IDENTIFIER ::= { opcomAgent 4 }
+
+--
+-- Agent configuration 
+--
+    opcomAgentDescription  OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Identifier of the OPCOM Agent"
+        ::= { opcomAgentInfo 1 }
+
+
+    opcomRestart  OBJECT-TYPE
+        SYNTAX  INTEGER {
+            restart(1)
+        }
+        ACCESS  write-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Restart the OPCOM subagent."
+        ::= { opcomAgentCfg 1 }
+
+--   
+-- OPCOM configuration parameters
+--
+    opcomCfgCards    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to card OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 1 }
+
+    opcomCfgCentral    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subsciption to central management OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 2 }
+
+    opcomCfgCluster    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to cluster OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 3 }
+
+    opcomCfgDevices    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to device OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 4 }
+
+    opcomCfgDisks    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to disk OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 5 }
+
+    opcomCfgLicense    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to license OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 6 }
+
+    opcomCfgNetwork    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to network OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 7 }
+
+    opcomCfgOper1    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper2 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 8 }
+
+    opcomCfgOper2    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper1 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 9 }
+
+    opcomCfgOper3    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper3 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 10 }
+
+    opcomCfgOper4    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper4 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 11 }
+
+    opcomCfgOper5    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper5 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 12 }
+
+    opcomCfgOper6    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper6 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 13 }
+
+    opcomCfgOper7    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper7 OPCOM messages"
+        DEFVAL { 2 }
+    ::= { opcomServiceCfg 14 }
+
+    opcomCfgOper8    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper8 OPCOM messages"
+        DEFVAL { 2 }
+    ::= { opcomServiceCfg 15 }
+
+    opcomCfgOper9    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper9 OPCOM messages"
+        DEFVAL { 2 }
+    ::= { opcomServiceCfg 16 }
+
+    opcomCfgOper10    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper10 OPCOM messages"
+        DEFVAL { 2 }
+    ::= { opcomServiceCfg 17 }
+
+    opcomCfgOper11    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper11 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 18 }
+
+    opcomCfgOper12    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to oper12 OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 19 }
+
+    opcomCfgPrinter    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to printer OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 20 }
+
+    opcomCfgSecurity    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to security OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 21 }
+
+    opcomCfgTapes    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to tape OPCOM messages"
+        DEFVAL { 2 }
+        ::= { opcomServiceCfg 22 }
+
+    opcomCfgFilterNode    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to filter OPCOM messages"
+        DEFVAL { 1 }
+        ::= { opcomTrapFilterCfg 1 }
+
+    opcomCfgFilterSeverity    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to filter serverity"
+        DEFVAL { 1 }
+        ::= { opcomTrapFilterCfg 2 }
+
+   opcomCfgFilterPattern    OBJECT-TYPE
+        SYNTAX  INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Subscription to filter pattern"
+        DEFVAL { 1 }
+        ::= { opcomTrapFilterCfg 3 }
+
+
+   
+--
+-- OPCOM traps
+--
+
+
+--
+-- Cold start trap when agent is starting
+--
+    opcomColdStartTrap TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES {trapTimeStamp, trapNodeName}
+        DESCRIPTION
+            "This trap defines the startup trap of the OPCOM agent
+            EVENTTYPE-DEFAULT: 2
+            PCAUSE-DEFAULT: 58
+            SEVERITY-DEFAULT: Clear
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 0
+
+
+--
+-- Warm start trap when agent is internally restarting
+--
+    opcomWarmStartTrap TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES {trapTimeStamp, trapNodeName}
+        DESCRIPTION
+            "This trap defines the (Re-)initilisation trap of the OPCOM agent
+            EVENTTYPE-DEFAULT: 2
+            PCAUSE-DEFAULT: 59
+            SEVERITY-DEFAULT: Clear
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 1
+
+
+--
+-- Termination trap when agent is stopped
+--
+    opcomTerminationTrap TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES {trapTimeStamp, trapNodeName}
+        DESCRIPTION
+            "Stop trap
+            SEVERITY-DEFAULT: Warning
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 2
+
+--
+-- OPCOM specific traps
+--
+    internalOpcomTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 10
+--
+-- OPCOM specific traps
+--
+    internalOpcomIndeterminateTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 50
+--
+-- OPCOM specific traps
+--
+    internalOpcomCriticalTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 51
+--
+-- OPCOM specific traps
+--
+    internalOpcomMajorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 52
+--
+-- OPCOM specific traps
+--
+    internalOpcomMinorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 53
+
+    internalOpcomWarningTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 54
+
+    internalOpcomClearTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,trapTimeStamp}
+        DESCRIPTION
+            "Internal trap generated by the OPCOM SNMP subagent 
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 55
+
+    externalOpcomTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 11
+
+    externalOpcomIndeterminateTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 110
+
+    externalOpcomCriticalTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 111
+
+    externalOpcomMajorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 112
+
+    externalOpcomMinorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 113
+
+    externalOpcomWarningTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 114
+
+    externalOpcomClearTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                   trapEntityName,trapTimeStamp,trapNodeName,
+                   trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM SNMP subagent, this trap is received from
+            the OPCOM service.
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+            ::= 115
+
+
+
+
+--
+-- IPR 38073:
+-- The following trap definitions are subsets from the external traps:
+--
+
+--
+-- The following trap describes the unknown external traps without a VMS tag
+--
+    notagOpcomTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 998
+
+  notagOpcomIndeterminateTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9980
+
+    notagOpcomCriticalTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9981
+
+    notagOpcomMajorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9982
+
+  notagOpcomMinorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9983
+
+    notagOpcomWarningTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9984
+
+    notagOpcomClearTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which has the unknown tag
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9985
+
+--
+-- Unassigned OPCOM traps will receive the following trap identity (default)
+-- 
+    unknownOpcomTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 999
+
+    unknownOpcomIndeterminateTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9990
+
+    unknownOpcomCriticalTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9991
+
+    unknownOpcomMajorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9992
+
+    unknownOpcomMinorTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9993
+
+    unknownOpcomWarningTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9994
+
+    unknownOpcomClearTrap  TRAP-TYPE
+        ENTERPRISE opcomAgent
+        VARIABLES  {trapNotificationId,trapSeverity,trapData,
+                    trapEntityName,trapTimeStamp,trapNodeName,
+                    trapProbableCause,trapEventType,trapSpecificProblem}
+        DESCRIPTION
+            "External trap from OPCOM subagent which is unknown
+            NOTIFICATIONID-VARIABLE: trapNotificationId
+            SEVERITY-VARIABLE: trapSeverity
+            ADDITIONAL-TEXT-VARIABLES: {trapData}
+            PCAUSE-VARIABLE: trapProbableCause
+            EVENTTYPE-VARIABLE: trapEventType
+            SPROBLEM-VARIABLE: trapSpecificProblem
+            MANAGEDOBJECT-DEFAULT: opcomAgent"
+        ::= 9995
+END
+
+--
+-- <End of file> OPCOMAGENT.MIB
+--

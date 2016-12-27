@@ -1,0 +1,1996 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    shasta-SSG-5000-CHASSIS-MIB.include.snmptrap.rules 1.0 
+#    2005/10/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  SSG-5000-CHASSIS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.3199.10.28.2": ### Nortel Services Edge Router 5500 (SER) (Shasta 5000 Broadband Service Node (BSN)) - Notifications from SSG-5000-CHASSIS-MIB
+
+    log(DEBUG, "<<<<< Entering... shasta-SSG-5000-CHASSIS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Nortel-Services Edge Router 5500"
+    @Class = ""
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ssg5000ChassisFailureNotification
+
+            ##########
+            # The notification signifies that the agent detects a change in the
+            # status of ps1, ps2, fan, chassis temperature.
+            #
+            # $1 = ssg5000SysFanStatus - Status of fan.
+            # $2 = ssg5000SysTempStatus
+            #        ok(1): 10C <= temperature <= 40C
+            #        overTemperature(2): temperature > 40C
+            #        underTemperature(3): temperature < 10C.
+            # $3 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000SysFanStatus = lookup($1, ssg5000PSOperStatus)
+            $ssg5000SysTempStatus = lookup($2, ssg5000SysTempStatus)
+            $ssg5000TrapSSGHostAddress = $3
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000ChassisFailureNotification"
+
+            @AlertGroup = "Chassis Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### unknown - none of the following
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_unknown_ok"
+                            @Summary = "Chassis Fan Status Unknown, Temperature OK"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_unknown_overTemperature"
+                            @Summary = "Chassis Fan Status Unknown, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_unknown_underTemperature"
+                            @Summary = "Chassis Fan Status Unknown, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Chassis Fan Status Unknown, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### empty - not present
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_empty_ok"
+                            @Summary = "Chassis Fan Empty, Temperature OK"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_empty_overTemperature"
+                            @Summary = "Chassis Fan Empty, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_empty_underTemperature"
+                            @Summary = "Chassis Fan Empty, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_empty_unknown"
+                            @Summary = "Chassis Fan Empty, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### ok - status ok
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_ok_ok"
+                            @Summary = "Chassis Fan OK, Temperature OK"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_ok_overTemperature"
+                            @Summary = "Chassis Fan OK, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_ok_underTemperature"
+                            @Summary = "Chassis Fan OK, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ok_unknown"
+                            @Summary = "Chassis Fan OK, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### fault - major problem
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_fault_ok"
+                            @Summary = "Chassis Fan Fault, Major Problem, Temperature OK"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_fault_overTemperature"
+                            @Summary = "Chassis Fan Fault, Major Problem, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_fault_underTemperature"
+                            @Summary = "Chassis Fan Fault, Major Problem, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_fault_unknown"
+                            @Summary = "Chassis Fan Fault, Major Problem, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### partialFault - partial failure
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_partialFault_ok"
+                            @Summary = "Chassis Fan Partial Fault, Temperature OK"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_partialFault_overTemperature"
+                            @Summary = "Chassis Fan Partial Fault, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_partialFault_underTemperature"
+                            @Summary = "Chassis Fan Partial Fault, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_partialFault_unknown"
+                            @Summary = "Chassis Fan Partial Fault, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### diagFault - diagnostic fault
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_diagFault_ok"
+                            @Summary = "Chassis Fan Diagnostic Fault, Temperature OK"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_diagFault_overTemperature"
+                            @Summary = "Chassis Fan Diagnostic Fault, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_diagFault_underTemperature"
+                            @Summary = "Chassis Fan Diagnostic Fault, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_diagFault_unknown"
+                            @Summary = "Chassis Fan Diagnostic Fault, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default:
+                    switch($2)
+                    {
+                        case "1": ### ok
+                            $SEV_KEY = $OS_EventId + "_unknown_ok"
+                            @Summary = "Chassis Fan Status Unknown, Temperature OK"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### overTemperature
+                            $SEV_KEY = $OS_EventId + "_unknown_overTemperature"
+                            @Summary = "Chassis Fan Status Unknown, Temperature High: > 40C"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### underTemperature
+                            $SEV_KEY = $OS_EventId + "_unknown_underTemperature"
+                            @Summary = "Chassis Fan Status Unknown, Temperature Low: < 10C"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Chassis Fan Status Unknown, Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+            
+            details($ssg5000SysFanStatus,$ssg5000SysTempStatus,$ssg5000TrapSSGHostAddress)
+            
+        case "2": ### ssg5000SysAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm status in the
+            # system.
+            #
+            # $1 = ssg5000TrapSystemAlarmId - A trap ID object for system
+            #        alarm.
+            # $2 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $3 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapSystemAlarmId = lookup($1, ssg5000SystemAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapOccurClearTag = lookup($2, ssg5000ALARMStateType) + " ( " + $2 + " )"
+            $ssg5000TrapSSGHostAddress = $3
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000SysAlarmNotification"
+
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### nodeDead
+                    @AlertGroup = "System Node Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_nodeDead_alarmOccur"
+                            @Summary = "System Node Dead"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_nodeDead_alarmClear"
+                            @Summary = "System Node Dead Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_nodeDead_unknown"
+                            @Summary = "System Node Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### nodeReboot
+                    @AlertGroup = "System Node Reboot Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_nodeReboot_alarmOccur"
+                            @Summary = "System Node Rebooting"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_nodeReboot_alarmClear"
+                            @Summary = "System Node Reboot Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_nodeReboot_unknown"
+                            @Summary = "System Node Reboot Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### fanDead
+                    @AlertGroup = "System Fan Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_fanDead_alarmOccur"
+                            @Summary = "System Fan Dead"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_fanDead_alarmClear"
+                            @Summary = "System Fan Dead Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_fanDead_unknown"
+                            @Summary = "System Fan Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### fanFailure
+                    @AlertGroup = "System Fan Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_fanFailure_alarmOccur"
+                            @Summary = "System Fan Failure"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_fanFailure_alarmClear"
+                            @Summary = "System Fan Failure Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_fanFailure_unknown"
+                            @Summary = "System Fan Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### temperatureOverheat
+                    @AlertGroup = "System Temperature Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_temperatureOverheat_alarmOccur"
+                            @Summary = "System Temperature Overheat"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_temperatureOverheat_alarmClear"
+                            @Summary = "System Temperature Overheat Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_temperatureOverheat_unknown"
+                            @Summary = "System Temperature Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### dcPowerFailure
+                    @AlertGroup = "System DC Power Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_dcPowerFailure_alarmOccur"
+                            @Summary = "System DC Power Failure"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_dcPowerFailure_alarmClear"
+                            @Summary = "System DC Power Failure Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dcPowerFailure_unknown"
+                            @Summary = "System DC Power Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### acDcShelfFailure
+                    @AlertGroup = "System AC/DC Shelf Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_acDcShelfFailure_alarmOccur"
+                            @Summary = "System AC/DC Shelf Failure"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_acDcShelfFailure_alarmClear"
+                            @Summary = "System AC/DC Shelf Failure Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_acDcShelfFailure_unknown"
+                            @Summary = "System AC/DC Shelf Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "8": ### acDcShelfOverheat
+                    @AlertGroup = "System AC/DC Shelf Temperature Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_acDcShelfOverheat_alarmOccur"
+                            @Summary = "System AC/DC Shelf Overheat"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_acDcShelfOverheat_alarmClear"
+                            @Summary = "System AC/DC Shelf Overheat Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_acDcShelfOverheat_unknown"
+                            @Summary = "System AC/DC Shelf Temperature Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "9": ### batteryFailure
+                    @AlertGroup = "System Battery Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_batteryFailure_alarmOccur"
+                            @Summary = "System Battery Failure"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_batteryFailure_alarmClear"
+                            @Summary = "System Battery Failure Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_batteryFailure_unknown"
+                            @Summary = "System Battery Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "10": ### batteryOverheat
+                    @AlertGroup = "System Battery Temperature Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_batteryOverheat_alarmOccur"
+                            @Summary = "System Battery Overheat"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_batteryOverheat_alarmClear"
+                            @Summary = "System Battery Overheat Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_batteryOverheat_unknown"
+                            @Summary = "System Battery Temperature Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "11": ### pcmciaCardInserted
+                    @AlertGroup = "System PCMCIA Card Status"
+                    $SEV_KEY = $OS_EventId + "_pcmciaCardInserted"
+                    @Summary = "System PCMCIA Card Inserted"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "12": ### pcmciaCardRemoved
+                    @AlertGroup = "System PCMCIA Card Status"
+                    $SEV_KEY = $OS_EventId + "_pcmciaCardRemoved_alarmOccur"
+                    @Summary = "System PCMCIA Card Removed"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "13": ### sysSSMsAreUp
+                    @AlertGroup = "System SSMs Status"
+                    $SEV_KEY = $OS_EventId + "_sysSSMsAreUp"
+                    @Summary = "System SSMs Up"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    @AlertGroup = "System Status"
+                    switch($2)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmOccur"
+                            @Summary = "Unknown System Alarm"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmClear"
+                            @Summary = "Unknown System Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Unknown System Alarm Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+            
+            details($ssg5000TrapSystemAlarmId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "3": ### ssg5000CardAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm status in the
+            # card.
+            #
+            # $1 = ssg5000TrapCardAlarmId - A trap ID object for card alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $5 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapCardAlarmId = lookup($1, ssg5000CardAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapOccurClearTag = lookup($4, ssg5000ALARMStateType) + " ( " + $4 + " )"
+            $ssg5000TrapSSGHostAddress = $5
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000CardAlarmNotification"
+
+            @AlertKey = "Slot: " + $2
+            switch($1)
+            {
+                case "1": ### cardMissing
+                    @AlertGroup = "Card Status"
+                    $SEV_KEY = $OS_EventId + "_cardMissing"
+                    @Summary = $ssg5000TrapCardType + " Missing"
+    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### cardInserted
+                    @AlertGroup = "Card Status"
+                    $SEV_KEY = $OS_EventId + "_cardInserted"
+                    @Summary = $ssg5000TrapCardType + " Inserted"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### cardRemoved
+                    @AlertGroup = "Card Status"
+                    $SEV_KEY = $OS_EventId + "_cardRemoved"
+                    @Summary = $ssg5000TrapCardType + " Removed"
+    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### cardMismatch
+                    @AlertGroup = "Card Match Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardMismatch_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Mismatch"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardMismatch_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Mismatch Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardMismatch_unknown"
+                            @Summary = $ssg5000TrapCardType + " Match Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### cardBoot
+                    @AlertGroup = "Card Boot Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardBoot_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Booted"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardBoot_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Boot Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardBoot_unknown"
+                            @Summary = $ssg5000TrapCardType + " Boot Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### cardReboot
+                    @AlertGroup = "Card Reboot Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardReboot_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Rebooted"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardReboot_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Reboot Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardReboot_unknown"
+                            @Summary = $ssg5000TrapCardType + " Reboot Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### cardRevMismatch
+                    @AlertGroup = "Card Revision Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardRevMismatch_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Revision Mismatch"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardRevMismatch_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Revision Mismatch Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardRevMismatch_unknown"
+                            @Summary = $ssg5000TrapCardType + " Revision Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "8": ### cardFailed
+                    @AlertGroup = "Card Failure Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardFailed_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Failed"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardFailed_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Failure Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardFailed_unknown"
+                            @Summary = $ssg5000TrapCardType + " Failure Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "9": ### cardMalfunction
+                    @AlertGroup = "Card Malfunction Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardMalfunction_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Malfunction"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardMalfunction_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Malfunction Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardMalfunction_unknown"
+                            @Summary = $ssg5000TrapCardType + " Malfunction Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "10": ### cardFailDiag
+                    @AlertGroup = "Card Diagnostics Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardFailDiag_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Failed Diagnostics"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardFailDiag_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Diagnostics Failure Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardFailDiag_unknown"
+                            @Summary = $ssg5000TrapCardType + " Diagnostics Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "11": ### cardDead
+                    @AlertGroup = "Card Dead Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardDead_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Dead"
+            
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardDead_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Dead Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardDead_unknown"
+                            @Summary = $ssg5000TrapCardType + " Dead Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "12": ### cardSwitchToActive
+                    @AlertGroup = "Card Active Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardSwitchToActive_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Switched to Active"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardSwitchToActive_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Switch to Active Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardSwitchToActive_unknown"
+                            @Summary = $ssg5000TrapCardType + " Active Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "13": ### cardStandbyNotInRedundant
+                    @AlertGroup = "Card Redundant Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_cardStandbyNotInRedundant_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " is Standby but Not in Redundant"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_cardStandbyNotInRedundant_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " is Standby but Not in Redundant Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_cardStandbyNotInRedundant_unknown"
+                            @Summary = $ssg5000TrapCardType + " Redundant Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "14": ### cardPcmciaInserted
+                    @AlertGroup = "PCMCIA Card Status"
+                    $SEV_KEY = $OS_EventId + "_cardPcmciaInserted"
+                    @Summary = $ssg5000TrapCardType + " Inserted"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "15": ### cardPcmciaRemoved
+                    @AlertGroup = "PCMCIA Card Status"
+                    $SEV_KEY = $OS_EventId + "_cardPcmciaRemoved"
+                    @Summary = $ssg5000TrapCardType + " Removed"
+    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    @AlertGroup = "Card Status"
+                    switch($4)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmOccur"
+                            @Summary = $ssg5000TrapCardType + " Alarm"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmClear"
+                            @Summary = $ssg5000TrapCardType + " Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = $ssg5000TrapCardType + " Alarm Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+            
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapCardAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+
+        case "4": ### ssg5000PortAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm status in the
+            # port.
+            #
+            # $1 = ssg5000TrapALCPortAlarmId - A trap ID object for (ALC) port
+            #        alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $6 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapALCPortAlarmId = lookup($1, ssg5000ALCPortAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapOccurClearTag = lookup($5, ssg5000ALARMStateType) + " ( " + $5 + " )"
+            $ssg5000TrapSSGHostAddress = $6
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000PortAlarmNotification"
+
+            @AlertGroup = "Port Status"
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4
+            switch($1)
+            {
+                case "1": ### portUp
+                    $SEV_KEY = $OS_EventId + "_portUp"
+                    @Summary = "Port Up"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### portDown
+                    $SEV_KEY = $OS_EventId + "_portDown"
+                    @Summary = "Port Down"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### portLoop
+                    $SEV_KEY = $OS_EventId + "_portLoop"
+                    @Summary = "Port Loopback"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### portLOS
+                    $SEV_KEY = $OS_EventId + "_portLOS"
+                    @Summary = "Port Loss of Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### portLOF
+                    $SEV_KEY = $OS_EventId + "_portLOF"
+                    @Summary = "Port Loss of Frame"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### portLAIS
+                    $SEV_KEY = $OS_EventId + "_portLAIS"
+                    @Summary = "Port Line Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### portLRDI
+                    $SEV_KEY = $OS_EventId + "_portLRDI"
+                    @Summary = "Port Line Remote Defect Indication"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### portLOP
+                    $SEV_KEY = $OS_EventId + "_portLOP"
+                    @Summary = "Port Loss of Pointer"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "9": ### portPAIS
+                    $SEV_KEY = $OS_EventId + "_portPAIS"
+                    @Summary = "Port Path Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "10": ### portPRDI
+                    $SEV_KEY = $OS_EventId + "_portPRDI"
+                    @Summary = "Port Path Remote Defect Indication"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "11": ### portLCD
+                    $SEV_KEY = $OS_EventId + "_portLCD"
+                    @Summary = "Port Loss of Cell Delineation"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Port Status Unknown"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapALCPortAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "5": ### ssg5000SSMAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm status in the
+            # SSM.
+            #
+            # $1 = ssg5000TrapSSMAlarmId - A trap ID object for ssm alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $6 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapSSMAlarmId = lookup($1, ssg5000SSMAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapOccurClearTag = lookup($5, ssg5000ALARMStateType) + " ( " + $5 + " )"
+            $ssg5000TrapSSGHostAddress = $6
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000SSMAlarmNotification"
+
+            @AlertGroup = "SSM Status"
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4
+            switch($1)
+            {
+                case "1": ### ssmFailed
+                    $SEV_KEY = $OS_EventId + "_ssmFailed"
+                    @Summary = "SSM Failed"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ssmReset
+                    $SEV_KEY = $OS_EventId + "_ssmReset"
+                    @Summary = "SSM Reset"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### ssmUp
+                    $SEV_KEY = $OS_EventId + "_ssmUp"
+                    @Summary = "SSM Up"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### ssmDead
+                    $SEV_KEY = $OS_EventId + "_ssmDead"
+                    @Summary = "SSM Dead"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### ssmDown
+                    $SEV_KEY = $OS_EventId + "_ssmDown"
+                    @Summary = "SSM Down"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "SSM Status Unknown"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapSSMAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "6": ### ssg5000PVCAlarmNotification
+
+            ##########
+            # The notification signifies that the agent detects an alarm status
+            # in a PVC.
+            #
+            # $1 = ssg5000TrapPVCAlarmId - A trap connection alarm ID for PVC
+            #        connection alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapInterfaceNumber - A trap interface ID for
+            #        connection alarm.
+            # $6 = ssg5000TrapVPINumber - A trap variable object for Connection
+            #        VPI number.
+            # $7 = ssg5000TrapVCINumber - A trap variable object for Connection
+            #        VCI number.
+            # $8 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $9 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            # $10 = ssg5000TrapConnectionName - A trap variable object for
+            #         displaying Connection name.
+            # $11 = ssg5000TrapSubscriberName - A trap variable object for
+            #         displaying Subscriber name.
+            # $12 = ssg5000TrapIspName - A trap variable object for displaying
+            #         the ISP name, which this PVC connection belongs to.
+            ##########
+
+            $ssg5000TrapPVCAlarmId = lookup($1, ssg5000PVCAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapInterfaceNumber = $5
+            $ssg5000TrapVPINumber = $6
+            $ssg5000TrapVCINumber = $7
+            $ssg5000TrapOccurClearTag = lookup($8, ssg5000ALARMStateType) + " ( " + $8 + " )"
+            $ssg5000TrapSSGHostAddress = $9
+            $ssg5000TrapConnectionName = $10
+            $ssg5000TrapSubscriberName = $11
+            $ssg5000TrapIspName = $12
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000PVCAlarmNotification"
+
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4 + ", Interface: " + $5 + ", VPI: " + $6 + ", VCI: " + $7
+            switch($1)
+            {
+                case "1": ### connectionDown
+                    @AlertGroup = "PVC Connection Status"
+                    switch($8)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_connectionDown_alarmOccur"
+                            @Summary = "PVC Connection Down"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_connectionDown_alarmClear"
+                            @Summary = "PVC Connection Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_connectionDown_unknown"
+                            @Summary = "PVC Connection Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default:
+                    @AlertGroup = "PVC Status"
+                    switch($8)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmOccur"
+                            @Summary = "Unknown PVC Alarm"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmClear"
+                            @Summary = "Unknown PVC Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Unknown PVC Alarm Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $8
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapPVCAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapInterfaceNumber,$ssg5000TrapVPINumber,$ssg5000TrapVCINumber,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress,$ssg5000TrapConnectionName,$ssg5000TrapSubscriberName,$ssg5000TrapIspName)
+            
+        case "7": ### ssg5000CT3PortAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm status in the
+            # CT3 port.
+            #
+            # $1 = ssg5000TrapCT3PortAlarmId - A trap ID object for CT3 port
+            #        alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $6 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapCT3PortAlarmId = lookup($1, ssg5000CT3PortAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapOccurClearTag = lookup($5, ssg5000ALARMStateType) + " ( " + $5 + " )"
+            $ssg5000TrapSSGHostAddress = $6
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000CT3PortAlarmNotification"
+
+            @AlertGroup = "CT3 Port Status"
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4
+            switch($1)
+            {
+                case "1": ### ct3Failed
+                    $SEV_KEY = $OS_EventId + "_ct3Failed"
+                    @Summary = "CT3 Port Failed"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ct3Reset
+                    $SEV_KEY = $OS_EventId + "_ct3Reset"
+                    @Summary = "CT3 Port Reset"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### ct3Up
+                    $SEV_KEY = $OS_EventId + "_ct3Up"
+                    @Summary = "CT3 Port Up"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### ct3Dead
+                    $SEV_KEY = $OS_EventId + "_ct3Dead"
+                    @Summary = "CT3 Port Dead"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### ct3Down
+                    $SEV_KEY = $OS_EventId + "_ct3Down"
+                    @Summary = "CT3 Port Down"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### ct3DS3LOS
+                    $SEV_KEY = $OS_EventId + "_ct3DS3LOS"
+                    @Summary = "CT3 Port DS3 Loss of Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### ct3DS3OOF
+                    $SEV_KEY = $OS_EventId + "_ct3DS3OOF"
+                    @Summary = "CT3 Port DS3 Out of Frame"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### ct3DS3AIS
+                    $SEV_KEY = $OS_EventId + "_ct3DS3AIS"
+                    @Summary = "CT3 Port DS3 Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "9": ### ct3DS3FERF
+                    $SEV_KEY = $OS_EventId + "_ct3DS3FERF"
+                    @Summary = "CT3 Port DS3 Far-End Receive Failure"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "10": ### ct3DS3RED
+                    $SEV_KEY = $OS_EventId + "_ct3DS3RED"
+                    @Summary = "CT3 Port DS3 Red Alarm"
+    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "CT3 Port DS3 Status Unknown"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapCT3PortAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "8": ### ssg5000ETHPortAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm status in the
+            # ETHERNET port.
+            #
+            # $1 = ssg5000TrapETHPortAlarmId - A trap ID object for ETH port
+            #        alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $6 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapETHPortAlarmId = lookup($1, ssg5000ETHPortAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapOccurClearTag = lookup($5, ssg5000ALARMStateType) + " ( " + $5 + " )"
+            $ssg5000TrapSSGHostAddress = $6
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000ETHPortAlarmNotification"
+
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4
+            switch($1)
+            {
+                case "1": ### ethLinkDown
+                    @AlertGroup = "Ethernet Port Link Status"
+                    switch($5)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ethLinkDown_alarmOccur"
+                            @Summary = "Ethernet Port Link Down"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ethLinkDown_alarmClear"
+                            @Summary = "Ethernet Port Link Down Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ethLinkDown_unknown"
+                            @Summary = "Ethernet Port Link Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default:
+                    @AlertGroup = "Ethernet Port Status"
+                    switch($5)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmOccur"
+                            @Summary = "Unknown Ethernet Port Alarm"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmClear"
+                            @Summary = "Unknown Ethernet Port Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Unknown Ethernet Port Alarm Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapETHPortAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "9": ### ssg5000CT3DS2AlarmNotification
+
+            ##########
+            # The notification signal the agent detects a DS2 alarm status in
+            # the CT3 port.
+            #
+            # $1 = ssg5000TrapCT3DS2AlarmId - A trap ID object for CT3 DS2
+            #        alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapDS2ChannelId - A trap ID object for indicating a
+            #        DS2 channel.
+            # $6 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $7 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapCT3DS2AlarmId = lookup($1, ssg5000CT3DS2AlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapDS2ChannelId = $5
+            $ssg5000TrapOccurClearTag = lookup($6, ssg5000ALARMStateType) + " ( " + $6 + " )"
+            $ssg5000TrapSSGHostAddress = $7
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000CT3DS2AlarmNotification"
+
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4 + ", DS2 Channel: " + $5
+            switch($1)
+            {
+                case "1": ### ds2OOF
+                    @AlertGroup = "CT3 Port DS2 Channel OOF Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ds2OOF_alarmOccur"
+                            @Summary = "CT3 Port DS2 Channel Out of Frame"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ds2OOF_alarmClear"
+                            @Summary = "CT3 Port DS2 Channel Out of Frame Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ds2OOF_unknown"
+                            @Summary = "CT3 Port DS2 Channel Out of Frame Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### ds2AIS
+                    @AlertGroup = "CT3 Port DS2 Channel AIS Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ds2AIS_alarmOccur"
+                            @Summary = "CT3 Port DS2 Channel Alarm Indication Signal"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ds2AIS_alarmClear"
+                            @Summary = "CT3 Port DS2 Channel Alarm Indication Signal Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ds2AIS_unknown"
+                            @Summary = "CT3 Port DS2 Channel Alarm Indication Signal Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### ds2RAI
+                    @AlertGroup = "CT3 Port DS2 Channel RAI Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ds2RAI_alarmOccur"
+                            @Summary = "CT3 Port DS2 Channel Remote Alarm Indication"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ds2RAI_alarmClear"
+                            @Summary = "CT3 Port DS2 Channel Remote Alarm Indication Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ds2RAI_unknown"
+                            @Summary = "CT3 Port DS2 Channel Remote Alarm Indication Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default:
+                    @AlertGroup = "CT3 Port DS2 Channel Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmOccur"
+                            @Summary = "Unknown CT3 Port DS2 Channel Alarm"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmClear"
+                            @Summary = "Unknown CT3 Port DS2 Channel Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Unknown CT3 Port DS2 Channel Alarm Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $6
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapCT3DS2AlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapDS2ChannelId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "10": ### ssg5000CT3DS1AlarmNotification
+
+            ##########
+            # The notification signal the agent detects a DS1 alarm status in
+            # the CT3 port.
+            #
+            # $1 = ssg5000TrapCT3DS1AlarmId - A trap ID object for CT3 DS1
+            #        alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapDS1ChannelId - A trap ID object for indicating a
+            #        DS1 channel.
+            # $6 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $7 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapCT3DS1AlarmId = lookup($1, ssg5000CT3DS1AlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapDS1ChannelId = $5
+            $ssg5000TrapOccurClearTag = lookup($6, ssg5000ALARMStateType) + " ( " + $6 + " )"
+            $ssg5000TrapSSGHostAddress = $7
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000CT3DS1AlarmNotification"
+
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4 + ", DS1 Channel: " + $5
+            switch($1)
+            {
+                case "1": ### ds1OOF
+                    @AlertGroup = "CT3 Port DS1 Channel OOF Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ds1OOF_alarmOccur"
+                            @Summary = "CT3 Port DS1 Channel Out of Frame"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ds1OOF_alarmClear"
+                            @Summary = "CT3 Port DS1 Channel Out of Frame Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ds1OOF_unknown"
+                            @Summary = "CT3 Port DS1 Channel Out of Frame Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### ds1AIS
+                    @AlertGroup = "CT3 Port DS1 Channel AIS Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ds1AIS_alarmOccur"
+                            @Summary = "CT3 Port DS1 Channel Alarm Indication Signal"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ds1AIS_alarmClear"
+                            @Summary = "CT3 Port DS1 Channel Alarm Indication Signal Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ds1AIS_unknown"
+                            @Summary = "CT3 Port DS1 Channel Alarm Indication Signal Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### ds1RAI
+                    @AlertGroup = "CT3 Port DS1 Channel RAI Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_ds1RAI_alarmOccur"
+                            @Summary = "CT3 Port DS1 Channel Remote Alarm Indication"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_ds1RAI_alarmClear"
+                            @Summary = "CT3 Port DS1 Channel Remote Alarm Indication Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_ds1RAI_unknown"
+                            @Summary = "CT3 Port DS1 Channel Remote Alarm Indication Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default:
+                    @AlertGroup = "CT3 Port DS1 Channel Status"
+                    switch($6)
+                    {
+                        case "1": ### alarmOccur
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmOccur"
+                            @Summary = "Unknown CT3 Port DS1 Channel Alarm"
+            
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### alarmClear
+                            $SEV_KEY = $OS_EventId + "_unknown_alarmClear"
+                            @Summary = "Unknown CT3 Port DS1 Channel Alarm Cleared"
+            
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Unknown CT3 Port DS1 Channel Alarm Status Unknown"
+            
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $6
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapCT3DS1AlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapDS1ChannelId,$ssg5000TrapOccurClearTag,$ssg5000TrapSSGHostAddress)
+            
+        case "11": ### ssg5000ServiceAlarmNotification
+
+            ##########
+            # The notification signal the agent detects an alarm in SSG Service
+            # related modules.
+            #
+            # $1 = ssg5000TrapServiceModuleAlarm - A trap object for showing a
+            #        SSG Service Module.
+            # $2 = ssg5000TrapServiceAlarmSeverity - A trap object for
+            #        indicating Service Alarm Severity.
+            # $3 = ssg5000TrapServiceAlarmDescription - A trap object for
+            #        describing a Service Alarm.
+            # $4 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapServiceModuleAlarm = $1
+            $ssg5000TrapServiceAlarmSeverity = lookup($2, ssg5000ServiceAlarmSeverityType) + " ( " + $2 + " )"
+            $ssg5000TrapServiceAlarmDescription = $3
+            $ssg5000TrapSSGHostAddress = $4
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000ServiceAlarmNotification"
+
+            @AlertGroup = "SSG Service Module Status"
+            @AlertKey = "Service Module: " + $1
+            @Summary = "SSG Service Module Alarm"
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### informational
+                    $SEV_KEY = $OS_EventId + "_informational"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "2": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+
+            details($ssg5000TrapServiceModuleAlarm,$ssg5000TrapServiceAlarmSeverity,$ssg5000TrapServiceAlarmDescription,$ssg5000TrapSSGHostAddress)
+            
+        case "12": ### ssg5000FrameRelayAlarmNotification
+
+            ##########
+            # The notification indicates that the Virtual Circuit has changed
+            # state. It has either been created or invalidated, or has toggled
+            # between the active and inactive states. If the reason for the
+            # state change is due to the DLCMI going down, the trap should not
+            # be generated. frDCLIStatusChange trap defined in RFC 2115 will
+            # also be generated when this event occurs.
+            #
+            # $1 = ssg5000TrapFrameRelayAlarmId - A trap ID object for Frame
+            #        Relay alarm.
+            # $2 = ssg5000TrapSlotId - A trap slot ID for slot number.
+            # $3 = ssg5000TrapCardType - A trap card ID for slot card type.
+            # $4 = ssg5000TrapPortId - A trap port ID for port number.
+            # $5 = ssg5000TrapDS1ChannelId - A trap ID object for indicating a
+            #        DS1 channel.
+            # $6 = ssg5000TrapOccurClearTag - A trap state indicating occur or
+            #        clear.
+            # $7 = ssg5000TrapDLCINumber - A trap variable object for DCLI
+            #        Number.
+            # $8 = ssg5000TrapConnectionName - A trap variable object for
+            #        displaying Connection name.
+            # $9 = ssg5000TrapSSGHostAddress - A trap ID object indicating the
+            #        SSG this trap is origionated, this is needed and
+            #        informational when the trap is forwarded by Nortel-
+            #        Shasta's Service Creation System manager to 3rd Party NMS.
+            ##########
+
+            $ssg5000TrapFrameRelayAlarmId = lookup($1, ssg5000FrameRelayAlarmType) + " ( " + $1 + " )"
+            $ssg5000TrapSlotId = $2
+            $ssg5000TrapCardType = lookup($3, ssg5000CardType)
+            $ssg5000TrapPortId = $4
+            $ssg5000TrapDS1ChannelId = $5
+            $ssg5000TrapOccurClearTag = lookup($6, ssg5000ALARMStateType) + " ( " + $6 + " )"
+            $ssg5000TrapDLCINumber = $7
+            $ssg5000TrapConnectionName = $8
+            $ssg5000TrapSSGHostAddress = $9
+
+            $OS_EventId = "SNMPTRAP-shasta-SSG-5000-CHASSIS-MIB-ssg5000FrameRelayAlarmNotification"
+
+            @AlertGroup = "DLCI Status"
+            @AlertKey = "Slot: " + $2 + ", Port: " + $4 + ", DS1 Channel: " + $5 + ", DLCI: " + $7
+            switch($1)
+            {
+                case "1": ### invalid
+                    $SEV_KEY = $OS_EventId + "_invalid"
+                    @Summary = "Frame Relay Virtual Circuit Invalid"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### active
+                    $SEV_KEY = $OS_EventId + "_active"
+                    @Summary = "Frame Relay Virtual Circuit Active"
+    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### inactive
+                    $SEV_KEY = $OS_EventId + "_inactive"
+                    @Summary = "Frame Relay Virtual Circuit Inactive"
+    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Frame Relay Virtual Circuit Status Unknown"
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $ssg5000TrapCardType = $ssg5000TrapCardType + " ( " + $3 + " )"
+            details($ssg5000TrapFrameRelayAlarmId,$ssg5000TrapSlotId,$ssg5000TrapCardType,$ssg5000TrapPortId,$ssg5000TrapDS1ChannelId,$ssg5000TrapOccurClearTag,$ssg5000TrapDLCINumber,$ssg5000TrapConnectionName,$ssg5000TrapSSGHostAddress)
+            
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, shasta-SSG-5000-CHASSIS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, shasta-SSG-5000-CHASSIS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/shasta/shasta-SSG-5000-CHASSIS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/shasta/shasta-SSG-5000-CHASSIS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... shasta-SSG-5000-CHASSIS-MIB.include.snmptrap.rules >>>>>")

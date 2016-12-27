@@ -1,0 +1,72 @@
+////////////////////////////////////////////////
+//
+//	STP_Linkset.ipl
+//
+//	Impact policy for Mobilink - STP LinkSet Down
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100524	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+// Extract Linkset from event
+
+Linkset = EventContainer.AlertKey;
+
+// Enrich the Event with the percentage of effected Links
+
+
+
+//Upgrade Severity if it is a High Speed Link
+
+
+//is there an existing Synthetic Alarm for this Linkset
+
+DataType = "Status";
+Filter = "AlertKey = '" + Linkset + "' and Class = 200003";
+CountOnly = False;
+Log("Filter = " + Filter );
+
+LinksetEvents = GetByFilter(DataType, Filter, CountOnly);
+
+NumEvents = Num;
+log("NumEvents = " + NumEvents );
+log("LinksetEvents = " + LinksetEvents );
+NowTime = GetDate();
+
+if ( NumEvents == 0 )
+{
+	// Generate a new Event
+			Log("Create New Event");
+		NewEvent = NewEvent(DefaultEventReader);
+		NewEvent.EventReaderName = "DefaultEventReader";
+/*		NewEvent.Domain=EventContainer.Domain;
+		NewEvent.Region=EventContainer.Region;
+		NewEvent.ManCity=EventContainer.ManCity;
+		NewEvent.CovCity=EventContainer.CovCity;
+*/		NewEvent.Agent = "Impact";
+		NewEvent.AlertGroup = "STP Linkset";
+		NewEvent.AlertKey = Linkset;
+		NewEvent.Identifier= "STP_Linkset20100527" + Linkset ;
+		NewEvent.Summary= "STP Linkset Alarm Handling for " + Linkset ;
+		NewEvent.Severity= 5;
+		NewEvent.Type= 1;
+		NewEvent.Tally= 1;
+		NewEvent.Node= "Impact";
+		NewEvent.FirstOccurrence = NowTime ;
+		NewEvent.LastOccurrence = NowTime ;
+		NewEvent.Class = 200002;
+		ReturnEvent(NewEvent);
+
+}
+else
+{
+	// Update Existing Event
+/*		LinksetEvents[0].Tally = LinksetEvents[0].Tally + 1;
+		LinksetEvents[0].LastOccurrence = NowTime ;
+		//ReturnEvent(Existing_Synthetic_Event);
+*/
+	// Update TT
+}
+
+

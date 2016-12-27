@@ -1,0 +1,158 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-LDP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release. 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002).  
+#
+#     - Supports MOI fields in OMNIbus 3.6.
+#       
+###############################################################################
+
+case "LDP": ### Label Distribution Protocol
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-LDP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ADV":
+    
+            ##########
+            # A disagreement about the label distribution mode to be used with
+            # an LDP peer has been resolved according to the LDP protocol
+            # specification. For LCATM links, when there is a disagreement, the
+            # protocol specification requires that the session use Downstream
+            # on Demand mode. When there is a disagreement for frame-based
+            # links, the protocol requires that the session use Downstream
+            # Unsolicited mode.
+            #
+            # %LDP-4-ADV: Label advertisement mode (DU/DoD) mismatch with peer
+            # [chars], resolved to [chars]. 
+            ##########
+    
+            $MOI_Remote = extract($Message, "with peer (.*),? resolved")
+            if(!regmatch($MOI_Remote, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+            {
+                $MOI_Remote = extract($MOI_Remote, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "resolved to (.*)$"))
+    
+        case "MALFORMED_MSG":
+    
+            ##########
+            # A malformed LDP message has been received from an LDP peer.
+            #
+            # %LDP-3-MALFORMED_MSG: peer [chars]; format error for msg type
+            # [hex]
+            ##########
+    
+            $MOI_Remote = extract($Message, "peer (.*);? format error")
+            if(!regmatch($MOI_Remote, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+            {
+                $MOI_Remote = extract($MOI_Remote, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "msg type (.*)$"))
+    
+        case "NBRCHG":
+    
+            ##########
+            # An LDP neighbor has either come up or gone down. The message
+            # describes the change for it.
+            #
+            # %LDP-5-NBRCHG: [chars] Neighbor [chars] is [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "Neighbor (.*) is")
+            if(!regmatch($MOI_Remote, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+            {
+                $MOI_Remote = extract($MOI_Remote, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, " is (.*)$"))
+            
+            switch($CLARIFIER)
+            {
+                case "Up"|"UP"|"up":
+                    $SEV_KEY = $OS_EventId + "__up"
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+    
+        case "PTCL":
+    
+            ##########
+            # A violation of the LDP by an LDP peer has been detected. This is
+            # informational message. The system will attempt to recover from
+            # this situation by terminating the TDP session and attempting to
+            # establish a new session with the peer.
+            #
+            # %LDP-4-PTCL: peer [chars], [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "peer (.*),? ")
+            if(!regmatch($MOI_Remote, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+            {
+                $MOI_Remote = extract($MOI_Remote, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "peer (.*),? (.*)$"))
+    
+        case "UNKNOWN_MPLS_APP":
+    
+            ##########
+            # An LDP message with an unknown label type or address family has
+            # been received from a peer, and the message has been dropped.
+            #
+            # %LDP-3-UNKNOWN_MPLS_APP: [chars] [chars] message from [chars];
+            # [chars];
+            ##########
+    
+            $MOI_Remote = extract($Message, "message from (.*);? ")
+            if(!regmatch($MOI_Remote, "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"))
+            {
+                $MOI_Remote = extract($MOI_Remote, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        default:
+                    
+            $UseCiscoIosDefaults = 1
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-LDP.include.syslog.rules >>>>>")

@@ -1,0 +1,574 @@
+MIB-PNMS-SYSTEM1 DEFINITIONS ::= BEGIN
+
+-----------------------------------------------
+-- Version 0.1 2002-08-Mar 
+-- Version 0.2 2006-18-Jan 
+-- Version 0.3 2006-31-Jul
+-----------------------------------------------
+
+-----------------------------------------------
+-- INPORTS Definitions
+-----------------------------------------------
+
+	IMPORTS
+		IpAddress,Counter,TimeTicks,enterprises
+			FROM RFC1155-SMI
+		OBJECT-TYPE
+			FROM RFC-1212
+		DisplayString
+			FROM RFC1213-MIB
+		pnms
+			FROM NEC-SMI;
+
+-----------------------------------------------
+-- enterprises Group Definitions
+-----------------------------------------------
+
+	system1 OBJECT IDENTIFIER
+		::= { pnms 100 }
+
+-----------------------------------------------
+-- system1 Group Definitions
+-----------------------------------------------
+
+	system1ManagerInformation OBJECT IDENTIFIER
+		::= { system1 1 }
+	
+	system1GroupStatus OBJECT IDENTIFIER
+		::= { system1 2 }
+	
+	system1GroupInformation OBJECT IDENTIFIER
+		::= { system1 3 }
+
+	system1AlarmTrapDefinition OBJECT IDENTIFIER
+		::= { system1 4 }
+	
+	system1FilterTrapDefinition OBJECT IDENTIFIER
+		::= { system1 5 }
+		
+		
+-----------------------------------------------
+-- system1ManagerInformation Group
+-- sys1ManagerTable Definitions
+-----------------------------------------------
+
+	sys1ManagerTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Sys1ManagerEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"SNMP Upper(higher-level) Manager Information"
+		::= { system1ManagerInformation 1 }
+
+	sys1ManagerEntry OBJECT-TYPE
+		SYNTAX		Sys1ManagerEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		INDEX		{
+					smtManagerIndex
+				}
+		::= { sys1ManagerTable 1 }
+
+	Sys1ManagerEntry ::= SEQUENCE {
+		smtManagerIndex			INTEGER,
+		smtManagerIpAddress		IpAddress,
+		smtManagerSequenceNumber	INTEGER,
+		smtManagerCommunityName		OCTET STRING
+	}
+
+	smtManagerIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manager Index"
+		::= { sys1ManagerEntry 1 }
+		
+	smtManagerIpAddress OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Manager IpAddress"
+		::= { sys1ManagerEntry 2 }
+
+	smtManagerSequenceNumber OBJECT-TYPE 
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Sequence Number for Manager"
+		::= { sys1ManagerEntry 3 }
+
+
+	smtManagerCommunityName OBJECT-TYPE 
+		SYNTAX		OCTET STRING
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Community Name"
+		::= { sys1ManagerEntry 4 }
+		
+		
+-----------------------------------------------
+-- system1GroupStatus Group
+-- sys1GroupStatusTable Definitions
+-----------------------------------------------
+
+	sys1GroupStatusTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Sys1GroupStatusEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Group Status"
+		::= { system1GroupStatus 1  }
+
+	sys1GroupStatusEntry OBJECT-TYPE
+		SYNTAX		Sys1GroupStatusEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		INDEX		{
+					sgsGroupIndex
+				}
+		::= { sys1GroupStatusTable 1 }
+
+	Sys1GroupStatusEntry ::= SEQUENCE {
+		sgsGroupIndex		INTEGER,
+		sgsGroupName		OCTET STRING,
+		sgsGroupSummary		INTEGER,
+		sgsGroupStatus		INTEGER
+	}
+
+	sgsGroupIndex OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manager Index"
+		::= { sys1GroupStatusEntry 1 }
+		
+	sgsGroupName OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Group name"
+		::= { sys1GroupStatusEntry 2 }
+
+	sgsGroupSummary OBJECT-TYPE 
+		SYNTAX		INTEGER {
+					unknown(0),
+					clear(1),
+                    			minor(2),
+                    			major(3),
+                    			critical(4)
+                                }
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Group Summary"
+		::= { sys1GroupStatusEntry 3 }
+
+	sgsGroupStatus OBJECT-TYPE 
+		SYNTAX		INTEGER {
+					invalid(0),
+					valid(1)
+				}
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Group Status"
+		::= { sys1GroupStatusEntry 4 }
+
+-----------------------------------------------
+-- system1GroupInformation Group
+-- sys1GroupInformationTable Definitions
+-----------------------------------------------
+
+	sys1GroupInformationTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Sys1GroupInformationEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Group Status"
+		::= { system1GroupInformation 1  }
+
+	sys1GroupInformationEntry OBJECT-TYPE
+		SYNTAX		Sys1GroupInformationEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		INDEX		{
+					sgiGroupIndex,
+					sgiManagerIndex
+				}
+		::= { sys1GroupInformationTable 1 }
+
+	Sys1GroupInformationEntry ::= SEQUENCE {
+		sgiGroupIndex		INTEGER,
+		sgiManagerIndex		INTEGER,
+		sgiFilterSeverityMask   INTEGER,
+		sgiFilterTrapTypeMask   INTEGER
+	}
+
+	sgiGroupIndex OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Group Index"
+		::= { sys1GroupInformationEntry 1 }
+		
+	sgiManagerIndex OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manager Index"
+		::= { sys1GroupInformationEntry 2 }
+
+	sgiFilterSeverityMask OBJECT-TYPE 
+		SYNTAX		INTEGER
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Severity Mask
+				The alarm filter severity is implemented as a
+              		        bit mask. The bits have the following meaning:
+                    		Bit 0 = clear,
+                    		Bit 1 = minor,
+                    		Bit 2 = major,
+                    		Bit 3 = critical. 
+              		The severity definitions are per X.733.
+	      		Ex. 00010 stands for the mask of minor alarm."
+		::= { sys1GroupInformationEntry 3 }
+
+	sgiFilterTrapTypeMask OBJECT-TYPE 
+		SYNTAX		INTEGER
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Trap Type Mask
+				The filter Trap Type is implemented as a
+              		        bit mask. The bits have the following meaning:
+                    		Bit 0 = Group Summary,
+                    		Bit 1 = Network Element Summary,
+                    		Bit 2 = Partial Summary,
+                    		Bit 3 = Other Alarm,
+                    		Bit 4 = Event,
+                    		Bit 5 = Filter,
+                    		Bit 6 = Config,
+                    		Bit 7 = Status,
+	                   		Bit 8 = System "
+		::= { sys1GroupInformationEntry 4 }
+
+-----------------------------------------------
+-- Alarm Trap Status Group Definitions
+-----------------------------------------------
+	NormalAlarmStatusId ::= INTEGER {
+		invalid(0),
+		normal(1),
+		alarm(2)
+	}
+
+	alarmTrapSequenceNumber OBJECT-TYPE
+    		SYNTAX  Counter
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"When a new trap is created, trapSequenceCounter
+               		is incremented, and copied to this scalar."
+    	::= { system1AlarmTrapDefinition  1 }
+
+	alarmDate OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Date when alarm was raised or cleared: YYYY/MM/DD"
+    	::= { system1AlarmTrapDefinition  2 }
+
+	alarmTime OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Time when alarm was raised or cleared. A value in
+             		the format hh:mm:ss. The time is expressed as a
+             		24 hour clock. Some examples of legal values
+             		are: 02:03:33 and 14:59:59."
+    	::= { system1AlarmTrapDefinition  3 }
+
+	alarmSeverity OBJECT-TYPE
+    		SYNTAX  INTEGER
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"The valid values for this object are:
+           		        0=unknown,
+                    		1=clear,
+                    		2=minor,
+                    		3=major,
+                    		4=critical. 
+                            Alarm severity( 1-4 ) per X.733."
+    	::= { system1AlarmTrapDefinition  4 }
+
+	alarmType OBJECT-TYPE
+    		SYNTAX  INTEGER {
+				invalid(0),
+                 		communicationAlarm(1),
+                 		qualityOfServiceAlarm(2),
+                 		processingErrorAlarm(3),
+                 		equipmentAlarm(4),
+                 		environmentalAlarm(5),
+                 		integrityViolationAlarm(6),
+                 		operationalViolationAlarm(7),
+                 		physicalViolationAlarm(8),
+                 		securityViolationAlarm(9),
+                 		timeDomainViolationAlarm(10)
+               	}
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Alarm types per X.733/X.736."
+    	::= { system1AlarmTrapDefinition  5 }
+
+	probableCause OBJECT-TYPE
+    		SYNTAX  INTEGER {
+				invalid(0),
+                 		aIS(1),
+                 		callSetUpFailure(2),
+                 		degradedSignal(3),
+                 		farEndReceiverFailure(4),
+                 		framingError(5),
+                 		lossOfFrame(6),
+                 		lossOfPointer(7),
+                 		lossOfSignal(8),
+                 		payloadTypeMismatch(9),
+                 		transmissionError(10),
+                 		remoteAlarmInterface(11),
+                 		excessiveBER(12),
+                 		pathTraceMismatch(13),
+                 		backplaneFailure(51),
+                 		dataSetProblem(52),
+                 		equipmentIdentifierDuplication(53),
+                 		externalIFDeviceProblem(54),
+                 		lineCardProblem(55),
+                 		multiplexerProblem(56),
+                 		nEIdentifierDuplication(57),
+                 		powerProblem(58),
+                 		processorProblem(59),
+                 		protectionPathFailure(60),
+                 		receiverFailure(61),
+                 		replaceableUnitMissing(62),
+                 		replaceableUnitTypeMismatch(63),
+                 		synchronizationSourceMismatch(64),
+                 		terminalProblem(65),
+                 		timingProblem(66),
+                 		transmitterFailure(67),
+                 		trunkCardProblem(68),
+                 		replaceableUnitProblem(69),
+                 		airCompressorFailure(101),
+                 		airConditioningFailure(102),
+                 		airDryerFailure(103),
+                 		batteryDischarging(104),
+                 		batteryFailure(105),
+                 		commercialPowerFailure(106),
+                 		coolingFanFailure(107),
+                 		engineFailure(108),
+                 		fireDetectorFailure(109),
+                 		fuseFailure(110),
+                 		generatorFailure(111),
+                 		lowBatteryThreshold(112),
+                 		pumpFailure(113),
+                 		rectifierFailure(114),
+                 		rectifierHighVoltage(115),
+                 		rectifierLowFVoltage(116),
+                 		ventilationsSystemFailure(117),
+                 		enclosureDoorOpen(118),
+                 		explosiveGas(119),
+                 		fire(120),
+                 		flood(121),
+                 		highHumidity(122),
+                 		highTemperature(123),
+                 		highWind(124),
+                 		iceBuildUp(125),
+                 		intrusionDetection(126),
+                 		lowFuel(127),
+                 		lowHumidity(128),
+                 		lowCablePressure(129),
+                 		lowTemperature(130),
+                 		lowWater(131),
+                 		smoke(132),
+                 		toxicGas(133),
+                 		storageCapacityProblem(151),
+                 		memoryMismatch(152),
+                 		corruptData(153),
+                 		outOfCPUCycles(154),
+                 		sfwrEnvironmentProblem(155),
+                 		sfwrDownloadFailure(156),
+                 		communicationsProtocolError(157),
+                 		congestion(158),
+                 		heatingOrVentilationOrCoolingSystemProblem(159),
+                 		lANError(160),
+                	 	performanceDegraded(161),
+                 		temperatureUnacceptable(162),
+                 		thresholdCrossed(163),
+                 		underlyingResourceUnavailable(164),
+                 		equipmentMalfunction(165),
+                 		configurationOrCustomizationError(166),
+                 		duplicateInformation(501),
+                 		informationMissing(502),
+                 		informationModificationDetected(503),
+                 		informationOutOfSequence(504),
+                 		unexpectedInformation(505),
+                 		denialOfService(506),
+                 		outOfService(507),
+                 		proceduralError(508),
+                 		cableTamper(509),
+                 		securityIntrusionDetection(510),
+                 		authenticationFailure(511),
+                 		breachOfConfidentiality(512),
+                 		unauthorisedAccessAttempt(513),
+                 		delayedInformation(514),
+                	 	keyExpired(515),
+                 		outOfHoursActivity(516),
+                 		otherReasons(517),
+                 		bossHardwareFailure(518),
+                 		bossSystemSoftwareFailure(519),
+                 		bossApplicationSoftwareFailure(520),
+                 		bossDatabaseFailure(521),
+                 		bossNetworkFailure(522)
+               	}
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Probable causes per X.733/X.736.
+            		Values 1..50 are used with communications alarms.
+            		Values 51..100 are used with equipment alarms.
+            		Values 101..150 are used with environmental alarms.
+            		Values 151..200 are used with processing error alarms.
+            		Values 501..600 are used with any of the violation
+            		alarm types."
+    	::= { system1AlarmTrapDefinition  6 }
+
+	alarmSource OBJECT-TYPE
+			SYNTAX		OBJECT IDENTIFIER
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Pasolink OID"
+    	::= { system1AlarmTrapDefinition  7 }
+
+	alarmItemStatusId OBJECT-TYPE
+		SYNTAX		NormalAlarmStatusId
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION
+			"Alarm Status"
+	::= {	system1AlarmTrapDefinition  8	}
+
+	
+-----------------------------------------------
+-- Alarm Trap Group Definitions
+-----------------------------------------------
+
+	alarmGroupSummary TRAP-TYPE
+		ENTERPRISE pnms
+		VARIABLES {
+			alarmTrapSequenceNumber,
+       			alarmDate,
+       			alarmTime,
+       			alarmSeverity,
+       			alarmType,
+       			probableCause,
+       			alarmSource,
+       			alarmItemStatusId
+       		}
+		DESCRIPTION	"Group Summary Status"	
+	::= 10
+	
+-----------------------------------------------
+-- Filter configuration change Trap Group Definitions
+-----------------------------------------------
+
+	filterTrapSequenceNumber OBJECT-TYPE
+    		SYNTAX  Counter
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"When a new trap is created, trapSequenceCounter
+               		is incremented, and copied to this scalar."
+    	::= { system1FilterTrapDefinition  1 }
+
+	filterDate OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Date when alarm was raised or cleared: MM-DD-YYYY"
+    	::= { system1FilterTrapDefinition  2 }
+
+	filterTime OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Time when alarm was raised or cleared. A value in
+             		the format hh:mm:ss. The time is expressed as a
+             		24 hour clock. Some examples of legal values
+             		are: 02:03:33 and 14:59:59."
+    	::= { system1FilterTrapDefinition  3 }
+
+	filterSource OBJECT-TYPE
+    		SYNTAX  OBJECT IDENTIFIER
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Filter Source"
+    	::= { system1FilterTrapDefinition  4 }
+
+	filterSeverityMask OBJECT-TYPE
+    		SYNTAX  INTEGER
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"The alarm filter severity is implemented as a
+              		bit mask for each Group.
+              		The bits have the following meaning:
+                    		Bit 1 = clear,
+                    		Bit 2 = minor,
+                    		Bit 3 = major,
+                    		Bit 4 = critical. 
+              		The severity definitions are per X.733.
+	      		Ex. 00010 stands for the mask of minor alarm."
+    	::= { system1FilterTrapDefinition  5 }
+    	
+	filterTrapTypeMask OBJECT-TYPE
+    		SYNTAX  INTEGER
+    		ACCESS  read-write
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"The filter Trap Type is implemented as a
+              		bit mask for each Group.
+              		The bits have the following meaning:
+                    		Bit 0 = Network Element Summary,
+                    		Bit 1 = Each Total,
+                    		Bit 2 = Partial Summary,
+                    		Bit 3 = Other Alarm,
+                    		Bit 4 = Event,
+                    		Bit 5 = Filter,
+                    		Bit 6 = Config,
+                    		Bit 7 = Status,
+                    		Bit 8 = System "
+    	::= { system1FilterTrapDefinition  6 }
+
+	filterTrapSeverity TRAP-TYPE
+		ENTERPRISE pnms      
+		VARIABLES {
+       			filterTrapSequenceNumber,
+       			filterDate,
+       			filterTime,
+       			filterSource,      
+       			filterSeverityMask
+       		}	
+		DESCRIPTION	"Filter Severity Change Trap"
+	::= 300
+	
+	filterTrapType TRAP-TYPE
+		ENTERPRISE pnms      
+		VARIABLES {
+       			filterTrapSequenceNumber,
+       			filterDate,
+       			filterTime,
+       			filterSource,      
+       			filterTrapTypeMask
+       		}	
+		DESCRIPTION	"Filter Trap Type Change Trap"
+	::= 301
+
+END
+

@@ -1,0 +1,1029 @@
+//////////////////////////////////////////////////////////////////////////////////////////
+//
+//    MobiLib.ipl
+//
+//    Impact policy for Mobilink - Function Library
+//    Chris Janes of Innovise ESM
+//
+//    V0.0    20100525    Chris Janes Original
+//
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    Function IsItDayTime Returns value representing if it is DayTime(1) or NightTime(0)
+        StartTime String of format 'HH:MM' representing the time that Day Starts
+        StopTime  String of format 'HH:MM' representing the time that Day Ends
+        DayTime return value DayTime(1) or NightTime(0)
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function IsItDaytime(StartTime, StopTime, DayTime)
+{
+    Seconds = getdate();
+    strDate = localtime(Seconds);
+    Hours = RExtract( strDate, "^[0-9]*-[0-9]*-[0-9]* ([0-9]*):.*");
+    Minutes= RExtract( strDate, "^[0-9]*-[0-9]*-[0-9]* [0-9]*:([0-9]*):.*");
+    NowTime= (float(Hours) * 60) + float(Minutes);
+Log ("NowTime = " + NowTime);
+    StrStartTime = "10:00";
+    Hours = RExtract( StartTime , "^([0-9]*):.*");
+    Minutes= RExtract( StartTime , "^[0-9]*:([0-9]*).*");
+    StartTime= (float(Hours) * 60) + float(Minutes);
+
+    Hours = RExtract( StopTime , "^([0-9]*):.*");
+    Minutes= RExtract( StopTime , "^[0-9]*:([0-9]*).*");
+    StopTime= (float(Hours) * 60) + float(Minutes);
+
+    if(StartTime < StopTime)
+    {
+        if((NowTime > StartTime) && ( NowTime < StopTime))
+        {
+//            Log("Its Daytime");
+            DayTime = 1;
+        }
+        else
+        {
+//            Log("Its NightTime");
+            DayTime = 0;
+        }
+    }
+    else
+    {
+        if((NowTime < StartTime) && ( NowTime > StopTime))
+        {
+            Log("Its NightTime (R)");
+            DayTime = 0;
+        }
+        else
+    {
+            Log("Its Daytime (R)");
+            DayTime = 1;
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    Function RaiseMaxTT This raises a TT within Maximo
+        
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function RaiseMaxTT ( Serial)
+{
+    Filter = "Serial = " + Serial;
+    Event = GetByFilter("OS_Status", Filter, False);
+    Event[0].LogTicket  = 1;
+    ReturnEvent(Event);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    Function JournalInsert
+        JournalSerial = the serial number of the Event whos journal is to be updated
+        JournalText = the Text to be inserted into the Journal
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function JournalInsert(JournalSerial, JournalText)
+{
+    Log("Into Function ParentJournal Insert" + JournalText);
+
+    // Build the new entry for the journal
+    NewJournal = newObject();
+    NewJournal.Chrono = getdate();
+    NewJournal.Serial = JournalSerial;
+
+    //Find the OwnerGID of user 'Impact' - if there isn't one use nobody!
+    User = GetByFilter("Master.Names", "Name like 'Impact'", False);
+    NumUser = Num;
+    if (NumUser == 0)
+    {
+        NewJournal.UID = 65534;
+    }
+    else
+    {
+    NewJournal.UID = User[0].UID;
+    }
+
+    //Create the KeyField
+    KeyField = JournalSerial + ":" + NewJournal.UID + ":" + NewJournal.Chrono;    
+    NewJournal.KeyField = KeyField;
+    NewJournal.Text1 = JournalText;
+    
+    // Write the entry to the Journal table
+    AddDataItem('Journal', NewJournal);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    Function ParentJournalInsert
+        ParentName = the ServerName of the parent Event
+        ParentSerial = the serial number of the parent whos journal is to be updated
+        JournalText = the Text to be inserted into the Parents Journal Journal
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function ParentJournalInsert(ParentName, ParentSerial, JournalText)
+{
+    Log("Into Function ParentJournal Insert" + JournalText);
+    
+    // Find the serial number of the Parent in this Objectserver
+    Filter = "ServerName = '" + ParentName+ "' and ServerSerial = " + ParentSerial;
+    Parent = GetByFilter("OS_Status", Filter, False);
+
+    // Build the new entry for the journal
+    NewJournal = newObject();
+    NewJournal.Chrono = getdate();
+    NewJournal.Serial = ParentSerial;
+
+    //Find the OwnerGID of user 'Impact' - if there isn't one use nobody!
+    User = GetByFilter("Master.Names", "Name like 'impact'", False);
+    NumUser = Num;
+    if (NumUser == 0)
+    {
+        NewJournal.UID = 65534;
+    }
+    else
+    {
+        NewJournal.UID = User[0].UID;
+    }
+    
+    //Create the KeyField
+    MyRandom = Random(99999);
+    KeyField = ParentSerial + ":" + NewJournal.UID + ":" + getdate();
+//Log ("ParentSerial = " + ParentSerial);
+//Log ("KeyField = " + KeyField );
+    NewJournal.KeyField = KeyField;
+    log("KeyField:"+KeyField);
+    log("JournalServerSerial:"+ParentSerial );
+    NewJournal.Text1 = JournalText;
+    // Write the entry to the Journal table
+    AddDataItem('Journal', NewJournal);
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+/**
+    26/01/2011 - NP
+WARN :- Whenever call this function, please pass Event's Serial as local variable
+    - append journal entry to @JournalText field of SE and ensure no duplicate entry
+    - Update the entry into @JournalText field when receive respective resolution entry
+    - Update the LastOccurence of entry when receive de-duplicated journal entry
+
+    - Add entry into journal table (no duplicate entry) and seperate entry for Problem & Resolution
+    - update entrie's last occurrence when receive de-duplicated entry
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function AddGenericJournal(journalServerSerial, journalSummary,journalSerial,journalTimeStamp, nodeAlias,eventType){
+    
+    msgType="RESOLUTION";
+    txtMsg="RESOLVED";
+    if(eventType==1){
+        msgType="PROBLEM";
+        txtMsg="ACTIVE";
+    }
+    Last_Occurrence =  LocalTime(journalTimeStamp, "dd/MM/yy HH:mm:ss");
+    
+    synchronized (AddGenericJournal_Sync_Block) {
+        Log("*** START updating JournalText field value");
+
+        SEDB ="OS_Status";
+        SEFilter ="Serial="+journalServerSerial;
+        SEFilterOutput = GetByFilter(SEDB,SEFilter,false);
+        NumSEOutput = Length(SEFilterOutput);
+        if(NumSEOutput>0){
+            journalText = SEFilterOutput[0].JournalText;
+            if(journalText ==NULL){
+                journalText ="";
+            }
+            Log("Current JournalText:"+journalText);
+            //Remove the unwanted line breka from @Summary
+            tempSummary = replace(journalSummary,"\n"," ",10);
+            journalSummary=tempSummary;
+            updateJournalText(journalText,nodeAlias,journalSummary,journalSerial,txtMsg,Last_Occurrence);
+            Log("updated journal Text:"+journalText);
+            SEFilterOutput[0].JournalText=journalText;
+            ReturnEvent(EventContainer);
+        }else{
+            Log("SE not found SSS:"+journalSeverSerial+" # for event:"+journalSerial);
+        }
+
+        Log("*** END    updating JournalText field value");
+/*    Comment Journal table entry code as per Sohaib's email.
+        Log("*** START Insert Journal entry: " + journalSummary);
+
+
+        Log("Current Serial = " + @Serial + " : Check if the journal entry is not already there");
+
+
+        JournalInOSDataType = "Journal";
+        JournalInOSFilter = "Serial = "+journalServerSerial+" And Text1 = '"+journalSummary+"' And Text2 ='"+journalSerial+"' And Text16 = '"+msgType+"' And Text15 = '"+nodeAlias+"'";
+        Log("JournalInOSFilter "+JournalInOSFilter );
+        JournalInOS_Output = GetByFilter(JournalInOSDataType,JournalInOSFilter,False);
+        NumJournalInOS_Output = Length(JournalInOS_Output);
+    
+        if(NumJournalInOS_Output == 0){
+            Log("Current Serial = " + @Serial + " : Adding journal New entry ");
+            NewJournal = newObject();
+            NewJournal.Chrono = journalTimeStamp;
+            NewJournal.Serial = journalServerSerial;
+            NewJournal.UID = 15;
+        // MyRandom = Random(99999);
+            KeyField = journalServerSerial+":" + NewJournal.UID + ":" + NewJournal.Chrono+":"+Random(9999);
+            NewJournal.KeyField = KeyField;
+            NewJournal.Text1 = journalSummary;
+            NewJournal.Text2 = journalSerial;
+            NewJournal.Text3 = Last_Occurrence;
+            NewJournal.Text15 = nodeAlias;
+            NewJournal.Text16 = msgType;
+            Log("Write the entry into the Journal table");
+            AddDataItem('Journal', NewJournal);
+            
+            Log("*** END Insert Journal entry: " + journalSummary);
+    }else{
+        Log("Current Serial = " + @Serial + " : Journal Entry Already Inserted so update its LastOccurrence");
+        Log("Current Serial = " + @Serial + " Update LO from :"+JournalInOS_Output[0].Text3+"# to"+Last_Occurrence);
+        JournalInOS_Output[0].Text3=Last_Occurrence;
+    }
+*/
+    }//End Sync block
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/**
+    26/01/2011 - NP
+    - append journal entry to @JournalText field of SE and ensure no duplicate entry
+    - Update the entry into @JournalText field when receive respective resolution entry
+    - Update the LastOccurence of entry when receive de-duplicated journal entry
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+//<Node> | <Summary> | <Status> | <Problem Time>| <Clearance Time>
+Function updateJournalText(seJournalText,nodeAlias,summary,serial,msgType,lastOcc){
+    entryArray = split(seJournalText,"\n");
+    entryArrayLength = Length(entryArray);
+    //Log("entryArrayLength :"+entryArrayLength );
+    matchingStr = summary +":"+serial;
+    entryMatch=false;
+    finalString = "";
+    entryPos=0;
+    if(entryArrayLength>0){
+        while(entryPos<entryArrayLength){
+            entry = entryArray[entryPos];
+            Log("entry:"+entry);
+            tokenArray = split(entry,"|");
+            tokenArrayLength=Length(tokenArray);
+            //Log("tokenArrayLength:"+tokenArrayLength);
+            resolveFlag=false;
+            isActiveAgain=false;
+            if(tokenArrayLength>=4){
+                summaryToken = tokenArray[1];
+                if(matchingStr ==summaryToken){
+                    entryMatch = true;
+                    If(msgType=="ACTIVE"){
+                        if(tokenArray[2]=="RESOLVED"){
+                            isActiveAgain=true;
+                        }
+                        tokenArray[2]="ACTIVE";
+                        tokenArray[3]=""+lastOcc;
+                    }else{
+                        if(ParseDate(lastOcc,"dd/MM/yy HH:mm:ss")>=ParseDate(tokenArray[3],"dd/MM/yy HH:mm:ss")){
+                            tokenArray[2]="RESOLVED";
+                        }
+                        resolveFlag = true;
+                    }
+                }
+            }
+            i=0;
+            while(i<tokenArrayLength){
+                //Log("tokenArray["+i+"]:"+tokenArray[i]);
+                finalString = finalString + tokenArray[i] +"|";
+                //If already RESOLVED event de-duplicated as PROBLEM again then remove the clear time
+                /*if(isActiveAgain && (i==3)){
+                    i= i +1;
+                }
+                */
+                //Append ClearTime in case of Resolution event
+                if( (resolveFlag) && (i==3) ){
+                    finalString = finalString + lastOcc+"|";
+                    i = i+1;
+                }
+                i = i +1;
+            }
+        
+            //Remove the last |
+            finalString  =   Substring(finalString ,0,Length(finalString)-1);
+            //Log("finalString:"+finalString);
+            finalString = finalString+"\n";
+            entryPos = entryPos + 1;
+        }
+        seJournalText = Substring(finalString ,0,Length(finalString)-1);
+        //No entry match so we have to append it
+        if(!entryMatch){
+            seJournalText = seJournalText  + "\n"+nodeAlias+"|" + summary+":"+serial+"|"+msgType+"|"+lastOcc;
+        }
+    }else{
+        seJournalText = nodeAlias+"|" + summary+":"+serial+"|"+msgType+"|"+lastOcc;
+    }
+    //Log("seJournalText :"+seJournalText);
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+/**
+    Generic Journal insert function to ensure that each journal will be added into incident worklog entry
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function GenericJournal(JournalServerSerial, JournalTimeStamp, JournalText,messageType,nodeAlias)
+{
+synchronized (GenericJournal_Sync_Block) 
+{
+    Log("*** START Generic Journal Function to Insert: " + JournalText);
+    Log("messageType"+messageType);
+
+    SEDataType = "OS_Status";
+    SEFilter = "Serial = "+JournalServerSerial;
+    SEOutput = GetByFilter(SEDataType,SEFilter,False);
+    NumSEOutput = Length(SEOutput);
+/*    
+    if(NumSEOutput > 0 and messageType == 'RESOLUTION')
+    {
+        Log("Update synthetic events Statechage for messageType = " + messageType);
+        SEOutput[0].StateChange =getdate();
+    }
+*/
+    Log("Current Serial = " + @Serial + " : Check if the journal entry is not already there");
+    Last_Occurrence =  LocalTime(JournalTimeStamp, "dd/MM/yy HH:mm:ss");
+    JournalInOSDataType = "Journal";
+    // JournalInOSFilter = "Serial = "+JournalServerSerial+" And Chrono = "+JournalTimeStamp+" And Text1 = '"+JournalText+"' And Text16 = '"+messageType+"' And Text15 = '"+nodeAlias+"'";
+    JournalInOSFilter = "Serial = "+JournalServerSerial+" And Text2 = '"+Last_Occurrence+"' And Text1 = '"+JournalText+"' And Text16 = '"+messageType+"' And Text15 = '"+nodeAlias+"'";
+    Log("JournalInOSFilter "+JournalInOSFilter );
+    JournalInOS_Output = GetByFilter(JournalInOSDataType,JournalInOSFilter,False);
+    NumJournalInOS_Output = Length(JournalInOS_Output);
+    
+    if(NumJournalInOS_Output == 0)
+    {
+        Log("Current Serial = " + @Serial + " : Adding journal New entry ");
+        NewJournal = newObject();
+
+        NewJournal.Chrono = JournalTimeStamp;
+        NewJournal.Serial = JournalServerSerial;
+        NewJournal.UID = 15;
+        // MyRandom = Random(99999);
+        KeyField = JournalServerSerial+":" + NewJournal.UID + ":" + NewJournal.Chrono;
+        NewJournal.KeyField = KeyField;
+        NewJournal.Text1 = JournalText;
+        NewJournal.Text2 = Last_Occurrence;
+        NewJournal.Text16 = messageType;
+        NewJournal.Text15 = nodeAlias;
+        Log("Write the entry into the Journal table");
+        AddDataItem('Journal', NewJournal);
+            
+        Log("*** END Generic Journal Function to Insert: " + JournalText);
+    }
+    else
+    {
+        Log("Current Serial = " + @Serial + " : Journal Entry Already Inserted");
+    }
+
+}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    17-09-2010 Nitesh Patel
+    Common function for get sleep time
+    @Param site_name siteName for alarm
+    @Param alarm_id  Alarm Id of alarm
+    @Param sleep_time Output parameter which has sleep time
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function getSleepTime(site_name,alarm_id,sleep_time){
+    Log("************ [START] getSleepTime() ***********");
+    sleep_time = 60;
+    
+    // getting the site level
+    SiteLevelDataType = "site_id";
+    SiteLevelFilter = "SITE_ID = '"+site_name+"'";
+    SitePriorityOutput = GetByFilter(SiteLevelDataType, SiteLevelFilter,False);
+    NumSiteLevelOutput = Length(SitePriorityOutput);
+
+    if (NumSiteLevelOutput > 0){
+        site_level = trim(SitePriorityOutput[0].SITE_LEVEL);
+        // site_level = SitePriorityOutput[0].SITE_LEVEL;
+        log("site_level = " + site_level ); 
+        log("alarm_id = "+alarm_id);
+
+        SleepTimeDataType = "SleepTime"; 
+        SleepTimeFilter = "SITE_LEVEL = '"+site_level+"'  And ALARM_ID = '"+alarm_id+"'";
+        SleepTimeOutput = GetByFilter(SleepTimeDataType, SleepTimeFilter,False);
+        NumSleepTimeOutput = Length(SleepTimeOutput);
+
+        Log("SleepTime Flter: " + SleepTimeFilter);
+        Log("NumSleepTimeOutput = " + NumSleepTimeOutput);
+        if (NumSleepTimeOutput > 0)
+        {
+            Log("************ Getting Sleep Time ***********");
+
+            Log("checking whether it's day or night time");
+            current_time = getdate();
+            current_date = LocalTime(current_time, "MM/dd/yyyy");
+            start_day_time = "08:00:00 " + current_date;
+            end_day_time = "18:00:00 " + current_date;
+            start_day_time_seconds = ParseDate(start_day_time, "HH:mm:ss MM/dd/yyyy");
+            end_day_time_seconds = ParseDate(end_day_time, "HH:mm:ss MM/dd/yyyy");    
+
+            if ( (current_time > start_day_time_seconds) and (current_time < end_day_time_seconds))
+            {
+                log ("It's Day Time");
+                sleep_time = SleepTimeOutput[0].TIME_DAY;
+            }else{
+                log ("It's Night Time");
+                sleep_time = SleepTimeOutput[0].TIME_NIGHT;
+            }
+        }
+        log (" Sleep Time :" + sleep_time);
+    }
+
+Log("************ [END] getSleepTime().sleep_time ***********" +sleep_time);
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    Function GenericJournalInsert(JournalServerSerial, JournalSourceSerial, JournalTimeStamp, JournalText)
+    
+        JournalServerSerial: is the serial of the event in which the journal will be inserted
+        JournalSourceSerial: is the serial of the source event (this will be used to populated KeyField)
+        JournalTimeStamp: is the time that will be used to populate Chrono field
+        
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function GenericJournalInsert(JournalServerSerial, JournalSourceSerial, JournalTimeStamp, JournalText)
+{
+Log("*** START Generic Journal Function to Insert: " + JournalText);
+
+    NewJournal = newObject();
+    NewJournal.Chrono = JournalTimeStamp;
+    NewJournal.Serial = JournalServerSerial;
+    NewJournal.UID = 15;
+    MyRandom = Random(99999);
+//    KeyField = MyRandom + ":" + JournalSourceSerial + ":" + JournalServerSerial + ":" + JournalTimeStamp;
+//    KeyField = JournalServerSerial+":" + NewJournal.UID + ":" + getdate() + ":" + MyRandom;
+    KeyField = JournalServerSerial+":" + NewJournal.UID + ":" + NewJournal.Chrono;
+    log("KeyField:"+KeyField);
+    log("JournalServerSerial:"+JournalServerSerial);
+    NewJournal.KeyField = KeyField;
+    NewJournal.Text1 = JournalText;
+Log("Write the entry into the Journal table");
+    AddDataItem('Journal', NewJournal);
+
+Log("*** END Generic Journal Function to Insert: " + JournalText);
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    01/02/2011 - NP
+    This function will calculate the distance between 2 geo co-ordinates
+    function getDistance(kmDist,lat1,lag1,lat2,lag2)
+    kmDist : function will return calculated distance in km
+    lat1     : latitude of first co-ordinate
+    lag1     : longitude of first co-ordinate
+    lat2     : latitude of second co-ordinate
+    lag2     : longitude of second co-ordinate
+
+Sample Data:-
+Lat1:  35.4153  
+Lag1: 74.10158
+Lat2  : 31.72026
+Lag2 : 72.98628
+Ans (Distance) : 423.7km
+(Ref : http://www.movable-type.co.uk/scripts/latlong.html)
+      
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function getDistance(kmDist,lat1,lag1,lat2,lag2){
+    earthR=3958.75;
+    meterConversion = 1609; 
+    finalDistMeter=0;
+    finalDistKm=0;
+
+    latDiff = lat2-lat1;
+    dLat = JavaCall("java.lang.Math",null,"toRadians",{latDiff});
+
+    lagDiff = lag2-lag1;
+    dLag = JavaCall("java.lang.Math",null,"toRadians",{lagDiff});
+
+    dLatSin = JavaCall("java.lang.Math",null,"sin",{dLat/2});
+    dLatSin_square = (dLatSin*dLatSin);
+
+    lat1_rad =JavaCall("java.lang.Math",null,"toRadians",{lat1});
+    lat2_rad =JavaCall("java.lang.Math",null,"toRadians",{lat2});
+    lat1Cos = JavaCall("java.lang.Math",null,"cos",{lat1_rad});
+    lat2Cos = JavaCall("java.lang.Math",null,"cos",{lat2_rad});
+
+    lat12Cos = lat1Cos * lat2Cos;
+    dLagSin = JavaCall("java.lang.Math",null,"sin",{dLag/2});
+    dLagSin_square = (dLagSin*dLagSin);
+
+    aVar = dLatSin_square+ (lat12Cos *dLagSin_square);
+    aSqrt = JavaCall("java.lang.Math",null,"sqrt",{aVar});
+    aSqrt_1 = JavaCall("java.lang.Math",null,"sqrt",{(1-aVar)});
+
+    aTan2 = JavaCall("java.lang.Math",null,"atan2",{aSqrt,aSqrt_1});
+    
+    c=2*aTan2;
+    c=Float(c);
+
+    dist= earthR*c;
+    finalDist = dist * meterConversion;
+    finalDistKm=finalDist/1000;
+    //Log("finalDistKm"+finalDistKm);
+    roundJava = NewJavaObject("java.text.DecimalFormat",{"####.##"});
+    kmDist= Float(JavaCall(null, roundJava, "format",{ finalDistKm} ));
+    Log("kmDist"+kmDist);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    01/02/2011 - NP
+    This function will sort the co-ordinates (most westeraly first then follow nearest co-ordinates)
+    function sortGeoCoordinates(latArray,lagArray)
+    latArray    : array of latitudes
+    lagArray   : array of langitudes
+
+Functionality:-
+    - Find the most westerly co-ordinate first.  If multiple westerly position matches, then apply secondary check for most southerly of the positions
+    - We recieve 4 coordinates A,B,C,D – and we find B is most westerly, then check distance from B to A,C,D.  If A is nearest then output array 
+      becomes B,A.  If D is closer to A than C, then output array becomes B,A,D.  Then only C is left – so get B,A,D,C 
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function sortGeoCoordinates(latArray,lagArray){
+    arrayLength=Length(latArray);
+
+    i=0;
+    while(i<arrayLength){
+
+        j=i;
+        while(j<arrayLength){
+            //If Longitude is greate then just swap full co-ordinate entry
+            if(lagArray[i]>lagArray[j]){
+                tempLat = lagArray[i];
+                lagArray[i] =lagArray[j];
+                lagArray[j] = tempLat;
+
+                tempLat = latArray[i];
+                latArray[i] =latArray[j];
+                latArray[j] = tempLat;
+            }elseif(lagArray[i]==lagArray[j]){
+
+                //If Longitute is same then check Latitute
+                // if latitute is greater then swap full co-ordinate entry
+                if(latArray[i]>latArray[j]){
+                    tempLat = latArray[i];
+                    latArray[i] =latArray[j];
+                    latArray[j] = tempLat;
+                }
+            }
+            j = j +1;
+        }
+
+        i=i+1;
+    }
+
+    i=1;
+    while(i<arrayLength){
+        currDist=0;
+        MobiLib.getDistance(currDist,latArray[i-1], lagArray[i-1], latArray[i],lagArray[i]);
+
+        j=i+1;
+        while(j<arrayLength){
+            subDist =0;
+            MobiLib.getDistance(subDist,latArray[i-1], lagArray[i-1], latArray[j],lagArray[j]);
+            //Log("**** i:"+i+"#latArray["+(i-1)+"]:"+latArray[i-1]+"#lagArray["+(i-1)+"]:"+lagArray[i-1]);
+            //Log("**** j:"+j+"#latArray["+j+"]:"+latArray[j]+"#lagArray["+j+"]:"+lagArray[j]);
+            //Log("**** i:"+i+"#j:"+j+"#currDist:"+currDist+"#tempDist:"+subDist);
+
+            //Check that distance from A->B is greater then A-C
+            if(currDist>subDist){
+                tempDist = currDist;
+                currDist = subDist;
+                subDist = currDist;
+
+                //We should swap co-ordinates here
+                tempLat = lagArray[i];
+                lagArray[i] =lagArray[j];
+                lagArray[j] = tempLat;
+
+                tempLat = latArray[i];
+                latArray[i] =latArray[j];
+                latArray[j] = tempLat;
+            }
+
+            j = j +1;
+        }
+        i = i +1;
+    }
+
+    /*
+    i=0;
+    while (i<arrayLength){
+        Log("Final : latArray["+i+"]:"+latArray[i]+"#lagArray["+i+"]:"+lagArray[i]);
+        i = i +1;
+    }
+    */
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+    14/02/2011 - NP
+    This function will node name array based on GPS co-ordinates
+    function sortCableNodes(nodeArray,latArray,lagArray)
+    nodeArray : array of nodeName
+    latArray    : array of latitudes
+    lagArray   : array of langitudes
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function sortCableNodes(nodeArray,lattArray,langArray){
+
+    paramLatArray={};
+    paramLangArray={};
+    arrayLength=Length(lattArray);
+    i=0;
+    while(i<arrayLength){
+        paramLatArray = paramLatArray + lattArray[i];
+        paramLangArray = paramLangArray + langArray[i];
+        i = i +1;
+    }
+
+    Log("paramLatArray:"+paramLatArray);
+    Log("paramLangArray:"+paramLangArray);
+    MobiLib.sortGeoCoordinates(paramLatArray,paramLangArray);
+    Log("paramLatArray:"+paramLatArray);
+    Log("paramLangArray:"+paramLangArray);
+
+    i=0;
+
+    while(i<arrayLength){
+
+        j=0;
+        while(j<arrayLength){
+
+            //Log("paramLatArray["+i+"]:"+paramLatArray[i]+"#paramLangArray["+i+"]:"+paramLangArray[i]);
+            //Log("lattArray["+j+"]:"+lattArray[j]+"#langArray["+j+"]:"+langArray[j]);
+            //Log("\n");
+            if( (paramLatArray[i]==lattArray[j]) && (paramLangArray[i]==langArray[j]) ){
+                //Log("Swap from "+i+" to "+j);
+            
+                temp = nodeArray[i];
+                nodeArray[i] = nodeArray[j];
+                nodeArray[j] = temp;
+
+                temp = lattArray[i];
+                lattArray[i] = lattArray[j];
+                lattArray[j] = temp;
+
+                temp = langArray[i];
+                langArray[i] = langArray[j];
+                langArray[j] = temp;
+/*
+            temp = nodeGeoCoor[0][i];
+            nodeGeoCoor[0][i] = nodeGeoCoor[0][j];
+            nodeGeoCoor[0][j] = temp;
+
+            temp = nodeGeoCoor[1][i];
+            nodeGeoCoor[1][i] = nodeGeoCoor[1][j];
+            nodeGeoCoor[1][j] = temp;
+
+            temp = nodeGeoCoor[2][i];
+            nodeGeoCoor[2][i] = nodeGeoCoor[2][j];
+            nodeGeoCoor[2][j] = temp;
+*/
+            }
+            j = j +1;
+        }
+        //Log("\n");
+        i = i +1;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/**
+    22/06/2011 - Mihai Strava
+
+    - This function processes the Information field in STP LinkDown SE when a new child is added
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function STPLinkDown_AddInformation(SEServerSerial, NEInformation, NELinkset_Name)
+{
+ synchronized (STPLinkDown_AddInformation_Sync_Block) {
+
+        Log("*** START updating Information field value");
+    SEDB ="OS_Status";
+    SEFilter ="Serial="+SEServerSerial;
+    SEFilterOutput = GetByFilter(SEDB,SEFilter,false);
+       NumSEOutput = Length(SEFilterOutput);
+    
+    SEInformation =  SEFilterOutput[0].Information;
+    SEInfoString = split(SEInformation,";");
+    SESLCstring = split(SEInfoString[0],"=");
+    SELinksetNames = split(SESLCstring[1],":");
+    LinksetNameLength = length(SELinksetNames);
+
+    NEInfoString = split(NEInformation,";");
+    NESLC = split(NEInfoString[0],"=");
+    NELinksetName = NELinkset_Name;
+    
+log("SEInformation: " + SEInformation + " for Serial: " + SEServerSerial);
+log("NEInformation: " + NEInformation);
+
+SEFullName="";
+LinksetMatch=false;
+i=0;
+while (i<LinksetNameLength)
+{
+    SELinksetName=split(SELinksetNames[i],"(");
+    if(SELinksetName[0]==NELinksetName)
+    {
+        LinksetMatch=true;
+        SELinks=substring(SELinksetName[1],0,length(SELinksetName[1])-1);
+        Links=split(SELinks,",");
+        LinksLength=length(Links);
+        j=0;
+        match=false;
+        while (j<LinksLength)
+        {
+            if (Links[j]==NESLC[1]) {match=true;}
+            j=j+1;
+        }
+        if (!match) {SECompleteLinksetName=SELinks+ "," + NESLC[1];}
+        else {SECompleteLinksetName=SELinks;};
+        SEFullName = SEFullName + SELinksetName[0] + "(" + SECompleteLinksetName + "):";
+    }
+    else
+    {
+        SEFullName = SEFullName + SELinksetNames[i] + ":";
+    }
+    i=i+1;
+}
+
+if (!LinksetMatch) {SESLC=SESLCstring[1] + ":" + NELinksetName + "(" + NESLC[1] + ")";}
+else {SESLC=SEFullName;SESLC=substring(SESLC,0,length(SESLC)-1);}
+
+SETRAFFIC_TYPE = SEInfoString[1];
+NETRAFFIC_TYPE = split(NEInfoString[1],"=");
+if(SEInfoString[1] not like NETRAFFIC_TYPE[1]) {SETRAFFIC_TYPE = SEInfoString[1] + "," + NETRAFFIC_TYPE[1];}
+SEDPC = SEInfoString[2]; 
+NEDPC = split(NEInfoString[2],"=");
+if(SEInfoString[2] not like NEDPC[1]) {SEDPC = SEInfoString[2] + "," + NEDPC[1];}
+SEA_NODE_DIU_E1_PORT = SEInfoString[3];
+NEA_NODE_DIU_E1_PORT = split(NEInfoString[3],"=");
+if(SEInfoString[3] not like NEA_NODE_DIU_E1_PORT[1]) {SEA_NODE_DIU_E1_PORT = SEInfoString[3] + "," + NEA_NODE_DIU_E1_PORT[1];}
+SEZ_NODE_DIU = SEInfoString[4];
+NEZ_NODE_DIU = split(NEInfoString[4],"=");
+if(SEInfoString[4] not like NEZ_NODE_DIU[1]) {SEZ_NODE_DIU = SEInfoString[4] + "," + NEZ_NODE_DIU[1];}
+  
+Information = "SLCs=" + SESLC + ";" + SETRAFFIC_TYPE + ";" + SEDPC + ";" + SEA_NODE_DIU_E1_PORT + ";" + SEZ_NODE_DIU;
+
+SyntheticDataType = "OS_Status";        
+SyntheticUpdateFilter = "Serial = " + SEServerSerial;     
+SyntheticUpdateExpression = "Information='" + Information + "'";
+BatchUpdate(SyntheticDataType, SyntheticUpdateFilter, SyntheticUpdateExpression);
+
+log("Information: " + Information);
+}//End Sync block
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/**
+    22/06/2011 - Mihai Strava
+
+    - This function processes the Information field in STP LinkDown SE when a child is cleared
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function STPLinkDown_RemoveInformation(SEServerSerial, NEServerSerial)
+{
+ synchronized (STPLinkDown_RemoveInformation) {
+
+       Log("*** START updating Information field value");
+    SEDB ="OS_Status";
+    SEFilter ="Serial="+SEServerSerial;
+    SEFilterOutput = GetByFilter(SEDB,SEFilter,false);
+    
+    NEDB ="OS_Status";
+    NEFilter ="Serial="+NEServerSerial;
+    NEFilterOutput = GetByFilter(NEDB,NEFilter,false);
+
+    linkDownDB = "OS_Status";
+    linkDownFilter = "Node = '"+NEFilterOutput[0].Node+"' and Z_Node='"+NEFilterOutput[0].Z_Node+"' and EventId = 'NET_STP_LNK_001' and Type=1 and Severity>2";
+    linkDownOutput = GetByFilter(linkDownDB,linkDownFilter,false);
+    NumlinkDownOutput = Length(linkDownOutput);
+
+SEInformation =  SEFilterOutput[0].Information;  
+SEInfoString = split(SEInformation,";");
+SESLCstring = split(SEInfoString[0],"=");
+
+log("SE information for: " + SEServerSerial + " is: " + SEInformation);
+log("NE information for: " + NEServerSerial + " is: " + NEFilterOutput[0].Information);
+
+SESLCstringlength = length(SESLCstring);
+if (SESLCstringlength == 1) {log("SLC is empty for SE: " + SEServerSerial); exit();}
+
+SELinksetNames = split(SESLCstring[1],":");
+LinksetNameLength = length(SELinksetNames);
+NEInfoString = split(NEFilterOutput[0].Information,";");
+NESLC = split(NEInfoString[0],"=");
+NELinksetName = NEFilterOutput[0].Linkset_Name;
+
+SEFullName="";
+i=0;
+while (i<LinksetNameLength)
+{
+    SELinksetName=split(SELinksetNames[i],"(");
+    if(SELinksetName[0]==NELinksetName)
+    {
+        SELinks=substring(SELinksetName[1],0,length(SELinksetName[1])-1);
+        Links=split(SELinks,",");
+        LinksLength=length(Links);
+        j=0;
+        LinksArray="";
+        while (j<LinksLength)
+        {
+            if (Links[j]!=NESLC[1]) {if(LinksArray==""){LinksArray=Links[j];}else{LinksArray=LinksArray + "," + Links[j];}}
+            j=j+1;
+        }
+        if (LinksArray!="") {SEFullName = SEFullName + SELinksetName[0] + "(" + LinksArray + "):";}
+    }
+    else
+    {
+        SEFullName = SEFullName + SELinksetNames[i] + ":";
+    }
+    i=i+1;
+}
+
+SESLC=SEFullName;
+if(SESLC!="")
+{
+SESLC=substring(SESLC,0,length(SESLC)-1);
+}
+Information = "SLCs=" + SESLC;
+Information = Information + ";" + SEInfoString[1] + ";" + SEInfoString[2] + ";" + SEInfoString[3] + ";" + SEInfoString[4];
+
+/*
+k=1;  
+while (k<5)
+{
+if (k==1) {SESLC = split(SEInfoString[1],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[1],"=");Information=Information + ";" + "TRAFFIC_TYPE=";}
+if (k==2) {SESLC = split(SEInfoString[2],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[2],"=");Information=Information + ";" + "DPC=";}
+if (k==3) {SESLC = split(SEInfoString[3],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[3],"=");Information=Information + ";" + "A_NODE_DIU-E1_PORT=";}
+if (k==4) {SESLC = split(SEInfoString[4],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[4],"=");Information=Information + ";" + "Z_NODE_DIU=";}
+  
+OrigInfo = Information;
+j=0;
+  while (j<SESLClength)
+  {
+      match=false;
+      if (SLCarray[j] == NESLC[1])   {match=true;}
+      if (!match)    {Information = Information + SLCarray[j] + ",";}
+      j=j+1;
+  }
+
+match2=false;
+ i=0;  
+ while (i<NumlinkDownOutput)
+ {
+  lInfo = linkDownOutput[i].Information;
+  completeSLC = split(lInfo,";");
+  lSLC = split(completeSLC[k],"=");
+  if (lSLC[1] == NESLC[1]) {match2=true;} 
+  i=i+1;
+ }
+if (match2) {Information = Information + NESLC[1] + ",";}
+
+Information = substring(Information, 0, length(Information)-1);
+k=k+1;
+}
+*/
+ 
+SyntheticDataType = "OS_Status";        
+SyntheticUpdateFilter = "Serial = " + SEServerSerial;     
+SyntheticUpdateExpression = "Information='" + Information + "'";
+BatchUpdate(SyntheticDataType, SyntheticUpdateFilter, SyntheticUpdateExpression);
+
+log("Information after processing: " + NEServerSerial + " is: " + Information);
+}//End Sync block
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/**
+    09/08/2011 - Mihai Strava
+    - This function processes the Information field in C7 CoreSignalDown SE when a child is cleared
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+function CoreSignalDown_RemoveInformation(SEServerSerial, NEServerSerial)
+{
+ synchronized (CoreSignalDown_RemoveInformation) {
+       Log("*** START updating Information field value");
+    SEDB ="OS_Status";
+    SEFilter ="Serial="+SEServerSerial;
+    SEFilterOutput = GetByFilter(SEDB,SEFilter,false);
+    
+    NEDB ="OS_Status";
+    NEFilter ="Serial="+NEServerSerial;
+    NEFilterOutput = GetByFilter(NEDB,NEFilter,false);
+    linkDownDB = "OS_Status";
+    linkDownFilter = "NodeAlias = '"+NEFilterOutput[0].NodeAlias+"' and Z_Node='"+NEFilterOutput[0].Z_Node+"' and EventId = 'NET_C7_001' and Type=1 and Severity>2";
+    linkDownOutput = GetByFilter(linkDownDB,linkDownFilter,false);
+    NumlinkDownOutput = Length(linkDownOutput);
+SEInformation =  SEFilterOutput[0].Information;  
+SEInfoString = split(SEInformation,";");
+SESLCstring = split(SEInfoString[0],"=");
+
+log("SE information for: " + SEServerSerial + " is: " + SEInformation);
+log("NE information for: " + NEServerSerial + " is: " + NEFilterOutput[0].Information);
+
+SESLCstringlength = length(SESLCstring);
+if (SESLCstringlength == 1) {log("SLC is empty for SE: " + SEServerSerial); exit();}
+
+SELinksetNames = split(SESLCstring[1],":");
+LinksetNameLength = length(SELinksetNames);
+NEInfoString = split(NEFilterOutput[0].Information,";");
+NESLC = split(NEInfoString[0],"=");
+NELinksetName = NEFilterOutput[0].Linkset_Name;
+SEFullName="";
+i=0;
+while (i<LinksetNameLength)
+{
+    SELinksetName=split(SELinksetNames[i],"(");
+    if(SELinksetName[0]==NELinksetName)
+    {
+        SELinks=substring(SELinksetName[1],0,length(SELinksetName[1])-1);
+        Links=split(SELinks,",");
+        LinksLength=length(Links);
+        j=0;
+        LinksArray="";
+        while (j<LinksLength)
+        {
+            if (Links[j]!=NESLC[1]) {if(LinksArray==""){LinksArray=Links[j];}else{LinksArray=LinksArray + "," + Links[j];}}
+            j=j+1;
+        }
+        if (LinksArray!="") {SEFullName = SEFullName + SELinksetName[0] + "(" + LinksArray + "):";}
+    }
+    else
+    {
+        SEFullName = SEFullName + SELinksetNames[i] + ":";
+    }
+    i=i+1;
+}
+SESLC=SEFullName;
+if(SESLC!="")
+{
+SESLC=substring(SESLC,0,length(SESLC)-1);
+}
+Information = "SLCs=" + SESLC;
+Information = Information + ";" + SEInfoString[1] + ";" + SEInfoString[2] + ";" + SEInfoString[3] + ";" + SEInfoString[4];
+/*
+k=1;  
+while (k<5)
+{
+if (k==1) {SESLC = split(SEInfoString[1],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[1],"=");Information=Information + ";" + "TRAFFIC_TYPE=";}
+if (k==2) {SESLC = split(SEInfoString[2],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[2],"=");Information=Information + ";" + "DPC=";}
+if (k==3) {SESLC = split(SEInfoString[3],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[3],"=");Information=Information + ";" + "A_NODE_DIU-E1_PORT=";}
+if (k==4) {SESLC = split(SEInfoString[4],"="); SLCarray = split(SESLC[1],","); SESLClength = length(SLCarray);NESLC = split(NEInfoString[4],"=");Information=Information + ";" + "Z_NODE_DIU=";}
+  
+OrigInfo = Information;
+j=0;
+  while (j<SESLClength)
+  {
+      match=false;
+      if (SLCarray[j] == NESLC[1])   {match=true;}
+      if (!match)    {Information = Information + SLCarray[j] + ",";}
+      j=j+1;
+  }
+match2=false;
+ i=0;  
+ while (i<NumlinkDownOutput)
+ {
+  lInfo = linkDownOutput[i].Information;
+  completeSLC = split(lInfo,";");
+  lSLC = split(completeSLC[k],"=");
+  if (lSLC[1] == NESLC[1]) {match2=true;} 
+  i=i+1;
+ }
+if (match2) {Information = Information + NESLC[1] + ",";}
+Information = substring(Information, 0, length(Information)-1);
+k=k+1;
+}
+*/
+ 
+SyntheticDataType = "OS_Status";        
+SyntheticUpdateFilter = "Serial = " + SEServerSerial;     
+SyntheticUpdateExpression = "Information='" + Information + "'";
+BatchUpdate(SyntheticDataType, SyntheticUpdateFilter, SyntheticUpdateExpression);
+log("Information after processing: " + NEServerSerial + " is: " + Information);
+}//End Sync block
+}
+
+

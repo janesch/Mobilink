@@ -1,0 +1,165 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-FCMGMT-MIB.include.snmptrap.lookup 1.2
+#    2004/05/15 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-FCMGMT-MIB
+#
+###############################################################################
+table connUnitStatus =
+{
+    ##########
+    # Overall status of the connectivity unit. The goal of this object is to be
+    # the single poll point to check the status of the connunit. If there is
+    # any other component that has warning, then this should be set to warning,
+    # etc. Any of these values may occur with any of the ConnUnitState values.
+    ##########
+
+    {"1","Unknown"}, ### unknown
+    {"2","Unused"}, ### unused
+    {"3","OK"}, ### ok
+    {"4","Warning"}, ### warning
+    {"5","Failed"} ### failed
+}
+default = "Unknown"
+
+table connUnitState =
+{
+    ##########
+    # This object reports the overall state of the connectivity unit. The
+    # meaning of all values is essentially self-explanatory. Any of these
+    # values may occur with any of the ConnUnitStatus values.
+    ##########
+    
+    {"1","Unknown"}, ### unknown
+    {"2","Online"}, ### online
+    {"3","Offline"} ### offline
+}
+default = "Unknown"
+
+table connUnitEventType =
+{
+    ##########
+    # The type of this event.
+    ##########
+    
+    {"1","Unknown"}, ### unknown
+    {"2","Other"}, ### other
+    {"3","Status"}, ### status
+    {"4","Configuration"}, ### configuration
+    {"5","Topology"} ### topology
+}
+default = "Unknown"
+
+table connUnitSensorStatus =
+{
+    ##########
+    # The status indicated by the sensor.
+    ##########
+    
+    {"1","Unknown"}, ### unknown
+    {"2","Other"}, ### other - the sensor indicates other than ok, warning or failure.
+    {"3","OK"}, ### ok - the sensor indicates ok
+    {"4","Warning"}, ### warning - the sensor indicates a warning
+    {"5","Failed"} ### failed - the sensor indicates failure
+}
+default = "Unknown"
+
+table connUnitPortStatus =
+{ 
+    ##########
+    # An overall protocol status for the port. This value of connUnitPortState
+    # is not online, then this is reported Unknown.
+    ##########
+    
+    {"1","Unknown"}, ### unknown
+    {"2","Unused"}, ### unused - device cannot report this status
+    {"3","Ready"}, ### ready - FCAL Loop or FCPH Link reset protocol initialization has completed
+    {"4","Warning"}, ### warning - do not use (4/12/00)
+    {"5","Failure"}, ### failure - do not use (4/12/00)
+    {"6","Not Participating"}, ### notparticipating - loop notparticipating and does not have a loop address
+    {"7","Initializing"}, ### initializing - protocol is proceeding
+    {"8","Bypass"}, ### bypass - do not use (4/12/00)
+    {"9","Offline"}, ### ols - FCP offline status
+    {"10","Other"} ### other - status not described above
+}
+default = "Unknown"
+
+table connUnitPortState =
+{
+    ##########
+    # The user selected state of the port hardware.
+    ##########
+    
+    {"1","Unknown"}, ### unknown
+    {"2","Online"}, ### online - available for meaningful work
+    {"3","Offline"}, ### offline - not available for meaningful work
+    {"4","Bypassed"}, ### bypassed - no longer used (4/12/00)
+    {"5","Diagnostics"} ### diagnostics
+}
+default = "Unknown"
+
+table FcUnitType =
+{ 
+    {"1","Unknown Connectivity Unit"}, ### unknown
+    {"2","Other Connectivity Unit"}, ### other - none of the following 
+    {"3","Fiber Channel Hub"}, ### hub - passive connectivity unit supporting loop protocol.
+    {"4","Fiber Channel Switch"}, ### switch - active connectivity unit supporting multiple protocols.
+    {"5","Fiber Channel Gateway"}, ##########
+                     # gateway - unit that converts not only the interface but
+                     # also encapsulates the frame into another protocol. The
+                     # assumption is that there is always two gateways
+                     # connected together. For example, FC <-> ATM.
+                     ##########
+    {"6","Fiber Channel Converter"}, ##########
+                       # converter - unit that converts from one interface to
+                       # another. For example, FC <-> SCSI.
+                       ##########
+    {"7","Host Bus Adapter"}, ### hba - host bus adapter
+    {"8","Proxy Agent"}, ### proxy-agent - software proxy-agent
+    {"9","Storage Device"}, ### storage-device - disk,cd,tape,etc
+    {"10","Host Computer"}, ### host - host computer
+    {"11","Storage Subsystem"}, ### storage-subsystem - raid, library, etc
+    {"12","System Module"}, ### module - subcomponent of a system
+    {"13","Software Driver"}, ### swdriver - software driver
+    {"14","Storage Access Device"}, ##########
+                                    # storage-access-device - Provides storage
+                                    # management and access for hetergeneous
+                                    # hosts and heterogeneous devices.
+                                    ##########
+    {"15","Waveform Division Mutiplexer"}, ### wdm - waveform division mutiplexer
+    {"16","Uninterruptable Power Supply"}, ### ups - uninterruptable power supply
+    {"17","Network Attached Storage (NFS/CIFS)"} ### nas - network attached storage (NFS/CIFS)
+}
+default = "Unknown"
+
+table FcEventSeverity =
+{ 
+    {"1","Unknown"}, ### unknown
+    {"2","Emergency"}, ### emergency
+    {"3","Alert"}, ### alert
+    {"4","Critical"}, ### critical
+    {"5","Error"}, ### error
+    {"6","Warning"}, ### warning
+    {"7","Notify"}, ### notify
+    {"8","Info"}, ### info
+    {"9","Debug"}, ### debug
+    {"10","Mark"}, ### mark - All messages logged
+}
+default = "Unknown"
+

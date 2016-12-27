@@ -1,0 +1,4968 @@
+-----------------------------------------------
+-- Pasolink V4 MIB Java Version                       
+--
+-- 1st 2003 JUN 26
+-- 2nd 2003 Oct 27
+-- 3rd 2003 Nov 10
+-- 4th 2003 Nov 26
+-- 5th 2005 Aug 04
+-- 6th 2005 Oct 25
+-- 7th 2005 Dec 29
+-- 8th 2006 Jan 16
+-- 9th 2006 Jan 18
+------------------------------------------------
+
+MIB-PNMSJ-PASOLINK-V4 DEFINITIONS ::= BEGIN
+
+-----------------------------------------------
+-- Imports Definitions
+-----------------------------------------------
+
+	IMPORTS
+		IpAddress,Counter,TimeTicks,enterprises
+			FROM RFC1155-SMI
+		DisplayString
+			FROM RFC1213-MIB	
+		OBJECT-TYPE
+			FROM RFC-1212
+		pnms 
+			FROM NEC-SMI;
+						                              
+-----------------------------------------------
+-- Begin User MIB Object Definitions
+-----------------------------------------------
+
+	SeverityValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Severity (CCITT Rec. X.733)
+					    invalid(0),
+					    clear(1),
+					    minor(2),
+					    major(3),
+					    critical(4)"
+	    SYNTAX      INTEGER (0..4)             
+
+	AlarmTypeValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Alarm Type (CCITT Rec. X.733)
+					    invalid(0),
+					    communicationAlarm(1),
+					    qualityOfServiceAlarm(2),
+					    processingErrorAlarm(3),
+					    equipmentAlarm(4),
+					    environmentalAlarm(5),
+					    integrityViolationAlarm(6),
+					    operationalViolationAlarm(7),
+					    physicalViolationAlarm(8),
+					    securityViolationAlarm(9),
+					    timeDomainViolationAlarm(10)"
+		SYNTAX      INTEGER (0..10)
+                           
+	ProbableCauseValue  ::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Probable Cause (CCITT Rec. X.733)
+					    invalid(0),
+					    ais(1),
+					    callSetUpFailure(2),
+					    degradedSignal(3),
+					    farEndReceiverFailure(4),
+					    framingError(5),
+					    lossOfFrame(6),
+					    lossOfPointer(7),
+					    lossOfSignal(8),
+					    payloadTypeMismatch(9),
+					    transmissionError(10),
+					    remoteAlarmInterface(11),
+					    excessiveBER(12),
+					    pathTraceMismatch(13),
+					    backplaneFailure(51),
+					    dataSetProblem(52),
+					    equipmentIdentifierDuplication(53),
+					    externalIFDeviceProblem(54),
+					    lineCardProblem(55),
+					    multiplexerProblem(56),
+					    neIdentifierDuplication(57),
+					    powerProblem(58),
+					    processorProblem(59),
+					    protectionPathFailure(60),
+					    receiverFailure(61),
+					    replaceableUnitMissing(62),
+					    replaceableUnitTypeMismatch(63),
+					    synchronizationSourceMismatch(64),
+					    terminalProblem(65),
+					    timingProblem(66),
+					    transmitterFailure(67),
+					    trunkCardProblem(68),
+					    replaceableUnitProblem(69),
+					    airCompressorFailure(101),
+					    airConditioningFailure(102),
+					    airDryerFailure(103),
+					    batteryDischarging(104),
+					    batteryFailure(105),
+					    commercialPowerFailure(106),
+					    coolingFanFailure(107),
+					    engineFailure(108),
+					    fireDetectorFailure(109),
+					    fuseFailure(110),
+					    generatorFailure(111),
+					    lowBatteryThreshold(112),
+					    pumpFailure(113),
+					    rectifierFailure(114),
+					    rectifierHighVoltage(115),
+					    rectifierLowFVoltage(116),
+					    ventilationsSystemFailure(117),
+					    enclosureDoorOpen(118),
+					    explosiveGas(119),
+					    fire(120),
+					    flood(121),
+					    highHumidity(122),
+					    highTemperature(123),
+					    highWind(124),
+					    iceBuildUp(125),
+					    intrusionDetection(126),
+					    lowFuel(127),
+					    lowHumidity(128),
+					    lowCablePressure(129),
+					    lowTemperature(130),
+					    lowWater(131),
+					    smoke(132),
+					    toxicGas(133),
+					    storageCapacityProblem(151),
+					    memoryMismatch(152),
+					    corruptData(153),
+					    outOfCPUCycles(154),
+					    sfwrEnvironmentProblem(155),
+					    sfwrDownloadFailure(156),
+					    communicationsProtocolError(157),
+					    congestion(158),
+					    heatingOrVentilationOrCoolingSystemProblem(159),
+					    lanError(160),
+					    performanceDegraded(161),
+					    temperatureUnacceptable(162),
+					    thresholdCrossed(163),
+					    underlyingResourceUnavailable(164),
+					    equipmentMalfunction(165),
+					    configurationOrCustomizationError(166),
+					    duplicateInformation(501),
+					    informationMissing(502),
+					    informationModificationDetected(503),
+					    informationOutOfSequence(504),
+					    unexpectedInformation(505),
+					    denialOfService(506),
+					    outOfService(507),
+					    proceduralError(508),
+					    cableTamper(509),
+					    securityIntrusionDetection(510),
+					    authenticationFailure(511),
+					    breachOfConfidentiality(512),
+					    unauthorisedAccessAttempt(513),
+					    delayedInformation(514),
+					    keyExpired(515),
+					    outOfHoursActivity(516),
+					    otherReasons(517),
+					    bossHardwareFailure(518),
+					    bossSystemSoftwareFailure(519),
+					    bossApplicationSoftwareFailure(520),
+					    bossDatabaseFailure(521),
+					    bossNetworkFailure(522)"		                              
+		SYNTAX      INTEGER (0..522)			       
+		
+	ManagerTypeValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"ManagerType
+					  invalid(0),
+					  pnms(1),
+					  pnmt(2),
+					  generic(3)"
+		SYNTAX		INTEGER (0..3)
+
+	ManagerStyleValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"ManagerType
+					  invalid(0),
+					  local(1),
+					  remote(2),
+					  opposite(3),
+					  debug(100)"
+		SYNTAX      INTEGER (0..3)  
+			                              
+-----------------------------------------------
+-- enterprises Group Definitions
+-----------------------------------------------
+	
+	pasolinkV4 OBJECT IDENTIFIER
+		::= { pnms 108 }
+
+-----------------------------------------------
+-- pasolinkV3 Group Definitions
+-----------------------------------------------
+
+	pnmsPasoV4pmMePaso OBJECT IDENTIFIER
+		::= { pasolinkV4 1 }
+
+	pnmsPasoV4pmMeIop OBJECT IDENTIFIER
+		::= { pasolinkV4 2 }
+
+	pnmsPasoV4pmTrap OBJECT IDENTIFIER
+		::= { pasolinkV4 3 }
+
+	pnmsPasoV4pmSummary OBJECT IDENTIFIER
+		::= { pasolinkV4 4 }
+
+-----------------------------------------------
+-- PVC V3
+-----------------------------------------------
+
+	pasoV4mePasoValue OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmMePaso 1 }
+
+	pasoV4mePasoValueCommonTable OBJECT-TYPE  
+		SYNTAX		SEQUENCE OF PasoV4mePasoValueCommonEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 Common Items"
+		::= { pasoV4mePasoValue 1 }         
+		
+	pasoV4mePasoValueCommonEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoValueCommonEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION "Common Entry"
+		INDEX       { 
+		               p4mpvcPasoIndex 
+		            } 
+		::= { pasoV4mePasoValueCommonTable 1 }
+	
+	PasoV4mePasoValueCommonEntry ::= SEQUENCE {
+		p4mpvcPasoIndex			IpAddress,
+		p4mpvcBitFree			INTEGER,
+		p4mpvcWsInputLoss		INTEGER,
+		p4mpvcWsAisRcvd			INTEGER,
+		p4mpvcWsBpOutputLoss	INTEGER,
+		p4mpvcWsAisSend			INTEGER,
+		p4mpvcWsAlmInh			INTEGER, 
+		p4mpvcDemInv            INTEGER,
+		p4mpvcSc4Selector		INTEGER,
+		p4mpvcSc5Selector		INTEGER,
+		p4mpvcRemote			INTEGER,
+		p4mpvc64kMount			INTEGER,
+		p4mpvcWsMount			INTEGER,
+		p4mpvcTxSelected		INTEGER,
+		p4mpvcRxSelected		INTEGER,
+		p4mpvcTxSel             INTEGER,
+		p4mpvcRxSel             INTEGER,
+		p4mpvcTxSelAns          INTEGER,
+		p4mpvcRxSelAns          INTEGER
+    }
+
+	p4mpvcPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasoV4mePasoValueCommonEntry 1 }
+		
+	p4mpvcBitFree OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Status of BIT RATE FREE setting
+					    0: Invalid
+					    1: Fixed Rate
+					    2: 2/4/8x2MB
+					    3: 2/4/8/16x2MB
+					    4: 2/4x2MB
+					    5: 8/16x2MB"
+		::= { pasoV4mePasoValueCommonEntry 2 } 
+		
+	p4mpvcWsInputLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS Input Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm"
+		::= { pasoV4mePasoValueCommonEntry 3 }
+
+	p4mpvcWsAisRcvd OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS AIS RCVD
+		                0: Invalid
+		                1: Normal
+		                2: Rcvd"
+		::= { pasoV4mePasoValueCommonEntry 4 }
+
+	p4mpvcWsBpOutputLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS BP Output Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm"
+		::= { pasoV4mePasoValueCommonEntry 5 }
+
+	p4mpvcWsAisSend OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS AIS SEND
+		                0: Invalid
+		                1: Normal
+		                2: Send"
+		::= { pasoV4mePasoValueCommonEntry 6 }
+
+	p4mpvcWsAlmInh OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS Alarm Inhibit
+		                0: Invalid
+		                1: On
+		                2: Off"
+		::= { pasoV4mePasoValueCommonEntry 7 }
+
+	p4mpvcDemInv OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"DEM Invert
+					    0: Invalid
+					    1: Normal
+					    2: Invert"
+		::= { pasoV4mePasoValueCommonEntry 8 }
+
+	p4mpvcSc4Selector OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SC4 Selector   
+		                0: Invalid
+					    1: Rs232
+					    2: Dsc64kG703
+					    3: Dsc64kV11"
+		::= { pasoV4mePasoValueCommonEntry 9 }
+
+	p4mpvcSc5Selector OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SC5 Selector
+					    0: Invalid
+					    1: RS-485 term
+					    2: RS-422
+					    3: RS-485 non term
+					    4: RS-232C"
+		::= { pasoV4mePasoValueCommonEntry 10 }
+
+	p4mpvcRemote OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Switch Mode
+		                0: Invalid
+		                1: Auto
+		                2: Remote(Manual)"
+		::= { pasoV4mePasoValueCommonEntry 11 }
+
+	p4mpvc64kMount OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"64K Mount
+		                0: Invalid
+		                1: Dsc64kV11
+		                2: Dsc64kG703
+		                3: Rs232"
+		::= { pasoV4mePasoValueCommonEntry 12 }
+
+	p4mpvcWsMount OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS Mount
+		                0: Invalid
+		                1: Mount
+		                2: Not Used"
+		::= { pasoV4mePasoValueCommonEntry 13 }
+
+	p4mpvcTxSelected OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Selected TX
+		                0: Invalid
+		                1: No.1
+		                2: No.2"
+		::= { pasoV4mePasoValueCommonEntry 14 }
+                                               
+	p4mpvcRxSelected OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Selected RX
+		                0: Invalid
+		                1: No.1
+		                2: No.2"
+		::= { pasoV4mePasoValueCommonEntry 15 }
+
+	p4mpvcTxSel OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Switch
+		                0: Invalid
+		                1: Auto
+		                2: No.1
+		                3: No.2"
+		::= { pasoV4mePasoValueCommonEntry 16 }
+
+	p4mpvcRxSel OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Switch
+		                0: Invalid
+		                1: Auto
+		                2: No.1
+		                3: No.2"
+		::= { pasoV4mePasoValueCommonEntry 17 }
+		
+	p4mpvcTxSelAns OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX SEL ANS
+		                0: Invalid
+		                1: Auto
+		                2: No.1
+		                3: No.2"
+		::= { pasoV4mePasoValueCommonEntry 18 }
+
+	p4mpvcRxSelAns OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX SEL ANS
+		                0: Invalid
+		                1: Auto
+		                2: No.1
+		                3: No.2"
+		::= { pasoV4mePasoValueCommonEntry 19 }
+		
+-----------------------------------------------
+-- PVC CH Index IDU/CH
+-----------------------------------------------  
+
+	pasoV4mePasoValueCommonChTable OBJECT-TYPE  
+		SYNTAX		SEQUENCE OF PasoV4mePasoValueCommonChEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 Common Ch Items"
+		::= { pasoV4mePasoValue 2 }         
+		
+	pasoV4mePasoValueCommonChEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoValueCommonChEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION "Common Entry"
+		INDEX       { 
+		               p4mpvccPasoIndex,
+		               p4mpvccChIndex	                 
+		            } 
+		::= { pasoV4mePasoValueCommonChTable 1 }
+	
+	PasoV4mePasoValueCommonChEntry ::= SEQUENCE {
+		p4mpvccPasoIndex        IpAddress,
+		p4mpvccChIndex          INTEGER,
+        p4mpvccInputLoss        INTEGER,
+        p4mpvccBpOutputLoss     INTEGER,
+        p4mpvccAisRcvd          INTEGER,
+        p4mpvccAisSend          INTEGER,
+        p4mpvccLB2              INTEGER,
+        p4mpvccLB1              INTEGER,
+        p4mpvccAlmInh           INTEGER
+    }
+
+	p4mpvccPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasoV4mePasoValueCommonChEntry 1 }
+		                               
+    p4mpvccChIndex OBJECT-TYPE
+		SYNTAX	    INTEGER {
+					   ch1(1),
+					   ch2(2),
+					   ch3(3),
+				           ch4(4),
+					   ch5(5),
+					   ch6(6),
+					   ch7(7),
+					   ch8(8),
+					   ch9(9),
+					   ch10(10),
+					   ch11(11),
+					   ch12(12),
+					   ch13(13),
+					   ch14(14),
+					   ch15(15),
+					   ch16(16)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH Index"
+		::= { pasoV4mePasoValueCommonChEntry 2 }	                               
+		                               
+	p4mpvccInputLoss OBJECT-TYPE
+		SYNTAX		INTEGER 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Input Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm"
+		::= { pasoV4mePasoValueCommonChEntry 3 }
+
+	p4mpvccBpOutputLoss OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BP Output Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm"
+		::= { pasoV4mePasoValueCommonChEntry 4 }
+
+	p4mpvccAisRcvd OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS RCVD
+		                0: Invalid
+		                1: Normal
+		                2: Rcvd"
+		::= { pasoV4mePasoValueCommonChEntry 5 }
+
+	p4mpvccAisSend OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS RCVD
+		                0: Invalid
+		                1: Normal
+		                2: Send"
+		::= { pasoV4mePasoValueCommonChEntry 6 }
+
+	p4mpvccLB2 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LB2
+		                0: Invalid
+		                1: Off
+		                2: On"
+		::= { pasoV4mePasoValueCommonChEntry 7 }
+
+	p4mpvccLB1 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LB1
+		                0: Invalid
+		                1: Off
+		                2: On"
+		::= { pasoV4mePasoValueCommonChEntry 8 }
+
+	p4mpvccAlmInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Alarm Inhibit
+		                0: Invalid
+		                1: On
+		                2: Off"
+		::= { pasoV4mePasoValueCommonChEntry 9 }
+
+------------------------------------------
+-- PVT V3 
+-----------------------------------------------
+
+	pasoV4mePasoValueIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PasoV4mePasoValueIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"ME Value table"
+		::= { pasoV4mePasoValue 3 }
+
+	pasoV4mePasoValueIndvEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoValueIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"ME Value table Entry"
+		INDEX		{
+						p4mpviPasoIndex,
+						p4mpviIfIndex
+					}
+		::= { pasoV4mePasoValueIndvTable 1 }
+
+	PasoV4mePasoValueIndvEntry ::= SEQUENCE {
+	                  p4mpviPasoIndex      IpAddress,
+					  p4mpviIfIndex        INTEGER,
+					  p4mpviOpr            INTEGER,
+					  p4mpviIfInput        INTEGER,
+					  p4mpviRxApc          INTEGER,
+					  p4mpviTxApc          INTEGER,
+					  p4mpviRxLev          INTEGER,
+					  p4mpviTxPwr          INTEGER,
+					  p4mpviLoBer          INTEGER,
+					  p4mpviHiBer          INTEGER,
+					  p4mpviBer            INTEGER,
+					  p4mpviFrameAsync     INTEGER,
+					  p4mpviDem            INTEGER,
+					  p4mpviMod            INTEGER,
+					  p4mpviCpuAlarm       INTEGER,
+					  p4mpviTxClkLoss      INTEGER,
+					  p4mpviRxClkLoss      INTEGER,
+					  p4mpviFrameID        INTEGER,
+					  p4mpviBerThreshold   INTEGER,
+					  p4mpviAisRcvd        INTEGER,
+					  p4mpviAisSend        INTEGER,
+					  p4mpviTxAtt          INTEGER,
+					  p4mpviBerAis         INTEGER,
+					  p4mpviCw             INTEGER,
+					  p4mpviMaint          INTEGER,
+					  p4mpviMute           INTEGER
+				   }
+                                  
+	p4mpviPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address"
+		::= { pasoV4mePasoValueIndvEntry 1 }                                      
+                                  
+	p4mpviIfIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4mePasoValueIndvEntry 2 }
+
+	p4mpviOpr OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Loss of Communication between IDU and ODU
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 3 }
+
+	p4mpviIfInput OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Loss of ODU IF Input Signal
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 4 }
+
+	p4mpviRxApc OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX or IF Local Oscilator Unlock
+		                0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 5 }
+
+	p4mpviTxApc OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX or RF Local Oscilator Unlock
+		                0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 6 }
+
+	p4mpviRxLev OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Loss of RF Input
+		                0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 7 }
+
+	p4mpviTxPwr OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Decrease of TX Power
+		                0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 8 }
+
+	p4mpviLoBer OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER greater than 10-6
+		                0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 9 }
+
+	p4mpviHiBer OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER greater than 10-3
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 10 }
+                                                   
+	p4mpviBer OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER greater than threshold level
+		                0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 11 }
+
+	p4mpviFrameAsync OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Frame Async
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 12 }
+
+	p4mpviDem OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Loss of IF input signal
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 13 }
+
+	p4mpviMod OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IF local oscilator unlock
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 14 }
+
+	p4mpviCpuAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CPU fail on MD
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 15 }
+
+	p4mpviTxClkLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Clock Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 16 }
+
+	p4mpviRxClkLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Clock Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm"
+		::= { pasoV4mePasoValueIndvEntry 17 }
+
+	p4mpviFrameID OBJECT-TYPE
+		SYNTAX		INTEGER (0..8)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Frame ID setting
+					    0: Invalid
+					    1: ID0
+					    2: ID1
+					    3: ID2
+					    4: ID3
+					    5: ID4
+					    6: ID5
+					    7: ID6
+					    8: ID7"
+		::= { pasoV4mePasoValueIndvEntry 18 }
+
+	p4mpviBerThreshold OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER Threshold setting
+					    0: Invalid
+					    1: 1e-3
+					    2: 1e-4
+					    3: 1e-5
+					    4: 1e-6"
+		::= { pasoV4mePasoValueIndvEntry 19 }
+
+	p4mpviAisRcvd OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS RCVD on/off control
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoValueIndvEntry 20 }
+
+	p4mpviAisSend OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS SEND on/off control
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoValueIndvEntry 21 }
+
+	p4mpviTxAtt OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MTPC TX Power[dB]
+                                 Please deal with this value as a negative value."
+		::= { pasoV4mePasoValueIndvEntry 22 }
+
+	p4mpviBerAis OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER AIS on/off control
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoValueIndvEntry 23 }
+
+	p4mpviCw OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Carrier Wave on/off control
+		                0: Invalid
+		                1: Off
+		                2: On"
+		::= { pasoV4mePasoValueIndvEntry 24 }
+
+	p4mpviMaint OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Maint on/off control
+		                0: Invalid
+		                1: Off
+		                2: On"
+		::= { pasoV4mePasoValueIndvEntry 25 }
+
+	p4mpviMute OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Mute on/off control
+		                0: Invalid
+		                1: off
+		                2: on"
+		::= { pasoV4mePasoValueIndvEntry 26 }		
+		                                        
+-----------------------------------------------
+-- PVC V4
+-----------------------------------------------  
+
+	pasoV4mePasoV4ValueCommonTable OBJECT-TYPE  
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4ValueCommonEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 Common Items"
+		::= { pasoV4mePasoValue 4 }         
+		
+	pasoV4mePasoV4ValueCommonEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4ValueCommonEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION "Common Entry"
+		INDEX       { 
+		               p4mp4vcPasoIndex 
+		            } 
+		::= { pasoV4mePasoV4ValueCommonTable 1 }
+	
+	PasoV4mePasoV4ValueCommonEntry ::= SEQUENCE {
+		p4mp4vcPasoIndex	            IpAddress,
+		p4mp4vcV4Config		            INTEGER,
+		p4mp4vcV4ManualSw               INTEGER,
+		p4mp4vcV4BitRate                INTEGER,
+		p4mp4vcV4Sc2Mount               INTEGER,
+		p4mp4vcV4Sc3Mount               INTEGER,
+		p4mp4vcV4LanMount               INTEGER,
+		p4mp4vcV4LanCardAlarm           INTEGER,
+		p4mp4vcV4FeLinkCtrl             INTEGER,
+		p4mp4vcV4CollisionReport        INTEGER,
+		p4mp4vcV4LanReset               INTEGER,
+		p4mp4vcDsCableLengthWs          INTEGER,
+		p4mp4vcCableLengthDs3           INTEGER,
+		p4mp4vcAisEnbDs3                INTEGER,
+		p4mp4vcBipolarCodeWs            INTEGER,
+		p4mp4vcAlmcFuncEnable           INTEGER,
+		p4mp4vcTxSwPriority             INTEGER,
+		p4mp4vcNe500Ctrl                INTEGER,
+		p4mp4vcAisRcvdInh               INTEGER,
+		p4mp4vcWsAisRcvdInh             INTEGER,
+		p4mp4vcChUsageErrorCtrl         INTEGER,
+		p4mp4vcChUsageError             INTEGER,
+		p4mp4vcWsChUsageError           INTEGER,
+		p4mp4vcPortAlarm                INTEGER,
+                p4mp4vcHardwareYearMonth        OCTET STRING,
+                p4mp4vcSoftwareVersion          OCTET STRING,
+                p4mp4vcBerCurrentValue          OCTET STRING,
+                p4mp4vcEquipmentPmcType         INTEGER,
+                p4mp4vcCodeNo                   OCTET STRING,   
+                p4mp4vcSerialNo                 OCTET STRING,
+		p4mp4vcV4LanMountVer2           INTEGER
+    }
+
+	p4mp4vcPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasoV4mePasoV4ValueCommonEntry 1 }
+
+	p4mp4vcV4Config OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU & ODU Config  
+		                0: Invalid
+					    1: 1+0
+					    2: 1+0 Expandable
+					    3: 1+1 Hot Standby
+					    4: 1+1 Twin Path"
+		::= { pasoV4mePasoV4ValueCommonEntry 2 }
+
+	p4mp4vcV4ManualSw OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manual Switch
+					    0: Invalid
+					    1: Auto
+					    2: Manual"
+		::= { pasoV4mePasoV4ValueCommonEntry 3 }
+
+	p4mp4vcV4BitRate OBJECT-TYPE
+		SYNTAX		INTEGER (0..12)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Status of Bit Rate setting
+					    0: Invalid
+					    1: 2x2MB
+					    2: 4x2MB
+					    3: 8x2MB
+					    4: 16x2MB
+					    5: 1x8MB
+					    6: 1x34MB
+					    7: 4x1.5MB
+					    8: 8x1.5MB
+					    9: 1x45MB
+					   10: 4x1.5MB
+					   11: 8x1.5MB
+					   12: 16x1.5MB"
+		::= { pasoV4mePasoV4ValueCommonEntry 4 }
+
+	p4mp4vcV4Sc2Mount OBJECT-TYPE
+		SYNTAX		INTEGER (0..6)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SC2 Mount Information
+                                            0: Invalid
+					    1: ASC
+					    2: 9.6K RS-232
+					    3: 9.6K RS-422
+					    4: LAN
+					    5: ALM
+					    6: Not used"
+		::= { pasoV4mePasoV4ValueCommonEntry 5 }
+
+	p4mp4vcV4Sc3Mount OBJECT-TYPE
+		SYNTAX		INTEGER (0..6)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SC3 Mount Information
+                                            0: Invalid
+					    1: ASC
+					    2: 9.6K RS-232
+					    3: 9.6K RS-422
+					    5: ALM
+					    6: Not used"
+		::= { pasoV4mePasoV4ValueCommonEntry 6 }
+
+	p4mp4vcV4LanMount OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Card Mount Information
+					    0: Invalid
+					    1: Mount
+					    2: Not Mount"
+		::= { pasoV4mePasoV4ValueCommonEntry 7 }
+
+	p4mp4vcV4LanCardAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Card Alarm
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoV4ValueCommonEntry 8 }
+
+	p4mp4vcV4FeLinkCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Far End Link Down
+					    0: Invalid
+					    1: Disable
+					    2: Enable"
+		::= { pasoV4mePasoV4ValueCommonEntry 9 }
+
+	p4mp4vcV4CollisionReport OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used 
+                                 Collision Report Type
+					    0: Invalid
+					    1: Not Report
+					    2: Report"
+		::= { pasoV4mePasoV4ValueCommonEntry 10 }
+
+	p4mp4vcV4LanReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..1)
+		ACCESS		write-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                                LAN Reset
+		                0: Invalid
+		                1: Lan Reset"
+		::= { pasoV4mePasoV4ValueCommonEntry 11 }
+
+	p4mp4vcDsCableLengthWs OBJECT-TYPE
+		SYNTAX		INTEGER (0..6)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Cable Length WS
+					    0: Invalid
+					    1: not used
+					    2: 0-40m(0-133ft)
+					    3:40-81m(133-266ft)
+					    4:81-121m(266-399ft)
+					    5:121-162m(399-533ft)
+					    6:162-199m(533-655ft)"
+		::= { pasoV4mePasoV4ValueCommonEntry 12 }
+
+	p4mp4vcCableLengthDs3 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                                 Cable Length DS3
+					    0: Invalid
+					    1: 0-68m(0-225ft)
+					    2: 68-135m(225-450ft)"
+		::= { pasoV4mePasoV4ValueCommonEntry 13 }
+
+	p4mp4vcAisEnbDs3 OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"DS3 Framed AIS Enable
+					    0: Invalid
+					    1: Framed
+					    2: Unframed"
+		::= { pasoV4mePasoV4ValueCommonEntry 14 }
+
+	p4mp4vcBipolarCodeWs OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Bipolar Code WS
+					    0: Invalid
+					    1: B8ZS
+					    2: AMI"
+		::= { pasoV4mePasoV4ValueCommonEntry 15 }   
+		
+	p4mp4vcAlmcFuncEnable OBJECT-TYPE
+		SYNTAX		INTEGER (0..15)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ALMC Function Enable Information
+					   bit 0 : CH Usage Enable
+					   bit 1 : NE500 Enable
+					   bit 2 : LAN report Enable
+					   bit 3 : TX SW priority Enable"
+		::= { pasoV4mePasoV4ValueCommonEntry 16 }
+
+	p4mp4vcTxSwPriority OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Sw Priority
+		                0: Invalid
+					    1: Non Priority
+					    2: Priority No.1"
+		::= { pasoV4mePasoV4ValueCommonEntry 17 }
+
+	p4mp4vcNe500Ctrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"NE500 Report Control  
+		                0: Invalid
+		                1: Report
+		                2: Not Report"
+		::= { pasoV4mePasoV4ValueCommonEntry 18 }
+
+	p4mp4vcAisRcvdInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                                 AIS RCVD Report Control
+					    0: Invalid
+					    1: Report
+					    2: Not Report"
+		::= { pasoV4mePasoV4ValueCommonEntry 19 }
+
+	p4mp4vcWsAisRcvdInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS AIS RCVD Report Ctrol
+		                 0: Invalid
+		                 1: Report
+					     2: Not Report"
+		::= { pasoV4mePasoV4ValueCommonEntry 20 }
+
+	p4mp4vcChUsageErrorCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH Usage Error Report Ctrol
+					    0: Invalid
+					    1: Not Report
+					    2: Report"
+		::= { pasoV4mePasoV4ValueCommonEntry 21 }
+
+	p4mp4vcChUsageError OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                                 CH Usage Error
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoV4ValueCommonEntry 22 }
+
+	p4mp4vcWsChUsageError OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS CH Usage Error
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoV4ValueCommonEntry 23 }	
+
+
+        p4mp4vcPortAlarm OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Port Alarm (PMC link)
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoV4ValueCommonEntry 24 }
+
+       p4mp4vcHardwareYearMonth OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"HardWare Year Month"
+		::= { pasoV4mePasoV4ValueCommonEntry 25 }
+
+       p4mp4vcSoftwareVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Software Version"
+		::= { pasoV4mePasoV4ValueCommonEntry 26 }
+
+       p4mp4vcBerCurrentValue OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER Value"
+		::= { pasoV4mePasoV4ValueCommonEntry 27 }
+
+       p4mp4vcEquipmentPmcType OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PMC Type
+					    0: Invalid
+					    17: North America Serial 
+					    18: North America LAN
+					    33: CEPT Serial
+					    34: CEPT LAN"
+		::= { pasoV4mePasoV4ValueCommonEntry 28 }
+
+       p4mp4vcCodeNo OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Code No"
+		::= { pasoV4mePasoV4ValueCommonEntry 29 }
+
+       p4mp4vcSerialNo OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Serial No"
+		::= { pasoV4mePasoV4ValueCommonEntry 30 }
+
+       p4mp4vcV4LanMountVer2 OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN card Version Info.
+					 0 : Invalid
+					 1 : Lan Version1
+					 2 : Lan Version2
+					This value is available when p4mp4vcV4LanMount is mount(1).
+					This value is invalid value when p4mp4vcV4LanMount is Not Mount(2) and Invalid(0)."
+		::= { pasoV4mePasoV4ValueCommonEntry 31 }
+
+
+
+	pasoV4mePasoV4ValueCommonCHTable OBJECT-TYPE  
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4ValueCommonCHEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 Common CH Items"
+		::= { pasoV4mePasoValue 5 }         
+		
+	pasoV4mePasoV4ValueCommonCHEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4ValueCommonCHEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION "Common CH Entry"
+		INDEX       { 
+		               p4mp4vcCHPasoIndex,
+		               p4mp4vcCHIndex 
+		            } 
+		::= { pasoV4mePasoV4ValueCommonCHTable 1 }
+	
+	PasoV4mePasoV4ValueCommonCHEntry ::= SEQUENCE {
+		p4mp4vcCHPasoIndex	        IpAddress,
+		p4mp4vcCHIndex		        INTEGER,
+		p4mp4vcCHAisRcvdInh               INTEGER,
+		p4mp4vcCHChUsageError             INTEGER
+    }
+
+        p4mp4vcCHPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasoV4mePasoV4ValueCommonCHEntry 1 }
+
+        p4mp4vcCHIndex OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4mePasoV4ValueCommonCHEntry 2 }
+
+
+
+        p4mp4vcCHAisRcvdInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS RCVD Report Control
+					    0: Invalid
+					    1: Report
+					    2: Not Report"
+		::= { pasoV4mePasoV4ValueCommonCHEntry 3 }
+
+       p4mp4vcCHChUsageError OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH Usage Error
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoV4ValueCommonCHEntry 4 }
+
+
+
+
+
+
+
+-----------------------------------------------
+-- PVC V4 LAN Table 
+-----------------------------------------------
+
+	pasoV4mePasoV4ValueCommonLanTable OBJECT-TYPE  
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4ValueCommonLanEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 Common LAN Items"
+		::= { pasoV4mePasoValue 6 }         
+		
+	pasoV4mePasoV4ValueCommonLanEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4ValueCommonLanEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION "Common LAN Entry"
+		INDEX       { 
+		               p4mp4vclPasoIndex,
+		               p4mp4vclLanIndex	                 
+		            } 
+		::= { pasoV4mePasoV4ValueCommonLanTable 1 }
+	
+	PasoV4mePasoV4ValueCommonLanEntry ::= SEQUENCE {
+		p4mp4vclPasoIndex        IpAddress,
+		p4mp4vclLanIndex         INTEGER,
+                p4mp4vclLanWanSel        INTEGER,
+                p4mp4vclLanFlowCtrl      INTEGER,
+                p4mp4vclLanThroughput    INTEGER,
+                p4mp4vclCasCtrl          INTEGER,
+                p4mp4vclCrcCtrl          INTEGER,
+                p4mp4vclCollAlarm        INTEGER,
+                p4mp4vclLanLinkAlarm     INTEGER,
+                p4mp4vclLanMode          INTEGER,
+                p4mp4vclLanCollReport    INTEGER,
+                p4mp4vclLanReset         INTEGER
+    }
+
+	p4mp4vclPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 1 }
+		                               
+        p4mp4vclLanIndex OBJECT-TYPE
+		SYNTAX	    INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 2 }	                               
+		                               
+	p4mp4vclLanWanSel OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Framing(LAN/WAN Select)
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 3 }
+
+	p4mp4vclLanFlowCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Flow Control
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 4 }
+
+	p4mp4vclLanThroughput OBJECT-TYPE
+		SYNTAX		INTEGER (0..6)
+    	ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Throughput
+		                0: Invalid
+					    1: Disable
+					    2: 2MB/1.5MB
+					    3: 4MB/3MB
+					    4: 8MB/6MB
+					    5: 16MB/12MB
+					    6: 32MB/24MB"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 5 }
+
+	p4mp4vclCasCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CAS Control
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 6 }
+
+	p4mp4vclCrcCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CRC Control
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 7 }
+		
+	p4mp4vclCollAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Collision Alarm
+					    0: Invalid
+					    1: Normal
+					    2: Collision"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 8 }
+
+	p4mp4vclLanLinkAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Link Alarm
+					    0: Invalid
+					    1: Normal
+					    2: Alarm"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 9 }
+
+	p4mp4vclLanMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..9)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Mode
+					    0: Invalid
+					    1: AUTONEG(AUTO-MDI/MDIX)
+					    2: 10M-HALF(MDI)
+					    3: 10M-FULL(MDI)
+					    4: 100M-HALF(MDI)
+					    5: 100M-FULL(MDI)
+					    6: 10M-HALF(MDIX)
+					    7: 10M-FULL(MDIX)
+					    8: 100M-HALF(MDIX)
+					    9: 100M-FULL(MDIX)"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 10 }
+		
+	p4mp4vclLanCollReport OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Collision Report Type
+					    0: Invalid
+					    1: Not Report
+					    2: Report"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 11 }
+
+	p4mp4vclLanReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..1)
+		ACCESS		write-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Reset
+		                0: Invalid
+		                1: Lan Reset"
+		::= { pasoV4mePasoV4ValueCommonLanEntry 12 }
+
+-----------------------------------------------
+-- PVC V4 DS Table 
+-----------------------------------------------
+
+	pasoV4mePasoV4ValueCommonDsTable OBJECT-TYPE  
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4ValueCommonDsEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 Common Ds Items"
+		::= { pasoV4mePasoValue 7 }         
+		
+	pasoV4mePasoV4ValueCommonDsEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4ValueCommonDsEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION "Common Ds Entry"
+		INDEX       { 
+		               p4mpvcdPasoIndex,
+		               p4mpvcdDsIndex	                 
+		            } 
+		::= { pasoV4mePasoV4ValueCommonDsTable 1 }
+	
+	PasoV4mePasoV4ValueCommonDsEntry ::= SEQUENCE {
+		p4mpvcdPasoIndex        IpAddress,
+		p4mpvcdDsIndex          INTEGER,
+		p4mpvcdCableLength      INTEGER,
+		p4mpvcdBipolarCode      INTEGER
+    }
+
+	p4mpvcdPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address"
+		::= { pasoV4mePasoV4ValueCommonDsEntry 1 }
+		                               
+    p4mpvcdDsIndex OBJECT-TYPE
+		SYNTAX	    INTEGER (1..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4mePasoV4ValueCommonDsEntry 2 }	                               
+		                               
+    p4mpvcdCableLength OBJECT-TYPE
+		SYNTAX		INTEGER (0..8)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Cable Length
+					    0: Invalid
+					    1: not used
+					    2: 0-68m(0-225ft)
+					    3: 68-135m(225-450ft)
+					    4: 0-40m(0-133ft)
+					    5:40-81m(133-266ft)
+					    6:81-121m(266-399ft)
+					    7:121-162m(399-533ft)
+					    8:162-199m(533-655ft)"
+		::= { pasoV4mePasoV4ValueCommonDsEntry 3 }
+
+	p4mpvcdBipolarCode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Bipolar Code
+					    0: Invalid
+					    1: B8ZS
+					    2: AMI"
+		::= { pasoV4mePasoV4ValueCommonDsEntry 4 }
+                                                                          
+------------------------------------------
+-- PVT V4 
+-----------------------------------------------
+    
+    pasoV4mePasoV4ValueIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4ValueIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"V4 ME value table"
+		::= { pasoV4mePasoValue 8 }
+
+	pasoV4mePasoV4ValueIndvEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4ValueIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"V4 ME value table Entry"
+		INDEX		{   
+		                p4mp4viPasoIndex,
+		                p4mp4viV4IfIndex
+					}
+		::= { pasoV4mePasoV4ValueIndvTable 1 }
+
+	PasoV4mePasoV4ValueIndvEntry ::= SEQUENCE {
+	                  p4mp4viPasoIndex          IpAddress,
+					  p4mp4viV4IfIndex          INTEGER,
+					  p4mp4viV4Mode             INTEGER,
+					  p4mp4viV4Atpc             INTEGER,
+					  p4mp4viV4AtpcRxThreshold  INTEGER,
+					  p4mp4viV4AtpcMaxPower     INTEGER,
+					  p4mp4viV4AtpcMinPower     INTEGER,  
+					  p4mp4viV4OduAlmMode       INTEGER,
+					  p4mp4viV4TxFreq           OCTET STRING,
+					  p4mp4viV4RxFreq           OCTET STRING,
+					  p4mp4viV4AtpcManualCtrl   INTEGER,
+					  p4mp4viV4BerAisMaint      INTEGER,
+					  p4mp4viV4Version          INTEGER,
+                                          p4mp4viV4V3D              INTEGER,
+                                          p4mp4viV4TxFreqCh         INTEGER,
+                                          p4mp4viV4TxPowerMon       OCTET STRING,
+	                                  p4mp4viV4RxLevMon         OCTET STRING 
+					  
+				   }
+                                
+	p4mp4viPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address"
+		::= { pasoV4mePasoV4ValueIndvEntry 1 }                                
+                                
+	p4mp4viV4IfIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4mePasoV4ValueIndvEntry 2 }
+
+	p4mp4viV4Mode OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"V3/V4 Mode
+					    0: Invalid
+					    1: V3
+					    2: V4"
+		::= { pasoV4mePasoV4ValueIndvEntry 3 }
+
+	p4mp4viV4Atpc OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Information
+					    0: Invalid
+					    1: MTPC
+					    2: ATPC"
+		::= { pasoV4mePasoV4ValueIndvEntry 4 }
+
+	p4mp4viV4AtpcRxThreshold OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC RX Threshold[dBm]
+                                Please deal with this value as a negative value."
+		::= { pasoV4mePasoV4ValueIndvEntry 5 }
+
+	p4mp4viV4AtpcMaxPower OBJECT-TYPE
+		SYNTAX		INTEGER 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Max Power[dB]
+                                Please deal with this value as a negative value."
+		::= { pasoV4mePasoV4ValueIndvEntry 6 }
+
+	p4mp4viV4AtpcMinPower OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Min Power[dB]
+                                 Please deal with this value as a negative value."
+		::= { pasoV4mePasoV4ValueIndvEntry 7 }   
+		
+    p4mp4viV4OduAlmMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)    
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Alarm Mode
+					    0: Invalid
+					    1: HOLD
+					    2: MIN
+					    3: MAX"
+		::= { pasoV4mePasoV4ValueIndvEntry 8 }
+
+	p4mp4viV4TxFreq OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Frequency[MHz]"
+		::= { pasoV4mePasoV4ValueIndvEntry 9 }
+		
+    p4mp4viV4RxFreq OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Frequency[MHz]"
+		::= { pasoV4mePasoV4ValueIndvEntry 10 }    
+		
+   	p4mp4viV4AtpcManualCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Setting of ATPC Manual control signal
+					    0: Invalid
+					    1: Off
+					    2: On"
+		::= { pasoV4mePasoV4ValueIndvEntry 11 }
+
+	p4mp4viV4BerAisMaint OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Setting of BER AIS include to Maint
+					    0: Invalid
+					    1: Enable
+					    2: Disable"
+		::= { pasoV4mePasoV4ValueIndvEntry 12 }		
+		                 
+         
+         p4mp4viV4Version OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Version
+					    0: Invalid
+					    1: 3.0
+					    2: 3.1"
+		::= { pasoV4mePasoV4ValueIndvEntry 13 }	
+		
+         p4mp4viV4V3D OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Version
+					    0: Invalid
+					    1: V3
+					    2: V3D"
+		::= { pasoV4mePasoV4ValueIndvEntry 14 }	
+      
+         p4mp4viV4TxFreqCh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH"
+		::= { pasoV4mePasoV4ValueIndvEntry 15 }	
+
+         p4mp4viV4TxPowerMon OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Power Monitor[dbm"
+		::= { pasoV4mePasoV4ValueIndvEntry 16 }
+
+	 p4mp4viV4RxLevMon OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Level Monitor[dbm]"
+		::= { pasoV4mePasoV4ValueIndvEntry 17 }
+
+
+           
+		                                                  
+------------------------------------------------------                                
+-- PIC/PIT V4 Inventory table                                   
+------------------------------------------------------                                  
+	pasoV4mePasoInventory OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmMePaso 2 }                                  
+
+	pasoV4mePasoV4InvIndvTable OBJECT-TYPE 
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4InvIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink Inventory Items"
+		::= { pasoV4mePasoInventory 1 }
+
+	pasoV4mePasoV4InvIndvEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4InvIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink Inventory Items Entry"
+		INDEX		{
+						p4mp4iiV4PasoIndex,
+						p4mp4iiV4IfIndex
+				    }
+		::= { pasoV4mePasoV4InvIndvTable 1 }
+
+	PasoV4mePasoV4InvIndvEntry ::= SEQUENCE {
+	                  p4mp4iiV4PasoIndex       IpAddress,
+	                  p4mp4iiV4IfIndex         INTEGER,
+					  p4mp4iiV4OduRfBand       INTEGER,
+					  p4mp4iiV4OduShiftFreq    OCTET STRING,
+					  p4mp4iiV4OduChSepa       OCTET STRING,
+					  p4mp4iiV4OduSubBand      INTEGER,
+					  p4mp4iiV4OduLowHighBand  INTEGER,
+					  p4mp4iiV4OduCapacity     INTEGER,
+					  p4mp4iiV4OduYearMonth    OCTET STRING,
+					  p4mp4iiV4OduCpuVersion   OCTET STRING,
+					  p4mp4iiV4OduSwVersion    OCTET STRING,
+					  p4mp4iiV4OduStartFreq    OCTET STRING,
+					  p4mp4iiV4OduSerial       INTEGER,
+					  p4mp4iiV4OduMaxPower     INTEGER,
+					  p4mp4iiV4MdYearMonth     OCTET STRING,
+					  p4mp4iiV4MdCpuVersion    OCTET STRING,
+					  p4mp4iiV4MdSoftVersion   OCTET STRING,
+					  p4mp4iiV4MdSerial        INTEGER,
+					  p4mp4iiV4OduMaxCh        INTEGER,
+					  p4mp4iiV4OduMinCh        INTEGER
+  					}
+                           
+    p4mp4iiV4PasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasoV4mePasoV4InvIndvEntry 1 }                       
+                           
+	p4mp4iiV4IfIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4mePasoV4InvIndvEntry 2 }
+		
+	p4mp4iiV4OduRfBand OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU RF Band[GHz]"
+		::= { pasoV4mePasoV4InvIndvEntry 3 }
+
+	p4mp4iiV4OduShiftFreq OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Shift Frequency[MHz]"
+		::= { pasoV4mePasoV4InvIndvEntry 4 }
+
+	p4mp4iiV4OduChSepa OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Channel Separation"
+		::= { pasoV4mePasoV4InvIndvEntry 5 }
+
+	p4mp4iiV4OduSubBand OBJECT-TYPE
+		SYNTAX		INTEGER (0..16) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Sub Band
+		                0: Invalid
+		                1: subband A
+				2: subband B
+				3: subband C
+				4: subband D
+				5: subband E
+				6: subband F
+				7: subband G
+				8: subband H
+				9: subband J
+				10: subband K
+				11: subband L
+				12: subband M
+				13: subband N
+				14: subband P
+				15: subband R
+				16: subband X"
+		::= { pasoV4mePasoV4InvIndvEntry 6 }
+
+	p4mp4iiV4OduLowHighBand OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Low/High Band
+		                0: Invalid
+		                1: Low
+		                2: High"
+		::= { pasoV4mePasoV4InvIndvEntry 7 }
+
+	p4mp4iiV4OduCapacity OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Capacity
+		                0: Invalid
+		                1: 8MB
+		                2: 34MB"
+		::= { pasoV4mePasoV4InvIndvEntry 8 }
+
+	p4mp4iiV4OduYearMonth OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manufacturing Date of ODU
+					(Format) Year/Month are represented by 12 bits integer. 
+					         Bit assignment is as follows.
+					 0-3 bit : Month
+					 4-10bit : Year(Lower 2digits)
+					 11  bit : Year(Higher 2 digits 1=2000/0=1900)"
+		::= { pasoV4mePasoV4InvIndvEntry 9 }
+
+	p4mp4iiV4OduCpuVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                            ODU CPU version"
+		::= { pasoV4mePasoV4InvIndvEntry 10 }
+
+	p4mp4iiV4OduSwVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Software version"
+		::= { pasoV4mePasoV4InvIndvEntry 11 }
+
+	p4mp4iiV4OduStartFreq OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Start Frequency[(1/1000)MHz]"
+		::= { pasoV4mePasoV4InvIndvEntry 12 }
+
+	p4mp4iiV4OduSerial OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Serial No."
+		::= { pasoV4mePasoV4InvIndvEntry 13 }
+
+	p4mp4iiV4OduMaxPower OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Max Power"
+		::= { pasoV4mePasoV4InvIndvEntry 14 }
+
+	p4mp4iiV4MdYearMonth OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manufacture Date of MD
+					(Format) Same as pitOduYearMonth."
+		::= { pasoV4mePasoV4InvIndvEntry 15 }
+
+	p4mp4iiV4MdCpuVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                            MD CPU version"
+		::= { pasoV4mePasoV4InvIndvEntry 16 }
+
+	p4mp4iiV4MdSoftVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MD Software version"
+		::= { pasoV4mePasoV4InvIndvEntry 17 }
+
+	p4mp4iiV4MdSerial OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MD Serial No."
+		::= { pasoV4mePasoV4InvIndvEntry 18 }
+		
+	p4mp4iiV4OduMaxCh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Max CH"
+		::= { pasoV4mePasoV4InvIndvEntry 19 }
+
+	p4mp4iiV4OduMinCh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Min CH"
+		::= { pasoV4mePasoV4InvIndvEntry 20 }		
+
+
+	pasoV4mePasoV4InvCommTable OBJECT-TYPE 
+		SYNTAX		SEQUENCE OF PasoV4mePasoV4InvCommEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink Inventory Common Items"
+		::= { pasoV4mePasoInventory 2 }
+
+	pasoV4mePasoV4InvCommEntry OBJECT-TYPE
+		SYNTAX		PasoV4mePasoV4InvCommEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink Inventory Common Items Entry"
+		INDEX		{
+						p4mp4icV4PasoIndex
+				    }
+		::= { pasoV4mePasoV4InvCommTable 1 }
+
+	PasoV4mePasoV4InvCommEntry ::= SEQUENCE {
+	                  p4mp4icV4PasoIndex       IpAddress,
+			  p4mp4icV4SwYearMonth     OCTET STRING,
+			  p4mp4icV4SwCpuVersion    OCTET STRING,
+			  p4mp4icV4SwSoftVersion   OCTET STRING,
+			  p4mp4icV4SwSerial        INTEGER
+  				}
+
+  	p4mp4icV4PasoIndex  OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+                DESCRIPTION	"Index"
+		::= { pasoV4mePasoV4InvCommEntry 1  }
+
+				
+	p4mp4icV4SwYearMonth OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manufacture Date of SW
+					(Format) Same as pitOduYearMonth."
+		::= { pasoV4mePasoV4InvCommEntry 2 }
+
+	p4mp4icV4SwCpuVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used 
+                                 SW CPU version"
+		::= { pasoV4mePasoV4InvCommEntry 3 }
+
+	p4mp4icV4SwSoftVersion OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SW Software version"
+		::= { pasoV4mePasoV4InvCommEntry 4 }
+
+	p4mp4icV4SwSerial OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SW Software version"
+		::= { pasoV4mePasoV4InvCommEntry 5 }
+
+
+-----------------------------------------------
+-- pmMeIop Group Definitions
+-----------------------------------------------
+
+        pasov4ValuePerformanceInformation OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmMeIop 1 }
+
+	pasov4PmonDataTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Pasov4PmonDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Performance data"
+		::= { pasov4ValuePerformanceInformation 1 }
+
+	pasov4PmonDataEntry OBJECT-TYPE
+		SYNTAX		Pasov4PmonDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Performance data Entry"
+		INDEX		{
+					p4pdDataPasoIndex,
+					p4pdDataItemName
+				}
+		::= { pasov4PmonDataTable 1 }
+
+	Pasov4PmonDataEntry ::= SEQUENCE {
+		p4pdDataPasoIndex		IpAddress,
+		p4pdDataItemName		INTEGER,
+		p4pdDataCurrent15minData	OCTET STRING,
+		p4pdDataCurrent15minStatus	INTEGER,
+		p4pdDataCurrentDayData		OCTET STRING,
+		p4pdDataCurrentDayStatus	INTEGER,
+		p4pdDataHistory15minStatus	INTEGER,
+		p4pdDataHistoryDayStatus	INTEGER
+	}
+				
+	p4pdDataPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+                DESCRIPTION	"Index"
+		::= { pasov4PmonDataEntry 1 }
+
+	p4pdDataItemName OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Data Type 
+		                invalid(0),
+				pmonBBE(1),
+				pmonES(2),
+				pmonSES(3),
+				pmonUAS(4)"
+		::= { pasov4PmonDataEntry 2 }
+
+	p4pdDataCurrent15minData OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Current 15min Data"
+		::= { pasov4PmonDataEntry 3 }
+		
+	p4pdDataCurrent15minStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Current 15min Status
+		                invalid(0),
+				normal(1),
+				alarm(2)"
+		::= { pasov4PmonDataEntry 4 }
+
+	p4pdDataCurrentDayData OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Current Day Data"
+		::= { pasov4PmonDataEntry 5 }
+		
+	p4pdDataCurrentDayStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Current Day Status
+		                invalid(0),
+				normal(1),
+				alarm(2)"
+		::= { pasov4PmonDataEntry 6 }
+
+	p4pdDataHistory15minStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"History 15min Status
+			        invalid(0),
+				normal(1),
+				alarm(2)"
+		::= { pasov4PmonDataEntry 7 }
+
+	p4pdDataHistoryDayStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"History Day Status
+			        invalid(0),
+				normal(1),
+				alarm(2)"
+		::= { pasov4PmonDataEntry 8 }
+
+	pasov4PmonThresholdTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Pasov4PmonThresholdEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold Table"
+		::= { pasov4ValuePerformanceInformation 2 }
+
+	pasov4PmonThresholdEntry OBJECT-TYPE
+		SYNTAX		Pasov4PmonThresholdEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold Table Entry"
+		INDEX		{
+						p4ptThresholdPasoIndex,
+						p4ptThresholdItemName
+					}
+		::= { pasov4PmonThresholdTable 1 }
+
+	Pasov4PmonThresholdEntry ::= SEQUENCE {
+		p4ptThresholdPasoIndex		IpAddress,
+		p4ptThresholdItemName		INTEGER,
+		p4ptThreshold15minOccur		OCTET STRING,
+		p4ptThreshold15minRecover	OCTET STRING,
+		p4ptThresholdDayOccur		OCTET STRING,
+		p4ptThresholdDayRecover		OCTET STRING
+		}
+
+	p4ptThresholdPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+                DESCRIPTION	"Index"
+		::= { pasov4PmonThresholdEntry 1 }
+
+	p4ptThresholdItemName OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Item Name
+		                invalid(0),
+				pmonBBE(1),
+				pmonES(2),
+				pmonSES(3),
+				pmonUAS(4)"
+		::= { pasov4PmonThresholdEntry 2 }
+
+	p4ptThreshold15minOccur OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold Value: 15min.Occur"
+		::= { pasov4PmonThresholdEntry 3 }
+
+	p4ptThreshold15minRecover OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold Value: 15min.Recover"
+		::= { pasov4PmonThresholdEntry 4 }
+
+	p4ptThresholdDayOccur OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold Value: Day.Occur"
+		::= { pasov4PmonThresholdEntry 5 }
+
+	p4ptThresholdDayRecover OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold Value: Day.Recover"
+		::= { pasov4PmonThresholdEntry 6 }
+
+	
+	
+	pasov4PmcardHouseKeeping OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmMeIop 2 }
+
+	pasov4PmcardAuxInputTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Pasov4PmcardAuxInputEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 AUX I/O Input Information"
+		::= { pasov4PmcardHouseKeeping 1 }
+
+	pasov4PmcardAuxInputEntry OBJECT-TYPE
+		SYNTAX		Pasov4PmcardAuxInputEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 AUX I/O Input Information Entry"
+		INDEX		{
+					p4paiPasoIndex,
+					p4paiPasoInputIndex				
+		}
+		::= { pasov4PmcardAuxInputTable 1 }
+
+	Pasov4PmcardAuxInputEntry ::= SEQUENCE {
+		p4paiPasoIndex		IpAddress,
+		p4paiPasoInputIndex	INTEGER,
+		p4paiPasoInputName	OCTET STRING,
+		p4paiPasoInputStatus	INTEGER,
+		p4paiPasoInputStatusType	INTEGER
+	}
+
+	p4paiPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasov4PmcardAuxInputEntry 1 }
+
+	p4paiPasoInputIndex OBJECT-TYPE 
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Input Number"
+		::= { pasov4PmcardAuxInputEntry 2 }
+		
+	p4paiPasoInputName OBJECT-TYPE 
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Input Name"
+		::= { pasov4PmcardAuxInputEntry 3 }
+
+	p4paiPasoInputStatus OBJECT-TYPE 
+		SYNTAX		INTEGER (0..2)	
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Input Status
+		              Invalid(0),
+                		Event Off-Open Loop(1),
+                 		Event On-Close Loop(2)"
+		::= { pasov4PmcardAuxInputEntry 4 }
+		
+	p4paiPasoInputStatusType OBJECT-TYPE 
+		SYNTAX		INTEGER (0..3)	
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Input Status Type
+			        If paiPasoInputStatusType = 
+                             Alarm When Event Off-Open Loop(1),
+			        open stands for alarm, close stands for normal.
+			        If paiPasoInputStatusType = 
+                             Alarm When Event On-Close Loop(2),
+			        open stands for nomal, close stands for alarm.
+			        If paiPasoInputStatusType = Status(3),
+				 paiPasoInputStatus means status information( not alarm information ).
+				
+			         Invalid(0),
+			         Alarm When Event Off-Open Loop(1),
+			         Alarm When Event On-Close Loop(2),
+			         Status(3)"
+		::= { pasov4PmcardAuxInputEntry 5 }
+		
+	pasov4PmcardAuxOutputTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Pasov4PmcardAuxOutputEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 AUX I/O Output Information"
+		::= { pasov4PmcardHouseKeeping 2 }
+
+	pasov4PmcardAuxOutputEntry OBJECT-TYPE
+		SYNTAX		Pasov4PmcardAuxOutputEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink V4 AUX I/O Output Information Entry"
+		INDEX		{
+					p4paoPasoIndex,
+					p4paoPasoOutputIndex				
+		}
+		::= { pasov4PmcardAuxOutputTable 1 }
+
+	Pasov4PmcardAuxOutputEntry ::= SEQUENCE {
+		p4paoPasoIndex		IpAddress,
+		p4paoPasoOutputIndex	INTEGER,
+		p4paoPasoOutputName	OCTET STRING,
+		p4paoPasoOutputStatus	INTEGER
+	}
+
+	p4paoPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pasov4PmcardAuxOutputEntry 1 }
+
+	p4paoPasoOutputIndex OBJECT-TYPE 
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Output Number"
+		::= { pasov4PmcardAuxOutputEntry 2 }
+		
+	p4paoPasoOutputName OBJECT-TYPE 
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Output Name"
+		::= { pasov4PmcardAuxOutputEntry 3 }
+
+	p4paoPasoOutputStatus OBJECT-TYPE 
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX I/O Output Status
+			       Invalid(0) Note: This value can not control,
+                		Event Off-Open Loop(1),
+                 		Event On-Close Loop(2)"
+		::= { pasov4PmcardAuxOutputEntry 4 }
+
+
+	pasov4SystemGetMeasurementData OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmMeIop 3 }
+
+	pasov4GetMeasurementTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF Pasov4GetMeasurementEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Measurement Data"
+		::= { pasov4SystemGetMeasurementData 1 }
+	
+	pasov4GetMeasurementEntry OBJECT-TYPE
+		SYNTAX		Pasov4GetMeasurementEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Measurement Entry"
+		INDEX { p4gmManagerIndex } 
+		::= { pasov4GetMeasurementTable 1 }
+
+	Pasov4GetMeasurementEntry ::= SEQUENCE {
+		p4gmManagerIndex		IpAddress,
+		p4gmRequestID			INTEGER,
+		p4gmTargetPasolink		IpAddress,
+		p4gmDataStatus			INTEGER	
+	}
+
+	p4gmManagerIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Upper(higher-level) Manager IpAddress"
+		::= { pasov4GetMeasurementEntry 1 }
+
+	p4gmRequestID OBJECT-TYPE
+		SYNTAX		INTEGER (1..9999)
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Request ID"
+		::= { pasov4GetMeasurementEntry 2 }
+		
+	p4gmTargetPasolink OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Target Pasolink IpAddress"
+		::= { pasov4GetMeasurementEntry 3 }
+	
+	p4gmDataStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Data Status
+		                invalid(0),
+				ready(1),
+	                 	wait(2),
+                    		fail(3)"
+		::= { pasov4GetMeasurementEntry 4 }
+
+-----------------------------------------------
+-- pmTrap Group Definitions
+-----------------------------------------------
+
+	pasoV4pmTrapCommon OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmTrap 1 }
+
+	pasoV4pmTrapGenericVars OBJECT IDENTIFIER
+		::= { pasoV4pmTrapCommon 1 }
+
+	v4trapSequenceNumber OBJECT-TYPE
+		SYNTAX		Counter
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "Trap Sequence Number(0..4294967295)"
+		::= { pasoV4pmTrapGenericVars 1 }
+
+	v4trapDate OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Date (YYYY/MM/DD)"
+		::= { pasoV4pmTrapGenericVars 2 }
+
+	v4trapTime OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Time (HH:MM:SS)"
+		::= { pasoV4pmTrapGenericVars 3 }
+
+	v4trapSource OBJECT-TYPE
+		SYNTAX		OBJECT IDENTIFIER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Source"
+		::= { pasoV4pmTrapGenericVars 4 }
+
+	pasoV4pmTrapX733Vars OBJECT IDENTIFIER
+		::= { pasoV4pmTrapCommon 2 }
+
+	v4severity OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Severity
+				 Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmTrapX733Vars 1 }
+
+	v4alarmType OBJECT-TYPE
+		SYNTAX		AlarmTypeValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Alarm Type
+                             Refer to AlarmTypeValue of TEXTUAL-CONVENTION"
+		::= { pasoV4pmTrapX733Vars 2 }
+
+	v4probableCause OBJECT-TYPE
+	    SYNTAX		ProbableCauseValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Probable Cause
+                            Refer to ProbableCauseValue of TEXTUAL-CONVENTION"
+		::= { pasoV4pmTrapX733Vars 3 }
+
+	pasoV4pmTrapManagerDetailVars OBJECT IDENTIFIER
+		::= { pasoV4pmTrapCommon 3 }
+
+	v4trapManagerType OBJECT-TYPE
+		SYNTAX		ManagerTypeValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PNM connection manager type"
+		::= { pasoV4pmTrapManagerDetailVars 1 }
+
+	v4trapManagerStyle OBJECT-TYPE
+		SYNTAX		ManagerStyleValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Connection type(Local/Remote/Opposite)"
+		::= { pasoV4pmTrapManagerDetailVars 2 }
+
+	v4trapManagerIpAddress OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Connected PNM IP address
+					IP address of SNMP manager which is connected is automatically set."
+		::= { pasoV4pmTrapManagerDetailVars 3 }
+                                     
+--------------------------------------------------
+-- pm Trap Item Type
+--------------------------------------------------
+
+	pasoV4pmTrapItemType OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmTrap 2 }
+		
+	pasoV4pmTotalSummaryTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 1 }
+
+	pasoV4pmPartialSummaryTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 2 }
+
+	pasoV4pmAlarmTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 3 }
+
+	pasoV4pmEventTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 4 }
+
+	pasoV4pmStatusTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 5 }
+
+	statusTypeV4Aux OBJECT-TYPE
+		SYNTAX		INTEGER (0..3) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "Status type of AUX.
+		                0: Invalid
+					    1: Alarm When Event Off-Open Loop
+					    2: Alarm When Event On-Close Loop
+					    3: Status"
+		::= { pasoV4pmStatusTrapItemType 1 }
+
+	statusTypeV4Ais OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "Status type of AIS.
+		                0: Invalid
+		                1: AlarmType
+		                2: StatusType"
+		::= { pasoV4pmStatusTrapItemType 2 }
+
+	pasoV4pmFilterTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 6 }
+
+	pasoV4pmConfigTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 7 }
+
+        pasov4InputName OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION  "Opto Name"
+    	::= { pasoV4pmConfigTrapItemType 1 }
+
+       	pasov4InputCondition OBJECT-TYPE
+    		SYNTAX  INTEGER
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Opto Condition 
+           		invalid(0),
+			Alarm When Event Off-Open Loop(1),
+			Alarm When Event On-Close Loop(2),
+			Status(3)"
+    	::= { pasoV4pmConfigTrapItemType   2 }
+    	 
+        pasov4OutputName OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION  "Relay Name"
+    	::= { pasoV4pmConfigTrapItemType   3 }
+
+	pasoV4pmSystemTrapItemType OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemType 8 }    		
+        
+        systemPasov4RequestID OBJECT-TYPE
+			SYNTAX		INTEGER
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Request ID"
+    	::= { pasoV4pmSystemTrapItemType 1 }
+
+	systemPasov4TargetIpAddress OBJECT-TYPE
+			SYNTAX		IpAddress
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Pasolink V4 IpAddress"
+    	::= { pasoV4pmSystemTrapItemType 2 }
+	
+	systemPasov4Result OBJECT-TYPE
+			SYNTAX		INTEGER (0..3)
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Request Result
+				        invalid(0),
+					ready(1),
+	                 		wait(2),
+                    			fail(3)"
+    	::= { pasoV4pmSystemTrapItemType 4 }
+
+        
+                                       
+--------------------------------------------------
+-- pm Trap Item Var
+--------------------------------------------------
+
+	pasoV4pmTrapItemVar OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmTrap 3 }
+        
+--------------------------------------------------
+-- pm Total Summary Trap Item Var
+--------------------------------------------------        
+        
+	pasoV4pmTotalSummaryTrapItemVar OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemVar 1 }
+
+	v4totalSummaryItem OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Total Sumamry
+				 Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmTotalSummaryTrapItemVar 1 }
+		
+--------------------------------------------------
+-- pm Partial Summary Trap Item Var
+--------------------------------------------------
+
+	pasoV4pmPartialSummaryTrapItemVar OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemVar 2 }
+
+	v4partialSummaryItemOdu OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "ODU Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmPartialSummaryTrapItemVar 1 }
+
+	v4partialSummaryItemIdu OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "IDU Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmPartialSummaryTrapItemVar 2 }
+
+	v4partialSummaryItemPmc OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "PMC Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmPartialSummaryTrapItemVar 3 }
+
+	v4partialSummaryItemAux OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "AUX.IO Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmPartialSummaryTrapItemVar 4 }
+
+	v4partialSummaryItemLpm OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "Link Performance Monitor Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmPartialSummaryTrapItemVar 5 }
+                            
+--------------------------------------------------
+-- pm Alarm Trap Item Var
+--------------------------------------------------                            
+                            
+	pasoV4pmAlarmTrapItemVar OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemVar 3 }
+
+	alarmItemV4InputLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Input Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 1 }
+
+	alarmItemV4BpOutputLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BP Output Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 2 }
+
+	alarmItemV4WsInputLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS Input Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm 
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 3 }
+
+	alarmItemV4WsBpOutputLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS BP Output Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+		 			severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 4 }
+
+	alarmItemV4OduIduLink OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Status of ODU IDU Link
+					    0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 5 }
+
+	alarmItemV4IfInput OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IF Input
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 6 }
+
+	alarmItemV4RxApc OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX APC
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+		            severity=major
+					alarmType=equipmentAlarm
+					probableCause=equipmentMalfunction"
+		::= { pasoV4pmAlarmTrapItemVar 7 }
+
+	alarmItemV4TxApc OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX APC
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=equipmentMalfunction"
+		::= { pasoV4pmAlarmTrapItemVar 8 }
+
+	alarmItemV4RxLev OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Level
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmAlarmTrapItemVar 9 }
+
+	alarmItemV4TxPwr OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Power
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=powerProblem"
+		::= { pasoV4pmAlarmTrapItemVar 10 }
+
+	alarmItemV4LoBer OBJECT-TYPE
+		SYNTAX		INTEGER (0..2) 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Low BER
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=minor
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmAlarmTrapItemVar 11 }
+
+	alarmItemV4HiBer OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"High BER
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=minor
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmAlarmTrapItemVar 12 }
+
+	alarmItemV4Ber OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=framingError"
+		::= { pasoV4pmAlarmTrapItemVar 13 }
+
+	alarmItemV4FrameAsync OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Frame Async
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=framingError"
+		::= { pasoV4pmAlarmTrapItemVar 14 }
+
+	alarmItemV4Dem OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"DEM
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=equipmentMalfunction"
+		::= { pasoV4pmAlarmTrapItemVar 15 }
+
+	alarmItemV4Mod OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MOD
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=equipmentMalfunction"
+		::= { pasoV4pmAlarmTrapItemVar 16 }
+
+	alarmItemV4CpuAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CPU Alarm
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=processorProblem"
+		::= { pasoV4pmAlarmTrapItemVar 17 }
+
+	alarmItemV4TxClkLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Clock Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 18 }
+
+	alarmItemV4RxClkLoss OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Clock Loss
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 19 }
+
+	alarmItemV4PmonDaily OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PMON Daily Alarm
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=minor
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmAlarmTrapItemVar 20 }
+
+	alarmItemV4PmonWeekly OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PMON Weekly Alarm
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=minor
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmAlarmTrapItemVar 21 }
+
+	alarmItemV4PasoConnection OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Status of Pasolink Connection
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 22 }
+
+	alarmItemV4PmcCommunication OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Status of PMC Communication
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 23 }
+
+	alarmItemV4LanLinkAlarm OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Link Alarm
+		                0: Invalid
+		                1: Normal
+		                2: Alarm 
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 24 }
+
+	alarmItemV4LanCardAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Card Alarm
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=processorProblem"
+		::= { pasoV4pmAlarmTrapItemVar 25 }   
+		
+	alarmItemChUsageError OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH Usage Error
+					    0: Invalid
+					    1: Normal
+					    2: Alarm		
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 26 }
+
+	alarmItemWsChUsageError OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH Usage Error
+					    0: Invalid
+					    1: Normal
+					    2: Alarm		
+					severity=major
+					alarmType=communicationAlarm
+					probableCause=lossOfSignal"
+		::= { pasoV4pmAlarmTrapItemVar 27 }
+	                                                 
+--------------------------------------------------
+-- pm Event Trap Item Var
+--------------------------------------------------                                                   
+                                                   
+	pasoV4pmEventTrapItemVar OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemVar 4 }
+
+	eventItemV4WsAlmInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS Alm Inh"
+		::= { pasoV4pmEventTrapItemVar 1 }
+
+	eventItemV4Lb2 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LB2"
+		::= { pasoV4pmEventTrapItemVar 2 }
+
+	eventItemV4Lb1 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LB1"
+		::= { pasoV4pmEventTrapItemVar 3 }
+
+	eventItemV4AlmInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Alm Inh"
+		::= { pasoV4pmEventTrapItemVar 4 }
+
+	eventItemV4Sc4Selector OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SC4 Selector"
+		::= { pasoV4pmEventTrapItemVar 5 }
+
+	eventItemV4Sc5Selector OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SC5 Selector"
+		::= { pasoV4pmEventTrapItemVar 6 }
+
+	eventItemV4Remote OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Remote"
+		::= { pasoV4pmEventTrapItemVar 7 }
+
+	eventItemV4TxSelected OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Tx Selected"
+		::= { pasoV4pmEventTrapItemVar 8 }
+
+	eventItemV4RxSelected OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Rx Selected"
+		::= { pasoV4pmEventTrapItemVar 9 }
+
+	eventItemV4FrameID OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Frame ID"
+		::= { pasoV4pmEventTrapItemVar 10 }
+
+	eventItemV4BerThreshold OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ber Threshold"
+		::= { pasoV4pmEventTrapItemVar 11 }
+
+	eventItemV4AisRcvd OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ais Rcvd"
+		::= { pasoV4pmEventTrapItemVar 12 }
+
+	eventItemV4AisSend OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ais Send"
+		::= { pasoV4pmEventTrapItemVar 13 }
+
+	eventItemV4TxAtt OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MTPC TX Power[dB]"
+		::= { pasoV4pmEventTrapItemVar 14 }
+
+	eventItemV4BerAis OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ber Ais"
+		::= { pasoV4pmEventTrapItemVar 15 }
+
+	eventItemV4Cw OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CW"
+		::= { pasoV4pmEventTrapItemVar 16 }
+
+	eventItemV4Maint OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Maint"
+		::= { pasoV4pmEventTrapItemVar 17 }
+
+	eventItemV4Mute OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Mute"
+		::= { pasoV4pmEventTrapItemVar 18 }
+
+	eventItemV4AuxOutput OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output"
+		::= { pasoV4pmEventTrapItemVar 19 }
+
+	eventItemV4RxSel OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Rx Sel"
+		::= { pasoV4pmEventTrapItemVar 20 }
+
+	eventItemV4TxSel OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Tx Sel"
+		::= { pasoV4pmEventTrapItemVar 21 }
+
+	eventItemV4RxSelAns OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Rx Sel Ans"
+		::= { pasoV4pmEventTrapItemVar 22 }
+
+	eventItemV4TxSelAns OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Tx Sel Ans"
+		::= { pasoV4pmEventTrapItemVar 23 }
+
+	eventItemV4DemInv OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Dem Inv"
+		::= { pasoV4pmEventTrapItemVar 24 }
+
+	eventItemV4Config OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Config"
+		::= { pasoV4pmEventTrapItemVar 25 }
+
+	eventItemV4ManualSw OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manual SW"
+		::= { pasoV4pmEventTrapItemVar 26 }
+
+	eventItemV4BitRate OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Bit Rate"
+		::= { pasoV4pmEventTrapItemVar 27 }
+
+	eventItemV4LanMount OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Mount"
+		::= { pasoV4pmEventTrapItemVar 28 }
+
+	eventItemV4FeLinkCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"FE Link Ctrl"
+		::= { pasoV4pmEventTrapItemVar 29 }
+
+	eventItemV4LanThroughput OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Throughput"
+		::= { pasoV4pmEventTrapItemVar 30 }
+
+	eventItemV4LanWanSel OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN WAN Sel"
+		::= { pasoV4pmEventTrapItemVar 31 }
+
+	eventItemV4CasCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Cas Ctrl"
+		::= { pasoV4pmEventTrapItemVar 32 }
+
+	eventItemV4CrcCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CRC Ctrl"
+		::= { pasoV4pmEventTrapItemVar 33 }
+
+	eventItemV4FlowCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Flow Ctrl"
+		::= { pasoV4pmEventTrapItemVar 34 }
+		
+	eventItemV4LanMode OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Mode"
+		::= { pasoV4pmEventTrapItemVar 35 }
+
+	eventItemV4CollisionReport OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Collision Report"
+		::= { pasoV4pmEventTrapItemVar 36 }
+
+	eventItemV4LanReset OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Reset"
+		::= { pasoV4pmEventTrapItemVar 37 } 
+		
+	eventItemV4CollAlarm OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Coll Alarm"
+		::= { pasoV4pmEventTrapItemVar 38 }
+
+	eventItemV4CableLengthDs3 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Cable Length DS3"
+		::= { pasoV4pmEventTrapItemVar 39 }
+
+	eventItemV4AisEnbDs3 OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS Enb DS3"
+		::= { pasoV4pmEventTrapItemVar 40 }
+
+	eventItemV4BipolarCodeWs OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Bipolar Code WS"
+		::= { pasoV4pmEventTrapItemVar 41 }
+
+	eventItemV4CableLengthWs OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Cable Length WS"
+		::= { pasoV4pmEventTrapItemVar 42 }
+
+	eventItemV4BipolarCode OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Bipolar Code"
+		::= { pasoV4pmEventTrapItemVar 43 }
+
+	eventItemV4CableLength OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Cable Length"
+		::= { pasoV4pmEventTrapItemVar 44 }
+
+	eventItemV4Atpc OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC"
+		::= { pasoV4pmEventTrapItemVar 45 }
+
+	eventItemV4AtpcRxThreshold OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Rx Threshold"
+		::= { pasoV4pmEventTrapItemVar 46 }
+
+	eventItemV4AtpcMaxPower OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC MAX Power"
+		::= { pasoV4pmEventTrapItemVar 47 }
+
+	eventItemV4AtpcMinPower OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC MIN Power"
+		::= { pasoV4pmEventTrapItemVar 48 }    
+		
+	eventItemV4OduAlmMode OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Alm mode"
+		::= { pasoV4pmEventTrapItemVar 49 }
+
+	eventItemV4TxFreq OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Tx Frequency[MHz]"
+		::= { pasoV4pmEventTrapItemVar 50 }
+		
+    eventItemV4RxFreq OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Rx Frequency[MHz]"
+		::= { pasoV4pmEventTrapItemVar 51 }  
+		
+ 	eventItemV4LanCollReport OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN Coll Report"
+		::= { pasoV4pmEventTrapItemVar 52 }
+
+	eventItemV4TxSwPriority OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Sw Priority"
+		::= { pasoV4pmEventTrapItemVar 53 }
+
+	eventItemV4Ne500Ctrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"NE 500 Ctrl"
+		::= { pasoV4pmEventTrapItemVar 54 }
+
+	eventItemV4AisRcvdInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS Rcvd Inh"
+		::= { pasoV4pmEventTrapItemVar 55 }
+
+	eventItemV4WsAisRcvdInh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS AIS Rcvd Inh"
+		::= { pasoV4pmEventTrapItemVar 56 }
+
+	eventItemV4ChUsageErrorCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CH Usage Error Ctrl"
+		::= { pasoV4pmEventTrapItemVar 57 }
+
+	eventItemV4AtpcManualCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Manual Ctrl"
+		::= { pasoV4pmEventTrapItemVar 58 }
+
+	eventItemV4BerAisMaint OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ber Ais Maint"
+		::= { pasoV4pmEventTrapItemVar 59 }
+
+        eventItemV4TxFreqCh OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Frequency Channel"
+		::= { pasoV4pmEventTrapItemVar 60 }
+
+
+
+--------------------------------------------------
+-- pm Status Trap Item Var
+--------------------------------------------------                                                   
+
+	pasoV4pmStatusTrapItemVar OBJECT IDENTIFIER
+		::= { pasoV4pmTrapItemVar 5 }
+
+	statusItemV4AisRcvd OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS RCVD
+		                0: Invalid
+		                1: Normal
+		                2: RCVD
+					severity=major
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmStatusTrapItemVar 1 }
+
+	statusItemV4AisSend OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS SEND
+		                0: Invalid
+		                1: Normal
+		                2: SEND
+					severity=major
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmStatusTrapItemVar 2 }
+
+	statusItemV4WsAisRcvd OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS AIS RCVD
+		                0: Invalid
+		                1: Normal
+		                2: RCVD
+					severity=major
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmStatusTrapItemVar 3 }
+
+	statusItemV4WsAisSend OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS AIS SEND
+		                0: Invalid
+		                1: Normal
+		                2: SEND
+					severity=major
+					alarmType=qualityOfServiceAlarm
+					probableCause=thresholdCrossed"
+		::= { pasoV4pmStatusTrapItemVar 4 }
+
+	statusItemV4AuxInput OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX Input
+		                0: Invalid
+		                1: Normal
+		                2: Alarm
+					severity=major
+					alarmType=equipmentAlarm
+					probableCause=equipmentMalfunction"
+		::= { pasoV4pmStatusTrapItemVar 5 }
+		
+	statusItemV4AuxInputChangeIndex OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX Input Change Index"
+		::= { pasoV4pmStatusTrapItemVar 6 }
+                                    
+	statusItemV4CollAlarm OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION "Collision Alarm
+		                0: Invalid
+		                1: Normal
+		                2: Collision"
+		::= { pasoV4pmStatusTrapItemVar 7 }
+                                
+-----------------------------------------------
+-- pmSummary Group Definitions
+-----------------------------------------------
+
+	pasoV4pmSummaryItem OBJECT IDENTIFIER
+		::= { pnmsPasoV4pmSummary 1 }
+
+        pasoV4pmOtherSummaryTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PasoV4pmOtherSummaryEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Summary Table"
+		::= { pasoV4pmSummaryItem 1 }
+
+	pasoV4pmOtherSummaryEntry OBJECT-TYPE
+		SYNTAX		PasoV4pmOtherSummaryEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Summary Table Entry"
+		INDEX		{
+						v4posPasoIndex
+					}
+		::= { pasoV4pmOtherSummaryTable 1 }
+
+	PasoV4pmOtherSummaryEntry ::= SEQUENCE {
+					  v4posPasoIndex     IpAddress,
+					  v4posPmcSummary    SeverityValue,
+                                          v4posAuxSummary    SeverityValue,
+                                          v4posLpmSummary    SeverityValue
+					}
+                                       
+        v4posPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PASOLINK IP ADDRESS"
+		::= { pasoV4pmOtherSummaryEntry 1 }               
+
+        v4posPmcSummary OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PMC Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmOtherSummaryEntry 2 }
+
+	v4posAuxSummary OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmOtherSummaryEntry 3 }
+
+	v4posLpmSummary OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Link Performance Monitor Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmOtherSummaryEntry 4  }
+
+	pasoV4pmSummaryTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PasoV4pmSummaryEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Summary Table"
+		::= { pasoV4pmSummaryItem 2 }
+
+	pasoV4pmSummaryEntry OBJECT-TYPE
+		SYNTAX		PasoV4pmSummaryEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Summary Table Entry"
+		INDEX		{
+						v4psPasoIndex,
+						v4psSummaryIndex
+					}
+		::= { pasoV4pmSummaryTable 1 }
+
+	PasoV4pmSummaryEntry ::= SEQUENCE {
+					  v4psPasoIndex     IpAddress,
+					  v4psSummaryIndex  INTEGER,
+					  v4psOduSummary    SeverityValue,
+					  v4psIduSummary    SeverityValue
+					}
+                                       
+    v4psPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PASOLINK IP ADDRESS"
+		::= { pasoV4pmSummaryEntry 1 }                                       
+                                       
+	v4psSummaryIndex OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Index"
+		::= { pasoV4pmSummaryEntry 2 }
+
+	v4psOduSummary OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmSummaryEntry 3 }
+
+	v4psIduSummary OBJECT-TYPE
+		SYNTAX		SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU Summary
+				Invalid(0),Clear(1),Minor(2),Major(3),Critical(4)"
+		::= { pasoV4pmSummaryEntry 4 }
+                              
+-----------------------------------------------
+-- TRAP Definitions
+-----------------------------------------------                         
+                             
+
+	v4partialSummaryTrapOdu	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  v4partialSummaryItemOdu
+					}
+		::= 10
+
+	v4partialSummaryTrapIdu	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  v4partialSummaryItemIdu
+					}
+		::= 11
+
+	v4partialSummaryTrapPmc	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  v4partialSummaryItemPmc
+					}
+		::= 12
+
+	v4partialSummaryTrapAux	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  v4partialSummaryItemAux
+					}
+		::= 13
+
+	v4partialSummaryTrapLpm	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  v4partialSummaryItemLpm
+					}
+		::= 14
+
+	alarmTrapV4InputLoss	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4InputLoss
+					}
+		::= 101
+
+	alarmTrapV4BpOutputLoss	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4BpOutputLoss
+					}
+		::= 102
+
+	alarmTrapV4WsInputLoss	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4WsInputLoss
+					}
+		::= 103
+
+	alarmTrapV4WsBpOutputLoss	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4WsBpOutputLoss
+					}
+		::= 104
+
+	alarmTrapV4OduIduLink	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4OduIduLink
+					}
+		::= 105
+
+	alarmTrapV4IfInput	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4IfInput
+					}
+		::= 106
+
+	alarmTrapV4RxApc	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4RxApc
+					}
+		::= 107
+
+	alarmTrapV4TxApc	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4TxApc
+					}
+		::= 108
+
+	alarmTrapV4RxLev	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4RxLev
+					}
+		::= 109
+
+	alarmTrapV4TxPwr	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4TxPwr
+					}
+		::= 110
+
+	alarmTrapV4LoBer	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4LoBer
+					}
+		::= 111
+
+	alarmTrapV4HiBer	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4HiBer
+					}
+		::= 112
+
+	alarmTrapV4Ber	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4Ber
+					}
+		::= 113
+
+	alarmTrapV4FrameAsync	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4FrameAsync
+					}
+		::= 114
+
+	alarmTrapV4Dem	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4Dem
+					}
+		::= 115
+
+	alarmTrapV4Mod	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4Mod
+					}
+		::= 116
+
+	alarmTrapV4CpuAlarm	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4CpuAlarm
+					}
+		::= 117
+
+	alarmTrapV4TxClkLoss	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4TxClkLoss
+					}
+		::= 118
+
+	alarmTrapV4RxClkLoss	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4RxClkLoss
+					}
+		::= 119
+
+	alarmTrapV4PmonDaily	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4PmonDaily
+					}
+		::= 120
+
+	alarmTrapV4PmonWeekly	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4PmonWeekly
+					}
+		::= 121
+
+	alarmTrapV4PasoConnection	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4PasoConnection
+					}
+		::= 122
+
+	alarmTrapV4PmcCommunication	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4PmcCommunication
+					}
+		::= 123
+
+	alarmTrapV4LanLinkAlarm	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4LanLinkAlarm
+					}
+		::= 124
+
+	alarmTrapV4LanCardAlarm	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemV4LanCardAlarm
+					}
+		::= 125
+	
+	alarmTrapChUsageError TRAP-TYPE  
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemChUsageError
+					}		
+		::= 126
+
+	alarmTrapWsChUsageError TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  alarmItemWsChUsageError
+					}		
+		::= 127
+
+
+
+	eventTrapV4WsAlmInh	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4WsAlmInh
+					}
+		::= 201
+
+	eventTrapV4Lb2	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Lb2
+					}
+		::= 202
+
+	eventTrapV4Lb1	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Lb1
+					}
+		::= 203
+
+	eventTrapV4AlmInh	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AlmInh
+					}
+		::= 204
+
+	eventTrapV4Sc4Selector	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Sc4Selector
+					}
+		::= 205
+
+	eventTrapV4Sc5Selector	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Sc5Selector
+					}
+		::= 206
+
+	eventTrapV4Remote	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Remote
+					}
+		::= 207
+
+	eventTrapV4TxSelected	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxSelected
+					}
+		::= 208
+
+	eventTrapV4RxSelected	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4RxSelected
+					}
+		::= 209
+
+	eventTrapV4FrameID	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4FrameID
+					}
+		::= 210
+
+	eventTrapV4BerThreshold	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4BerThreshold
+					}
+		::= 211
+
+	eventTrapV4AisRcvd	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AisRcvd
+					}
+		::= 212
+
+	eventTrapV4AisSend	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AisSend
+					}
+		::= 213
+
+	eventTrapV4TxAtt	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxAtt
+					}
+		::= 214
+
+	eventTrapV4BerAis	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4BerAis
+					}
+		::= 215
+
+	eventTrapV4Cw	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Cw
+					}
+		::= 216
+
+	eventTrapV4Maint	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Maint
+					}
+		::= 217
+
+	eventTrapV4Mute	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Mute
+					}
+		::= 218
+
+	eventTrapV4AuxOutput	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AuxOutput
+					}
+		::= 219
+
+	eventTrapV4RxSel	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4RxSel
+					}
+		::= 220
+
+	eventTrapV4TxSel	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxSel
+					}
+		::= 221
+
+	eventTrapV4RxSelAns	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4RxSelAns
+					}
+		::= 222
+
+	eventTrapV4TxSelAns	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxSelAns
+					}
+		::= 223
+
+	eventTrapV4DemInv	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4DemInv
+					}
+		::= 224
+
+	eventTrapV4Config	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Config
+					}
+		::= 225
+
+	eventTrapV4ManualSw	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4ManualSw
+					}
+		::= 226
+
+	eventTrapV4BitRate	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4BitRate
+					}
+		::= 227
+
+	eventTrapV4LanMount	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4LanMount
+					}
+		::= 228
+
+	eventTrapV4FeLinkCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4FeLinkCtrl
+					}
+		::= 229
+
+	eventTrapV4LanThroughput	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4LanThroughput
+					}
+		::= 230
+
+	eventTrapV4LanWanSel	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4LanWanSel
+					}
+		::= 231
+
+	eventTrapV4CasCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CasCtrl
+					}
+		::= 232
+
+	eventTrapV4CrcCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CrcCtrl
+					}
+		::= 233
+
+	eventTrapV4FlowCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4FlowCtrl
+					}
+		::= 234
+
+	eventTrapV4LanMode	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4LanMode
+					}
+		::= 235
+
+	eventTrapV4CollisionReport	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CollisionReport
+					}
+		::= 236
+
+	eventTrapV4LanReset	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4LanReset
+					}
+		::= 237          
+		
+   	eventTrapV4CollAlarm TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CollAlarm
+					}
+		::= 238
+
+	eventTrapV4CableLengthDs3	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CableLengthDs3
+					}
+		::= 239
+
+	eventTrapV4AisEnbDs3	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AisEnbDs3
+					}
+		::= 240
+
+	eventTrapV4BipolarCodeWs	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4BipolarCodeWs
+					}
+		::= 241
+
+	eventTrapV4CableLengthWs	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CableLengthWs
+					}
+		::= 242
+
+	eventTrapV4BipolarCode	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4BipolarCode
+					}
+		::= 243
+
+	eventTrapV4CableLength	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4CableLength
+					}
+		::= 244
+
+	eventTrapV4Atpc	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Atpc
+					}
+		::= 245
+
+	eventTrapV4AtpcRxThreshold	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AtpcRxThreshold
+					}
+		::= 246
+
+	eventTrapV4AtpcMaxPower	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AtpcMaxPower
+					}
+		::= 247
+
+	eventTrapV4AtpcMinPower	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AtpcMinPower
+					}
+		::= 248      
+		
+	eventTrapV4OduAlmMode TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4OduAlmMode
+					}
+		::= 249	
+		
+	eventTrapV4TxFreq	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxFreq
+					}
+		::= 250    
+		
+	eventTrapV4RxFreq	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4RxFreq
+					}
+		::= 251
+                        
+	eventTrapV4LanCollReport	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4LanCollReport
+					}
+		::= 252
+
+	eventTrapV4TxSwPriority	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxSwPriority
+					}
+		::= 253
+
+	eventTrapV4Ne500Ctrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4Ne500Ctrl
+					}
+		::= 254
+
+	eventTrapV4AisRcvdInh	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AisRcvdInh
+					}
+		::= 255
+
+	eventTrapV4WsAisRcvdInh	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4WsAisRcvdInh
+					}
+		::= 256
+
+	eventTrapV4ChUsageErrorCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4ChUsageErrorCtrl
+					}
+		::= 257
+
+	eventTrapV4AtpcManualCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4AtpcManualCtrl
+					}
+		::= 258
+
+	eventTrapV4BerAisMaint	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4BerAisMaint
+					}
+		::= 259
+
+         eventTrapV4TxFreqCh	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  eventItemV4TxFreqCh
+					}
+		::= 260
+
+		
+	configPasov4InputName TRAP-TYPE
+		ENTERPRISE pasolinkV4      
+		VARIABLES {
+       			v4trapSequenceNumber,
+			v4trapDate,
+			v4trapTime,
+			v4trapSource,
+       			pasov4InputName
+       		}
+		DESCRIPTION	"Opto Name"
+	::= 400
+	
+	configPasov4InputCondition TRAP-TYPE
+		ENTERPRISE pasolinkV4      
+		VARIABLES {
+       			 v4trapSequenceNumber,
+			v4trapDate,
+			v4trapTime,
+			v4trapSource,
+       			pasov4InputCondition
+       		}
+		DESCRIPTION	"Opto Condition"
+	::= 401
+	
+	configPasov4OutputName TRAP-TYPE
+		ENTERPRISE pasolinkV4      
+		VARIABLES {
+       			  v4trapSequenceNumber,
+			v4trapDate,
+			v4trapTime,
+			v4trapSource,     
+       			pasov4OutputName
+       		}
+		DESCRIPTION	"Relay Name"
+	::= 402
+
+	
+	statusTrapV4AisRcvd	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusTypeV4Ais,
+					  statusItemV4AisRcvd
+					}
+		::= 501
+
+	statusTrapV4AisSend	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusTypeV4Ais,
+					  statusItemV4AisSend
+					}
+		::= 502
+
+	statusTrapV4WsAisRcvd	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusTypeV4Ais,
+					  statusItemV4WsAisRcvd
+					}
+		::= 503
+
+	statusTrapV4WsAisSend	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusTypeV4Ais,
+					  statusItemV4WsAisSend
+					}
+		::= 504
+
+	statusTrapV4AuxInput	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusTypeV4Aux,
+					  statusItemV4AuxInputChangeIndex,
+					  statusItemV4AuxInput
+					}
+		::= 505
+
+	statusTrapV4AuxInputChangeIndex	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusTypeV4Aux,
+					  statusItemV4AuxInputChangeIndex,
+					  statusItemV4AuxInput
+					}
+		::= 506
+
+	statusTrapV4CollAlarm	TRAP-TYPE
+		ENTERPRISE	pasolinkV4
+		VARIABLES	{
+					  v4trapSequenceNumber,
+					  v4trapDate,
+					  v4trapTime,
+					  v4trapSource,
+					  v4severity,
+					  v4alarmType,
+					  v4probableCause,
+					  statusItemV4CollAlarm
+					}
+		::= 507
+
+        systemPasov4GetResult TRAP-TYPE
+		ENTERPRISE pasolinkV4      
+		VARIABLES {
+       	                v4trapSequenceNumber,
+			v4trapDate,
+			v4trapTime,
+			systemPasov4RequestID,
+       			systemPasov4TargetIpAddress,      
+       			systemPasov4Result
+       		}
+		DESCRIPTION	"The result of Request"
+	::= 600
+
+
+
+-----------------------------------------------
+-- End User MIB Object Definitions
+-----------------------------------------------
+END

@@ -1,0 +1,446 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    shasta-SSG-5000-CHASSIS-MIB.adv.include.snmptrap.rules 1.0
+#    2005/11/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  SSG-5000-CHASSIS-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... shasta-SSG-5000-CHASSIS-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ssg5000ChassisFailureNotification
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "ssg5000ChassisFailureNotification"
+        $OS_OsiLayer = 0
+
+    case "2": ### ssg5000SysAlarmNotification
+        
+        switch($1)
+        {
+            case "1": ### nodeDead
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4010
+                $OS_X733SpecificProb = "nodeDead"
+                $OS_OsiLayer = 0
+            
+            case "2": ### nodeReboot
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4010
+                $OS_X733SpecificProb = "nodeReboot"
+                $OS_OsiLayer = 0
+            
+            case "3": ### fanDead
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100043
+                $OS_X733SpecificProb = "fanDead"
+                $OS_OsiLayer = 0
+            
+            case "4": ### fanFailure
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100043
+                $OS_X733SpecificProb = "fanFailure"
+                $OS_OsiLayer = 0
+            
+            case "5": ### temperatureOverheat
+            
+                $OS_X733EventType = 5
+                $OS_X733ProbableCause = 5001
+                $OS_X733SpecificProb = "temperatureOverheat"
+                $OS_OsiLayer = 0
+            
+            case "6": ### dcPowerFailure
+            
+                $OS_X733EventType = 5
+                $OS_X733ProbableCause = 5001
+                $OS_X733SpecificProb = "dcPowerFailure"
+                $OS_OsiLayer = 0
+            
+            case "7": ### acDcShelfFailure
+            
+                $OS_X733EventType = 5
+                $OS_X733ProbableCause = 5001
+                $OS_X733SpecificProb = "acDcShelfFailure"
+                $OS_OsiLayer = 0
+            
+            case "8": ### acDcShelfOverheat
+            
+                $OS_X733EventType = 5
+                $OS_X733ProbableCause = 5001
+                $OS_X733SpecificProb = "acDcShelfOverheat"
+                $OS_OsiLayer = 0
+            
+            case "9": ### batteryFailure
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4010
+                $OS_X733SpecificProb = "batteryFailure"
+                $OS_OsiLayer = 0
+            
+            case "10": ### batteryOverheat
+            
+                $OS_X733EventType = 5
+                $OS_X733ProbableCause = 5001
+                $OS_X733SpecificProb = "batteryOverheat"
+                $OS_OsiLayer = 0
+            
+            case "11": ### pcmciaCardInserted
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100036
+                $OS_X733SpecificProb = "pcmciaCardInserted"
+                $OS_OsiLayer = 0
+            
+            case "12": ### pcmciaCardRemoved
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100036
+                $OS_X733SpecificProb = "pcmciaCardRemoved"
+                $OS_OsiLayer = 0
+            
+            case "13": ### sysSSMsAreUp
+            
+                $OS_X733EventType = 3
+                $OS_X733ProbableCause = 3005
+                $OS_X733SpecificProb = "sysSSMsAreUp"
+                $OS_OsiLayer = 7
+            
+            default:
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4010
+                $OS_X733SpecificProb = ""
+                $OS_OsiLayer = 0
+            
+        }
+        
+    case "3": ### ssg5000CardAlarmNotification
+        
+        $OS_LocalPriObj = "Slot: " + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        switch($1)
+        {
+            case "1": ### cardMissing
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100029
+                $OS_X733SpecificProb = "cardMissing"
+                $OS_OsiLayer = 0
+
+            case "2": ### cardInserted
+            
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100029
+                $OS_X733SpecificProb = "cardInserted"
+                $OS_OsiLayer = 0
+
+            case "3": ### cardRemoved
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100029
+                $OS_X733SpecificProb = "cardRemoved"
+                $OS_OsiLayer = 0
+
+            case "4": ### cardMismatch
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100030
+                $OS_X733SpecificProb = "cardMismatch"
+                $OS_OsiLayer = 0
+
+            case "5": ### cardBoot
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardBoot"
+                $OS_OsiLayer = 0
+
+            case "6": ### cardReboot
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardReboot"
+                $OS_OsiLayer = 0
+
+            case "7": ### cardRevMismatch
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100030
+                $OS_X733SpecificProb = "cardRevMismatch"
+                $OS_OsiLayer = 0
+
+            case "8": ### cardFailed
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardFailed"
+                $OS_OsiLayer = 0
+
+            case "9": ### cardMalfunction
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardMalfunction"
+                $OS_OsiLayer = 0
+
+            case "10": ### cardFailDiag
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardFailDiag"
+                $OS_OsiLayer = 0
+
+            case "11": ### cardDead
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardDead"
+                $OS_OsiLayer = 0
+
+            case "12": ### cardSwitchToActive
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardSwitchToActive"
+                $OS_OsiLayer = 0
+
+            case "13": ### cardStandbyNotInRedundant
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardStandbyNotInRedundant"
+                $OS_OsiLayer = 0
+
+            case "14": ### cardPcmciaInserted
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100036
+                $OS_X733SpecificProb = "cardPcmciaInserted"
+                $OS_OsiLayer = 0
+
+            case "15": ### cardPcmciaRemoved
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 100036
+                $OS_X733SpecificProb = "cardPcmciaRemoved"
+                $OS_OsiLayer = 0
+
+            default:
+        
+                $OS_X733EventType = 4
+                $OS_X733ProbableCause = 4011
+                $OS_X733SpecificProb = "cardAlarm"
+                $OS_OsiLayer = 0
+        }
+
+    case "4": ### ssg5000PortAlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+        switch($1)
+        {
+            case "1": ### portUp
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portUp"
+            case "2": ### portDown
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portDown"
+            case "3": ### portLoop
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portLoop"
+            case "4": ### portLOS
+                $OS_X733ProbableCause = 1001
+                $OS_X733SpecificProb = "portLOS"
+            case "5": ### portLOF
+                $OS_X733ProbableCause = 1002
+                $OS_X733SpecificProb = "portLOF"
+            case "6": ### portLAIS
+                $OS_X733ProbableCause = 100002
+                $OS_X733SpecificProb = "portLAIS"
+            case "7": ### portLRDI
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portLRDI"
+            case "8": ### portLOP
+                $OS_X733ProbableCause = 100008
+                $OS_X733SpecificProb = "portLOP"
+            case "9": ### portPAIS
+                $OS_X733ProbableCause = 100002
+                $OS_X733SpecificProb = "portPAIS"
+            case "10": ### portPRDI
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portPRDI"
+            case "11": ### portLCD
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portLCD"
+            default:
+                $OS_X733ProbableCause = 1011
+                $OS_X733SpecificProb = "portAlarm"
+        }
+
+    case "5": ### ssg5000SSMAlarmNotification
+
+        $OS_X733EventType = 3
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        switch($1)
+        {
+            case "1": ### ssmFailed
+                $OS_X733SpecificProb = "ssmFailed"
+                $OS_X733ProbableCause = 3005
+            case "2": ### ssmReset
+                $OS_X733SpecificProb = "ssmReset"
+                $OS_X733ProbableCause = 3006
+            case "3": ### ssmUp
+                $OS_X733SpecificProb = "ssmUp"
+                $OS_X733ProbableCause = 3006
+            case "4": ### ssmDead
+                $OS_X733SpecificProb = "ssmDead"
+                $OS_X733ProbableCause = 3006
+            case "5": ### ssmDown
+                $OS_X733SpecificProb = "ssmDown"
+                $OS_X733ProbableCause = 3006
+            default:
+                $OS_X733SpecificProb = "ssmUnknown"
+                $OS_X733ProbableCause = 3005
+        }
+
+    case "6": ### ssg5000PVCAlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ssg5000PVCAlarmNotification"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4 + ", Interface: " + $5 + ", VPI: " + $6 + ", VCI: " + $7
+        $OS_LocalSecObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "7": ### ssg5000CT3PortAlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "ssg5000CT3PortAlarmNotification"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "8": ### ssg5000ETHPortAlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 10011
+        $OS_X733SpecificProb = "ssg5000ETHPortAlarmNotification"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "9": ### ssg5000CT3DS2AlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "ssg5000CT3DS2AlarmNotification"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4 + ", DS2 Channel: " + $5
+        $OS_LocalSecObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "10": ### ssg5000CT3DS1AlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "ssg5000CT3DS1AlarmNotification"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4 + ", DS1 Channel: " + $5
+        $OS_LocalSecObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "11": ### ssg5000ServiceAlarmNotification
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3005
+        $OS_X733SpecificProb = "ssg5000ServiceAlarmNotification"
+        $OS_OsiLayer = 7
+
+        $OS_LocalPriObj = "Service Module: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "12": ### ssg5000FrameRelayAlarmNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "ssg5000FrameRelayAlarmNotification"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Slot: " + $2 + ", Port: " + $4 + ", DS1 Channel: " + $5 + ", DLCI: " + $7
+        $OS_LocalSecObj = "Slot: " + $2 + ", Port: " + $4
+        $OS_LocalRootObj = "Slot: " + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... shasta-SSG-5000-CHASSIS-MIB.adv.include.snmptrap.rules >>>>>")
+            

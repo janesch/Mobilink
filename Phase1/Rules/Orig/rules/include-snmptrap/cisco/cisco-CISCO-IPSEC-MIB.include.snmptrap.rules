@@ -1,0 +1,269 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IPSEC-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IPSEC-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.62.2": ### Cisco IOS-Specific IPSec Configuration Monitoring - Notifications from CISCO-IPSEC-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IPSEC-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-IPSec"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cipsIsakmpPolicyAdded
+
+            ##########
+            # $1 = cipsNumIsakmpPolicies
+            ##########
+
+            $cipsNumIsakmpPolicies = $1
+            details($cipsNumIsakmpPolicies)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsIsakmpPolicyAdded"
+
+            @AlertGroup = "ISAKMP Policy Status"
+            @AlertKey = ""
+            @Summary = "ISAKMP Policy Element Added"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### cipsIsakmpPolicyDeleted
+
+            ##########
+            # $1 = cipsNumIsakmpPolicies 
+            ##########
+
+            $cipsNumIsakmpPolicies = $1
+            details($cipsNumIsakmpPolicies)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsIsakmpPolicyDeleted"
+
+            @AlertGroup = "ISAKMP Policy Status"
+            @AlertKey = ""
+            @Summary = "ISAKMP Policy Element Deleted"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### cipsCryptomapAdded
+
+            ##########
+            # $1 = cipsStaticCryptomapType
+            # $2 = cipsStaticCryptomapSetSize
+            ##########
+
+            $cipsStaticCryptomapType = lookup($1, ciscoCryptomapType)
+            $cipsStaticCryptomapSetSize = $2
+            
+            $cipsStaticCryptomapSetName_OctetString = extract($OID1, "3\.6\.1\.4\.1\.9\.10\.62\.1\.2\.3\.3\.1\.2\.(.*)\.[0-9]+$")
+            $OctetString = $cipsStaticCryptomapSetName_OctetString
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cipsStaticCryptomapSetName = $String
+            
+            $cipsStaticCryptomapPriority = extract($OID1, "\.([0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsCryptomapAdded"
+
+            @AlertGroup = "Cryptomap Status"
+            @AlertKey = "cipsStaticCryptomapSetEntry." + $cipsStaticCryptomapSetName_OctetString
+            @Summary = $cipsStaticCryptomapType + "Cryptomap Added to Cryptomap Set  ( Cryptomap Set: " + $cipsStaticCryptomapSetName + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $cipsStaticCryptomapType = $cipsStaticCryptomapType + " ( " + $1 + " )"
+            details($cipsStaticCryptomapType,$cipsStaticCryptomapSetSize,$cipsStaticCryptomapSetName,$cipsStaticCryptomapPriority)
+
+        case "4": ### cipsCryptomapDeleted
+
+            ##########
+            # $1 = cipsStaticCryptomapSetSize 
+            ##########
+
+            $cipsStaticCryptomapSetSize = $1
+            
+            $cipsStaticCryptomapSetName_OctetString = extract($OID1, "3\.6\.1\.4\.1\.9\.10\.62\.1\.2\.3\.1\.1\.2\.(.*)$")
+            $OctetString = $cipsStaticCryptomapSetName_OctetString
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cipsStaticCryptomapSetName = $String
+            
+            details($cipsStaticCryptomapSetSize,$cipsStaticCryptomapSetName)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsCryptomapDeleted"
+
+            @AlertGroup = "Cryptomap Status"
+            @AlertKey = "cipsStaticCryptomapSetEntry." + $cipsStaticCryptomapSetName_OctetString
+            @Summary = "Cryptomap Deleted from Cryptomap Set  ( Cryptomap Set: " + $cipsStaticCryptomapSetName + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### cipsCryptomapSetAttached
+
+            ##########
+            # $1 = cipsStaticCryptomapSetSize 
+            # $2 = cipsStaticCryptomapSetNumIsakmp
+            # $3 = cipsStaticCryptomapSetNumDynamic
+            ##########
+
+            $cipsStaticCryptomapSetSize = $1
+            $cipsStaticCryptomapSetNumIsakmp = $2
+            $cipsStaticCryptomapSetNumDynamic = $3
+            
+            $cipsStaticCryptomapSetName_OctetString = extract($OID1, "3\.6\.1\.4\.1\.9\.10\.62\.1\.2\.3\.1\.1\.2\.(.*)$")
+            $OctetString = $cipsStaticCryptomapSetName_OctetString
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cipsStaticCryptomapSetName = $String
+            
+            details($cipsStaticCryptomapSetSize,$cipsStaticCryptomapSetNumIsakmp,$cipsStaticCryptomapSetNumDynamic,$cipsStaticCryptomapSetName)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsCryptomapSetAttached"
+
+            @AlertGroup = "Cryptomap Attachment Status"
+            @AlertKey = "cipsStaticCryptomapSetEntry." + $cipsStaticCryptomapSetName_OctetString
+            @Summary = "Cryptomap Set Attached to an Interface  ( Cryptomap Set: " + $cipsStaticCryptomapSetName + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### cipsCryptomapSetDetached
+
+            ##########
+            # $1 = cipsStaticCryptomapSetSize
+            ##########
+
+            $cipsStaticCryptomapSetSize = $1
+            
+            $cipsStaticCryptomapSetName_OctetString = extract($OID1, "3\.6\.1\.4\.1\.9\.10\.62\.1\.2\.3\.1\.1\.2\.(.*)$")
+            $OctetString = $cipsStaticCryptomapSetName_OctetString
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cipsStaticCryptomapSetName = $String
+            
+            details($cipsStaticCryptomapSetSize,$cipsStaticCryptomapSetSize)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsCryptomapSetDetached"
+
+            @AlertGroup = "Cryptomap Attachment Status"
+            @AlertKey = "cipsStaticCryptomapSetEntry." + $cipsStaticCryptomapSetName_OctetString
+            @Summary = "Cryptomap Set Detached from an Interface  ( Cryptomap Set: " + $cipsStaticCryptomapSetName + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### cipsTooManySAs
+
+            ##########
+            # $1 = cipsMaxSAs
+            ##########
+
+            $cipsMaxSAs = $1
+            details($cipsMaxSAs)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IPSEC-MIB-cipsTooManySAs"
+
+            @AlertGroup = "Security Association Status"
+            @AlertKey = ""
+            @Summary = "Security Association Setup Failed, SAs, " + $1 + ", Exceeded " + $1
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IPSEC-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IPSEC-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IPSEC-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IPSEC-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IPSEC-MIB.include.snmptrap.rules >>>>>")

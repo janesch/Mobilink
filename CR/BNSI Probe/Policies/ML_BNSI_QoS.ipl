@@ -1,0 +1,120 @@
+/*------------------------------------------------------------------------------------------------------- 
+ Policy Name: ML_BNSI_QoS
+
+ Author: Chris Janes, Innovise 
+
+ Description: This policy processes the Ericsson BNSI QoS alarms.
+ This policy is based on ML_INVOMSAlarms authored by Dinesh Kumar
+ 
+ The policy will check for the existence of Synthetic event 
+ and updates the current network event as a child event for the synthetic event.
+ If a synthetic event is not available, then a new one will be generated.
+ Further details of the policies design can be found in BNSI-QoSAlarm LLD.dox
+
+ Reviewed By: 
+ 
+ V 0.0  20111117    Chris Janes     Original
+
+------------------------------------------------------------------------------------------------------- 
+ Event Reader filter - 
+ 
+------------------------------------------------------------------------------------------------------- */
+
+
+Log("**** Start ML_BNSI_QoS *****");
+log("Current alarm Serial = " + @Serial);
+Log("[Node:"+@Node+"],");
+Log("[ImpactFlag:"+@ImpactFlag+"],[Severity:"+@Severity+"]");
+
+// Set Impact Flag to show we have started
+Log("Set ImpactFlag to 5 mark as start of processing.");
+@ImpactFlag = 5;
+ReturnEvent(EventContainer);
+
+// Set Policy local variables
+isExist = false;
+isClear = false;
+messageType = 'PROBLEM';
+if(@Type==2 and @Severity ==0)
+{
+    messageType = 'RESOLUTION';
+    isClear = true;
+}
+
+//Policy scope variables
+//TODO - Change to 5 minutes
+sleep_time=300;
+percenDown=0;
+
+if(isClear)
+{
+    Log("Current event is clear..");
+}
+else
+{
+    Log("This is problem event");
+    
+    // Hibernate for sleep_time
+    log (" Hibernate for: " +  sleep_time + " seconds ");
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    EventContainer.HibernateFlag = 1;       
+    ReturnEvent(EventContainer);
+
+    // Action_key = 'IN_QoS_C7' + @ServerSerial + @ServerName;
+    Action_key = 'IN_QoS_C7' + @ServerSerial + @ServerName + "#" + getdate();
+    Log("Action_key  = " + Action_key  );
+    Hibernate(Action_key, "Sleeping", sleep_time);
+
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    EventContainer.HibernateFlag = 2;
+    ReturnEvent(EventContainer);
+    // Hibernation Complete
+
+    // Is the Network Event still there
+    NWEventDB = "OS_Status";
+    NWEventFilter = "Serial = "+@Serial + " and Severity>0";
+    Log("NWEventFilter:"+NWEventFilter);
+    NWEventOutput = GetByFilter(NWEventDB,NWEventFilter,false);
+    NumNWEventOutput = Length(NWEventOutput);
+
+    // The NE has cleared
+    if(NumNWEventOutput==0)
+    {
+        Log("Current event get cleared");
+        @ImpactFlag=6;
+        ReturnEvent(EventContainer);
+        exit();
+    }
+    // The NE still exists
+    else
+    {
+        Log("Current event still exist so process it to");
+        if(@Summary like 'High swap space utilization')
+        {
+            Log("Summary"+@Summary);
+
+            // Get the ammount of Swap Space being used
+            strLength=Length(@Summary);
+            percenDown =Substring(@Summary,strLength-4,strLength-1);
+            // FI more than 80% of swap space being used
+            if(percenDown>=80)
+            {
+                Log("Alarm crossed thresold of 80% so raise TT");
+                @LogTicket=1;
+                ReturnEvent(EventContainer);
+            }
+        }
+        else
+        {
+            Log("Other BNSI QoS alarms");
+            @LogTicket=1;
+            ReturnEvent(EventContainer);
+        }
+    }
+}
+
+// Mark the end of event processing
+@ImpactFlag=6;
+ReturnEvent(EventContainer);
+Log("**** End ML_BNSI_QoS *****");

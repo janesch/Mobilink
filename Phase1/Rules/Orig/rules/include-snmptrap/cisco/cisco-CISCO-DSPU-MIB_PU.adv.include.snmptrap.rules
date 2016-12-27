@@ -1,0 +1,62 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-DSPU-MIB_PU.adv.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DSPU-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-DSPU-MIB_PU.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### newdspuPuStateChangeTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "newdspuPuStateChangeTrap"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "dspuPuOperEntry." + $dspuPuOperIndex
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### newdspuPuActivationFailureTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "newdspuPuActivationFailureTrap"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "dspuPuOperEntry." + $dspuPuOperIndex
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DSPU-MIB_PU.adv.include.snmptrap.rules >>>>>")

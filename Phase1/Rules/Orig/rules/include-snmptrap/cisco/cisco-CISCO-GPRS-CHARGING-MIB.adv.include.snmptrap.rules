@@ -1,0 +1,71 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-GPRS-CHARGING-MIB.adv.include.snmptrap.rules 1.0
+#    2006/09/27 Anchala Bansal 
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-GPRS-CHARGING-MIB
+#
+###############################################################################
+log(DEBUG, "<<<<< Entering... cisco-CISCO-GPRS-CHARGING-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### cgprsCgAlarmNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cgprsCgAlarmNotif"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "cgprsCgAlarmHistEntry." + $cgprsCgAlarmHistIndex 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### cgprsCgGatewaySwitchoverNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cgprsCgGatewaySwitchoverNotif"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "Current CG: " + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### cgprsCgInServiceModeNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cgprsCgInServiceModeNotif"
+        $OS_OsiLayer = 0
+
+    case "4": ### cgprsCgMaintenanceModeNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cgprsCgMaintenanceModeNotif"
+        $OS_OsiLayer = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-GPRS-CHARGING-MIB.adv.include.snmptrap.rules >>>>>")

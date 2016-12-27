@@ -1,0 +1,75 @@
+/*    Cell Performance Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+     V 1.0    20100909    Chris Janes    Original
+
+
+    EventReader Filter:
+        EventID = 'CellPer001
+
+*/
+
+Log("************ ML Cell Performance Start NEW***********");
+
+log("Return ImpactFlag = 5 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer); 
+
+// getting the site name
+site_name = @Site;
+log(" Site Name : " + site_name);
+
+
+//    20100921    Change by Chris Janes of Innovise
+//    SleepTime now coming from function MobiLib.getSleepTime
+
+site_name = @Site;
+SleepTime = 0;
+alarm_id = 'Cell Performance';
+MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+//    20100927     End of Change
+@Grade = SleepTime;
+ReturnEvent(EventContainer);
+// for testing
+//sleep_time = 120; Log("Sleeptime set for Testing to 120 seconds");
+//Wait for SleepTime
+
+log ("************ TT has not created yet: Hibernate for: " +  sleep_time + " seconds ***********");
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+@HibernateFlag = 1;        
+ReturnEvent(EventContainer);
+
+Action_key = 'CellPerformance' + @ServerSerial + @ServerName;
+Hibernate(Action_key, "Sleeping", SleepTime);
+
+//Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+RemoveHibernation(Action_key); 
+@HibernateFlag = 2;        
+ReturnEvent(EventContainer);
+
+// Is the event still there
+
+ExistingCellPerDataType = "OS_Status";
+ExistingCellPerFilter = "ServerSerial = "+ @ServerSerial + " and ServerName = '" + @ServerName + "' And Severity > 0";
+log("ExistingCellPerFilter = " + ExistingCellPerFilter  );
+
+ExistingCellPerOutput = GetByFilter(ExistingCellPerDataType, ExistingCellPerFilter,False);
+NumExistingCellPerOutput = Length(ExistingCellPerOutput);
+//if so set LogTicket = 1
+log("NumExistingCellPerOutput = " + NumExistingCellPerOutput );
+    
+if (NumExistingCellPerOutput > 0)
+{
+    JournalSerial = @Serial;
+    JournalText = "Associated BSC is " + @BSC_Name;
+    Mobilib.JournalInsert(JournalSerial, JournalText);
+    Log("Raise Ticket");
+    @LogTicket = 1;        
+    ReturnEvent(EventContainer);
+}
+log("Return ImpactFlag = 6 to indicate policy has completed");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer); 

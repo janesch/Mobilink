@@ -1,0 +1,98 @@
+/*    Cell Performance Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+    This policy is for Huawei and Motorola site down events:  AlertGroup = "LAPD OML Fault" and AlertGroup = "Last RSL Link Failure".
+
+    V 1.0    20100909    Chris Janes    Original
+
+
+    EventReader Filter:
+        EventID = 'CellPer001
+
+*/
+
+Log("************ ML Cell Performance Start NEW***********");
+
+log("Return ImpactFlag = 6 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer); 
+
+// getting the site name
+site_name = @Site;
+log(" Site Name : " + site_name);
+
+// Find SleepTime
+sleep_time = 60;
+
+// getting the site level
+SiteLevelDataType = "site_id";
+SiteLevelFilter = "SITE_ID = '"+ site_name +"'";
+SitePriorityOutput = GetByFilter(SiteLevelDataType, SiteLevelFilter,False);
+NumSiteLevelOutput = Length(SitePriorityOutput);
+
+if (NumSiteLevelOutput > 0)
+{
+    site_level = SitePriorityOutput[0].SITE_LEVEL;
+    
+    SleepTimeDataType = "SleepTime"; 
+    SleepTimeFilter = "SITE_LEVEL = '"+site_level+"'";
+    SleepTimeOutput = GetByFilter(SleepTimeDataType, SleepTimeFilter,False);
+    NumSleepTimeOutput = Length(SleepTimeOutput);
+    
+    if (NumSleepTimeOutput > 0)
+    {
+        Log("************ Getting Sleep Time ***********");
+        // checking whether it's day or night time
+        current_time = getdate();
+        current_date = LocalTime(current_time, "MM/dd/yyyy");
+        start_day_time = "08:00:00 " + current_date;
+        end_day_time = "18:00:00 " + current_date;
+        start_day_time_seconds = ParseDate(start_day_time, "HH:mm:ss MM/dd/yyyy");
+        end_day_time_seconds = ParseDate(end_day_time, "HH:mm:ss MM/dd/yyyy");    
+    
+    
+        if ( (current_time > start_day_time_seconds) and (current_time < end_day_time_seconds))
+        {
+            log ("It's Day Time");
+            sleep_time = SleepTimeOutput[0].TIME_DAY;
+        }
+        else
+        {
+            log ("It's Night Time");
+            sleep_time = SleepTimeOutput[0].TIME_NIGHT;
+        }
+    }
+    log (" Sleep Time :" + sleep_time);
+}
+
+
+//Wait for SleepTime
+
+log ("************ TT has not created yet: Hibernate for: " +  sleep_time + " seconds ***********");
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+@HibernateFlag = 1;        
+ReturnEvent(EventContainer);
+
+side_down_action_key = 'CellPerformance' + @ServerSerial + @ServerName;
+Hibernate(side_down_action_key, "Sleeping", sleep_time);
+
+Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+@HibernateFlag = 2;        
+ReturnEvent(EventContainer);
+
+// Is the event still there
+
+ExistingCellPerDataType = "OS_Status";
+ExistingCellPerFilter = "ServerSerial = "+ @ServerSerial + "ServerName = '"+ @ServerName + "' And Severity > 0";
+ExistingCellPerOutput = GetByFilter(ExistingCellPerDataType, ExistingCellPerFilter,False);
+NumExistingCellPerOutput = Length(ExistingCellPerOutput);
+//if so set LogTicket = 1
+
+    
+if (NumExistingSiteDownOutput > 0)
+{
+    @LogTicket = 1;        
+    ReturnEvent(EventContainer);
+}

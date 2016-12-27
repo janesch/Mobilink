@@ -1,0 +1,215 @@
+--
+
+BRS-MIB-AL DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-IDENTITY,
+        OBJECT-TYPE, NOTIFICATION-TYPE       FROM SNMPv2-SMI
+
+        TEXTUAL-CONVENTION, DisplayString    FROM SNMPv2-TC
+
+        enterprises                          FROM RFC1155-SMI
+
+        inModules                            FROM INC-MIB-C
+
+        -- commented because of TeMIP restrictions :
+        -- tiAlarmSourceName,
+        -- tiAlarmSymbNEname,
+        -- tiAlarmNotificationID,
+        -- tiAlarmTransferID                    FROM INC-MIB-AL
+        ;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        --
+        -- Module Identity :
+        --
+        inBrsMibAL  MODULE-IDENTITY
+                 LAST-UPDATED "9908091400Z"
+                 ORGANIZATION "Siemens AG"
+                 CONTACT-INFO
+                         "        TMN/IN-Team
+                                  K.Schmidtke
+                          Postal: Siemens AG
+                                  Information and Communication Mobile
+                                  Otto-Hahn-Ring 6
+                                  D-81739 Muenchen
+                                  Germany
+                          E-mail: Klaus.Schmidtke@icn.siemens.de"
+        
+                DESCRIPTION "This MIB module describes the managed 
+                             objecttypes of the Legato Networker as
+                             Backup/Restore Server (BRS) for the
+                             Siemens IN NEs."
+
+                REVISION    "9908091400Z"
+                DESCRIPTION "Adapted to TeMIP restrictions."
+
+                REVISION    "9907271400Z"
+                DESCRIPTION "Adapted NOTIFICATION-TYPE's to 
+		             TeMIP SNMP MIB Translator"
+
+                REVISION    "9906231400Z"
+                DESCRIPTION "Enhanced TeMIP customizing"
+
+                REVISION    "9904201400Z"
+                DESCRIPTION "Enhanced NOTIFICATION-TYPE's comments.
+                             Added customizing for TeMIP"
+               
+        ::= { inModules 11 } 
+
+legato       OBJECT IDENTIFIER ::= { enterprises 160 }
+
+legatoTraps  OBJECT IDENTIFIER ::= { legato 0 }
+netWorker    OBJECT IDENTIFIER ::= { legato 1 }
+
+brsTrapVars  OBJECT IDENTIFIER ::= { netWorker 1}
+
+--
+-- Fault management
+--
+
+brsAlarmText        OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (0..255))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        "The alarm text." 
+        ::= { brsTrapVars 1 }        
+
+--
+-- notification types defined for the Siemens INCommander
+--
+-- Objects appended to all variables binding lists by the INCommander
+-- at the SNMP interface INCommander <-> Operation System ( INMI2 ):
+--  tiAlarmSourceName
+--  tiAlarmSymbNEname
+--  tiAlarmNotificationID
+--  tiAlarmTransferID
+
+        brsTrapCritical NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        brsAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for a critical BRS alarm report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Critical 
+                    ADDITIONAL-TEXT-VARIABLES: { brsAlarmText }
+                    "
+        ::= { legatoTraps 1001 }
+
+        brsTrapMajor NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        brsAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for a major BRS alarm report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Major
+                    ADDITIONAL-TEXT-VARIABLES: { brsAlarmText }
+                    "
+        ::= { legatoTraps 1002 }
+
+        brsTrapMinor NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        brsAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for a minor BRS alarm report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Minor
+                    ADDITIONAL-TEXT-VARIABLES: { brsAlarmText }
+                    "
+        ::= { legatoTraps 1003 }
+
+        brsTrapWarning NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        brsAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for a warning BRS alarm report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Warning
+                    ADDITIONAL-TEXT-VARIABLES: { brsAlarmText }
+                    "
+        ::= { legatoTraps 1004 }
+
+        brsTrapNormal NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        brsAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for a BRS information report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Indeterminate
+                    ADDITIONAL-TEXT-VARIABLES: { brsAlarmText }
+                    "
+        ::= { legatoTraps 1005 }
+
+        brsTrapReset NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        brsAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for a BRS alarm reset report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Clear
+                    ADDITIONAL-TEXT-VARIABLES: { brsAlarmText }
+                    "
+        ::= { legatoTraps 1006 }
+
+END 
+-- BRS-MIB-AL

@@ -1,0 +1,493 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ISDN-MIB.include.snmptrap.rules 2.2 
+#    2005/04/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ISDN-MIB
+#
+###############################################################################
+#
+# 2.2 - Corrected a bug that caused incorrect direction/origin of call to be
+#       displayed in the Alarm Details.
+#
+# 2.1 - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.26.2": ### Cisco ISDN - Notifications from CISCO-ISDN-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ISDN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-ISDN"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch($specific-trap)
+    {
+        case "1": ### demandNbrCallInformation (obsolete)
+        
+            ##########
+            # $1 = demandNbrLogIf
+            # $2 = demandNbrName 
+            # $3 = demandNbrAddress
+            # $4 = demandNbrLastDuration 
+            # $5 = demandNbrClearReason 
+            # $6 = demandNbrClearCode
+            ##########
+
+            $demandNbrLogIf = $1
+            $demandNbrName = $2
+            $demandNbrAddress = $3
+            $demandNbrLastDuration = $4
+            $demandNbrClearReason = $5
+            $demandNbrClearCode = $6
+            $demandNbrPhysIf = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $demandNbrId = extract($OID1, "\.([0-9]+)$")
+            details($demandNbrLogIf,$demandNbrName,$demandNbrAddress,$demandNbrLastDuration,$demandNbrClearReason,$demandNbrClearCode,$demandNbrPhysIf,$demandNbrId)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ISDN-MIB-demandNbrCallInformation"
+            
+            @AlertGroup = "ISDN Call Status"
+            @AlertKey = "demandNbrEntry." + $demandNbrPhysIf + "." + $demandNbrId
+            switch($5)
+            {
+                case "Call is Active":
+                    @Summary = "ISDN Call Active"
+                    @Severity = 2
+                    @Type = 12
+                case "Normal call clearing":
+                    @Summary = "ISDN Call Normal Clearing"
+                    @Severity = 1
+                    @Type = 2
+                case "Normal, unspecified":
+                    @Summary = "ISDN Call Normal, Unspecified"
+                    @Severity = 1
+                    @Type = 2
+                case "Destination out of order":
+                    @Summary = "ISDN Call Destination Out of Order"
+                    @Severity = 3
+                    @Type = 1
+                case "No user responding":
+                    @Summary = "ISDN Call No User Responding"
+                    @Severity = 3
+                    @Type = 1
+                case "Call rejected":
+                    @Summary = "ISDN Call Rejected"
+                    @Severity = 3
+                    @Type = 1
+                case "Invalid call reference value":
+                    @Summary = "ISDN Call Invalid Call Reference Value"
+                    @Severity = 3
+                    @Type = 1
+                case "Recovery on timer expiry":
+                    @Summary = "ISDN Call Recovered on Timer Expiry"
+                    @Severity = 3
+                    @Type = 1
+                case "Requested circuit/channel not available":
+                    @Summary = "ISDN Call Requested Circuit/Channel Not Available"
+                    @Severity = 3
+                    @Type = 1
+                case "Temporary failure":
+                    @Summary = "ISDN Call Temporary Failure"
+                    @Severity = 3
+                    @Type = 1
+                case "Unknown Cause value":
+                    @Summary = "ISDN Call Cleared, Unknown Cause"
+                    @Severity = 3
+                    @Type = 1
+                case "Interworking error; unspecified":
+                    @Summary = "ISDN Call Interworking Error"
+                    @Severity = 3
+                    @Type = 1
+                default:
+                    @Summary = "ISDN Call, " + $demandNbrClearReason
+                    @Severity = 2
+                    @Type = 1
+            }
+            @Summary = @Summary + ", Clear Code: " + $6 + "  ( Call Address: " + $3 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+
+        case "2": ### demandNbrCallDetails
+
+            ##########
+            # $1 = demandNbrLogIf
+            # $2 = demandNbrName
+            # $3 = demandNbrAddress
+            # $4 = demandNbrLastDuration
+            # $5 = demandNbrClearReason
+            # $6 = demandNbrClearCode
+            # $7 = demandNbrCallOrigin 
+            #
+            # NOTE: Not all variable bindings are included in all traps. The
+            # following combinations have been observed and are handled by this
+            # rules file:
+            #
+            # $1 = demandNbrLogIf
+            # $2 = demandNbrCallOrigin
+            # 
+            # $1 = demandNbrLogIf
+            # $2 = demandNbrAddress
+            # $3 = demandNbrCallOrigin
+            #
+            # $1 = demandNbrLogIf
+            # $2 = demandNbrAddress
+            # $3 = demandNbrLastDuration
+            # $4 = demandNbrClearReason
+            # $5 = demandNbrClearCode
+            # $6 = demandNbrCallOrigin
+            #
+            # $1 = demandNbrLogIf
+            # $2 = demandNbrName
+            # $3 = demandNbrAddress
+            # $4 = demandNbrLastDuration
+            # $5 = demandNbrClearReason
+            # $6 = demandNbrClearCode
+            # $7 = demandNbrCallOrigin
+            ##########
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ISDN-MIB-demandNbrCallDetails"
+       
+            @AlertGroup = "ISDN Call Status"
+            
+            if(exists($OID7))
+            ### if(regmatch($OID7, "\.1\.4\.1\.9\.9\.26\.1\.1\.1\.1\.17\..*"))
+            {
+                $demandNbrLogIf = $1
+                $demandNbrName = $2
+                $demandNbrAddress = $3
+                $demandNbrLastDuration = $4
+                $demandNbrClearReason = $5
+                $demandNbrClearCode = $6
+                $demandNbrCallOrigin = lookup($7, demandNbrCallOrigin) + " ( " + $7 + " )"
+                $demandNbrPhysIf = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+                $demandNbrId = extract($OID1, "\.([0-9]+)$")
+                details($demandNbrLogIf,$demandNbrName,$demandNbrAddress,$demandNbrLastDuration,$demandNbrClearReason,$demandNbrClearCode,$demandNbrCallOrigin,$demandNbrPhysIf,$demandNbrId)
+                
+                @AlertKey = "demandNbrEntry." + $demandNbrPhysIf + "." + $demandNbrId
+                switch($7)
+                {
+                    case "1": ### originate
+                        @Summary = "ISDN Outgoing Call"
+                    case "2": ### answer
+                        @Summary = "ISDN Incoming Call"
+                    case "3": ### callback
+                        @Summary = "ISDN Callback"
+                    default:
+                        @Summary = "ISDN Call"
+                }
+                switch($demandNbrClearReason)
+                {
+                    case "Call is Active":
+                        @Summary = @Summary + " Active"
+                        @Severity = 2
+                        @Type = 12
+                    case "Normal call clearing":
+                        @Summary = @Summary + " Normal Clearing"
+                        @Severity = 1
+                        @Type = 2
+                    case "Normal, unspecified":
+                        @Summary = @Summary + " Normal, Unspecified"
+                        @Severity = 1
+                        @Type = 2
+                    case "Destination out of order":
+                        @Summary = @Summary + " Destination Out of Order"
+                        @Severity = 3
+                        @Type = 1
+                    case "No user responding":
+                        @Summary = @Summary + " No User Responding"
+                        @Severity = 3
+                        @Type = 1
+                    case "Call rejected":
+                        @Summary = @Summary + " Rejected"
+                        @Severity = 3
+                        @Type = 1
+                    case "Invalid call reference value":
+                        @Summary = @Summary + " Invalid Call Reference Value"
+                        @Severity = 3
+                        @Type = 1
+                    case "Recovery on timer expiry":
+                        @Summary = @Summary + " Recovered on Timer Expiry"
+                        @Severity = 3
+                        @Type = 1
+                    case "Requested circuit/channel not available":
+                        @Summary = @Summary + " Requested Circuit/Channel Not Available"
+                        @Severity = 3
+                        @Type = 1
+                    case "Temporary failure":
+                        @Summary = @Summary + " Temporary Failure"
+                        @Severity = 3
+                        @Type = 1
+                    case "Unknown Cause value":
+                        @Summary = @Summary + " Cleared, Unknown Cause"
+                        @Severity = 3
+                        @Type = 1
+                    case "Interworking error; unspecified":
+                        @Summary = @Summary + " Interworking Error"
+                        @Severity = 3
+                        @Type = 1
+                    default:
+                        @Summary = @Summary + ", " + $demandNbrClearReason
+                        @Severity = 2
+                        @Type = 1
+                }
+                @Summary = @Summary + ", Clear Code: " + $demandNbrClearCode
+                switch($7)
+                {
+                    case "1": ### originate
+                        @Summary = @Summary + "  ( to Call Address: " + $3 + " )"
+                    case "2": ### answer
+                        @Summary = @Summary + "  ( from Call Address: " + $3 + " )"
+                    case "3": ### callback
+                        @Summary = @Summary + "  ( from Call Address: " + $3 + " )"
+                    default:
+                        @Summary = @Summary + "  ( Call Address: " + $3 + " )"
+                }
+                @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6 + " " + $7
+            }
+            else if(exists($OID6))
+            ### else if(regmatch($OID6, "\.1\.4\.1\.9\.9\.26\.1\.1\.1\.1\.17\..*"))
+            {
+                $demandNbrLogIf = $1
+                $demandNbrAddress = $2
+                $demandNbrLastDuration = $3
+                $demandNbrClearReason = $4
+                $demandNbrClearCode = $5
+                $demandNbrCallOrigin = lookup($6, demandNbrCallOrigin) + " ( " + $6 + " )"
+                $demandNbrPhysIf = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+                $demandNbrId = extract($OID1, "\.([0-9]+)$")
+                details($demandNbrLogIf,$demandNbrAddress,$demandNbrLastDuration,$demandNbrClearReason,$demandNbrClearCode,$demandNbrCallOrigin,$demandNbrPhysIf,$demandNbrId)
+                
+                @AlertKey = "demandNbrEntry." + $demandNbrPhysIf + "." + $demandNbrId
+                switch($6)
+                {
+                    case "1": ### originate
+                        @Summary = "ISDN Outgoing Call"
+                    case "2": ### answer
+                        @Summary = "ISDN Incoming Call"
+                    case "3": ### callback
+                        @Summary = "ISDN Callback"
+                    default:
+                        @Summary = "ISDN Call"
+                }
+                switch($demandNbrClearReason)
+                {
+                    case "Call is Active":
+                        @Summary = @Summary + " Active"
+                        @Severity = 2
+                        @Type = 12
+                    case "Normal call clearing":
+                        @Summary = @Summary + " Normal Clearing"
+                        @Severity = 1
+                        @Type = 2
+                    case "Normal, unspecified":
+                        @Summary = @Summary + " Normal, Unspecified"
+                        @Severity = 1
+                        @Type = 2
+                    case "Destination out of order":
+                        @Summary = @Summary + " Destination Out of Order"
+                        @Severity = 3
+                        @Type = 1
+                    case "No user responding":
+                        @Summary = @Summary + " No User Responding"
+                        @Severity = 3
+                        @Type = 1
+                    case "Call rejected":
+                        @Summary = @Summary + " Rejected"
+                        @Severity = 3
+                        @Type = 1
+                    case "Invalid call reference value":
+                        @Summary = @Summary + " Invalid Call Reference Value"
+                        @Severity = 3
+                        @Type = 1
+                    case "Recovery on timer expiry":
+                        @Summary = @Summary + " Recovered on Timer Expiry"
+                        @Severity = 3
+                        @Type = 1
+                    case "Requested circuit/channel not available":
+                        @Summary = @Summary + " Requested Circuit/Channel Not Available"
+                        @Severity = 3
+                        @Type = 1
+                    case "Temporary failure":
+                        @Summary = @Summary + " Temporary Failure"
+                        @Severity = 3
+                        @Type = 1
+                    case "Unknown Cause value":
+                        @Summary = @Summary + " Cleared, Unknown Cause"
+                        @Severity = 3
+                        @Type = 1
+                    case "Interworking error; unspecified":
+                        @Summary = @Summary + " Interworking Error"
+                        @Severity = 3
+                        @Type = 1
+                    default:
+                        @Summary = @Summary + ", " + $demandNbrClearReason
+                        @Severity = 2
+                        @Type = 1
+                }
+                @Summary = @Summary + ", Clear Code: " + $demandNbrClearCode
+                switch($6)
+                {
+                    case "1": ### originate
+                        @Summary = @Summary + "  ( to Call Address: " + $2 + " )"
+                    case "2": ### answer
+                        @Summary = @Summary + "  ( from Call Address: " + $2 + " )"
+                    case "3": ### callback
+                        @Summary = @Summary + "  ( from Call Address: " + $2 + " )"
+                    default:
+                        @Summary = @Summary + "  ( Call Address: " + $2 + " )"
+                }
+                @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4 + " " + $5 + " " + $6
+            }
+            else if(exists($OID3))
+            ### else if(regmatch($OID3, "\.1\.4\.1\.9\.9\.26\.1\.1\.1\.1\.17\..*"))
+            {
+                $demandNbrLogIf = $1
+                $demandNbrAddress = $2
+                $demandNbrCallOrigin = lookup($3, demandNbrCallOrigin) + " ( " + $3 + " )"
+                $demandNbrPhysIf = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+                $demandNbrId = extract($OID1, "\.([0-9]+)$")
+                details($demandNbrLogIf,$demandNbrAddress,$demandNbrCallOrigin,$demandNbrPhysIf,$demandNbrId)
+                
+                @AlertKey = "demandNbrEntry." + $demandNbrPhysIf + "." + $demandNbrId
+                switch($3)
+                {
+                    case "1": ### originate
+                        @Summary = "ISDN Outgoing Call  ( to Call Address: " + $2 + " )"
+                    case "2": ### answer
+                        @Summary = "ISDN Incoming Call  ( from Call Address: " + $2 + " )"
+                    case "3": ### callback
+                        @Summary = "ISDN Callback  ( from Call Address: " + $2 + " )"
+                    default:
+                        @Summary = "ISDN Call  ( Call Address: " + $2 + " )"
+                }
+                @Severity = 2
+                @Type = 13
+                $OS_ExpireTime = 1800
+                @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+            }
+            else
+            ### else if(regmatch($OID2, "\.1\.4\.1\.9\.9\.26\.1\.1\.1\.1\.17\..*"))
+            {
+                $demandNbrLogIf = $1
+                $demandNbrCallOrigin = lookup($2, demandNbrCallOrigin) + " ( " + $2 + " )"
+                $demandNbrPhysIf = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+                $demandNbrId = extract($OID1, "\.([0-9]+)$")
+                details($demandNbrLogIf,$demandNbrCallOrigin,$demandNbrPhysIf,$demandNbrId)
+                
+                @AlertKey = "demandNbrEntry." + $demandNbrPhysIf + "." + $demandNbrId
+                switch($2)
+                {
+                    case "1": ### originate
+                        @Summary = "ISDN Outgoing Call"
+                    case "2": ### answer
+                        @Summary = "ISDN Incoming Call"
+                    case "3": ### callback
+                        @Summary = "ISDN Callback"
+                    default:
+                        @Summary = "ISDN Call"
+                }
+                @Summary = @Summary + "  ( " + @AlertKey + " )"
+                @Severity = 2
+                @Type = 13
+                $OS_ExpireTime = 1800
+                @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+            }
+            
+        case "3": ### demandNbrLayer2Change
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = isdnLapdOperStatus 
+            ##########
+       
+            $ifIndex = $1
+            $isdnLapdOperStatus = lookup($2, isdnLapdOperStatus) + " ( " + $2 + " )"
+            details($ifIndex,$isdnLapdOperStatus)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ISDN-MIB-demandNbrLayer2Change"
+            
+            @AlertGroup = "ISDN D-Channel Status"
+            @AlertKey = "isdnLapdEntry." + $1
+            switch($2)
+            {
+                case "1":
+                    @Summary = "ISDN D-Channel All Layers Inactive"
+                    @Severity = 3
+                    @Type = 1
+                case "2":
+                    @Summary = "ISDN D-Channel Layer-1 Activated, Layer-2 Datalink Not Established"
+                    @Severity = 2
+                    @Type = 1
+                case "3":
+                    @Summary = "ISDN D-Channel Layer-1 Activated, Layer-2 Datalink Established"
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "4": ### demandNbrCNANotification
+        
+            ##########
+            # $1 = isdnSignalingIfIndex
+            # $2 = ifIndex
+            ##########
+            
+            $isdnSignalingIfIndex = $1
+            $ifIndex = $2
+            details($isdnSignalingIfIndex,$ifIndex)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ISDN-MIB-demandNbrCNANotification"
+            
+            @AlertGroup = "ISDN Incoming Call Status"
+            @AlertKey = "ifEntry." + $2
+            @Summary = "ISDN Incoming Call Rejected, Requested Circuit/Channel Not Available  ( " + @AlertKey + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ISDN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ISDN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ISDN-MIB.include.snmptrap.rules >>>>>")

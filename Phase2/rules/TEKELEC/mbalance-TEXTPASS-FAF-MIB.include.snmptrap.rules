@@ -1,0 +1,441 @@
+###############################################################################
+#
+#	mbalance-TEXTPASS-FAF-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for TekMedia FAF alarms
+#
+#       V0.1	20110704	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.9679.1.61":  ### - faf (from TEXTPASS-FAF-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-FAF-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "NETBOSS1"
+    	@Domain = "CORE"
+    	@Vendor = "Tekelec"
+	@Manager = "MTTrapd-FAF"
+
+	@Class = "302020"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Agent = "TEXTPASS-FAF-MIB"
+	@AlertGroup = "FAFTrap"
+
+	$OS_EventId = "NET_TEK_FAF_001"
+
+	[$node] =  lookup($IPaddress, mbalance-TEXTPASS-node)
+	@Node = $node
+	@NodeAlias = $node
+	
+	switch($specific-trap) {
+		case "1": ### - actionApplied
+			#######################
+			#
+			# Raised when a chain applies, and the action is
+			# taken. This trap is configurable in the chain
+			# table. Severity: informational.
+			#
+			# $1 = fafChainsAdminState
+			#
+			#      State of this chain: off, on, invisible.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+						
+			@Type = 1
+			@Severity = 2
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "fafChainsEntry" + $2
+			@Summary = "actionApplied: # Raised when a chain applies, and the action is taken"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "2": ### - eciConnectionsFailed
+			#######################
+			#
+			# No ECI connections could be established. The
+			# TextPass FAF may be only partially operational.
+			# This is probably caused by a network problem.
+			# Check the TextPass Routers for further information.
+			# Severity: error.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+						
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "fafEciConnections" + $2
+			@Summary = $2 + " eciLoginFailed: # The ECI login was refused by the TPR. The TextPass FAF may be only partially operational. Check the External Condition Application account and password settings"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "3": ### - eciLoginFailed
+			#######################
+			#
+			# The ECI login was refused by the TPR. The TextPass
+			# FAF may be only partially operational. Check the
+			# External Condition Application account and password
+			# settings. Severity: error.
+			#
+			# $1 = fafEciAdminState
+			#
+			#      Enable/Disable the connection.
+			#
+			# $2 = fafEciUser
+			#
+			#      The username for account.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "fafEciEntry" + $2
+			@Summary = $2 + " eciLoginFailed: # The ECI login was refused by the TPR. The TextPass FAF may be only partially operational. Check the External Condition Application account and password settings"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "7": ### - floodingStartDetected
+			#######################
+			#
+			# Flooding from a foreign network has been detected.
+			# This trap is raised when the traffic from a foreign
+			# network has increased significantly. Depending on
+			# the configuration, further messages from this origin
+			# may be blocked or delayed. Severity: warning.
+			#
+			# $1 = fafFloodCountConfig
+			#
+			#      The ID (-1) of the configuration that 'owns' this record.
+			#
+			# $2 = fafFloodCountIndex1
+			#
+			#      SNMP index of the flooding count entry.
+			#
+			# $3 = fafFloodCountAddress
+			#
+			#      Address(prefix).
+			#
+			# $4 = fafFloodCountFiltered
+			#
+			#      Messages marked as flooding.
+			#
+			# $5 = fafFloodCountTime
+			#
+			#      Duration of current traffic spike.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "fafFloodCountEntry"
+			@Summary = "Flooding Start Detected"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "8": ### - floodingEndDetected
+			#######################
+			#
+			# Flooding from a foreign network is over. This trap
+			# is raised when the traffic from a foreign network
+			# has normalised again. This trap corresponds to
+			# floodingStartDetected. Severity: informational.
+			#
+			# $1 = fafFloodCountConfig
+			#
+			#      The ID (-1) of the configuration that 'owns' this record.
+			#
+			# $2 = fafFloodCountIndex1
+			#
+			#      SNMP index of the flooding count entry.
+			#
+			# $3 = fafFloodCountAddress
+			#
+			#      Address(prefix).
+			#
+			# $4 = fafFloodCountFiltered
+			#
+			#      Messages marked as flooding.
+			#
+			# $5 = fafFloodCountTime
+			#
+			#      Duration of current traffic spike.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fafFloodCountEntry"
+			@Summary = "Flooding End Detected"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "21": ### - clusterStarted
+			#######################
+			#
+			# Duplicate messages have been found, and a new
+			# cluster is started. Severity: informational.
+			#
+			# $1 = fafDupsCountMsgs
+			#
+			#      Total number of messages that have matched this cluster.
+			#
+			# $2 = fafDupsCountLastTime
+			#
+			#      Timestamp of the last message that is matched by this
+			#      cluster.
+			#
+			# $3 = fafDupsCountLastMessage
+			#
+			#      Content of the last message that is matched by this cluster.
+			#
+			# $4 = fafDupsCountLastMscAddress
+			#
+			#      MSC address for last message in this cluster.
+			#
+			# $5 = fafDupsCountLastSmscAddress
+			#
+			#      SMSC address for last message in this cluster.
+			#
+			# $6 = fafDupsCountLastOrigMsisdn
+			#
+			#      Originator MSISDN for last message in this cluster.
+			#
+			# $7 = fafDupsCountLastOrigImsi
+			#
+			#      Originator IMSI for last message in this cluster.
+			#
+			# $8 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 2
+
+			@AlertKey = "fafDupsCountEntry"
+			@Summary = "Cluster Started"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "22": ### - clusterThreshold
+			#######################
+			#
+			# A cluster has grown beyond the size threshold.
+			# Depending on the configuration, further duplicate
+			# messages may be blocked or delayed now. Severity:
+			# warning.
+			#
+			# $1 = fafDupsCountMsgs
+			#
+			#      Total number of messages that have matched this cluster.
+			#
+			# $2 = fafDupsCountLastTime
+			#
+			#      Timestamp of the last message that is matched by this
+			#      cluster.
+			#
+			# $3 = fafDupsCountLastMessage
+			#
+			#      Content of the last message that is matched by this cluster.
+			#
+			# $4 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+		
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "fafDupsCountEntry"
+			@Summary = "Cluster Threshold"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "23": ### - clusterExpired
+			#######################
+			#
+			# A cluster has expired, because no similar message
+			# has been found for the configured duration. Further
+			# similar messages will have to start a new cluster
+			# before they are detected again. This trap clears
+			# both clusterStarted and clusterThreshold. Severity:
+			# informational.
+			#
+			# $1 = fafDupsCountMsgs
+			#
+			#      Total number of messages that have matched this cluster.
+			#
+			# $2 = fafDupsCountLastTime
+			#
+			#      Timestamp of the last message that is matched by this
+			#      cluster.
+			#
+			# $3 = fafDupsCountLastMessage
+			#
+			#      Content of the last message that is matched by this cluster.
+			#
+			# $4 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fafDupsCountEntry"
+			@Summary = "Cluster Expired"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "25": ### - eciConnectionEstablished
+			#######################
+			#
+			# An ECI connection was established. This trap clears
+			# the condition for eciConnectionsFailed. Severity:
+			# informational.
+			#
+			# $1 = fafEciAdminState
+			#
+			#      Enable/Disable the connection.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+						
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fafEciConnections" + $2
+			@Summary = $2 + " eciConnectionEstablished: # The ECI connection was established"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "28": ### - eciLoginSuccess
+			#######################
+			#
+			# The ECI login was successful at the TPR. This trap
+			# clears the condition from eciLoginFailed for the
+			# given index. Severity: informational.
+			#
+			# $1 = fafEciAdminState
+			#
+			#      Enable/Disable the connection.
+			#
+			# $2 = fafEciUser
+			#
+			#      The username for account.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fafEciEntry" + $2
+			@Summary = $2 + " eciLoginSuccess: # The ECI login was successful at the TPR"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "31": ### - bulkStartDetected
+			#######################
+			#
+			# Bulk messages has been detected for this value of the filter
+			# variable. Severity: informational.
+			#
+			# $1 = fafBulkLastVarValue
+			#
+			#      Value of the filter variable for the last received message.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 2
+
+			@AlertKey = "fafBulkEntry"
+			@Summary = "bulkStartDetected: # Bulk messages has been detected for this value of the filter variable"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "32": ### - bulkEndDetected
+			#######################
+			#
+			# No more bulk messages has been detected for this value of the
+			# filter variable. Severity: informational.
+			#
+			# $1 = fafBulkLastVarValue
+			#
+			#      Value of the filter variable for the last received message.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fafBulkEntry"
+			@Summary = "bulkEndDetected: # No more bulk messages has been detected for this value of the filter variable"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-FAF-MIB.include.snmptrap.rules >>>>>")

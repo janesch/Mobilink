@@ -1,0 +1,194 @@
+/* *****************************************************************************
+*
+* ML_IP_Bulk_Alarm Policy
+*
+* Description: Raise a single Synthetic Event for each kind of Bulk events from 
+* same Node grouped by alarmName and add all network events in its journal. A trouble 
+* ticket will generated if the SE is not cleared in 15min.(TTHibernate = 900)
+*
+* Please note that this is based upon Alex's Policy 'ML_HW_Bulk_Alarm' Policy
+*
+* Author: Chris Janes of Innovise ESM
+* Date: 26-08-2011
+*
+* V 1.0 20110826 Chris Janes 
+* V 1.1 20110907 Chris Janes Modified so seperate Synthetic Events produces for each
+* 'Net' EventID* 
+* V1.2 20110909 Chris Janes    Identifier modified by removing Summary from it
+*
+* 
+*****************************************************************************
+*****************************************************************************
+*
+* Datatypes: OS_Status - alerts.status
+*
+* 
+*
+*
+* EventReader Filter:
+* (ImpactFlag = 4 And Severity > 2 And Type = 1 And MaintFlag in (1,2) And EventId in ('NET_IP_BLK_001','NET_IP_BLK_002','NET_IP_BLK_003','NET_IP_BLK_004','NET_IP_BLK_005','NET_IP_BLK_006','NET_IP_BLK_007','NET_IP_BLK_008','NET_IP_BLK_009' ))
+* OR (ImpactFlag in (5,6) And Severity = 0 And Type = 1 And EventId in ('NET_IP_BLK_001','NET_IP_BLK_002','NET_IP_BLK_003','NET_IP_BLK_004','NET_IP_BLK_005','NET_IP_BLK_006','NET_IP_BLK_007','NET_IP_BLK_008','NET_IP_BLK_009' ))
+*
+*
+***************************************************************************** */
+
+Log("Current Serial = " + @Serial + " : " + @Node + "###########################################");
+Log("Current Serial = " + @Serial + " : " + @Node + "************* ML_IP_Bulk_Alarm BEGIN ******************");
+Log("Current Serial = " + @Serial + " : " + @Node + "###########################################");
+
+// if it is a clear event
+if(@Severity == 0)
+{
+    @ImpactFlag = 99; // in progress by ML_ClearSyntheticEvent
+    ReturnEvent(EventContainer);
+
+
+    // Exclude event having SSS=0
+    if(@SyntheticServerSerial !=0)
+    {
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For Other Net Event From Same SE");
+        // Get other events with the same Synthetic Event
+        IPNetDataType = "OS_Status";
+        IPNetFilter = "SyntheticServerSerial = " + @SyntheticServerSerial + " And Severity > 2 ";
+        IPNetOutput = GetByFilter(IPNetDataType, IPNetFilter, False);
+        NumIPNetOutput = Length(IPNetOutput);
+        log("IBMDEBUG: HW Bulk 1#no. rows:" + NumIPNetOutput);
+
+
+        if(NumIPNetOutput == 0) // There are no active events with the same Synthetic Event
+       {
+            
+            // Clear the associated synthetic event as it is no longer needed
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Clear IP-IP SE Event Serial = " + @SyntheticServerSerial);
+            HwSEDataType = "OS_Status"; 
+            HwSEUpdateFilter = "ServerSerial = " + @SyntheticServerSerial + " And Severity > 0 And LastOccurrence <= "+@ClearTime+""; 
+            HwSEUpdateExpression = "Severity = 0, ExpireID= 65690, ClearTime = " + @ClearTime;
+            BatchUpdate(HwSEDataType, HwSEUpdateFilter, HwSEUpdateExpression);
+
+        }
+        else // there are active events with the same Synthetic Event
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Other Net Event Still Active In OS, Just Add Journal Into SE");
+        }
+        // Add event details to Journal of Synthetic Event
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Journal Entry");
+        MobiLib.AddGenericJournal(@SyntheticServerSerial,@AddText,@ServerSerial,@ClearTime,@NodeAlias,2);
+    }
+
+    @ImpactFlag = 100; // complete processing by ML_ClearSyntheticEvent
+    ReturnEvent(EventContainer);
+
+}
+else // There are active Events
+{
+    @ImpactFlag = 5; // Specific policy in progress
+    ReturnEvent(EventContainer);
+
+    se_ba_event_id = "SYN_IP_BLK_001";
+
+    // Is there an associated Synthetic Event
+    Log("Current Serial = " + @Serial + " : " + @Node + ": Look For Existing BA SE With Node = @Node and and Severity = 5 And EventId =" + se_ba_event_id);
+    IPBASEInOSDataType = "OS_Status";
+    IPBASEInOSFilter = "Node = '"+@Node+"' And Class = 201300 And Severity = 5 And EventId = '"+se_ba_event_id+"' And AlertKey = '" + @EventId + "'";
+    IPBASEInOSOutput = GetByFilter(IPBASEInOSDataType, IPBASEInOSFilter,False);
+    NumIPBASEInOSOutput = Length(IPBASEInOSOutput);
+    log("IBMDEBUG: HW Bulk 2#no. rows:" + NumIPBASEInOSOutput);
+
+    if(NumIPBASEInOSOutput > 0) // There is an Synthetic Event
+    {
+        Log("Current Serial = " + @Serial + " : " + @Node + ": BA SE Found Store its Server Serial");
+        se_ba_server_serial = IPBASEInOSOutput[0].ServerSerial;
+
+        // Update @SSS and @SSN 
+        //@SyntheticServerSerial = IPBASEInOSOutput[0].ServerSerial;
+        //@SyntheticServerName = IPBASEInOSOutput[0].ServerName;
+        se_last_occurrence = IPBASEInOSOutput[0].LastOccurrence;
+        EventDataType = "OS_Status"; 
+        EventUpdateFilter = "ServerSerial = " + @ServerSerial + " And ServerName = '" + @ServerName+"'"; 
+        EventUpdateExpression = "Grade = 99, SyntheticServerSerial = " + IPBASEInOSOutput[0].ServerSerial + ", SyntheticServerName = '" + IPBASEInOSOutput[0].ServerName + "'" ;
+        BatchUpdate(EventDataType, EventUpdateFilter, EventUpdateExpression);
+
+        Log("Current Serial = " + @Serial + " : " + @Node + ": @SSS = " + IPBASEInOSOutput[0].ServerSerial + ": @SSN = " +IPBASEInOSOutput[0].ServerName);
+
+    }
+    else // There is no Synthetic Event so insert one
+    {
+        Log("Current Serial = " + @Serial + " : " + @Node + ": SE NOT FOUND, RAISE SE");
+
+        IPBAImp = NewObject();
+        IPBAImp.Node = @Node;
+        IPBAImp.NodeAlias = @NodeAlias;
+        IPBAImp.Summary = @Summary;
+        IPBAImp.AlertGroup = "IP-IP Bulk Alarm";
+        IPBAImp.AlertKey = @EventId ;
+        IPBAImp.TTHibernate = 900;
+        IPBAImp.Severity = 5;
+        IPBAImp.Type = 1;
+        IPBAImp.Agent = "Netcool Impact";
+        IPBAImp.Manager = "Netcool Impact";
+        IPBAImp.FirstOccurrence = @LastOccurrence;
+        IPBAImp.LastOccurrence = @LastOccurrence;
+        IPBAImp.EventId = se_ba_event_id;
+
+        //IPBAImp.Identifier = IPBAImp.Node + IPBAImp.Summary + IPBAImp.Type + IPBAImp.EventId + @LastOccurrence;
+        //IPBAImp.Identifier = IPBAImp.Node + IPBAImp.Summary + IPBAImp.Type + IPBAImp.EventId + IPBAImp.AlertKey;
+       IPBAImp.Identifier = IPBAImp.Node + IPBAImp.Type + IPBAImp.EventId + IPBAImp.AlertKey;
+
+
+        IPBAImp.Class = 201300;
+        IPBAImp.Domain = @Domain;
+        IPBAImp.Region = @Region;
+        IPBAImp.ManCity = @ManCity;
+        IPBAImp.ImpactFlag = 6;
+        IPBAImp.MaintFlag = @MaintFlag;
+        IPBAImp.OutsourceContractor = @OutsourceContractor;
+        IPBAImp.BusImportance = @BusImportance;
+        IPBAImp.Vendor = @Vendor;
+        IPBAImp.OmcEms = @OmcEms;
+        IPBAImp.Information = @NodeAlias;
+        IPBAImp.AdvCorrServerSerial = @ServerSerial;
+        IPBAImp.OwnerUID = 65534;
+        AddDataItem('OS_Status', IPBAImp);
+
+        Log("Current Serial = " + @Serial + " : " + @Node + ": New IP-IP Bulk Alarm SE Created ");
+
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For BA SE Just Created");
+        // Get Synthetic Event details
+        IPBADataType = "OS_Status";
+        IPBAFilter = "Node = '"+@Node+"' And Class = 201300 And Severity = 5 And EventId = '"+se_ba_event_id+"' And AlertKey = '" + @EventId + "'";
+        Log("Current Serial = " + @Serial + " : " + @Node + ": IPBAFilter = " + IPBAFilter );
+        IPBAOutput = GetByFilter(IPBADataType,IPBAFilter,False);
+        NumIPBAOutput = Length(IPBAOutput);
+        log("IBMDEBUG: IP-IP Bulk 3#no. rows:" + NumIPBAOutput);
+
+
+        if(NumIPBAOutput == 0) // Synthetic Event not in ObjectServer (Yet)
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + "*********########## IP BA SE NOT IN OBJECT SERVER YET ########**********");
+            @Grade = 10;
+            ReturnEvent(EventContainer);
+        }
+        else // Got the Synthetic Event Details
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Store BA SE’s ServerSerial");
+            se_ba_server_serial = IPBAOutput[0].ServerSerial;
+            // Update @SSS and @SSN
+            @SyntheticServerSerial = IPBAOutput[0].ServerSerial;
+            @SyntheticServerName = IPBAOutput[0].ServerName;
+            @Grade = 11;
+            ReturnEvent(EventContainer);
+        }
+
+    }
+    Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Current Event Details Into SE's Journal");
+    // Add current event details to Journal of the Synthetic Event
+    MobiLib.AddGenericJournal(se_ba_server_serial, @Summary, @ServerSerial,@LastOccurrence,@NodeAlias,@Type);
+
+    @ImpactFlag = 6; // Specific policy complete
+    ReturnEvent(EventContainer);
+}
+
+
+Log("Current Serial = " + @Serial + " : " + @Node + "##################################");
+Log("Current Serial = " + @Serial + " : " + @Node + "*********** ML_IP_Bulk_Alarm END ***********");
+Log("Current Serial = " + @Serial + " : " + @Node + "###################################");

@@ -1,0 +1,374 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-DBUS.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "DBUS": ### Data bus
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-DBUS.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADCTRLRTYPE":
+        
+            ##########
+            # An interface processor responded with an unknown or illegal
+            # controller type when queried. This problem should not happen
+            # unless the running software does not support the interface
+            # processor in question or the interface processor fails.
+            #
+            # %DBUS-3-BADCTRLRTYPE: Invalid controller type [dec] in slot [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "BADEEPROM":
+        
+            ##########
+            # The ID EEPROM on the indicated card is not programmed correctly.
+            #
+            # %DBUS-3-BADEEPROM: Invalid EEPROM data found for card in slot
+            # [dec], card disabled
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "BADHSACONF":
+        
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %DBUS-3-BADHSACONF: Down rev RSP EPROM found HSA system, upgrade
+            # EPROM, or remove one RSP
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CXBUSERR":
+        
+            ##########
+            # A processor has reported a bus error. The processor is reset and
+            # is not used until the next OIR event or microcode download, when
+            # it is retested.
+            #
+            # %DBUS-3-CXBUSERR: Slot [dec], CBus Error
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "DAUGHTER_STATS":
+        
+            ##########
+            # A processor has reported an error. This error message is sent out
+            # in conjunction with other error messages to provide additional
+            # information.
+            #
+            # %DBUS-3-DAUGHTER_STATS: Slot [dec] control [hex], status [hex]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = rtrim(extract($Message, "[Ss]tatus (.*)$"))
+        
+        case "DBUSINTERR":
+        
+            ##########
+            # A processor has reported an internal error. The processor is
+            # reset and is not used until the next OIR event or microcode
+            # download, when it is retested.
+            #
+            # %DBUS-3-DBUSINTERR: Slot [dec], Internal Error 
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "DBUSINTERRSWSET":
+        
+            ##########
+            # A processor has reported an error. The processor is reset and is
+            # not used until the next OIR event or microcode download, when it
+            # is retested.
+            #
+            # %DBUS-3-DBUSINTERRSWSET: Slot [dec], Internal Error due to VIP
+            # crash
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "MSGOVERFLOW":
+        
+            ##########
+            # A card in the slot identified in the error message has tried to
+            # send too many logger messages.
+            #
+            # %DBUS-3-MSGOVERFLOW: Slot [dec], too many DBUS messages
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "NOMAGIC":
+        
+            ##########
+            # The structure containing the system MAC address that is required
+            # by the OIR facility cannot be found in the RP EEPROM. The RP must
+            # be returned for reprogramming.
+            #
+            # %DBUS-3-NOMAGIC: No magic number found in RP1 EEPROM
+            ##########
+            
+            @AlertKey = ""
+        
+        case "NORESP":
+        
+            ##########
+            # A card in the slot identified in the error message has failed to
+            # respond.
+            #
+            # %DBUS-3-NORESP: bad or no response, slot [int]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "NOSUPPORT":
+        
+            ##########
+            # The Cisco IOS image does not have driver support code for the
+            # specified interface processor.
+            #
+            # %DBUS-3-NOSUPPORT: No driver support in this image for [chars] in
+            # slot [dec] (card type [dec]) - disabled
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "image for (.*) in")
+        
+        case "SLOTCOMP":
+        
+            ##########
+            # A processor has reported a mismatch between the contents of the
+            # slot register and its complement. This condition indicates a
+            # hardware failure in the diagnostic bus controller on that
+            # processor or on the diagnostic bus. The processor is reset and is
+            # not used until the next OIR event or microcode download, when it
+            # is retested.
+            #
+            # %DBUS-3-SLOTCOMP: Slot [dec], dbus error, slot ([hex]) and
+            # complement ([hex]) do not match
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? dbus ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "SW_NOTRDY":
+        
+            ##########
+            # An interface processor failed to appear online after being reset.
+            # A software or hardware error has occurred.
+            #
+            # %DBUS-3-SW_NOTRDY: DBUS software not ready after [chars], elapsed
+            # [int], status [hex]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = rtrim(extract($Message, "[0-9]+,? status (.*)$"))
+        
+        case "UNKNOWN":
+        
+            ##########
+            # A processor has reported a controller type that is unknown to the
+            # system. The processor is no longer used and must be repaired.
+            #
+            # %DBUS-2-UNKNOWN: Slot [dec], unknown controller type [hex],
+            # ignoring
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "WCSCTRLRERR":
+        
+            ##########
+            # The WCS is the set of devices on each interface processor that
+            # contains the running microcode. It can be loaded either from the
+            # ROM on the interface processor or from the system by using the
+            # downloadable microcode facility. In this message, a processor
+            # reported a WCS controller instruction error. The processor is
+            # reset and is not used until the next OIR event or microcode
+            # download, when it is retested.
+            #
+            # %DBUS-3-WCSCTRLRERR: Slot [dec], WCS Controller Instruction Error
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "WCSERR":
+        
+            ##########
+            # The processor in the slot identified in the error message
+            # reported a WCS controller error. The processor is reset, and the
+            # new microcode is loaded. This error message appears only when the
+            # microcode is downloaded.
+            #
+            # %DBUS-3-WCSERR: Slot [dec], WCS controller in error state
+            # ([hex]), resetting
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "error state (.*),? resetting")
+        
+        case "WCSFLOW":
+        
+            ##########
+            # A processor has indicated an error condition while downloading
+            # microcode. The status, cmd/data, and position numbers shown in
+            # the message reflect the error condition, the last byte of
+            # microcode loaded, and the position in the file, respectively. If
+            # this error appears, the microcode download is aborted, and the
+            # ROM microcode is loaded.
+            #
+            # %DBUS-3-WCSFLOW: Slot [dec], flow cntrl error loading WCS, last
+            # data [hex] pos [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "WCSLDERR":
+        
+            ##########
+            # A processor indicated an error condition while downloading the
+            # microcode. The status, cmd/data, and position numbers shown in
+            # the message reflect the error condition, the last byte of
+            # microcode loaded, and the position in the file, respectively. If
+            # this error appears, the microcode download is aborted, and the
+            # ROM microcode is loaded.
+            #
+            # %DBUS-3-WCSLDERR: Slot [dec], error loading WCS, status [hex]
+            # cmd/data [hex] pos [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "status (.*) cmd")
+        
+        case "WCSPARERR":
+        
+            ##########
+            # A processor has reported a WCS parity error. The processor is
+            # reset and is not used until the next OIR event or microcode
+            # download, when it is retested.
+            #
+            # %DBUS-3-WCSPARERR: Slot [dec], WCS Controller Parity Error
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "XILINX":
+        
+            ##########
+            # The field-programmable gate arrays on an interface processor
+            # failed to load after being reset. This failure indicates a
+            # probable software or hardware problem.
+            #
+            # %DBUS-3-XILINX: ready wait timeout, slot [int]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-DBUS.include.syslog.rules >>>>>")

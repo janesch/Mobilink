@@ -1,0 +1,256 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SONET.include.syslog.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SONET": ### Synchronous Optical Network (SONET) messages
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SONET.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ALARM":
+            
+            ##########
+            # The specified SONET alarm has been declared or released.
+            #
+            # %SONET-4-ALARM: [chars]: [chars] [chars]
+            ##########
+               
+            $MOI_Local = extract($Message, "^([^:]*): ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $AlertGroup = extract($Message, "^[^:]*: ([A-Z0-9 ]+)")
+            if(!match($AlertGroup, ""))
+            {
+                @AlertGroup = @AlertGroup + " ( " + $AlertGroup + " )"
+                if(regmatch($Message, " [Cc][Ll][Ee][Aa][Rr][Ee][Dd]$"))
+                {
+                    @Severity = 1
+                    @Type = 2
+                }
+            }
+            
+            $CLARIFIER = extract($Message, "^[^:]*: (.*)")
+        
+        case "ALARMTIMERFAIL":
+            
+            ##########
+            # The creation of an alarm timer monitor process has failed.
+            #
+            # %SONET-3-ALARMTIMERFAIL: [chars]
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "APSCOMM":
+            
+            ##########
+            # An APS error related to connectivity between the working and the
+            # protect routers has occurred.
+            #
+            # %SONET-3-APSCOMM: [chars]: [chars]
+            ##########
+               
+            $MOI_Local = extract($Message, "^([^:]*): ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "^[^:]*: (.*)")
+        
+        case "APSCOMMEST":
+            
+            ##########
+            # APS has established connectivity between the working and protect
+            # routers.
+            #
+            # %SONET-3-APSCOMMEST: [chars]: Link to [chars] channel established
+            # - protocol version [dec]
+            ##########
+               
+            $MOI_Local = extract($Message, "^([^:]*): ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SONET_APSCOMM-Status"
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "to (.*) channel")
+        
+        case "APSCOMMLOST":
+            
+            ##########
+            # Connectivity between the working and protect routers has been
+            # lost. APS operation is able to continue in degraded mode.
+            #
+            # %SONET-3-APSCOMMLOST: [chars]: Link to [chars] channel lost
+            ##########
+               
+            $MOI_Local = extract($Message, "^([^:]*): ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SONET_APSCOMM-Status"
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "to (.*) channel")
+        
+        case "APSMM":
+            
+            ##########
+            # A unidirectional/bidirectional mismatch has been detected by the
+            # APS system.
+            #
+            # %SONET-4-APSMM: APS mode mismatch - [chars]
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "APS mode mismatch - (.*)")
+        
+        case "APSNCHN":
+            
+            ##########
+            # The APS software has malfunctioned.
+            #
+            # %SONET-3-APSNCHN: APS Local request [dec] has no corresponding
+            # channel number
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "request ([0-9]+) has no")
+        
+        case "APSNOINTFC":
+            
+            ##########
+            # APS requires an out-of-band path for interrouter communication.
+            #
+            # %SONET-3-APSNOINTFC: APS No interfaces available for IP
+            # connection
+            ##########
+               
+            @AlertKey = ""
+        
+        case "BADAUTH":
+            
+            ##########
+            # The APS software has detected an unauthorized message. This
+            # message could result from improper configuration, unauthorized
+            # access, or packet corruption.
+            #
+            # %SONET-3-BADAUTH: APS Bad authentication from [IP_address],
+            ##########
+               
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "BADTCA":
+            
+            ##########
+            # The TCA software has malfunctioned.
+            #
+            # %SONET-3-BADTCA: TCA signal [dec] is invalid
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "signal ([0-9]+) is invalid")
+        
+        case "BADTCATH":
+            
+            ##########
+            # The specific TCA threshold is not supported.
+            #
+            # %SONET-3-BADTCATH: TCA threshold [int] is not supported
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "threshold ([0-9]+) is not")
+        
+        case "BADVER":
+            
+            ##########
+            # The APS software has detected an invalid version number in the
+            # hello message.
+            #
+            # %SONET-3-BADVER: APS version mismatch; this system ver [dec];
+            # other ver [dec] - msg rejected:
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "system ver ([0-9]+)")
+            $CLARIFIER = $CLARIFIER + extract($Message, "other ver ([0-9]+)")
+        
+        case "MISVER":
+            
+            ##########
+            # The APS software has detected that either the working or the
+            # protect router requires a software upgrade. APS operation can
+            # continue prior to the upgrade.
+            #
+            # %SONET-3-MISVER: [chars]: APS version mismatch.
+            #    WARNING: Loss of Working-Protect link can deselect both
+            #    protect and working interfaces. [chars] router requires
+            #    software upgrade for full protection.
+            ##########
+               
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "^(.*): APS version")
+        
+        case "NOBUFFER":
+            
+            ##########
+            # No data buffer was available to send an APS message.
+            #
+            # %SONET-3-NOBUFFER: No buffer available for sending APS message
+            ##########
+               
+            @AlertKey = ""
+        
+        case "NOSOCKET":
+            
+            ##########
+            # The APS system was unable to open a socket for communication
+            # purposes.
+            #
+            # %SONET-3-NOSOCKET: Unable to open socket
+            ##########
+               
+            @AlertKey = ""
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SONET.include.syslog.rules >>>>>")

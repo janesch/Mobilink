@@ -1,0 +1,74 @@
+/**************************************************************************
+This policy demonstrates how to send SNMP Trap(Snmpv1) or Notification
+(Snmpv2, v3) to an Snmp manager using the SnmpTrapAction module..
+
+NOTE: Make sure the action modules defined for this snmpdsa are
+      installed by running the script in IMPACT_HOME/dsa/snmpdsa/bin dir.
+      Refer to the doc for more info on this. 
+
+Explaination of the parameters for the SnmpTrapAction module
+-----------------------------------------------------------
+  HostId   : The hostId of the system(Manager) that is going to receive 
+             this Trap
+  Port     : The port number on which the Manager is running. OPTIONAL. 
+             Default 162
+  VarIdList: An array of OID variables to send along with the trap. Each OID 
+             variable is assumed to be an instance OID (like '.0' added for 
+             example). OPTIONAL.
+  ValueList: An array of values to be sent in this Trap. They have a 
+             one-to-one mapping with the OIDs in the VarIdList. OPTIONAL.
+  Community: The read community string. OPTIONAL. Default value is public.
+  Timeout  : The time to wait for a response. OPTIONAL. Its of type Integer.
+  Version  : The SNMP protocol version. OPTIONAL. Possible values are 
+             1 or 2 or 3. Default is 1.
+  SysUpTime: The number of timeticks since the system is up. OPTIONAL. 
+             Default: Current system time in milliseconds.
+  Enterprise  : The enterprise Id. Mandatory for SNMPv1.
+  GenericTrap : The GenericTrap Id. Mandatory for SNMPv1
+  SpecificTrap: The SpecificTrap Id. Mandatory for SNMPv1
+  SnmpTrapOid : The SnmpTrapOid. OPTIONAL for SNMPv1 but mandatory for SNMPv2.
+
+Explaination of the return values of the SnmpTrapAction module
+------------------------------------------------------------------
+  ErrorString: Will describe the error in case the TRAP send failed. Else will 
+               be an empty string.
+
+HowToRun this policy
+--------------------
+1) Make sure the Trap receiver is running on the proper portId. Change the
+   values in this action module to match the one in the Trap receiver.
+
+2) Then send a trigger to execute this policy.
+***************************************************************************/
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("** Starting SNMPTrapActionTest at " + StartTime + " ***");
+
+/* Destination host related info */
+HostId = "localhost";
+Port = 162;
+Version = 1;
+Community = "public";
+
+SysUpTime = 1001;
+
+/* Mandatory parameters for SNMPv1 TRAP */
+Enterprise = ".1.3.6.1.2.1.11";
+GenericTrap = 3;
+SpecificTrap = 0;
+
+/* Array of OIDs and their values that are sent in the TRAP */
+VarIdList = {".1.3.6.1.2.1.2.2.1.1.0", "sysDescr"};
+ValueList = {"2", "My system"};
+
+/* Mandatory parameter for SNMPv2 notification */
+SnmpTrapOid = ".1.3.6.1.2.4.1.11";
+
+/* The actual sending of the TRAP is done here */
+SnmpTrapAction(HostId, Port, VarIdList, ValueList, Community, Version, SysUpTime, Enterprise, GenericTrap, SpecificTrap, SnmpTrapOid);
+
+log("** DisplayTrapActionResults: **");
+log("Error String is " + ErrorString);
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("** Done with SNMPTrapActionTest at " + EndTime + " ***");

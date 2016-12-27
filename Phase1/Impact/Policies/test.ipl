@@ -1,0 +1,46 @@
+    site_name = "CWA630M__BSC101_KalarKahar_1";
+    
+    
+// Get the key fields for thelookuo
+    NodeEntriesDataType = "CIINFO";
+    NodeEntriesFilter = "NAME = '"+site_name +"'";
+    NodeEntries = GetByFilter(NodeEntriesDataType, NodeEntriesFilter,False);
+    NumNodeEntries = Length(NodeEntries);
+    log("NumNodeEntries  = " + NumNodeEntries );
+
+    CountEntries = NumNodeEntries;
+    CountLookups = 0;
+    While (CountEntries > 0)
+    {
+        CountEntries = CountEntries - 1;
+        log("CountEntries = " + CountEntries );
+        LookupAddr = NodeEntries[CountEntries].X25_ADDR;
+        log("LookupAddr = " + LookupAddr );
+        if( LookupAddr = "NA")
+        {
+            Information = "No Connectivity Data Found (Data = NA)";
+        }
+        else
+        {
+              LookupDataType = "omc_connectivity";
+              log("LookupDataType = " + LookupDataType );
+              LookupFilter = "DTE_ADDRESS = " + LookupAddr ;
+              log("LookupFilter = " + LookupFilter );
+              LookupData = GetByFilter(LookupDataType , LookupFilter ,False);
+              NumLookupData  = Length(NumLookupData);
+              CountLookups = CountLookups + 
+              log("NumLookupData  = " + NumLookupData  );
+              if( NumLookupData  > 0)
+              {
+                    Information= "ROUTER : " + LookupData[0].ROUTER + ", " +  "NUC_NAME : " + LookupData[0].NUC_NAME + ", " +  "NE_NAME : " + LookupData[0].NE_NAME + ", " +  "DTE_ADDRESS : " + LookupData[0].DTE_ADDRESS + ", " +  "ROUTER_PORT : " + LookupData[0].ROUTER_PORT + ", " +  "ROUTER_TS : " + LookupData[0].ROUTER_TS + ", " +  "LOCAL_MSC : " + LookupData[0].LOCAL_MSC + ", " +  "ROUTER_DIU : " + LookupData[0].ROUTER_DIU + ", " +  "LL_DIU : " + LookupData[0].LL_DIU + ", " +  "LL_NEAR_END_MSC : " + LookupData[0].LL_NEAR_END_MSC + ", " +  "LL_FAR_END_MSC : " + LookupData[0].LL_FAR_END_MSC + ", " +  "NE_DIU : " + LookupData[0].NE_DIU + ", " +  "NE_MSC : " + LookupData[0].NE_MSC + ", ";
+                    Log("Information = " + Information);
+              }
+              
+
+         }
+    }
+    if ( CountLookups == 0 )
+    {
+        Information == "No OMC Connectivity Data Found";
+    }
+    Log("Final Information = " + Information);

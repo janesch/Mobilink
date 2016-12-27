@@ -1,0 +1,658 @@
+/* 
+CELL DOWN Policy
+Author: Nitesh Patel, Innovise AUG 2010
+This policy is for Huawei and Alcatel cell down events: AlertGroup = ?Cell Out of Service? or : AlertGroup = ?LOSS_OF_ALL_CHAN?.
+EventReader Filter: ImpactFlag = 4 and EventId = 'MSD_001'
+21/09/2010 - Nitesh Patel
+Updated with new logic so MSD will invoke after Cell Down policy
+11/10/2010 - Nitesh Patel
+When we have cell down event and site down event from same site at that time give priority to site down event and supress the cell down event and synthetic event created from this policy.
+*/
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " ************ Cell_Down_PL Start NEW***********");
+log("Current alarm Serial = " + @Serial);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " #ImpactFlag:"+@ImpactFlag+"#ProblemSerial:"+@ProblemSerial+"#Severity:"+@Severity);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Return ImpactFlag = 5 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other control flag might be added
+@ImpactFlag = 5; 
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " SiteCode:"+@SiteCode);
+ReturnEvent(EventContainer); 
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Return ImpactFlag = 5 completed");
+// getting the site name from @Site
+site_name = @SiteCode;
+
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Site Name : " + site_name);
+sleep_time = 60;
+impactFlag_MSD = 6;
+SynSD_EventID = 'MSD_003';
+SynPSD_EventID = 'MSD_004';
+// Get the number of cell belongs to current site
+CellCountDataType = "site_cells";
+CellCountFilter = "SITE_ID = '"+site_name+"'";
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " CellCountFilter:"+CellCountFilter);
+CellCountOutput = GetByFilter(CellCountDataType, CellCountFilter,False);
+CellOfSite = Length(CellCountOutput );
+
+//Check whether current event is cleared or not
+isCleared = false;
+paramSummary=@Summary;
+paramType=@Type;
+paramNodeAlias=@NodeAlias;
+paramLastOcc=@LastOccurrence;
+paramSerial=@Serial;
+if(@Type==2){
+paramSerial=@ProblemSerial;
+isCleared = true;
+}
+
+//Check for existig synthetic event from network site down event so we can supress cell down events
+isSDSyn = false;
+isExist = false;
+//Check whether synthetic event exist or not
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class in (200013,200014) and EventId in ('MSD_003','MSD_004','MSD_005') And Severity = 5";
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " ExistingSiteDownFilter"+ExistingSiteDownFilter);
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+if (NumExistingSiteDownOutput > 0){
+//Add for debuging purpose on Julian request - NP 13/05/2011
+ExistingSiteDownOutputSerial=ExistingSiteDownOutput[0].ServerSerial;
+ExistingSiteDownOutputServerName =ExistingSiteDownOutput[0].ServerName;
+ExistingSiteDownOutputParentSerial=ExistingSiteDownOutput[0].ParentSerial;
+ExistingSiteDownOutputChildSerial=ExistingSiteDownOutput[0].ChildSerial;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Synthetic Event exists..."+ExistingSiteDownOutputSerial);
+i = 0;
+while(i<NumExistingSiteDownOutput){
+if(ExistingSiteDownOutput[i].Class == 200013){
+isSDSyn = true;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " We have network synthetic event exist for site : "+ExistingSiteDownOutput[i].SiteCode);
+}
+i = i +1;
+}
+
+//If we have existing network synthetic site down event then supress cell down event and respective synthetic event
+if(isSDSyn){
+i = 0;
+while(i<NumExistingSiteDownOutput){
+if(ExistingSiteDownOutput[i].Class == 200014){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Clear synthetic event as we already have network site down Node:"+ExistingSiteDownOutput[i].Node);
+@SyntheticServerName = ExistingSiteDownOutput[i].ServerName;
+@SyntheticServerSerial = ExistingSiteDownOutput[i].ServerSerial;
+MobiLib.AddGenericJournal(ExistingSiteDownOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+ExistingSiteDownOutput[i].ClearTime= getdate();
+ExistingSiteDownOutput[i].ExpireID= 65517;
+ExistingSiteDownOutput[i].Severity = 0;
+}
+i = i +1;
+}
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting SyntheticServerSerial = " + ExistingSiteDownOutput[0].ServerSerial);
+@SyntheticServerSerial = ExistingSiteDownOutput[0].ServerSerial;
+@SyntheticServerName = ExistingSiteDownOutput[0].ServerName;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Add entery into Synthetic event journal for this cell alarm");
+MobiLib.AddGenericJournal(ExistingSiteDownOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+
+@ImpactFlag = 6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 1 Return ImpactFlag = 6 ");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Return ImpactFlag = 6 completed, Exiting... ##################");
+exit();
+}
+
+isExist = true;
+//Current Event is cleared and SyntheticEvent exist
+if(isCleared){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " current event is cleared..."+ExistingSiteDownOutputSerial);
+//08/12/2001 - As per Sohaib's comment, put hibernation for Resolution event so we don't hav to re-calculate every time
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Hibernate for curernt resolution event");
+// Get the site level for sleeping time
+sleep_time =60;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Sleep for X time : "+sleep_time);
+Time = LocalTime(GetDate(), "MM/dd/yyyy HH:mm:ss zz");
+Log(Time);
+@HibernateFlag = 1;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 1 Return HibernateFlag = 1");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 1 Return HibernateFlag = 1 Completed");
+ActionKey = "ML_Cell_Down_" + @ServerSerial + @ServerName + "#" + getdate();
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Going To Sleep " + ActionKey + " for " + sleep_time + " Sec");
+Hibernate(ActionKey , NULL, sleep_time);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Wake Up " + ActionKey );
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 1 Return HibernateFlag = 2");
+@HibernateFlag = 2;
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 1 Return HibernateFlag = 2 Completed");
+
+RemoveHibernation(ActionKey);
+
+//NP - 16th June 2011
+//Fetching result again as sometime we get it NULL after hibernation
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Serial= "+ExistingSiteDownOutputSerial;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " ExistingSiteDownFilter"+ExistingSiteDownFilter);
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+
+if(NumExistingSiteDownOutput >0){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " SE after hibernation : "+ExistingSiteDownOutput[0].Serial);
+ExistingCellDownDataType = "OS_Status";
+// We are using EventId = "MSD_001" for all cell outage alarms as they are set by ML_Enrichment policy
+// Get any existing cell outage alarms for current site
+ExistingCellDownFilter = "SiteCode = '"+site_name+"' and EventId = 'MSD_001' and Severity >0 and Type=1 and (ImpactFlag = 4 or ImpactFlag =5 or ImpactFlag =6) ";
+ExistingCellDownOutput = GetByFilter(ExistingCellDownDataType, ExistingCellDownFilter,False);
+NumExistingCellDownOutput = Length(ExistingCellDownOutput);
+
+//If there are any existing Cell Outage Alarm current SyntheticEvent should be downgraded to Site Partial Down
+if(NumExistingCellDownOutput>0){
+synSummary2 ="";
+if(CellOfSite ==0){
+synSummary2 = NumExistingCellDownOutput +" cells down";
+}else{
+synSummary2 = NumExistingCellDownOutput +" cells down of " +CellOfSite +" total cells";
+}
+//24-12-2010 : We may receive new Problem events duing Resolution event hibernation so current SE can become Site Down
+if( (NumExistingCellDownOutput>= CellOfSite) and (CellOfSite >0)){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " We still have cell outage alarm so update current event to Site Down..."); 
+ExistingSiteDownOutput[0].Summary = "Site Down";
+ExistingSiteDownOutput[0].EventId = SynSD_EventID;
+ExistingSiteDownOutput[0].ImpactFlag = impactFlag_MSD;
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " We still have cell outage alarm so update current event to Site Parital Down..."); 
+ExistingSiteDownOutput[0].Summary = "Site Partial Down "+ synSummary2 ;
+ExistingSiteDownOutput[0].EventId = SynPSD_EventID;
+ExistingSiteDownOutput[0].ImpactFlag = impactFlag_MSD;
+}
+@SyntheticServerSerial = ExistingSiteDownOutput[0].ServerSerial;
+@SyntheticServerName = ExistingSiteDownOutput[0].ServerName;
+// Add entery into Synthetic event journal for this cell alarm
+MobiLib.AddGenericJournal(ExistingSiteDownOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+@ImpactFlag = 6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 2 Setting ImpactFlag = 6 Earlier");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 2 Setting ImpactFlag = 6 Earlier Completed");
+/*
+13/12/2010 - NP
+Comment : Add Batch update as per Alex's requirement to reset ImpactFlag of respective parentEvents
+*/
+MSDSEDataType = "OS_Status"; 
+parent_serial = replace(ExistingSiteDownOutput[0].ParentSerial, ";", ",");
+child_serial = replace(ExistingSiteDownOutput[0].ChildSerial, ";", ",");
+child_serial = replace(child_serial, ",,", ",");
+
+//Remove the extra comma from end 
+if(Length(child_serial)>2){
+comma= substring(child_serial,Length(child_serial)-1);
+
+if(comma==","){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Before child_serial="+child_serial);
+child_serial= substring(child_serial,0,Length(child_serial)-1);
+} 
+}
+//child_serial = replace(@ChildSerial, ",,", ",");
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " parent_serial == " + parent_serial + " child_serial == " + child_serial);
+if(Length(parent_serial)>0 and Length(child_serial)>0){
+MSDSEUpdateFilter = "ServerSerial In ("+parent_serial+") Or ServerSerial In ("+child_serial+")";
+MSDSEUpdateExpression = "ParentChild = 0, SuppressEscl= 0, ImpactFlag = 6, ChildSerial = '', ParentSerial = ''";
+BatchUpdate(MSDSEDataType, MSDSEUpdateFilter, MSDSEUpdateExpression );
+}
+
+/*
+log("Processing env alarms to add into syn event journal area...");
+// Searching for Environmental Alarms
+ExistingEnvDataType = "OS_Status";
+//ExistingEnvFilter = "Node like '"+site_name+"_' And EventType = 'Environmental Alarm' And Severity > 1";
+ExistingEnvFilter = "Site = '"+site_name+"' And (EventType = 'environmentalAlarm' OR EventType = 'Environmental Alarm') And Severity > 1";
+ExistingEnvOutput = GetByFilter(ExistingEnvDataType, ExistingEnvFilter ,False);
+NumExistingEnvOutput = Length(ExistingEnvOutput);
+log(" NumExistingEnvOutput = " + NumExistingEnvOutput);
+if (NumExistingEnvOutput > 0){
+log("We do have environmental alarms");
+counter = 0;
+while (counter < NumExistingEnvOutput){
+// Clear the Environmental events and add their details in the synthetic event.
+ExistingEnvOutput[counter].Severity = 0;
+
+// Insert Env events details in the Synthetic event.
+// Insert Env events details in the "Site Down" event.
+// site_down_server = ExistingSiteDownOutput[counter].ServerName;
+envJournal_Node = ExistingEnvOutput [counter].Node;
+envJournal_AlertGroup = ExistingEnvOutput [counter].AlertGroup;
+env_event_time = localtime(ExistingEnvOutput [counter].FirstOccurrence , "dd/MM/yy HH:mm:ss");
+envJournal_Summary = ExistingEnvOutput [counter].Summary;
+envJournal_message = " Event Raised Node: " + envJournal_Node+ " EventType: " + envJournal_AlertGroup+ " EventTime: " + env_event_time + " Event Text: " + envJournal_Summary;
+log("envJournal_message = " + envJournal_message);
+MobiLib.GenericJournal(ExistingSiteDownOutput[0].ServerSerial, journal_timestamp, envJournal_message,messageType,@NodeAlias);
+counter = counter + 1;
+}
+}else{
+log("We do not have environmental alarms");
+}
+*/
+exit();
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " We do not have any cell outage alarm so clear the synthetic event..."+ExistingSiteDownOutput[0].ServerSerial+"#ExistingSiteDownOutputSerial:"+ExistingSiteDownOutputSerial);
+/*
+@SyntheticServerSerial = ExistingSiteDownOutput[0].ServerSerial;
+@SyntheticServerName = ExistingSiteDownOutput[0].ServerName;
+*/
+@SyntheticServerSerial = ExistingSiteDownOutputSerial;
+@SyntheticServerName = ExistingSiteDownOutputServerName;
+// Add entery into Synthetic event journal for this cell alarm
+MobiLib.AddGenericJournal(ExistingSiteDownOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+// ReturnEvent(EventContainer);
+ExistingSiteDownOutput[0].Severity = 0;
+ExistingSiteDownOutput[0].ClearTime= getdate();
+ExistingSiteDownOutput[0].ExpireID= 65517;
+@ImpactFlag = 6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " ImpactFlag = 6 Returned Earlier Again");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " ImpactFlag = 6 Returned Earlier Again Completed");
+/*
+13/12/2010 - NP
+Comment : Add Batch update as per Alex's requirement to reset ImpactFlag of respective parentEvents
+*/
+
+MSDSEDataType = "OS_Status"; 
+
+parent_serial = replace(ExistingSiteDownOutputParentSerial, ";", ",");
+child_serial = replace(ExistingSiteDownOutputChildSerial, ";", ",");
+child_serial = replace(child_serial, ",,", ",");
+
+//Remove the extra comma from end 
+if(Length(child_serial)>2){
+comma= substring(child_serial,Length(child_serial)-1);
+
+if(comma==","){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Before child_serial="+child_serial);
+child_serial= substring(child_serial,0,Length(child_serial)-1);
+} 
+}
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " parent_serial == " + parent_serial + " child_serial == " + child_serial);
+if(Length(parent_serial)>0 and Length(child_serial)>0){
+MSDSEUpdateFilter = "ServerSerial In ("+parent_serial+") Or ServerSerial In ("+child_serial+")";
+MSDSEUpdateExpression = "ParentChild = 0, SuppressEscl= 0, ImpactFlag = 6, ChildSerial = '', ParentSerial = ''";
+BatchUpdate(MSDSEDataType, MSDSEUpdateFilter, MSDSEUpdateExpression );
+}
+
+exit();
+}
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " #Deleted SE's Serial :"+ExistingSiteDownOutputSerial);
+} 
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " current event is NOT cleared...");
+//Current event is not cleared and we have syntheticevent exist
+}
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Synthetic Event does not exists...");
+if(isCleared){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " It is cleared event and no synthetic event exists to do nothing and exit");
+@ImpactFlag = 6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit Completed, EXITING ...***********");
+exit();
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " It is not cleared event and we don't have synthetic event exist...");
+}
+}
+if(isCleared){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " After wakeup event is cleared so do nothing and exit");
+@ImpactFlag = 6; 
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit, Completed Exiting ##########");
+exit();
+}else{
+//Current Event alarm is not cleared...
+//Check any existing Synthetic event exist or not
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class in (200013,200014) and EventId in ('MSD_003','MSD_004','MSD_005') And Severity = 5";
+ExistingSiteDownOutput= GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+//local variable to store SE's Serial - as per IBM L3 support
+ExistingSiteDownOutputSerial=0;
+if(NumExistingSiteDownOutput>0){
+isExist = true;
+ExistingSiteDownOutputSerial=ExistingSiteDownOutput[0].Serial;
+}else{
+isExist = false;
+}
+//Nitesh Patel - 11/10/2010
+//Check for existing network site down event created from ML_Site_Down
+i = 0;
+while(i<NumExistingSiteDownOutput){
+if(ExistingSiteDownOutput[i].Class == 200013){
+isSDSyn = true;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " We have network synthetic event exist for site : "+ExistingSiteDownOutput[i].SiteCode);
+}
+i = i +1;
+}
+
+//If we have existing network synthetic site down event then supress cell down event and respective synthetic event
+if(isSDSyn){
+i = 0;
+while(i<NumExistingSiteDownOutput){
+
+if(ExistingSiteDownOutput[i].Class == 200014){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Clear synthetic event as we already have network site down Node:"+ExistingSiteDownOutput[i].Node);
+ExistingSiteDownOutput[0].ClearTime= getdate();
+ExistingSiteDownOutput[0].ExpireID= 65517;
+ExistingSiteDownOutput[i].Severity = 0;
+}
+i = i +1;
+}
+@ImpactFlag = 6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit COMPLETED, EXiting ~~~~~~~~~~~~~~~~~~");
+exit();
+}
+
+//Get the number of cell outage alarms for current site
+ExistingCellDownDataType = "OS_Status";
+ExistingCellDownFilter = "SiteCode = '"+site_name+"' and EventId = 'MSD_001' and Severity >0 and Type=1 and (ImpactFlag =4 or ImpactFlag =5 or ImpactFlag =6) ";
+ExistingCellDownOutput = GetByFilter(ExistingCellDownDataType, ExistingCellDownFilter,False);
+NumExistingCellDownOutput = Length(ExistingCellDownOutput);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " NumExistingCellDownOutput:"+NumExistingCellDownOutput+"#CellOfSite:"+CellOfSite);
+if(NumExistingCellDownOutput==0){
+//Don't have any more Problem event so plz don't create SE
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " It is problem event but during processing all problem events get cleared so do nothing and exit...");
+@ImpactFlag = 6; 
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exiting");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Setting ImpactFlag = 6 Before Exit COmpleted, EXIting ################ ");
+exit();
+}
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " isCleared:"+isCleared+"#isExist:"+isExist);
+synSummary2="";
+if(CellOfSite ==0){
+synSummary2 = NumExistingCellDownOutput +" cells down";
+}else{
+synSummary2 = NumExistingCellDownOutput +" cells down of " +CellOfSite +" total cells";
+}
+synImpactFlag = 6;
+if(isExist && !isCleared){
+//If Number of cell and Number of cell outage alarms equals then Site Down Synthetic event
+if(NumExistingCellDownOutput>= CellOfSite){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Updating to Site Down");
+ExistingSiteDownOutput[0].Summary = "Site Down";
+ExistingSiteDownOutput[0].EventId = SynSD_EventID;
+ExistingSiteDownOutput[0].ImpactFlag = synImpactFlag;
+
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Updating to Partial Site Down");
+ExistingSiteDownOutput[0].Summary = "Site Partial Down "+ synSummary2 ;
+ExistingSiteDownOutput[0].EventId = SynPSD_EventID;
+ExistingSiteDownOutput[0].ImpactFlag = synImpactFlag;
+
+}
+}
+SynEventId = SynSD_EventID;
+if(!isExist && !isCleared){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Partial Site Down");
+SynSiteSummary = "Site Partial Down " + synSummary2 ; 
+SynLogTicket = 1;
+SynEventId = SynPSD_EventID;
+synImpactFlag = 5;
+
+if((NumExistingCellDownOutput) >= CellOfSite){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Site Down");
+SynSiteSummary = "Site Down"; 
+SynEventId = SynSD_EventID;
+SynLogTicket = 0;
+synImpactFlag = 6;
+}
+/*
+08/12/2010 - NP
+Once again check for existins SE which can be created by other thread which are running in parellel. So enusre one thread at a time can 
+check for existing SE and create as single transcation, we are using synchronized block
+*/
+synchronized(SE_site_name){
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class in (200013,200014) and EventId in ('MSD_003','MSD_004','MSD_005') And Severity = 5";
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Again Check SE :"+ExistingSiteDownFilter);
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+if(NumExistingSiteDownOutput ==0){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " SE Does Not Exit Create It");
+//Create new Site down Synthetic Event
+SiteDown = NewObject();
+
+SiteDown.Node = site_name;
+SiteDown.NodeAlias = @BTS_Name;
+SiteDown.BSC_Name = @BSC_Name;
+SiteDown.Summary = SynSiteSummary;
+SiteDown.AlertGroup = @AlertGroup;
+SiteDown.AlertKey = SynSiteSummary;
+SiteDown.EventId = SynEventId;
+SiteDown.Severity = 5;
+SiteDown.Type = 1;
+SiteDown.Agent = "Netcool Impact";
+SiteDown.Manager = "Netcool Impact";
+SiteDown.FirstOccurrence = @FirstOccurrence;
+SiteDown.LastOccurrence = @LastOccurrence;
+SiteDown.LogTicket = 0;
+// NP 20101022 added timestamp to prevent deduplication where resolved synthetic event is already in the obj server
+SiteDown.Identifier = SiteDown.Node + SiteDown.Summary + SiteDown.Type + SiteDown.EventId + getdate();
+SiteDown.Class = 200014; // Must be set properly
+//Set ImpactFlag based on Site down or Site Partial down
+SiteDown.ImpactFlag = synImpactFlag ;
+SiteDown.Domain = @Domain;
+SiteDown.Region = @Region;
+SiteDown.ManCity = @ManCity;
+SiteDown.CovCity = @CovCity;
+SiteDown.OutsourceContractor = @OutsourceContractor;
+SiteDown.BusImportance = @BusImportance;
+SiteDown.Vendor = @Vendor;
+SiteDown.Site =@Site;
+SiteDown.SiteCode=site_name;
+SiteDown.OmcEms =@OmcEms;
+SiteDown.AdvCorrServerSerial = @Serial;
+
+// 20110718 INC22618 Chris Janes 
+SiteDown.OwnerUID = 65534;
+// 20110718 End Change
+
+AddDataItem('OS_Status', SiteDown);
+// ReturnEvent(EventContainer);
+}
+}
+// Add Journal entry for current event as it might possible that created SE resolved during the Hibernation period.
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Looking For SE Just Created");
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class=200014 and EventId in ('MSD_003','MSD_004','MSD_005') and Severity = 5";
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+if(NumExistingSiteDownOutput>0){
+//Set SyntheticServerName and SyntheticSeverSerial to cell alarm
+ExistingSiteDownOutputSerial =ExistingSiteDownOutput[0].ServerSerial;
+@SyntheticServerName = ExistingSiteDownOutput[0].ServerName;
+@SyntheticServerSerial = ExistingSiteDownOutput[0].ServerSerial;
+// ReturnEvent(EventContainer);
+MobiLib.AddGenericJournal(ExistingSiteDownOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+//ReturnEvent(EventContainer);
+}
+
+//Check if is Site Partial Down event.
+//If yes then
+// Add journal entry for current entry into synthetic event and then Hibernate
+if(Length(SynSiteSummary) > Length('Site Down')){
+
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Lookup sleep time");
+// Get the site level for sleeping time
+// 21012011 - Comment below line and make SleepTime hardcoded to 10 minutes as per Julian's email for c3 change
+MobiLib.getSleepTime(site_name,"Partial site down",sleep_time);
+//sleep_time=600;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Sleep for X time : "+sleep_time);
+//sleep_time=90;
+//ML_CellHibernate.Cell_Hibernation(ActionKey ,sleep_time);
+
+Time = LocalTime(GetDate(), "MM/dd/yyyy HH:mm:ss zz");
+Log(Time);
+@HibernateFlag = 1;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 22 Return HibernateFlag = 1 Before Hibernation");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 22 Return HibernateFlag = 1 Before Hibernation Completed");
+ActionKey = "Cell_Down_" + @ServerSerial + @ServerName + "#" + getdate();
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Going To Sleep " + ActionKey + " for " + sleep_time + " Sec");
+Hibernate(ActionKey , NULL, sleep_time);
+RemoveHibernation(ActionKey);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Wake Up " + ActionKey );
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 22 Return HibernateFlag = 2 After Hibernation");
+@HibernateFlag = 2;
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " 22 Return HibernateFlag = 2 After Hibernation Completed");
+
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Check whether event is cleared or not #Severity:"+@Severity);
+statusDB = "OS_Status";
+alertFilter = "Serial ="+@Serial;
+Log("alertFilter:"+alertFilter);
+alertOutput=GetByFilter(statusDB,alertFilter,false);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " alertOutput[0].Severity:-"+alertOutput[0].Severity);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Length(alertOutput):"+Length(alertOutput));
+if(alertOutput[0].Severity==0){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Our current event got cleared [Node:"+@Node+",Identifier:"+@Identifier+"]");
+@ImpactFlag=6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Another ImpactFlag = 6 update");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Another ImpactFlag = 6 update, Completed");
+
+//30/06/2011 - NP
+// CR - If 1st network event got cleared during hibernation than check for SE, if it is PSD then set LogTicket=1
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class=200014 and EventId in ('MSD_003','MSD_004','MSD_005') and Severity = 5";
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+if(NumExistingSiteDownOutput>0){
+ExistingSiteDownOutputSerial = ExistingSiteDownOutput[0].ServerSerial;
+if(Length(ExistingSiteDownOutput[0].Summary) > Length('Site Down')){
+ExistingSiteDownOutput[0].LogTicket = 1;
+Log("Current Serial : "+@Serial + " got cleared but SE exists : "+ ExistingSiteDownOutputSerial);
+// ReturnEvent(EventContainer);
+}
+}
+
+exit();
+}
+}
+//Needs to fetch SyntheticServerName and SyntheticServerSerial from Synthetic event and update Cell alarm with that value.
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class=200014 and EventId in ('MSD_003','MSD_004','MSD_005') and Severity = 5";
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+if(NumExistingSiteDownOutput>0){
+ExistingSiteDownOutputSerial = ExistingSiteDownOutput[0].ServerSerial;
+if(Length(ExistingSiteDownOutput[0].Summary) > Length('Site Down')){
+ExistingSiteDownOutput[0].LogTicket = 1;
+}
+}
+}else{
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Node"+ExistingSiteDownOutput [0].Node+"ImpactFlag:"+ExistingSiteDownOutput[0].ImpactFlag);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Node:"+@Node+"#Identifier:"+@Identifier);
+
+MSDSEDataType = "OS_Status"; 
+parent_serial = replace(ExistingSiteDownOutput[0].ParentSerial, ";", ",");
+child_serial = replace(ExistingSiteDownOutput[0].ChildSerial, ";", ",");
+child_serial = replace(child_serial, ",,", ",");
+
+//Remove the extra comma from end 
+if(Length(child_serial)>2){
+comma= substring(child_serial,Length(child_serial)-1);
+
+if(comma==","){
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " Before child_serial="+child_serial);
+child_serial= substring(child_serial,0,Length(child_serial)-1);
+} 
+}
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " parent_serial == " + parent_serial + " child_serial == " + child_serial);
+if(Length(parent_serial)>0 and Length(child_serial)>0){
+MSDSEUpdateFilter = "ServerSerial In ("+parent_serial+") Or ServerSerial In ("+child_serial+")";
+MSDSEUpdateExpression = "ParentChild = 0, SuppressEscl= 0, ImpactFlag = 6, ChildSerial = '', ParentSerial = ''";
+BatchUpdate(MSDSEDataType, MSDSEUpdateFilter, MSDSEUpdateExpression );
+}
+
+//Set SyntheticServerName and SyntheticSeverSerial to cell alarm
+@SyntheticServerName = ExistingSiteDownOutput[0].ServerName;
+@SyntheticServerSerial = ExistingSiteDownOutput[0].ServerSerial;
+// ReturnEvent(EventContainer);
+
+MobiLib.AddGenericJournal(ExistingSiteDownOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+ReturnEvent(EventContainer);
+}
+
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' and Class=200014 and EventId in ('MSD_003','MSD_004','MSD_005') and Severity = 5";
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " NumExistingSiteDownOutput :"+NumExistingSiteDownOutput );
+/* Comment environmental logic as it cause unnecessary clearance of networkt events
+Get confirm from the - Sohaib on 26/04/2011
+ExistingEnvDataType = "OS_Status";
+ExistingEnvFilter = "SiteCode = '"+site_name+"' And (EventType = 'environmentalAlarm' OR EventType = 'Environmental Alarm') And Severity > 2";
+ExistingEnvOutput = GetByFilter(ExistingEnvDataType, ExistingEnvFilter ,False);
+NumExistingEnvOutput = Length(ExistingEnvOutput);
+log(" NumExistingEnvOutput = " + NumExistingEnvOutput);
+
+if (NumExistingEnvOutput > 0){
+log("We do have environmental alarms");
+
+counter = 0; 
+information="";
+while (counter < NumExistingEnvOutput){
+// Clear the Environmental events and add their details in the synthetic event.
+ExistingEnvOutput[counter].Severity = 0;
+// Insert Env events details in the "Site Down" event.
+last_occurrence = LocalTime(ExistingEnvOutput[counter].LastOccurrence, "dd/MM/yyyy HH:mm:ss");
+if(Length(ExistingSiteDownOutput[0].Information)==0 && counter==0){
+information=last_occurrence+" "+ExistingEnvOutput[counter].Summary+"; ";
+}else{
+information= information + last_occurrence+" "+ExistingEnvOutput[counter].Summary+"; ";
+}
+counter = counter + 1;
+}
+ExistingSiteDownOutput[0].Information=information;
+
+}else{
+log("We do not have environmental alarms");
+}
+*/
+
+/*
+06/10/2010 - Comment environmental alarm code as per Julian's instruction for soft launch
+// Searching for Environmental Alarms
+ExistingEnvDataType = "OS_Status";
+ExistingEnvFilter = "Site = '"+site_name+"' And (EventType = 'environmentalAlarm' OR EventType = 'Environmental Alarm') And Severity > 1";
+ExistingEnvOutput = GetByFilter(ExistingEnvDataType, ExistingEnvFilter ,False);
+NumExistingEnvOutput = Length(ExistingEnvOutput);
+log(" NumExistingEnvOutput = " + NumExistingEnvOutput);
+
+if (NumExistingEnvOutput > 0){
+log("We do have environmental alarms");
+
+counter = 0;
+while (counter < NumExistingEnvOutput){
+// Clear the Environmental events and add their details in the synthetic event.
+ExistingEnvOutput[counter].Severity = 0;
+// Insert Env events details in the "Site Down" event.
+// site_down_server = ExistingSiteDownOutput[counter].ServerName;
+envJournal_Node = ExistingEnvOutput[counter].Node;
+envJournal_AlertGroup = ExistingEnvOutput[counter].AlertGroup;
+env_event_time = localtime(ExistingEnvOutput[counter].LastOccurrence , "dd/MM/yy HH:mm:ss");
+envJournal_Summary = ExistingEnvOutput[counter].Summary;
+envJournal_message = " Event Raised Node: " + envJournal_Node+ " EventType: " + envJournal_AlertGroup+ " EventTime: " + env_event_time + " Event Text: " + envJournal_Summary;
+MobiLib.GenericJournal(ExistingSiteDownOutput[0].ServerSerial, journal_timestamp, envJournal_message,messageType,@NodeAlias);
+log("envJournal_message = " + envJournal_message);
+
+counter = counter + 1;
+}
+}else{
+log("We do not have environmental alarms");
+}
+*/
+// ReturnEvent(EventContainer);
+
+}
+
+@ImpactFlag = 6;
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " LAST ImpactFlag = 6 Return");
+ReturnEvent(EventContainer);
+Log("Current Serial = " + @ServerSerial + " : " + @NodeAlias + " ************ Cell_Down_PL Start END ***********");

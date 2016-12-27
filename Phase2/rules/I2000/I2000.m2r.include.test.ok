@@ -1,0 +1,22 @@
+######
+# iMAP include file
+######
+case ".1.3.6.1.4.1.2011.2.15.2.1.2.1.1.1": # - iMAPNorthboundHeartbeatNotification
+	@Manager = "I2000"
+			@Agent = "IMAP_NORTHBOUND_MIB-V2"
+			@Summary = "iMAPNorthboundHeartbeatNotificationType: The I2000 sends the heartbeat notification trap to the NMS regularly each period. If the NMS receives the trap, the connection between the NMS and the I2000 works. If not, the connection fails."
+			@Severity = 1
+			@Type = 2
+			@Identifier = @Node + @Summary
+			details($iMAPNorthboundHeartbeatSystemLabel,$iMAPNorthboundHeartbeatPeriod,$iMAPNorthboundHeartbeatTimeStamp)
+
+case ".1.3.6.1.4.1.2011.2.15.2.4.3.3": # - iMAPNorthboundFaultAlarmNotification
+	@Manager = "I2000"
+		default:
+			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+			@Severity = 1
+			details($*)
+	}
+
+

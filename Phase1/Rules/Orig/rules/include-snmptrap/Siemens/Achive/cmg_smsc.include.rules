@@ -1,0 +1,1292 @@
+#############################################################################
+#
+#		cmg_smsc.include.rules
+#
+#		Netcool Mttrapd Rules Include File for CMG SMSC.
+#		This is based upon CMG SMSC Agent MIB
+#
+#	V0.0	20100401	Original						Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.3830.1.1.2.2.1":	#
+    log(DEBUG, "<<<<< Entering... cmg_smsc..include.rules >>>>>")
+    @Agent = "CMG-SMSC-MIB"
+    $enterpriseName = "opcomAgent"
+    @AddText = $enterprise
+    @Class = "100006"
+    $OS_ExpireTime = 600
+    $OPTION_TypeFieldUsage = "3.6"
+@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+    switch($specific-trap)
+    {
+
+        case "10": ### smscInternalTrap
+						$trapNotificationId = $1
+						$trapSeverity = $2
+						$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+						$trapTimeStamp = $4
+##		        DESCRIPTION 		            "Internal status information of the agent
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+        case "50": ### smscInternalIndeterminateTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+        case "51": ### smscInternalCriticalTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+        case "52": ### smscInternalMajorTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+        case "53": ### smscInternalMinorTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+        case "54": ### smscInternalWarningTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+        case "55": ### smscInternalClearTrap
+					$trapNotificationId = $1
+					$trapSeverity = $2
+					$trapData = $3 
+					$trapData_hex  = $3_hex						# 
+					$trapTimeStamp = $4
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+#					$StrSMSCSummary =  "Internal status information of the agent"
+					@AlertGroup=$trapNotificationId 
+
+
+		case "100"|"1000"|"1001"|"1002"|"1003"|"1004"|"1005" : ###smscSmhTrap 
+					$trapNotificationId = $1					#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3									# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscSmhName  = $4					# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+					$StrSMSCSummary = $trapData
+					@AlertGroup=$smscSmhName
+					@Identifier = @Node + @AlertGroup + @AlertGroup
+		
+					#		MANAGEDOBJECT-TABLE: smscSmh
+					#		MANAGEDOBJECT-DEFAULT: smscAgent"
+
+case "200"|"2000"|"2001"|"2002"|"2003"|"2004"|"2005":   ###  smscSIWMENUTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWMENUName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWMENUName  		
+
+
+case "201"|"2010"|"2011"|"2012"|"2013"|"2014"|"2015":   ###  smscSIWPCTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWPCName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWPCName  
+
+
+case "202"|"2020"|"2021"|"2022"|"2023"|"2024"|"2025":   ###  smscSIWPLMNTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWPLMNName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWPLMNName  	
+
+
+case "203"|"2030"|"2031"|"2032"|"2033"|"2034"|"2035":   ###  smscSIWIMPORTTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWIMPORTName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWIMPORTName 		
+
+
+case "204"|"2040"|"2041"|"2042"|"2043"|"2044"|"2045":   ###  smscSIWVMSTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWVMSName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWVMSName  		
+
+
+case "205"|"2050"|"2051"|"2052"|"2053"|"2054"|"2055":   ###  smscSIWIVRTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWIVRName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWIVRName  	
+
+
+case "206"|"2060"|"2061"|"2062"|"2063"|"2064"|"2065":   ###  smscSIWVSMPPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWVSMPPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWVSMPPName  
+
+
+case "207"|"2070"|"2071"|"2072"|"2073"|"2074"|"2075":   ###  smscSIWTAPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWTAPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWTAPName  	
+
+
+case "208"|"2080"|"2081"|"2082"|"2083"|"2084"|"2085":   ###  smscSIWSMPPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWSMPPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWSMPPName 
+
+
+case "209"|"2090"|"2091"|"2092"|"2093"|"2094"|"2095":   ###  smscSIWOISTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWOISName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWOISName
+
+
+case "210"|"2100"|"2101"|"2102"|"2103"|"2104"|"2105":   ###  smscSIWCDMATrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWCDMAName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWCDMAName  
+
+
+case "211"|"2110"|"2111"|"2112"|"2113"|"2114"|"2115":   ###  smscSIWOTATrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSIWOTAName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSIWOTAName
+
+case "212"|"2120"|"2121"|"2122"|"2123"|"2124"|"2125":   ###  smscSITTDMATrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSITTDMAName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSITTDMAName  
+
+
+case "300"|"3000"|"3001"|"3002"|"3003"|"3004"|"3005":   ###  smscDIWMENUTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWMENUName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWMENUName 
+
+
+case "301"|"3010"|"3011"|"3012"|"3013"|"3014"|"3015":   ###  smscDIWPCTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWPCName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWPCName  
+
+
+case "302"|"3020"|"3021"|"3022"|"3023"|"3024"|"3025":   ###  smscDIWPLMNTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWPLMNName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWPLMNName  
+
+
+case "303"|"3030"|"3031"|"3032"|"3033"|"3034"|"3035":   ###  smscDIWFAXTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWFAXName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWFAXName  	
+
+
+case "304"|"3040"|"3041"|"3042"|"3043"|"3044"|"3045":   ###  smscDIWERMESTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWERMESName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWERMESName  
+
+
+case "305"|"3050"|"3051"|"3052"|"3053"|"3054"|"3055":   ###  smscDIWTAPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWTAPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWTAPName  
+
+
+case "306"|"3060"|"3061"|"3062"|"3063"|"3064"|"3065":   ###  smscDIWOISTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWOISName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWOISName  
+
+
+case "307"|"3070"|"3071"|"3072"|"3073"|"3074"|"3075":   ###  smscDIWCDMATrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWCDMAName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWCDMAName  
+
+
+case "308"|"3080"|"3081"|"3082"|"3083"|"3084"|"3085":   ###  smscDIWSMTPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWSMTPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWSMTPName 
+
+
+case "308"|"3080"|"3081"|"3082"|"3083"|"3084"|"3085":   ###  smscDIWTDMATrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWTDMAName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWTDMAName  
+
+
+case "310"|"3100"|"3101"|"3102"|"3103"|"3104"|"3105":   ###  smscDIWENUMTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscDIWENUMName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscDIWENUMName 
+
+
+  case "400"|"4000"|"4001"|"4002"|"4003"|"4004"|"4005":   #smscX25TrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscX25Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscX25Name
+
+
+
+
+  case "401"|"4010"|"4011"|"4012"|"4013"|"4014"|"4015":   #smscTcpTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscTcpName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscTcpName
+
+
+
+
+
+  case "402"|"4020"|"4021"|"4022"|"4023"|"4024"|"4025":   #smscX29TrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscX29Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscX29Name
+
+
+
+  case "403"|"4030"|"4031"|"4032"|"4033"|"4034"|"4035":   #smscEmapTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscEmapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscEmapName
+
+
+
+case "404"|"4040"|"4041"|"4042"|"4043"|"4044"|"4045":   #smscPstnaTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscPstnaName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscPstnaName
+
+
+
+
+case "405"|"4050"|"4051"|"4052"|"4053"|"4054"|"4055":   #smscGiwTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscGiwName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscGiwName
+
+
+
+case "406"|"4060"|"4061"|"4062"|"4063"|"4064"|"4065":   #smscFax3srvTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscFax3srvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscFax3srvName
+
+
+
+case "407"|"4070"|"4071"|"4072"|"4073"|"4074"|"4075":   #smscEirTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscEirName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscEirName
+
+
+
+case "408"|"4080"|"4081"|"4082"|"4083"|"4084"|"4085":   #smscDlhTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscDlhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscDlhName
+
+
+
+case "409"|"4090"|"4091"|"4092"|"4093"|"4094"|"4085":   #smscSsdTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscSsdName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscSsdName
+
+
+
+
+case "410"|"4100"|"4101"|"4102"|"4103"|"4104"|"4105":   #smscPrhTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscPrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscPrhName
+
+
+
+
+case "411"|"4110"|"4111"|"4112"|"4113"|"4114"|"4115":   #smscFrhTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscFrhName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscFrhName
+
+
+
+case "412"|"4120"|"4121"|"4122"|"4123"|"4124"|"4125":   #smscIsdnTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscIsdnName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscIsdnName
+
+
+case "413"|"4130"|"4131"|"4132"|"4133"|"4134"|"4135":   #smscLogsrvTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscLogsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscLogsrvName
+
+
+
+case "414"|"4140"|"4141"|"4142"|"4143"|"4144"|"4145":   #smscTrcsrvTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscTrcsrvName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscTrcsrvName
+
+
+
+
+case "415"|"4150"|"4151"|"4152"|"4153"|"4154"|"4155":   #smscIs41TrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscIs41Name  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscIs41Name
+
+
+
+
+case "416"|"4160"|"4161"|"4162"|"4163"|"4164"|"4165":   #smscPbrTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscPbrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscPbrName
+
+
+
+
+
+case "417"|"4170"|"4171"|"4172"|"4173"|"4174"|"4175":   #smscRtrTrapOld 
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscRtrName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscRtrName
+
+
+
+
+case "418"|"4180"|"4181"|"4182"|"4183"|"4184"|"4185":   ###  smscRASTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscRASName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscRASName  
+
+
+case "419"|"4190"|"4191"|"4192"|"4193"|"4194"|"4195":   ###  smscPBBTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPBBName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPBBName  
+
+
+case "420"|"4200"|"4201"|"4202"|"4203"|"4204"|"4205":   ###  smscCmLogTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscCmLogName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscCmLogName  
+
+
+case "500"|"5000"|"5001"|"5002"|"5003"|"5004"|"5005":   ###  smscMDTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscMDName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscMDName  
+
+
+case "501"|"5010"|"5011"|"5012"|"5013"|"5014"|"5015":   ###  smscADTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscADName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscADName
+
+
+case "600"|"6000"|"6001"|"6002"|"6003"|"6004"|"6005":   ###  smscX25Trap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscX25Name  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscX25Name 
+
+
+case "601"|"6010"|"6011"|"6012"|"6013"|"6014"|"6015":   ###  smscTCPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscTCPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscTCPName 
+
+
+case "602"|"6020"|"6021"|"6022"|"6023"|"6024"|"6025":   ###  smscV29Trap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscV29Name  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscV29Name  
+
+
+case "603"|"6030"|"6031"|"6032"|"6033"|"6034"|"6035":   ###  smscEMAPTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscEMAPName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscEMAPName 
+
+
+case "604"|"6040"|"6041"|"6042"|"6043"|"6044"|"6045":   ###  smscPSTNATrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPSTNAName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPSTNAName  
+
+
+case "605"|"6050"|"6051"|"6052"|"6053"|"6054"|"6055":   ###  smscGIWTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscGIWName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscGIWName  
+
+
+case "606"|"6060"|"6061"|"6062"|"6063"|"6064"|"6065":   ###  smscFax3SrvTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscFax3SrvName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscFax3SrvName  
+
+
+case "607"|"6070"|"6071"|"6072"|"6073"|"6074"|"6075":   ###  smscISDNTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscISDNName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscISDNName  
+
+
+case "608"|"6080"|"6081"|"6082"|"6083"|"6084"|"6085":   ###  smscIS41Trap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscIS41Name  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscIS41Name  
+
+
+case "609"|"6090"|"6091"|"6092"|"6093"|"6094"|"6095":   ###  smscRTRTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscRTRName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscRTRName  
+
+
+case "610"|"6100"|"6101"|"6102"|"6103"|"6104"|"6105":   ###  smscRASTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscRASName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscRASName  
+
+
+case "611"|"6110"|"6111"|"6112"|"6113"|"6114"|"6115":   ###  smscGLHRTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscGLHRName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscGLHRName  
+
+
+case "612"|"6120"|"6121"|"6122"|"6123"|"6124"|"6125":   ###  smscOTAIS41Trap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscOTAIS41Name  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscOTAIS41Name
+
+
+case "613"|"6130"|"6131"|"6132"|"6133"|"6134"|"6135":   ###  smscPHLRTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPHLRName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPHLRName 
+
+
+case "700"|"7000"|"7001"|"7002"|"7003"|"7004"|"7005":   ###  smscEIRTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscEIRName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscEIRName  
+
+
+case "701"|"7010"|"7011"|"7012"|"7013"|"7014"|"7015":   ###  smscPLHTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPLHName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPLHName 	
+
+
+case "702"|"7020"|"7021"|"7022"|"7023"|"7024"|"7025":   ###  smscSSDTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscSSDName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscSSDName  
+
+
+case "703"|"7030"|"7031"|"7032"|"7033"|"7034"|"7035":   ###  smscPRHTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPRHName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPRHName  
+
+
+case "704"|"7040"|"7041"|"7042"|"7043"|"7044"|"7045":   ###  smscFRHTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscFRHName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscFRHName  
+
+
+case "705"|"7050"|"7051"|"7052"|"7053"|"7054"|"7055":   ###  smscLOGSRVTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscLOGSRVName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscLOGSRVName  
+
+case "706"|"7060"|"7061"|"7062"|"7063"|"7064"|"7065":   ###  smscTRCSRVTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscTRCSRVName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscTRCSRVName  
+
+
+case "707"|"7070"|"7071"|"7072"|"7073"|"7074"|"7075":   ###  smscPBRTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPBRName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPBRName  
+
+case "708"|"7080"|"7081"|"7082"|"7083"|"7084"|"7085":   ###  smscPBBTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscPBBName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscPBBName  
+
+
+case "709"|"7090"|"7091"|"7092"|"7093"|"7094"|"7095":   ###  smscCMLOGTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscCMLOGName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscCMLOGName  
+
+
+case "710"|"7100"|"7101"|"7102"|"7103"|"7104"|"7105":   ###  smscIP7Trap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscIP7Name  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscIP7Name  
+
+case "711"|"7110"|"7111"|"7112"|"7113"|"7114"|"7115":   ###  smscLIWTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscLIWName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscLIWName  
+
+
+case "712"|"7120"|"7121"|"7122"|"7123"|"7124"|"7125":   ###  smscStoreTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscStoreName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscStoreName  
+
+
+case "713"|"7130"|"7131"|"7132"|"7133"|"7134"|"7135":   ###  smscLauchTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscLauchName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscLauchName 
+
+
+case "714"|"7140"|"7141"|"7142"|"7143"|"7144"|"7145":   ###  smscLasmppTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscLasmppName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscLasmppName 
+
+
+case "800"|"8000"|"8001"|"8002"|"8003"|"8004"|"8005":   ###  smscMDTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscMDName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscMDName  
+
+
+case "810"|"8100"|"8101"|"8102"|"8103"|"8104"|"8105":   ###  smscADTrap 
+	$trapNotificationId = $1	
+	$trapSeverity = $2		
+	$trapData = $3		
+	$trapData_hex  = $3_hex	
+	$smscADName  = $4		
+	$trapTimeStamp  = $5		
+	$trapNodeName = $6		
+	[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+	$StrSMSCSummary = $trapData
+	@AlertGroup = $smscADName
+
+
+
+		default:
+					$trapNotificationId = $1						#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3										# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$trapData_hex  = $3_hex						# 
+					$smscTrapName  = $4						# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($trapSeverity, SeverityValue)
+
+					$StrSMSCSummary = $trapData
+					@AlertGroup = $smscTrapName
+					@URL = "Default " + @URL
+					details($*)
+			
+}
+
+
+					if (nmatch($trapData_hex, "25"))
+					{
+							$NumSplit = split($StrSMSCSummary, SplitArray, ",")
+#							$StrSMSCSummary = SplitArray[2]
+							$lenSMSCAK = length(SplitArray[1])
+							$AK = SplitArray[1]
+							@AlertKey = substr($AK, 2, int($lenSMSCAK))
+							@Summary = substr($StrSMSCSummary, int($lenSMSCAK)+2, 255)
+					}
+					else
+					{
+							@Summary = $StrSMSCSummary
+							@AlertKey = $StrSMSCSummary
+					}
+
+		$OS_Severity = $OS_Severity
+		@Severity = $OS_Severity
+		@Type = $OS_Type
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + $OS_Type
+		$OS_X733ProbableCause = $pnProbableCause
+		$OS_X733EventType = $pnAlarmType
+		update(@Summary)
+		details($*)
+				@Grade = $specific-trap
+
+

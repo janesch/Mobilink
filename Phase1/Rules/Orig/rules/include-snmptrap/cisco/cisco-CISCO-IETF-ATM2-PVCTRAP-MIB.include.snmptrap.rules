@@ -1,0 +1,116 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IETF-ATM2-PVCTRAP-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IETF-ATM2-PVCTRAP-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.29.2.1": ### Cisco Supplemental ATM Management Objects - Notifications from CISCO-IETF-ATM2-PVCTRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IETF-ATM2-PVCTRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Supplemental ATM Mgmt"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### atmIntfPvcFailuresTrap
+        
+            ##########
+            # $1 = ifIndex 
+            # $2 = atmIntfPvcFailures 
+            # $3 = atmIntfCurrentlyFailingPVcls
+            ##########
+ 
+            $ifIndex = $1
+            $atmIntfPvcFailures = $2
+            $atmIntfCurrentlyFailingPVcls = $3
+            details($ifIndex,$atmIntfPvcFailures,$atmIntfCurrentlyFailingPVcls)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ATM2-PVCTRAP-MIB-atmIntfPvcFailuresTrap"
+            
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "atmInterfaceConfEntry." + $1
+            @Summary = $3 + " PVCLs Failed on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            update(@Summary)
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IETF-ATM2-PVCTRAP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IETF-ATM2-PVCTRAP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IETF-ATM2-PVCTRAP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IETF-ATM2-PVCTRAP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IETF-ATM2-PVCTRAP-MIB.include.snmptrap.rules >>>>>")

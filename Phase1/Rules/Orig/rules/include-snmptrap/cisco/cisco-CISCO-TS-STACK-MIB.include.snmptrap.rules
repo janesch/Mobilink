@@ -1,0 +1,794 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules 1.0
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-TS-STACK-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.5.32.1.1": ### Catalyst 3900 and 3920 Token Ring Switches (ciscoTsConfig) - Traps from CISCO-TS-STACK-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-TS Configuration"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### ciscoTsStackCfgChange
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsNumSwitches
+            ##########
+  
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsNumSwitches = $3
+           
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsStackCfgChange"
+
+            @AlertGroup = "Stack Configuration"
+            @AlertKey = ""
+            @Summary = "Switch Added or Removed from Stack"
+
+	    $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsNumSwitches)
+
+        case "2": ### ciscoTsStackProStackMatrixChange
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsProStackMatrixStatus
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsProStackMatrixStatus = $3
+ 
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsStackProStackMatrixChange"
+
+            @AlertGroup = "Stack Matrix"
+            @AlertKey = ""
+            switch($3)
+            {
+                case "1": ### primary
+                    $SEV_KEY = $OS_EventId + "_primary"
+                    @Summary = "Stack Switched Over to Primary Matrix" 
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### secondary
+                    $SEV_KEY = $OS_EventId + "_secondary"
+                    @Summary = "Stack Switched Over to Secondary Matrix" 
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### none
+                    $SEV_KEY = $OS_EventId + "_none"
+                    @Summary = "Stack Not Connected to a Matrix" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### failed
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    @Summary = "Stack Matrix Failed"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Stack Matrix Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+            details($sysName,$sysLocation,$ciscoTsProStackMatrixStatus)
+
+        default:
+                
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-TS-STACK-MIB_sev) 
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-TS-STACK-MIB_sev) 
+    }
+
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_SWITCH.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_SWITCH.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+
+case ".1.3.6.1.4.1.9.5.32.2": ### Catalyst 3900 and 3920 Token Ring Switches (ciscoTsStack) - Traps from CISCO-TS-STACK-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-TS Stack"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "3": ### ciscoTsStackTempChange
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsStackSwitchTemperature 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsStackSwitchTemperature = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsStackTempChange"
+
+            @AlertGroup = "Stack Temperature"
+            @AlertKey = ""
+            @Summary = "Stack Switch Temperature " + $3 + "C"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsStackSwitchTemperature)
+ 
+        case "4": ### ciscoTsStackPwrStatusChange
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsStackSwitchPwrSupplyStatus
+            ##########
+            
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsStackSwitchPwrSupplyStatus = lookup($3, ciscoTsStackSwitchPwrSupplyStatus)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsStackPwrStatusChange"
+
+            @AlertGroup = "Stack Power"
+            @AlertKey = ""
+            @Summary = "Stack Power State Change to " + $ciscoTsStackSwitchPwrSupplyStatus
+   
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+  
+            details($sysName,$sysLocation,$ciscoTsStackSwitchPwrSupplyStatus)
+ 
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_STACK.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_STACK.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+
+    include "$NC_RULES_HOME/include-common/load_include.rules"
+    
+    log(DEBUG, "<<<<< Leaving... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.9.5.32.4": ### Catalyst 3900 and 3920 Token Ring Switches (ciscoTsPort) - Traps from CISCO-TS-STACK-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-TS Port"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### ciscoTsPortStrNFwdEntry
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsPortCfgActualForwardingMode
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsPortCfgActualForwardingMode = $3
+            $ciscoTsStackSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsPortCfgNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsPortStrNFwdEntry"
+            
+            @AlertGroup = "Port Store and Forward"
+            @AlertKey = "ciscoTsPortCfgEntry." + $ciscoTsStackSwitchNumber + $ciscoTsPortCfgNumber
+            @Summary = "Port Automatically Entered Store and Forward Mode  ( Switch.Port = " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsPortCfgActualForwardingMode,$ciscoTsStackSwitchNumber,$ciscoTsPortCfgNumber)
+ 
+        case "2": ### ciscoTsPortCfgLossTrap
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsPortStatsCfgLoss
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsPortStatsCfgLoss = $3
+            $ciscoTsStackSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsPortCfgNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsPortCfgLossTrap"
+
+            @AlertGroup = "Port Configuration"
+            @AlertKey = "ciscoTsPortCfgEntry." + $ciscoTsStackSwitchNumber + $ciscoTsPortCfgNumber
+            @Summary = "Port Disabled, Configuration Loss Threshold Exceeded  ( Switch.Port = " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsPortStatsCfgLoss,$ciscoTsStackSwitchNumber,$ciscoTsPortCfgNumber)
+ 
+        case "3": ### ciscoTsBeaconStart
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsPortCfgNumber 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsPortCfgNumber = $3
+            $ciscoTsStackSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsPortCfgNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsBeaconStart"
+
+            @AlertGroup = "Station Beacon"
+            @AlertKey = "ciscoTsPortCfgEntry." + $ciscoTsStackSwitchNumber + $ciscoTsPortCfgNumber
+            @Summary = "Station Beaconing on Port " + $3
+   
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsPortCfgNumber,$ciscoTsStackSwitchNumber,$ciscoTsPortCfgNumber)
+
+        case "4": ### ciscoTsBeaconEnd
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsPortCfgNumber
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsPortCfgNumber = $3
+            $ciscoTsStackSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsPortCfgNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsBeaconEnd"
+
+            @AlertGroup = "Station Beacon"
+            @AlertKey = "ciscoTsPortCfgEntry." + $ciscoTsStackSwitchNumber + $ciscoTsPortCfgNumber
+            @Summary = "Station Beaconing Ended on Port " + $3
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsPortCfgNumber,$ciscoTsStackSwitchNumber,$ciscoTsPortCfgNumber)
+ 
+        case "5": ### ciscoTsDuplicateMACAddr
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsPortCfgNumber
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsPortCfgNumber = $3
+            $ciscoTsStackSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsPortCfgNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsDuplicateMACAddr"
+
+            @AlertGroup = "Duplicate MAC Address"
+            @AlertKey = "ciscoTsPortCfgEntry." + $ciscoTsStackSwitchNumber + $ciscoTsPortCfgNumber
+            @Summary = "Duplicate MAC Address Detected on Port " + $3 + " in a TrCRF"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsPortCfgNumber,$ciscoTsStackSwitchNumber,$ciscoTsPortCfgNumber)
+ 
+        case "6": ### ciscoTsPortSoftErrExceededTrap
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsStackSwitchNumber
+            # $4 = ciscoTsPortCfgNumber
+            # $5 = ringStationIfIndex
+            # $6 = ringStationMacAddress
+            # $7 = ifName
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsStackSwitchNumber = $3
+            $ciscoTsPortCfgNumber = $4
+            $ringStationIfIndex = $5
+            $ringStationMacAddress = $6
+            $ifName = $7
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsPortSoftErrExceededTrap"
+       
+            @AlertGroup = "Port Errors"
+            @AlertKey = "ciscoTsPortCfgEntry." + $ciscoTsStackSwitchNumber + $ciscoTsPortCfgNumber
+            @Summary = "Port " + $7 + " Exceeded Soft Error Threshold  ( Switch.Port = " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsStackSwitchNumber,$ciscoTsPortCfgNumber,$ringStationIfIndex,$ringStationMacAddress,$ifName)
+ 
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_PORT.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_PORT.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-common/load_include.rules"
+    
+    log(DEBUG, "<<<<< Leaving... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.9.5.32.6": ### Catalyst 3900 and 3920 Token Ring Switches (ciscoTsVLANS) - Traps from CISCO-TS-STACK-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-TS VLAN (TrCRF & TrBRF)"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### ciscoTsTrCRFNewRoot
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsTrCRFInfoTrCRFNumber 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsTrCRFInfoTrCRFNumber = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsTrCRFNewRoot"
+
+            @AlertGroup = "TrCRF New Root"
+            @AlertKey = "ciscoTsTrCRFInfoEntry." + $3
+            @Summary = @Node + " is New Root of the Spanning Tree  ( TrCRF Number " + $3 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsTrCRFInfoTrCRFNumber)
+ 
+        case "2": ### ciscoTsTrCRFTopologyChange
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsTrCRFInfoTrCRFNumber 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsTrCRFInfoTrCRFNumber = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsTrCRFTopologyChange"
+
+            @AlertGroup = "TrCRF Topology Change"
+            @AlertKey = "ciscoTsTrCRFInfoEntry." + $3
+            @Summary = "Port Transitioned from Learning to Forwarding, or from Forwarding to Blocking  ( TrCRF Number " + $3 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsTrCRFInfoTrCRFNumber)
+
+        case "3": ### ciscoTsTrBRFNewRoot
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsTrBRFInfoTrBRFNumber 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsTrBRFInfoTrBRFNumber = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsTrBRFNewRoot"
+
+            @AlertGroup = "TrBRF New Root"
+            @AlertKey = "ciscoTsTrBRFInfoEntry." + $3
+            @Summary = @Node + " is New Root of the Spanning Tree  ( TrBRF Number " + $3 + " )"
+ 
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsTrBRFInfoTrBRFNumber)
+
+        case "4": ### ciscoTsTrBRFTopologyChange
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsTrBRFInfoTrBRFNumber 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsTrBRFInfoTrBRFNumber = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsTrBRFTopologyChange"
+
+            @AlertGroup = "TrBRF Topology Change"
+            @AlertKey = "ciscoTsTrBRFInfoEntry." + $3
+            @Summary = "Port Transitioned from Learning to Forwarding, or from Forwarding to Blocking  ( TrBRF Number " + $3 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsTrBRFInfoTrBRFNumber)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_TREE.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_TREE.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-common/load_include.rules"
+   
+    log(DEBUG, "<<<<< Leaving... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+
+case ".1.3.6.1.4.1.9.5.32.7": ### Catalyst 3900 and 3920 Token Ring Switches (ciscoTsTChannel) - Traps from CISCO-TS-STACK-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-TS TokenChannel"
+    @Class = "40057"
+   
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### ciscoTsTokenChannelFailed
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsTCPorts 
+            ##########
+
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsTCPorts = $3
+            $ciscoTsTCSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsTCNumber = extract($OID3, "\.([0-9]+)$")
+ 
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsTokenChannelFailed"        
+
+            @AlertGroup = "Token Channel Status"
+            @AlertKey = "ciscoTsTCEntry." + $ciscoTsTCSwitchNumber + $ciscoTsTCNumber
+            @Summary = "Token Channel Failed  ( Switch.Channel = " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysName,$sysLocation,$ciscoTsTCPorts,$ciscoTsTCSwitchNumber,$ciscoTsTCNumber)
+
+        case "2": ### ciscoTsTokenChannelStatus
+
+            ##########
+            # $1 = sysName
+            # $2 = sysLocation
+            # $3 = ciscoTsTCStatus
+            # $4 = ciscoTsTCPorts 
+            # $5 = ciscoTsTCActivePorts 
+            ##########
+ 
+            $sysName = $1
+            $sysLocation = $2
+            $ciscoTsTCStatus = lookup($3, ciscoTsTCStatus) + " ( " + $3 + " )"
+            $ciscoTsTCPorts = $4
+            $ciscoTsTCActivePorts = $5
+            $ciscoTsTCSwitchNumber = extract($OID3, "\.([0-9]+)\.[0-9]+$")
+            $ciscoTsTCNumber = extract($OID3, "\.([0-9]+)$")
+           
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-TS-STACK-MIB-ciscoTsTokenChannelStatus"
+
+            @AlertGroup = "Token Channel Status"
+            @AlertKey = "ciscoTsTCEntry." + $ciscoTsTCSwitchNumber + $ciscoTsTCNumber
+
+            switch($3)
+            {
+                case "1": ### up
+                    $SEV_KEY = $OS_EventId + "_up"
+                    @Summary = "Token Channel Up  ( Switch.Channel = " + @AlertKey + " )"
+		
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### down
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = "Token Channel Down  ( Switch.Channel = " + @AlertKey + " )"
+		
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### reduced
+                    $SEV_KEY = $OS_EventId + "_reduced"
+                    @Summary = "Token Channel Reduced  ( Switch.Channel = " + @AlertKey + " )"
+		
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+	            $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Token Channel Unknown  ( Switch.Channel = " + @AlertKey + " )"
+		
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+            details($sysName,$sysLocation,$ciscoTsTCStatus,$ciscoTsTCPorts,$ciscoTsTCActivePorts,$ciscoTsTCSwitchNumber,$ciscoTsTCNumber)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-TS-STACK-MIB_sev)
+    }
+
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_CHANNEL.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-TS-STACK-MIB_CHANNEL.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-common/load_include.rules"
+
+    log(DEBUG, "<<<<< Leaving... cisco-CISCO-TS-STACK-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,312 @@
+/*------------------------------------------------------------------------------------------------------- 
+ Policy Name: ML_BNSI_CriticalHardwareError
+
+ Author: Chris Janes, Innovise 
+
+ Description: This policy processes the Ericsson BNSI Critical Hardware Error alarms.
+ This policy is based on ML_IN_CriticalHardwareError authored by Mihai Strava
+ 
+ The policy will check for the existence of Synthetic event 
+ and updates the current network event as a child event for the synthetic event.
+ If a synthetic event is not available, then a new one will be generated.
+ 
+ For DIMM related alarms, the policy is creating a synthetic event as parent for
+ all the DIMM network events coming from the same location/node and populates
+ the SyntheticServerName, SyntheticServerSerial, TTState, TTNumber of the child
+ DIMM network events with the info from the parent event.
+ It also adds entries for each DIMM child event in the DIMM parent event journal.
+
+ Same treatment for Mirror Vdisk alarms, after 5 minutes hibernation
+
+ For the rest of the hardware alarms the policy marks them for TT creation after
+ waiting for a certain amount of time to make sure they don't get quickly cleared
+ in the ObjectServer.
+.
+
+ Further details of the policies design can be found in BNSI-DPC LLD.dox
+ 
+ Reviewed By: 
+ 
+ V 0.0  20111117    Chris Janes     Original
+------------------------------------------------------------------------------------------------------- 
+ Event Reader filter :ImpactFlag = 4 And Domain = 'IN' And Type = 1 And EventId in ('NET_IN_EQT_001','NET_IN_EQT_003')
+ 
+------------------------------------------------------------------------------------------------------- */
+
+Log("-------------------Starting ML_INCriticalHardwareError policy -------------------");
+
+// Set Impact Flag to show we have started
+@ImpactFlag = 5;
+ReturnEvent(EventContainer);
+log("ImpactFlag: " + @ImpactFlag);
+
+// Set Policy local variables
+paramSummary=@Summary;
+paramType=@Type;
+paramNodeAlias=@NodeAlias;
+paramLastOcc=@LastOccurrence;
+paramSerial=@Serial;
+if(@Severity==0)
+{
+    paramLastOcc=@ClearTime;
+}
+
+// Check if the alarm is DIMM related or Mirror Vdisk related
+if (@EventId == 'NET_IN_EQT_001')
+{
+    Log("Check if a synthetic event already exists");
+    ExistingDIMMynthDataType = "OS_Status";
+    ExistingDIMMSynthFilter = "Node = '" + @Node + "' And EventId = 'SYN_IN_EQT_001' And Severity > 0";
+    ExistingDIMMSynthOutput = GetByFilter(ExistingDIMMynthDataType, ExistingDIMMSynthFilter, False);
+    NumExistingDIMMSynth = Length(ExistingDIMMSynthOutput);
+ 
+// Wait for 10 seconds until a second check (to avoid creation of multiple synthetic events; for cases
+// when 2 or more alarms arrive almost simultaneous)
+    if (NumExistingDIMMSynth == 0)
+    {
+        NetworkAlarmDB = "OS_Status";
+        NetworkAlarmFilter = "NodeAlias = '" + @NodeAlias + "' and EventId = 'NET_IN_EQT_001' and Type=1 and Severity >0 and ImpactFlag=5 and SyntheticServerSerial=0";
+        NetworkAlarmOutput = GetByFilter(NetworkAlarmDB,NetworkAlarmFilter,false);
+        NumNetworkAlarmOutput = Length(NetworkAlarmOutput);
+      
+        i=0;
+        while(i<NumNetworkAlarmOutput)
+        {
+            if (@Serial>NetworkAlarmOutput[i].Serial)
+            {
+                 EventKey = @Serial;
+                 ActionKey =  EventKey + "-"+ getDate() + "#" + getdate();
+                 TimeOut = 10;
+                // Hibernate for TimeOut Seconds 
+                 log("Starting hibernation for: " + @Serial + "  Expire in: " + TimeOut);
+                 Hibernate(ActionKey, NULL, TimeOut);
+                 log("Deleting Hibernation for = " + @Serial);
+                 RemoveHibernation(ActionKey);
+                 i = NumNetworkAlarmOutput;
+            }
+            else
+            {
+             i = i + 1;
+            }
+        }  
+         
+        ExistingDIMMynthDataType = "OS_Status";
+        ExistingDIMMSynthFilter = "Node = '" + @Node + "' And EventId = 'SYN_IN_EQT_001' And Severity > 0";
+        ExistingDIMMSynthOutput = GetByFilter(ExistingDIMMynthDataType, ExistingDIMMSynthFilter, False);
+        NumExistingDIMMSynth = Length(ExistingDIMMSynthOutput);
+    }
+ 
+    // Create the DIMM synthetic event
+    if (NumExistingDIMMSynth == 0)
+    {
+        Log ("No Synthetic Event Found. Create Synthetic DIMM Multiple Error Event");
+
+        DIMM= NewObject();
+        DIMM.Node = @Node;
+        DIMM.NodeAlias = @NodeAlias;
+        DIMM.Summary = "Equipment Alarm (DIMM related)";
+        DIMM.AlertGroup = @AlertGroup;
+        DIMM.Agent= "Netcool Impact";
+        DIMM.Manager= "Netcool Impact";
+        DIMM.Severity = 5;
+        DIMM.Type = 1;
+        DIMM.LogTicket = 1;
+        DIMM.ImpactFlag = 6;
+        DIMM.MaintFlag = @MaintFlag;
+        DIMM.EventId = "SYN_IN_EQT_001";
+        DIMM.Class = 200036;
+        DIMM.Site = @Site;
+        DIMM.SiteCode = @SiteCode;
+        DIMM.Identifier = @Node + DIMM.Summary + DIMM.Type + DIMM.EventId + @LastOccurrence;
+        DIMM.FirstOccurrence = getdate();
+        DIMM.LastOccurrence = getdate();
+        DIMM.Domain = @Domain;
+        DIMM.Region = @Region;
+        DIMM.ManCity = @ManCity;
+        DIMM.CovCity = @CovCity;
+        DIMM.OutsourceContractor = @OutsourceContractor;
+        DIMM.BusImportance = @BusImportance;
+        DIMM.Vendor = @Vendor;
+        DIMM.BSC_Name = @BSC_Name;
+        DIMM.BTS_Name = @BTS_Name;
+        DIMM.AdvCorrServerSerial = @Serial;
+        DIMM.OmcEms = @OmcEms;
+        // 20110718 INC22618 Chris Janes 
+        DIMM.OwnerUID = 65534;
+        // 20110718 End Change
+
+
+        AddDataItem('OS_Status', DIMM);
+        Log("New DIMM Multiple Error Synthetic Event Created");
+    }
+    // Retrieve the DIMM synthetic event ServerName & ServerSerial and add them to the current event 
+    ExistingDIMMynthDataType = "OS_Status";
+    ExistingDIMMSynthFilter = "Node = '" + @Node + "' And EventId = 'SYN_IN_EQT_001'";
+    ExistingDIMMSynthOutput = GetByFilter(ExistingDIMMynthDataType, ExistingDIMMSynthFilter, False);
+    NumExistingDIMMSynth = Length(ExistingDIMMSynthOutput);
+    Log("Update SyntheticServerSerial & SyntheticServerName Of Current Event");
+    @SyntheticServerName = ExistingDIMMSynthOutput[0].ServerName;
+    @SyntheticServerSerial = ExistingDIMMSynthOutput[0].ServerSerial;
+    ExistingDIMMSynthOutput[0].Severity = @Severity;
+
+    // Add the current network event as a child of the existing synthetic event by
+    // adding an entry in the synthetic event journal
+
+    Log("Update Synthetic event Journal by inserting the current event details");
+
+    Log("Current Serial = " + @Serial + " : Check if the journal entry is not already there");
+    ExistingDIMMSynthOutputSerial = ExistingDIMMSynthOutput[0].ServerSerial;
+    MobiLib.AddGenericJournal(ExistingDIMMSynthOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+    // Mark the end of event processing     
+    @ImpactFlag = 6;
+    ReturnEvent(EventContainer);
+    log("ImpactFlag: " + @ImpactFlag);
+    Log("-------------------Stopping ML_INCriticalHardwareError policy -------------------");
+}
+elseif (@EventId == 'NET_IN_EQT_003')
+{
+    // Hibernate for 5 minutes
+    log("Starting hibernation for Mirror vdisk alarm: " + @Serial + "  Expire in: " + TimeOut);
+
+    EventKey = @Serial;
+    ActionKey =  EventKey + "-"+ getDate()+ "#" + getdate() ;
+    TimeOut = 300;
+
+    Hibernate(ActionKey, NULL, TimeOut);
+    log("Deleting Hibernation for = " + @Serial);
+    RemoveHibernation(ActionKey);
+
+    // Check if the event was cleared
+    Log("Checking if the event still exists and is not cleared");
+    ExistingMirrVdiskDataType = "OS_Status";
+    ExistingMirrVdiskFilter = "Serial = " + EventKey + " And Severity > 0";
+    ExistingMirrVdiskOutput = GetByFilter(ExistingMirrVdiskDataType, ExistingMirrVdiskFilter, False);
+    NumExistingMirrVdisk = Length(ExistingMirrVdiskOutput);
+ 
+    if (NumExistingMirrVdisk == 0)
+    {
+        Log("Mirror vdisk alarm: " + EventKey + " doesn't exist anymore or was cleared");
+        Log("-------------------Stopping ML_INCriticalHardwareError policy -------------------");
+    }
+    else 
+    {
+        Log("Check if a Mirror vdisk synthetic event already exists");
+
+        MyString = @Summary;
+        Delimiters = ":";
+        MirrorVdisk = Split(MyString, Delimiters);
+        log("MirrorVdisk is: " + MirrorVdisk[2]);
+
+        ExistingMirrVdiskSynthDataType = "OS_Status";
+        ExistingMirrVdiskSynthFilter = "Node = '" + @Node + "' And EventId = 'SYN_IN_EQT_002' And Severity > 0 And Summary like '" + MirrorVdisk[2] + "'";
+        ExistingMirrVdiskSynthOutput = GetByFilter(ExistingMirrVdiskSynthDataType, ExistingMirrVdiskSynthFilter, False);
+        NumExistingMirrVdiskSynth = Length(ExistingMirrVdiskSynthOutput);
+
+        // Wait for 10 seconds until a second check (to avoid creation of multiple synthetic events; for cases
+        // when 2 or more alarms arrive almost simultaneous)
+        if (NumExistingMirrVdiskSynth == 0)
+        {
+            NetworkAlarmDB = "OS_Status";
+            NetworkAlarmFilter = "NodeAlias = '" + @NodeAlias + "' and EventId = 'NET_IN_EQT_003' and Type=1 and Severity >0 and ImpactFlag=5 and SyntheticServerSerial=0 And Summary like '" + MirrorVdisk[2] + "'";
+            NetworkAlarmOutput = GetByFilter(NetworkAlarmDB,NetworkAlarmFilter,false);
+            NumNetworkAlarmOutput = Length(NetworkAlarmOutput);
+
+            i=0;
+            while(i<NumNetworkAlarmOutput)
+            {
+                if (@Serial>NetworkAlarmOutput[i].Serial)
+                {
+                    EventKey = @Serial;
+                    ActionKey =  EventKey + "-"+ getDate() + "#" + getdate();
+                    TimeOut = 10;
+                    // Hibernate for TimeOut Seconds 
+                    log("Starting hibernation for: " + @Serial + "  Expire in: " + TimeOut);
+                    Hibernate(ActionKey, NULL, TimeOut);
+                    log("Deleting Hibernation for = " + @Serial);
+                    RemoveHibernation(ActionKey);
+                    i = NumNetworkAlarmOutput;
+                }
+                else
+                {
+                    i = i + 1;
+                }
+            }  
+
+            ExistingMirrVdiskSynthDataType = "OS_Status";
+            ExistingMirrVdiskSynthFilter = "Node = '" + @Node + "' And EventId = 'SYN_IN_EQT_002' And Severity > 0 And Summary like '" + MirrorVdisk[2] + "'";
+            ExistingMirrVdiskSynthOutput = GetByFilter(ExistingMirrVdiskSynthDataType, ExistingMirrVdiskSynthFilter, False);
+            NumExistingMirrVdiskSynth = Length(ExistingMirrVdiskSynthOutput);
+        }
+
+        // Create the MirrVdisk synthetic event
+        if (NumExistingMirrVdiskSynth == 0)
+        {
+            Log ("No Synthetic Event Found. Creating Synthetic MirrVdisk Multiple Error Event");
+
+            MirrVdisk= NewObject();
+            MirrVdisk.Node = @Node;
+            MirrVdisk.NodeAlias = @NodeAlias;
+            MirrVdisk.Summary = "Equipment Alarm (" + MirrorVdisk[2] + ")";
+            MirrVdisk.AlertGroup = @AlertGroup;
+            MirrVdisk.Agent= "Netcool Impact";
+            MirrVdisk.Manager= "Netcool Impact";
+            MirrVdisk.Severity = 5;
+            MirrVdisk.Type = 1;
+            MirrVdisk.LogTicket = 1;
+            MirrVdisk.ImpactFlag = 6;
+            MirrVdisk.MaintFlag = @MaintFlag;
+            MirrVdisk.EventId = "SYN_IN_EQT_002";
+            MirrVdisk.Class = 200043;
+            MirrVdisk.Site = @Site;
+            MirrVdisk.SiteCode = @SiteCode;
+            MirrVdisk.Identifier = @Node + MirrVdisk.Summary + MirrVdisk.Type + MirrVdisk.EventId + @LastOccurrence;
+            MirrVdisk.FirstOccurrence = getdate();
+            MirrVdisk.LastOccurrence = getdate();
+            MirrVdisk.Domain = @Domain;
+            MirrVdisk.Region = @Region;
+            MirrVdisk.ManCity = @ManCity;
+            MirrVdisk.CovCity = @CovCity;
+            MirrVdisk.OutsourceContractor = @OutsourceContractor;
+            MirrVdisk.BusImportance = @BusImportance;
+            MirrVdisk.Vendor = @Vendor;
+            MirrVdisk.BSC_Name = @BSC_Name;
+            MirrVdisk.BTS_Name = @BTS_Name;
+            MirrVdisk.AdvCorrServerSerial = @Serial;
+            MirrVdisk.OmcEms = @OmcEms;
+             // 20110718 INC22618 Chris Janes 
+            MirrVdisk.OwnerUID = 65534;
+            // 20110718 End Change
+
+
+            AddDataItem('OS_Status', MirrVdisk);
+            Log("New MirrVdisk Multiple Error Synthetic Event Created");
+        }
+ 
+        // Retrieve the Mirror vdisk synthetic event ServerName & ServerSerial and add them to the current event 
+        ExistingMirrVdiskSynthDataType = "OS_Status";
+        ExistingMirrVdiskSynthFilter = "Node = '" + @Node + "' And EventId = 'SYN_IN_EQT_002'";
+        ExistingMirrVdiskSynthOutput = GetByFilter(ExistingMirrVdiskSynthDataType, ExistingMirrVdiskSynthFilter, False);
+
+        Log("Update SyntheticServerSerial, SyntheticServerName, TTNumber, TTState Of Current Event");
+        @SyntheticServerName = ExistingMirrVdiskSynthOutput[0].ServerName;
+        @SyntheticServerSerial = ExistingMirrVdiskSynthOutput[0].ServerSerial;
+        ExistingMirrVdiskSynthOutput[0].Severity = @Severity;
+
+        // Add the current network event as a child of the existing synthetic event by
+        // adding an entry in the synthetic event journal
+
+        Log("Update Synthetic event Journal by inserting the current event details");
+
+        messageType = 'PROBLEM';
+
+        Log("Current Serial = " + @Serial + " : Check if the journal entry is not already there");
+        ExistingMirrVdiskSynthOutputSerial = ExistingMirrVdiskSynthOutput[0].ServerSerial;
+        MobiLib.AddGenericJournal(ExistingMirrVdiskSynthOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+        // Mark the end of event processing     
+        @ImpactFlag = 6;
+        ReturnEvent(EventContainer);
+        log("ImpactFlag: " + @ImpactFlag);
+        Log("-------------------Stopping ML_INCriticalHardwareError policy -------------------");
+    }
+  
+}

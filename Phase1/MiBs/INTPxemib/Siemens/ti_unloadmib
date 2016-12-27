@@ -1,0 +1,85 @@
+#!/bin/sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HPOVDIR=/opt/OV
+
+#*--- "main" function : ---*
+
+[ -r $HPOVDIR/bin/ov.envvars.sh ] || {
+cat <<_END_
+ERROR: HP OV NNM not installed in the right version.
+       At least version 4.1 is required.
+_END_
+  exit 1
+}
+. $HPOVDIR/bin/ov.envvars.sh || exit 2
+
+[ -x $OV_BIN/xnmloadmib ] || {
+  echo "ERROR: $OV_BIN/xnmloadmib not executable."
+  exit 3
+}
+
+#--- RB0462 BEGIN ---*
+pkginfo -q INTPaesrv && {
+cat <<_END_
+
+ERROR: It's for no use to process the Shellscript at the @Commander Server.
+       Nothing done. 
+       Please install the package 'INTPxemib.tar.Z' at an Operation System.
+
+_END_
+  exit 4
+}
+#--- RB0462 END   ---*
+
+for MIBFile in \
+    $OV_SNMP_MIBS/Vendor/Siemens/BRS-MIB-AL \
+    $OV_SNMP_MIBS/Vendor/Siemens/RP-MIB-AL  \
+    $OV_SNMP_MIBS/Vendor/Siemens/SCP-MIB-AL \
+    $OV_SNMP_MIBS/Vendor/Siemens/SMP-MIB-AL \
+    $OV_SNMP_MIBS/Vendor/Siemens/ICP-MIB-AL \
+    $OV_SNMP_MIBS/Vendor/Siemens/CSC-MIB-SG \
+    $OV_SNMP_MIBS/Vendor/Siemens/IN-MIB-AL  \
+    $OV_SNMP_MIBS/Vendor/Siemens/INC-MIB-EFD \
+    $OV_SNMP_MIBS/Vendor/Siemens/INC-MIB-AL \
+    $OV_SNMP_MIBS/Vendor/Siemens/INC-MIB-C
+do
+  if [ -f "$MIBFile" ]
+  then
+    $OV_BIN/xnmloadmib -event -unload `/bin/basename $MIBFile`
+  else
+    echo "WARNING: expected MIB file $MIBFile not found."
+  fi
+done
+
+echo "$0: INFO: INCommander SNMP MIB module unloading completed."
+exit 0
+
+#*--- End of script ---*

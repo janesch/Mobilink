@@ -1,0 +1,668 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-ISIS-MIB.include.snmptrap.rules 1.0
+#    2007/06/11 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ISIS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.3.37.2": ### IETF IS-IS Routing Protocol - Notifications from ISIS-MIB(RFC1195) 
+
+    log(DEBUG, "<<<<< Entering... IETF-ISIS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-ISIS Routing Protocol"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### isisDatabaseOverload
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisSysLevelOverloadState 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisSysLevelOverloadState = lookup($3, LevelState) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisDatabaseOverload"
+
+            @AlertGroup = "ISIS Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2
+            switch($3)
+            {
+                case "1": ### off
+                    @Summary = "System Enters/Leave Overload State Off"
+
+                    $SEV_KEY = $OS_EventId + "_off"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### on
+                    @Summary = "System Enters/Leave Overload State On"
+
+                    $SEV_KEY = $OS_EventId + "_on"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### waiting
+                    @Summary = "System Enters/Leave Overload State Waiting"
+
+                    $SEV_KEY = $OS_EventId + "_waiting"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "4": ### overloaded
+                    @Summary = "System Enters/Leave Overload State"
+
+                    $SEV_KEY = $OS_EventId + "_overloaded"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    @Summary = "System Enters/Leave Overload State Unknown "
+
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisSysLevelOverloadState)
+
+        case "2": ### isisManualAddressDrops
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisManAreaAddrExistState 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisManAreaAddrExistState = lookup($3, RowStatus) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisManualAddressDrops"
+
+            @AlertGroup = "ISIS Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2
+            switch($3)
+            {
+                case "1": ### active
+                    $SEV_KEY = $OS_EventId + "_active"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### notInService
+                    $SEV_KEY = $OS_EventId + "_notInService"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### notReady
+                    $SEV_KEY = $OS_EventId + "_notReady"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### createAndGo
+                    $SEV_KEY = $OS_EventId + "_createAndGo"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "5": ### createAndWait
+                    $SEV_KEY = $OS_EventId + "_createAndWait"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "6": ### destroy
+                    $SEV_KEY = $OS_EventId + "_destroy"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            
+            }
+            @Summary = "Manual " + $3 + " AreaAddresses Assigned to System Ignored in Route Computing"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisManAreaAddrExistState)
+
+        case "3": ### isisCorruptedLSPDetected
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisPduLspId 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisPduLspId = $3
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisCorruptedLSPDetected"
+
+            @AlertGroup = "ISIS LSP Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2
+            @Summary = "LSP Stored in Memory Corrupted"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisPduLspId)
+
+        case "4": ### isisAttemptToExceedMaxSequence
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisPduLspId 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisPduLspId = $3
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisAttemptToExceedMaxSequence"
+
+            @AlertGroup = "ISIS LSP Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 + ", isisNotificationEntry." + $1
+            @Summary = "Sequence Number of LSP Exceeds 32 bit Sequence Counter"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisPduLspId)
+
+        case "5": ### isisIDLenMismatch
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisPduFieldLen 
+            # $4 = isisCircIfIndex 
+            # $5 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisPduFieldLen = $3
+            $isisCircIfIndex = $4
+            $isisPduFragment = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisIDLenMismatch"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 + ", isisCircEntry." + $4
+            @Summary = "PDU Length Mismatched With System ID Length"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisPduFieldLen,$isisCircIfIndex,$isisPduFragment)
+
+        case "6": ### isisMaxAreaAddressesMismatch
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisPduMaxAreaAddress 
+            # $4 = isisCircIfIndex 
+            # $5 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisPduMaxAreaAddress = $3
+            $isisCircIfIndex = $4
+            $isisPduFragment = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisMaxAreaAddressesMismatch"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 + ", isisCircEntry." + $4
+            @Summary = "PDU Address Mismatched With the Maximum Area Address"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisPduMaxAreaAddress,$isisCircIfIndex,$isisPduFragment)
+
+        case "7": ### isisOwnLSPPurge
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduLspId 
+            # $5 = isisPduRemoteRouterID 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduLspId = $4
+            $isisPduRemoteRouterID = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisOwnLSPPurge"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3 + ", isisNotificationEntry." + $4
+            @Summary = "PDU Received Having SystemId and Zero Age"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduLspId,$isisPduRemoteRouterID)
+
+        case "8": ### isisSequenceNumberSkip
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduLspId 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduLspId = $4
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisSequenceNumberSkip"
+
+            @AlertGroup = "ISIS LSP Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3 + ", isisNotificationEntry." + $4
+            @Summary = "LSP Reissued Higher Sequence Number due to Absence of SystemID and Different Contents"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduLspId)
+
+        case "9": ### isisAuthenticationTypeFailure
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisAuthenticationTypeFailure"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3
+            @Summary = "PDU Received With Wrong Authentication Type Field"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduFragment)
+
+        case "10": ### isisAuthenticationFailure
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisAuthenticationFailure"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3
+            @Summary = "PDU Received With Incorrect Authentication Information"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduFragment)
+
+        case "11": ### isisVersionSkew
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduProtocolVersion 
+            # $5 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduProtocolVersion = $4
+            $isisPduFragment = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisVersionSkew"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3
+            @Summary = "Hello PDU Received from IS With different Protocol Version"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduProtocolVersion,$isisPduFragment)
+
+        case "12": ### isisAreaMismatch
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisAreaMismatch"
+
+            @AlertGroup = "ISIS PDU Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3
+            @Summary = "Hello PDU Received from IS with Different Area Address"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduFragment)
+
+        case "13": ### isisRejectedAdjacency
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisRejectedAdjacency"
+
+            @AlertGroup = "ISIS Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3
+            @Summary = "Hello PDU Received from IS With no Adjacency Established"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduFragment)
+
+        case "14": ### isisLSPTooLargeToPropagate
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduLspSize 
+            # $5 = isisPduLspId 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduLspSize = $4
+            $isisPduLspId = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisLSPTooLargeToPropagate"
+
+            @AlertGroup = "ISIS LSP Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3 + ", isisNotificationEntry." + $5
+            @Summary = "LSP Too Larger than DataLinkBlockSize to Propogate"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduLspSize,$isisPduLspId)
+
+        case "15": ### isisOrigLSPBuffSizeMismatch
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduLspId 
+            # $5 = isisPduOriginatingBufferSize 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduLspId = $4
+            $isisPduOriginatingBufferSize = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisOrigLSPBuffSizeMismatch"
+
+            @AlertGroup = "ISIS LSP Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3 + ", isisNotificationEntry." + $4
+            @Summary = "LSP Received With IsisOriginatingBufferSize Mismatched its Local Value"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduLspId,$isisPduOriginatingBufferSize)
+
+        case "16": ### isisProtocolsSupportedMismatch
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduProtocolsSupported 
+            # $5 = isisPduLspId 
+            # $6 = isisPduFragment 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduProtocolsSupported = $4
+            $isisPduLspId = $5
+            $isisPduFragment = $6
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisProtocolsSupportedMismatch"
+
+            @AlertGroup = "ISIS LSP Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3 + ", isisNotificationEntry." + $5
+            @Summary = "LSP Received With Different Protocols Support"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduProtocolsSupported,$isisPduLspId,$isisPduFragment)
+
+        case "17": ### isisAdjacencyChange
+
+            ##########
+            # $1 = isisSysInstance 
+            # $2 = isisSysLevelIndex 
+            # $3 = isisCircIfIndex 
+            # $4 = isisPduLspId 
+            # $5 = isisAdjState 
+            ##########
+
+            $isisSysInstance = $1
+            $isisSysLevelIndex = $2
+            $isisCircIfIndex = $3
+            $isisPduLspId = $4
+            $isisAdjState = lookup($5, isisAdjState) + " ( " + $5 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-ISIS-MIB-isisAdjacencyChange"
+
+            @AlertGroup = "ISIS Status"
+            @AlertKey = "isisSysLevelEntry." + $1 + "." + $2 +  ", isisCircEntry." + $3 + ", isisNotificationEntry." + $4
+            switch($5)
+            {
+                case "1": ### down
+
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### initializing
+
+                    $SEV_KEY = $OS_EventId + "_initializing"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+
+                case "3": ### up
+
+                    $SEV_KEY = $OS_EventId + "_up"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### failed
+
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                 
+                default:
+                     
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = "ISIS Adjacency State Changed to " + $5 + " State"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($isisSysInstance,$isisSysLevelIndex,$isisCircIfIndex,$isisPduLspId,$isisAdjState)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ISIS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ISIS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ISIS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ISIS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-ISIS-MIB.include.snmptrap.rules >>>>>")

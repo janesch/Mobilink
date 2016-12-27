@@ -1,0 +1,250 @@
+/*  X25 Failure TxN Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+    V 1.0   20100929    Chris Janes     Original
+    V 2.0   20101004    Chris Janes     RE-written due to a change in customer requirements
+
+    EventReader Filter:
+        EventID = 'X25FailTxN_001' for Partial OML Down' events
+        EventID = 'X25FailTxN_002' for Full OML Down' events
+
+*/
+
+
+log("Return ImpactFlag = 5 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer);
+
+// Is there an existing Synthetic Event
+
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "BSCName = "+ @BSCName + " and Class = 200017 And Severity > 0";
+log("SyntheticEventFilter = " + SyntheticEventFilter  );
+
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+//if so set LogTicket = 1
+log("NumSyntheticEventFilterOutput = " + NumSyntheticEvent );
+    
+if (NumSyntheticEvent > 0)
+{
+
+    // Get SleepTime
+    If (@EventId = ‘X25Fail_001)
+    {
+        alarm_id = 'Partial OML Down';
+    }
+    else
+    {
+        alarm_id = 'Partial OML Down';
+    }
+    site_name = @Site;
+    SleepTime = 0;
+    MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+    @Grade = SleepTime;
+    ReturnEvent(EventContainer);
+
+
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    @HibernateFlag = 1;        
+    ReturnEvent(EventContainer);
+
+    Action_key = 'X25Fail' + @ServerSerial + @ServerName;
+    Hibernate(Action_key, "Sleeping", SleepTime);
+
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    @HibernateFlag = 2;        
+    ReturnEvent(EventContainer);
+    
+    
+    // Is the event still there
+
+    DataType = "OS_Status";
+    Filter = "ServerSerial = "+ @ServerSerial + " and ServerName = '" + @ServerName + "' And Severity > 0";
+    log("Filter = " + Filter  );
+
+    SourceEvent = GetByFilter(DataType, Filter,False);
+    NumSourceEvent = Length(SourceEvent);
+    //if so set LogTicket = 1
+    log("NumSourceEvent = " + NumSourceEvent );
+
+    if (NumSourceEvent == 0)
+    {
+        // Event no longer Exists
+        Log("Event no longer exists so Exiting");
+        Exit();
+    }
+
+
+
+    // Raise Synthetic Event
+    
+    Log("Create New Event");
+    NewEvent = NewEvent(DefaultEventReader);
+    If (@EventId = ‘X25Fail_001)
+    {
+        NewEvent.Severity= 4;
+        NewEvent.Summary= "OML Partial Down Alarm Handling for " + BSCNAME;
+    }
+    Else
+    {
+        NewEvent.Severity= 5;
+        NewEvent.Summary= "OML Full Down Alarm Handling for " + BSCNAME;
+    }
+    
+    NewEvent.EventReaderName = "DefaultEventReader";
+    NewEvent.Node= EventContainer.Node;
+    NewEvent.NodeAlias= EventContainer.NodeAlias;
+    NewEvent.EventId = @EventID;
+    NewEvent.ImpactFlag = 0;
+    NewEvent.Domain=EventContainer.Domain;
+    NewEvent.Site=EventContainer.Site;
+    NewEvent.NePriority=EventContainer.NePriority;
+    NewEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+    NewEvent.OmcEms='Impact';
+    NewEvent.Region=EventContainer.Region;
+    NewEvent.ManCity=EventContainer.ManCity;
+    NewEvent.CovCity=EventContainer.CovCity;
+    NewEvent.Agent = "Netcool Impact";
+    NewEvent.AlertGroup = 'X25 Failure TxN';
+    NewEvent.AlertKey = EventContainer.BSCName ;
+    NewEvent.EventType = EventContainer.EventType ;
+    NewEvent.Network= EventContainer.Network;
+    NewEvent.Identifier= "X25FailTxN" + @BSCName;
+    NewEvent.Type= 1;
+    NewEvent.Tally= 1;
+    NewEvent.HibernateFlag = 99;
+
+    NewEvent.SyntheticServerName = "";
+    NewEvent.SyntheticServerSerial = 0;
+    NewEvent.FirstOccurrence = NowTime ;
+    NewEvent.LastOccurrence = NowTime ;
+    NewEvent.LogTicket = 1;
+    NewEvent.Class = 200017;
+    AddDataItem('Status', NewEvent);
+    Log("New Event Created ");
+    
+}
+
+// Get Details of Synthetic Event
+Action_key = 'X25FailTxN' + @ServerSerial + @ServerName;
+
+
+Count = 0;
+//while(Num_Synthetic_Event == 0)
+//{
+    //Wait % seconds
+    Hibernate(Action_key, "Sleeping", 5 );
+    RemoveHibernation(Action_key); 
+
+
+    //Does the Synthetic event exist?
+    DataType = "Status";  // this needs to be setup
+    Filter = "Class = 200017 and BSCName = '" + @BscName+ "'";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Synthetic_Event = Length(Synthetic_Event);
+    
+    Count = Count + 1;
+    if( Count > 10)
+    {
+        Log("Unable to locate  Synthetic Event after 50 seconds so exiting"):
+        Exit();
+    }
+//}
+
+//Update Source Event
+EventContainer.SyntheticServerName = Synthetic_Event[0].ServerName;        
+EventContainer.SyntheticServerSerial = Synthetic_Event[0].ServerSerial;        
+ReturnEvent(EventContainer);
+
+
+//Update Synthetic Event's Journal
+If (@EventId = ‘X25Fail_001)
+{
+    EventText = "OML Partial Down";
+}
+Else
+{
+    EventText = "OML Full Down";
+}
+
+EventTime = localtime(@FirstOccurrence , "dd/MM/yy HH:mm:ss");
+if (@Type == 2)
+{
+    TypeText = 'Resolution';
+}
+else
+{
+    TypeText = 'Problem';
+}
+JournalInsert = TypeText + " Event Raised Node: " + @Node + " EventType: " + @AlertGroup + " EventTime: " + EventTime + " Event Text: " + @Summary;        
+MobiLib.ParentJournalInsert(Synthetic_Event[0].ServerName, Synthetic_Event[0].ServerSerial, JournalInsert);
+
+
+// Get the number of Partial OML Down events for this BSC
+
+DataType = "Status";  // this needs to be setup
+Filter = "Class <> 200017 and EventId = 'X25Fail_001 'and BSCName = '" + @BscName+ "'";  
+log("Filter = " + Filter);
+CountOnly = False;
+PartialOML_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_PartialOML_Event = Length(PartialOML_Event);
+    
+    
+// Get the number of Full OML Down events for this BSC
+
+DataType = "Status";  // this needs to be setup
+Filter = "Class <> 200017 and EventId = 'X25Fail_002 'and BSCName = '" + @BscName+ "'";  
+log("Filter = " + Filter);
+CountOnly = False;
+FullOML_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_FullOML_Event = Length(FullOML_Event);
+    
+if ( Synthetic_Event.EventId = 'X25Fail_001' and Num_FullOML_Event > 0)
+{
+    // Change the Synthetic Event into a Full OML Down Event
+    Log("Changing EventID to X25Fail_001");
+    NewSeverity= 5;
+    NewSummary= "OML Full Down Alarm Handling for " + BSCNAME;
+    NewEventId = 'X25Fail_001';
+    NewTally = Synthetic_Event[0].Tally + 1;
+    NewLastOccurrence = @LastOccurrence;
+    DataType = "OS_Status";
+    Filter = "BSCName = "+ @BSCName + " and Class = 200017 ";
+    SummaryText = "X25 Failure TxN Alarm Handling for " + @BSCName + " OML Down";
+    UpdateExpression = "Summary = '" + NewSummary + "', Severity = " + NewSeverity + ", EventId = '" + NewEventId + ", Tally = " + NewTally + ", LastOccurrence = " + NewLastOccurrence;
+    BatchUpdate(DataType, Filter, UpdateExpression);
+    
+    EventTime = localtime(@LastOccurrence , "dd/MM/yy HH:mm:ss");
+    JournalInsert = TypeText + " Synthetic Event Updated   Time: " + EventTime + " Event Text: " + NewSummary ;        
+    MobiLib.ParentJournalInsert(Synthetic_Event[0].ServerName, Synthetic_Event[0].ServerSerial, JournalInsert);
+
+}
+else if ( Synthetic_Event.EventId = 'X25Fail_002' and Num_FullOML_Event = 0 and Num_PartialOML_Event > 0)
+{
+    // Change the Synthetic Event into a Full OML Down Event
+    Log("Changing EventID to X25Fail_002");
+    NewSeverity= 5;
+    NewSummary= "OML Partial Down Alarm Handling for " + BSCNAME;
+    NewEventId = 'X25Fail_002';
+    NewTally = Synthetic_Event[0].Tally + 1;
+    NewLastOccurrence = @LastOccurrence;
+    DataType = "OS_Status";
+    Filter = "BSCName = "+ @BSCName + " and Class = 200017 ";
+    SummaryText = "X25 Failure TxN Alarm Handling for " + @BSCName + " OML Down";
+    UpdateExpression = "Summary = '" + NewSummary + "', Severity = " + NewSeverity + ", EventId = '" + NewEventId + ", Tally = " + NewTally + ", LastOccurrence = " + NewLastOccurrence;
+    BatchUpdate(DataType, Filter, UpdateExpression);
+    
+    EventTime = localtime(@LastOccurrence , "dd/MM/yy HH:mm:ss");
+    JournalInsert = TypeText + " Synthetic Event Updated   Time: " + EventTime + " Event Text: " + NewSummary ;        
+    MobiLib.ParentJournalInsert(Synthetic_Event[0].ServerName, Synthetic_Event[0].ServerSerial, JournalInsert);
+}
+else
+{
+        Log("EventID not being Changed");
+}

@@ -1,0 +1,150 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    ATMF-ATM-TRACE-MIB.include.snmptrap.rules 1.1
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ATM-TRACE-MIB
+#
+###############################################################################
+#
+# 1.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.353.5.9.2.1.2": ### ATM Forum ATM Path and Connection Trace - Notifcations from ATM-TRACE-MIB
+
+    log(DEBUG, "<<<<< Entering... ATMF-ATM-TRACE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "ATM Forum-Trace"
+    @Class = "40088"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### atmTraceConnCompletion
+
+            ##########
+            # $1 = atmTraceConnRecordIndex 
+            ##########
+
+            $atmTraceConnRecordIndex = $1
+            $atmTraceConnIndex = extract($OID1, "\.([0-9]+)$")
+            details($atmTraceConnRecordIndex,$atmTraceConnIndex)
+
+            $OS_EventId = "SNMPTRAP-ATMF-ATM-TRACE-MIB-atmTraceConnCompletion"
+
+            @AlertGroup = "ATM Connection Trace Status"
+            @AlertKey = "atmTraceConnEntry." + $atmTraceConnIndex
+            @Summary = "ATM Connection Trace Conmpleted  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### atmTracePathTestCompletion
+
+            ##########
+            # $1 = atmTracePathTestRecordIndex 
+            ##########
+
+            $atmTracePathTestRecordIndex = $1
+            $atmTracePathTestIndex = extract($OID1, "\.([0-9]+)$")
+            details($atmTracePathTestRecordIndex,$atmTracePathTestIndex)
+
+            $OS_EventId = "SNMPTRAP-ATMF-ATM-TRACE-MIB-atmTracePathTestCompletion"
+
+            @AlertGroup = "ATM Path Trace Status"
+            @AlertKey = "atmTracePathTestEntry." + $atmTracePathTestIndex
+            @Summary = "ATM Path Trace Conmpleted  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### atmTracePathFilterTrap
+
+            ##########
+            # $1 = atmTraceFilterRecordConnKind 
+            ##########
+
+            $atmTraceFilterRecordConnKind = lookup($1, AtmConnKind)
+            $atmTraceFilterIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $atmTraceFilterRecordIndex = extract($OID1, "\.([0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-ATMF-ATM-TRACE-MIB-atmTracePathFilterTrap"
+
+            @AlertGroup = "ATM Path Trace Status"
+            @AlertKey = "atmTraceFilterRecordEntry." + $atmTraceFilterIndex + "." + $atmTraceFilterRecordIndex
+            @Summary = "ATM " + $atmTraceFilterRecordConnKind + " Path Trace Complete  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $atmTraceFilterRecordConnKind = $atmTraceFilterRecordConnKind + " ( " + $1 + " )"
+            details($atmTraceFilterRecordConnKind,$atmTraceFilterIndex,$atmTraceFilterRecordIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, ATMF-ATM-TRACE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, ATMF-ATM-TRACE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/ATMF/ATMF-ATM-TRACE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/ATMF/ATMF-ATM-TRACE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... ATMF-ATM-TRACE-MIB.include.snmptrap.rules >>>>>")

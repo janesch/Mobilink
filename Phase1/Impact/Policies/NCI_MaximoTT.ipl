@@ -1,0 +1,43 @@
+//Chris Janes 19th May 2010
+// This policy detects that a TT is required and requests one
+
+DataType = "Status";
+Filter = "MaximoStatus in (1,2,3)";
+CountOnly = False;
+GetByFilter(DataType, Filter, CountOnly);
+NumEvents = Num;
+log("NumEvents = " + NumEvents );
+log("DataItems= " + DataItems);
+
+NowTime = getdate();
+
+I = NumEvents ;
+While (I > 0) 
+{
+	Log(DataItems[I-1].Node);
+	if (DataItems[I-1].MaximoStatus == 1)
+	{
+		DataItems[I-1].MaximoStatus = 4;
+		DataItems[I-1].MaximoTimeStamp = NowTime;
+		Log( "Created TT");
+		// Oh yea here goes the code to raise a ticket :-)
+		NewTT = NewObject();
+		NewTT.netcool_node = DataItems[I-1].Node;
+		NewTT.netcool_nodealias = DataItems[I-1].NodeAlias;
+		NewTT.netcool_alertgroup = DataItems[I-1].AlertGroup;
+		NewTT.netcool_alertkey = DataItems[I-1].AlertKey;
+		NewTT.netcool_serial= DataItems[I-1].Serial;
+		NewTT.netcool_summary= DataItems[I-1].Summary;
+		NewTT.netcool_tally= DataItems[I-1].Tally;
+		NewTT.netcool_first= DataItems[I-1].FirstOccurrence;
+		NewTT.netcool_last = DataItems[I-1].LastOccurrence;
+		
+		DataType = "Net2Man";
+		AddDataItem(DataType, NewTT);
+
+	}
+
+	I = I - 1;
+}
+
+

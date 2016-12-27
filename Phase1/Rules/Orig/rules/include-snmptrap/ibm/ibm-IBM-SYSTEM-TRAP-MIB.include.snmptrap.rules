@@ -1,0 +1,1480 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    ibm-IBM-SYSTEM-TRAP-MIB.include.snmptrap.rules 1.0
+#    2007/12/05 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IBM-SYSTEM-TRAP-MIB
+#
+###############################################################################
+case ".1.3.6.1.4.1.2.6.159.1.1": ### IBM System State Traps - Notifications from IBM-SYSTEM-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... ibm-IBM-SYSTEM-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IBM-SYSTEM-TRAP-MIB"
+    @Class = "86001"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "2": ### ibmSystemTrapTemperature
+
+            ##########
+            # $1 = ibmSystemTrapTemperatureProviderName
+            # $2 = ibmSystemTrapTemperatureEventID
+            # $3 = ibmSystemTrapTemperatureAlertingManagedElement
+            # $4 = ibmSystemTrapTemperatureSeverity
+            # $5 = ibmSystemTrapTemperatureDescription
+            # $6 = ibmSystemTrapTemperatureTimeStamp
+            ##########
+
+            $ibmSystemTrapTemperatureProviderName = $1
+            $ibmSystemTrapTemperatureEventID = $2
+            $ibmSystemTrapTemperatureAlertingManagedElement = $3
+            $ibmSystemTrapTemperatureSeverity = lookup($4, ibmSystemTrapTemperatureSeverity)
+            $ibmSystemTrapTemperatureDescription = $5
+            $ibmSystemTrapTemperatureTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapTemperature"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's Sensor Temperature Exceeded User/Manufacturer defined Warning Threshold"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Sensor Temperature Exceeded User/Manufacturer defined Critical Threshold"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Sensor Temperature Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapTemperatureSeverity = $ibmSystemTrapTemperatureSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapTemperatureProviderName,$ibmSystemTrapTemperatureEventID,$ibmSystemTrapTemperatureAlertingManagedElement,$ibmSystemTrapTemperatureSeverity,$ibmSystemTrapTemperatureDescription,$ibmSystemTrapTemperatureTimeStamp)
+
+        case "3": ### ibmSystemTrapVoltage
+
+            ##########
+            # $1 = ibmSystemTrapVoltageProviderName
+            # $2 = ibmSystemTrapVoltageEventID
+            # $3 = ibmSystemTrapVoltageAlertingManagedElement
+            # $4 = ibmSystemTrapVoltageSeverity
+            # $5 = ibmSystemTrapVoltageDescription
+            # $6 = ibmSystemTrapVoltageTimeStamp
+            ##########
+
+            $ibmSystemTrapVoltageProviderName = $1
+            $ibmSystemTrapVoltageEventID = $2
+            $ibmSystemTrapVoltageAlertingManagedElement = $3
+            $ibmSystemTrapVoltageSeverity = lookup($4, ibmSystemTrapVoltageSeverity)
+            $ibmSystemTrapVoltageDescription = $5
+            $ibmSystemTrapVoltageTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapVoltage"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's Sensor Voltage Exceeded User/Manufacturer defined Warning Thresold"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Sensor Voltage Exceeded User/Manufacturer defined Critical Threshold"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Sensor Voltage Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+        
+            $ibmSystemTrapVoltageSeverity = $ibmSystemTrapVoltageSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapVoltageProviderName,$ibmSystemTrapVoltageEventID,$ibmSystemTrapVoltageAlertingManagedElement,$ibmSystemTrapVoltageSeverity,$ibmSystemTrapVoltageDescription,$ibmSystemTrapVoltageTimeStamp)
+
+        case "4": ### ibmSystemTrapChassis
+
+            ##########
+            # $1 = ibmSystemTrapChassisProviderName
+            # $2 = ibmSystemTrapChassisEventID
+            # $3 = ibmSystemTrapChassisAlertingManagedElement
+            # $4 = ibmSystemTrapChassisSeverity
+            # $5 = ibmSystemTrapChassisDescription
+            # $6 = ibmSystemTrapChassisTimeStamp
+            ##########
+
+            $ibmSystemTrapChassisProviderName = $1
+            $ibmSystemTrapChassisEventID = $2
+            $ibmSystemTrapChassisAlertingManagedElement = $3
+            $ibmSystemTrapChassisSeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapChassisDescription = $5
+            $ibmSystemTrapChassisTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapChassis"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Cover Removed"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Chassis State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+ 
+            $ibmSystemTrapChassisSeverity = $ibmSystemTrapChassisSeverity + "( " + $4 + ")"
+
+            details($ibmSystemTrapChassisProviderName,$ibmSystemTrapChassisEventID,$ibmSystemTrapChassisAlertingManagedElement,$ibmSystemTrapChassisSeverity,$ibmSystemTrapChassisDescription,$ibmSystemTrapChassisTimeStamp)
+
+        case "5": ### ibmSystemTrapFan
+
+            ##########
+            # $1 = ibmSystemTrapFanProviderName
+            # $2 = ibmSystemTrapFanEventID
+            # $3 = ibmSystemTrapFanAlertingManagedElement
+            # $4 = ibmSystemTrapFanSeverity
+            # $5 = ibmSystemTrapFanDescription
+            # $6 = ibmSystemTrapFanTimeStamp
+            ##########
+
+            $ibmSystemTrapFanProviderName = $1
+            $ibmSystemTrapFanEventID = $2
+            $ibmSystemTrapFanAlertingManagedElement = $3
+            $ibmSystemTrapFanSeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapFanDescription = $5
+            $ibmSystemTrapFanTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapFan"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Fan Removed"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Fan State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapFanSeverity = $ibmSystemTrapFanSeverity + "( " + $4 + ")"
+
+            details($ibmSystemTrapFanProviderName,$ibmSystemTrapFanEventID,$ibmSystemTrapFanAlertingManagedElement,$ibmSystemTrapFanSeverity,$ibmSystemTrapFanDescription,$ibmSystemTrapFanTimeStamp)
+
+        case "7": ### ibmSystemTrapStorage
+
+            ##########
+            # $1 = ibmSystemTrapStorageProviderName
+            # $2 = ibmSystemTrapStorageEventID
+            # $3 = ibmSystemTrapStorageAlertingManagedElement
+            # $4 = ibmSystemTrapStorageSeverity
+            # $5 = ibmSystemTrapStorageDescription
+            # $6 = ibmSystemTrapStorageTimeStamp
+            ##########
+
+            $ibmSystemTrapStorageProviderName = $1
+            $ibmSystemTrapStorageEventID = $2
+            $ibmSystemTrapStorageAlertingManagedElement = $3
+            $ibmSystemTrapStorageSeverity = lookup($4, ibmSystemTrapStorageSeverity)
+            $ibmSystemTrapStorageDescription = $5
+            $ibmSystemTrapStorageTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapStorage"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System Hard Drive Space Remaining Fallen Below User-Defined Warning Threshold"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System Hard Drive Space Remaining Fallen Below User-Defined Critical Threshold"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System Hard Drive Space Remaining Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+ 
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapStorageSeverity = $ibmSystemTrapStorageSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapStorageProviderName,$ibmSystemTrapStorageEventID,$ibmSystemTrapStorageAlertingManagedElement,$ibmSystemTrapStorageSeverity,$ibmSystemTrapStorageDescription,$ibmSystemTrapStorageTimeStamp)
+
+        case "9": ### ibmSystemTrapSMART
+
+            ##########
+            # $1 = ibmSystemTrapSMARTProviderName
+            # $2 = ibmSystemTrapSMARTEventID
+            # $3 = ibmSystemTrapSMARTAlertingManagedElement
+            # $4 = ibmSystemTrapSMARTSeverity
+            # $5 = ibmSystemTrapSMARTDescription
+            # $6 = ibmSystemTrapSMARTTimeStamp
+            ##########
+
+            $ibmSystemTrapSMARTProviderName = $1
+            $ibmSystemTrapSMARTEventID = $2
+            $ibmSystemTrapSMARTAlertingManagedElement = $3
+            $ibmSystemTrapSMARTSeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapSMARTDescription = $5
+            $ibmSystemTrapSMARTTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapSMART"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "Hard Drive Experiencing Imminent Failure"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "Hard Drive's State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+ 
+            $ibmSystemTrapSMARTSeverity = $ibmSystemTrapSMARTSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapSMARTProviderName,$ibmSystemTrapSMARTEventID,$ibmSystemTrapSMARTAlertingManagedElement,$ibmSystemTrapSMARTSeverity,$ibmSystemTrapSMARTDescription,$ibmSystemTrapSMARTTimeStamp)
+
+        case "13": ### ibmSystemTrapLeaseExpiration
+
+            ##########
+            # $1 = ibmSystemTrapLeaseExpirationProviderName
+            # $2 = ibmSystemTrapLeaseExpirationEventID
+            # $3 = ibmSystemTrapLeaseExpirationAlertingManagedElement
+            # $4 = ibmSystemTrapLeaseExpirationSeverity
+            # $5 = ibmSystemTrapLeaseExpirationDescription
+            # $6 = ibmSystemTrapLeaseExpirationTimeStamp
+            ##########
+
+            $ibmSystemTrapLeaseExpirationProviderName = $1
+            $ibmSystemTrapLeaseExpirationEventID = $2
+            $ibmSystemTrapLeaseExpirationAlertingManagedElement = $3
+            $ibmSystemTrapLeaseExpirationSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapLeaseExpirationDescription = $5
+            $ibmSystemTrapLeaseExpirationTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapLeaseExpiration"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's Lease Expiration Date Reached"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Lease Expiration Date Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+ 
+            $ibmSystemTrapLeaseExpirationSeverity = $ibmSystemTrapLeaseExpirationSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapLeaseExpirationProviderName,$ibmSystemTrapLeaseExpirationEventID,$ibmSystemTrapLeaseExpirationAlertingManagedElement,$ibmSystemTrapLeaseExpirationSeverity,$ibmSystemTrapLeaseExpirationDescription,$ibmSystemTrapLeaseExpirationTimeStamp)
+
+        case "14": ### ibmSystemTrapWarrantyExpiration
+
+            ##########
+            # $1 = ibmSystemTrapWarrantyExpirationProviderName
+            # $2 = ibmSystemTrapWarrantyExpirationEventID
+            # $3 = ibmSystemTrapWarrantyExpirationAlertingManagedElement
+            # $4 = ibmSystemTrapWarrantyExpirationSeverity
+            # $5 = ibmSystemTrapWarrantyExpirationDescription
+            # $6 = ibmSystemTrapWarrantyExpirationTimeStamp
+            ##########
+
+            $ibmSystemTrapWarrantyExpirationProviderName = $1
+            $ibmSystemTrapWarrantyExpirationEventID = $2
+            $ibmSystemTrapWarrantyExpirationAlertingManagedElement = $3
+            $ibmSystemTrapWarrantyExpirationSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapWarrantyExpirationDescription = $5
+            $ibmSystemTrapWarrantyExpirationTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapWarrantyExpiration"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's Warranty Expired"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Warranty Date Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapWarrantyExpirationSeverity = $ibmSystemTrapWarrantyExpirationSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapWarrantyExpirationProviderName,$ibmSystemTrapWarrantyExpirationEventID,$ibmSystemTrapWarrantyExpirationAlertingManagedElement,$ibmSystemTrapWarrantyExpirationSeverity,$ibmSystemTrapWarrantyExpirationDescription,$ibmSystemTrapWarrantyExpirationTimeStamp)
+
+        case "15": ### ibmSystemTrapRedundantNIC
+
+            ##########
+            # $1 = ibmSystemTrapRedundantNICProviderName
+            # $2 = ibmSystemTrapRedundantNICEventID
+            # $3 = ibmSystemTrapRedundantNICAlertingManagedElement
+            # $4 = ibmSystemTrapRedundantNICSeverity
+            # $5 = ibmSystemTrapRedundantNICDescription
+            # $6 = ibmSystemTrapRedundantNICTimeStamp
+            ##########
+
+            $ibmSystemTrapRedundantNICProviderName = $1
+            $ibmSystemTrapRedundantNICEventID = $2
+            $ibmSystemTrapRedundantNICAlertingManagedElement = $3
+            $ibmSystemTrapRedundantNICSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapRedundantNICDescription = $5
+            $ibmSystemTrapRedundantNICTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapRedundantNIC"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "Redundant NIC Event Occured"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's NIC State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapRedundantNICSeverity = $ibmSystemTrapRedundantNICSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapRedundantNICProviderName,$ibmSystemTrapRedundantNICEventID,$ibmSystemTrapRedundantNICAlertingManagedElement,$ibmSystemTrapRedundantNICSeverity,$ibmSystemTrapRedundantNICDescription,$ibmSystemTrapRedundantNICTimeStamp)
+
+        case "16": ### ibmSystemTrapRedundantNICSwitchover
+
+            ##########
+            # $1 = ibmSystemTrapRedundantNICSwitchoverProviderName
+            # $2 = ibmSystemTrapRedundantNICSwitchoverEventID
+            # $3 = ibmSystemTrapRedundantNICSwitchoverAlertingManagedElement
+            # $4 = ibmSystemTrapRedundantNICSwitchoverSeverity
+            # $5 = ibmSystemTrapRedundantNICSwitchoverDescription
+            # $6 = ibmSystemTrapRedundantNICSwitchoverTimeStamp
+            ##########
+
+            $ibmSystemTrapRedundantNICSwitchoverProviderName = $1
+            $ibmSystemTrapRedundantNICSwitchoverEventID = $2
+            $ibmSystemTrapRedundantNICSwitchoverAlertingManagedElement = $3
+            $ibmSystemTrapRedundantNICSwitchoverSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapRedundantNICSwitchoverDescription = $5
+            $ibmSystemTrapRedundantNICSwitchoverTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapRedundantNICSwitchover"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "Failing NIC Switched over to Redundant NIC"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "Failing NIC State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+           $ibmSystemTrapRedundantNICSwitchoverSeverity = $ibmSystemTrapRedundantNICSwitchoverSeverity + "( " + $4 + " )" 
+
+            details($ibmSystemTrapRedundantNICSwitchoverProviderName,$ibmSystemTrapRedundantNICSwitchoverEventID,$ibmSystemTrapRedundantNICSwitchoverAlertingManagedElement,$ibmSystemTrapRedundantNICSwitchoverSeverity,$ibmSystemTrapRedundantNICSwitchoverDescription,$ibmSystemTrapRedundantNICSwitchoverTimeStamp)
+
+        case "17": ### ibmSystemTrapRedundantNICSwitchback
+
+            ##########
+            # $1 = ibmSystemTrapRedundantNICSwitchbackProviderName
+            # $2 = ibmSystemTrapRedundantNICSwitchbackEventID
+            # $3 = ibmSystemTrapRedundantNICSwitchbackAlertingManagedElement
+            # $4 = ibmSystemTrapRedundantNICSwitchbackSeverity
+            # $5 = ibmSystemTrapRedundantNICSwitchbackDescription
+            # $6 = ibmSystemTrapRedundantNICSwitchbackTimeStamp
+            ##########
+
+            $ibmSystemTrapRedundantNICSwitchbackProviderName = $1
+            $ibmSystemTrapRedundantNICSwitchbackEventID = $2
+            $ibmSystemTrapRedundantNICSwitchbackAlertingManagedElement = $3
+            $ibmSystemTrapRedundantNICSwitchbackSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapRedundantNICSwitchbackDescription = $5
+            $ibmSystemTrapRedundantNICSwitchbackTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapRedundantNICSwitchback"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's NIC Rcovered and Switched Back"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "Active NIC State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+  
+            $ibmSystemTrapRedundantNICSwitchbackSeverity = $ibmSystemTrapRedundantNICSwitchbackSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapRedundantNICSwitchbackProviderName,$ibmSystemTrapRedundantNICSwitchbackEventID,$ibmSystemTrapRedundantNICSwitchbackAlertingManagedElement,$ibmSystemTrapRedundantNICSwitchbackSeverity,$ibmSystemTrapRedundantNICSwitchbackDescription,$ibmSystemTrapRedundantNICSwitchbackTimeStamp)
+
+        case "18": ### ibmSystemTrapProcessorPF
+
+            ##########
+            # $1 = ibmSystemTrapProcessorPFProviderName
+            # $2 = ibmSystemTrapProcessorPFEventID
+            # $3 = ibmSystemTrapProcessorPFAlertingManagedElement
+            # $4 = ibmSystemTrapProcessorPFSeverity
+            # $5 = ibmSystemTrapProcessorPFDescription
+            # $6 = ibmSystemTrapProcessorPFTimeStamp
+            ##########
+
+            $ibmSystemTrapProcessorPFProviderName = $1
+            $ibmSystemTrapProcessorPFEventID = $2
+            $ibmSystemTrapProcessorPFAlertingManagedElement = $3
+            $ibmSystemTrapProcessorPFSeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapProcessorPFDescription = $5
+            $ibmSystemTrapProcessorPFTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapProcessorPF"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System Processor Experiencing an Imminent Failure"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System Processor's State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapProcessorPFSeverity = $ibmSystemTrapProcessorPFSeverity + "( " + $4 + " )"
+        
+            details($ibmSystemTrapProcessorPFProviderName,$ibmSystemTrapProcessorPFEventID,$ibmSystemTrapProcessorPFAlertingManagedElement,$ibmSystemTrapProcessorPFSeverity,$ibmSystemTrapProcessorPFDescription,$ibmSystemTrapProcessorPFTimeStamp)
+$ibmSystemTrapSMARTSeverity = lookup($4, ibmSystemTrapStorageSeverity)
+
+        case "19": ### ibmSystemTrapMemoryPF
+
+            ##########
+            # $1 = ibmSystemTrapMemoryPFProviderName
+            # $2 = ibmSystemTrapMemoryPFEventID
+            # $3 = ibmSystemTrapMemoryPFAlertingManagedElement
+            # $4 = ibmSystemTrapMemoryPFSeverity
+            # $5 = ibmSystemTrapMemoryPFDescription
+            # $6 = ibmSystemTrapMemoryPFTimeStamp
+            ##########
+
+            $ibmSystemTrapMemoryPFProviderName = $1
+            $ibmSystemTrapMemoryPFEventID = $2
+            $ibmSystemTrapMemoryPFAlertingManagedElement = $3
+            $ibmSystemTrapMemoryPFSeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapMemoryPFDescription = $5
+            $ibmSystemTrapMemoryPFTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapMemoryPF"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's DIMM Experiencing an Imminent Failure"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's DIMM State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+ 
+            $ibmSystemTrapMemoryPFSeverity = $ibmSystemTrapMemoryPFSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapMemoryPFProviderName,$ibmSystemTrapMemoryPFEventID,$ibmSystemTrapMemoryPFAlertingManagedElement,$ibmSystemTrapMemoryPFSeverity,$ibmSystemTrapMemoryPFDescription,$ibmSystemTrapMemoryPFTimeStamp)
+
+        case "22": ### ibmSystemTrapPFA
+
+            ##########
+            # $1 = ibmSystemTrapPFAProviderName
+            # $2 = ibmSystemTrapPFAEventID
+            # $3 = ibmSystemTrapPFAAlertingManagedElement
+            # $4 = ibmSystemTrapPFASeverity
+            # $5 = ibmSystemTrapPFADescription
+            # $6 = ibmSystemTrapPFATimeStamp
+            ##########
+
+            $ibmSystemTrapPFAProviderName = $1
+            $ibmSystemTrapPFAEventID = $2
+            $ibmSystemTrapPFAAlertingManagedElement = $3
+            $ibmSystemTrapPFASeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapPFADescription = $5
+            $ibmSystemTrapPFATimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapPFA"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Experiencing an Imminent Failure"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+  
+            $ibmSystemTrapPFASeverity = $ibmSystemTrapPFASeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapPFAProviderName,$ibmSystemTrapPFAEventID,$ibmSystemTrapPFAAlertingManagedElement,$ibmSystemTrapPFASeverity,$ibmSystemTrapPFADescription,$ibmSystemTrapPFATimeStamp)
+
+        case "23": ### ibmSystemTrapPowerSupply
+
+            ##########
+            # $1 = ibmSystemTrapPowerSupplyProviderName
+            # $2 = ibmSystemTrapPowerSupplyEventID
+            # $3 = ibmSystemTrapPowerSupplyAlertingManagedElement
+            # $4 = ibmSystemTrapPowerSupplySeverity
+            # $5 = ibmSystemTrapPowerSupplyDescription
+            # $6 = ibmSystemTrapPowerSupplyTimeStamp
+            ##########
+
+            $ibmSystemTrapPowerSupplyProviderName = $1
+            $ibmSystemTrapPowerSupplyEventID = $2
+            $ibmSystemTrapPowerSupplyAlertingManagedElement = $3
+            $ibmSystemTrapPowerSupplySeverity = lookup($4, ibmSystemTrapPowerSupplySeverity)
+            $ibmSystemTrapPowerSupplyDescription = $5
+            $ibmSystemTrapPowerSupplyTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapPowerSupply"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "0": ### normal
+                            $SEV_KEY = $OS_EventId + "_normal"
+                            @Summary = "System's Power Supply Recovered"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Power Supply Failed"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Power Supply Status Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapPowerSupplySeverity = $ibmSystemTrapPowerSupplySeverity + "( " + $4 + " )"      
+
+            details($ibmSystemTrapPowerSupplyProviderName,$ibmSystemTrapPowerSupplyEventID,$ibmSystemTrapPowerSupplyAlertingManagedElement,$ibmSystemTrapPowerSupplySeverity,$ibmSystemTrapPowerSupplyDescription,$ibmSystemTrapPowerSupplyTimeStamp)
+
+        case "24": ### ibmSystemTrapErrorLog
+
+            ##########
+            # $1 = ibmSystemTrapErrorLogProviderName
+            # $2 = ibmSystemTrapErrorLogEventID
+            # $3 = ibmSystemTrapErrorLogAlertingManagedElement
+            # $4 = ibmSystemTrapErrorLogSeverity
+            # $5 = ibmSystemTrapErrorLogDescription
+            # $6 = ibmSystemTrapErrorLogTimeStamp
+            ##########
+
+            $ibmSystemTrapErrorLogProviderName = $1
+            $ibmSystemTrapErrorLogEventID = $2
+            $ibmSystemTrapErrorLogAlertingManagedElement = $3
+            $ibmSystemTrapErrorLogSeverity = lookup($4, ibmSystemTrapErrorLogSeverity)
+            $ibmSystemTrapErrorLogDescription = $5
+            $ibmSystemTrapErrorLogTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapErrorLog"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "Remote Supervisor Adapter's Error Log 75% Full"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "Remote Supervisor Adapter's Error Log 100% Full"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "Remote Supervisor Adapter's Error Log Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapErrorLogSeverity = $ibmSystemTrapErrorLogSeverity + "( " + $4 + " )" 
+
+            details($ibmSystemTrapErrorLogProviderName,$ibmSystemTrapErrorLogEventID,$ibmSystemTrapErrorLogAlertingManagedElement,$ibmSystemTrapErrorLogSeverity,$ibmSystemTrapErrorLogDescription,$ibmSystemTrapErrorLogTimeStamp)
+
+        case "25": ### ibmSystemTrapRemoteLogin
+
+            ##########
+            # $1 = ibmSystemTrapRemoteLoginProviderName
+            # $2 = ibmSystemTrapRemoteLoginEventID
+            # $3 = ibmSystemTrapRemoteLoginAlertingManagedElement
+            # $4 = ibmSystemTrapRemoteLoginSeverity
+            # $5 = ibmSystemTrapRemoteLoginDescription
+            # $6 = ibmSystemTrapRemoteLoginTimeStamp
+            ##########
+
+            $ibmSystemTrapRemoteLoginProviderName = $1
+            $ibmSystemTrapRemoteLoginEventID = $2
+            $ibmSystemTrapRemoteLoginAlertingManagedElement = $3
+            $ibmSystemTrapRemoteLoginSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapRemoteLoginDescription = $5
+            $ibmSystemTrapRemoteLoginTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapRemoteLogin"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "Someone Logged in Remotely to the Remote Supervisor Adapter"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "Remote Supervisor Adapter State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapRemoteLoginSeverity = $ibmSystemTrapRemoteLoginSeverit + "( " + $4 + " )" 
+ 
+            details($ibmSystemTrapRemoteLoginProviderName,$ibmSystemTrapRemoteLoginEventID,$ibmSystemTrapRemoteLoginAlertingManagedElement,$ibmSystemTrapRemoteLoginSeverity,$ibmSystemTrapRemoteLoginDescription,$ibmSystemTrapRemoteLoginTimeStamp)
+
+        case "26": ### ibmSystemTrapNetworkAdapterFailed
+
+            ##########
+            # $1 = ibmSystemTrapNetworkAdapterFailedProviderName
+            # $2 = ibmSystemTrapNetworkAdapterFailedEventID
+            # $3 = ibmSystemTrapNetworkAdapterFailedAlertingManagedElement
+            # $4 = ibmSystemTrapNetworkAdapterFailedSeverity
+            # $5 = ibmSystemTrapNetworkAdapterFailedDescription
+            # $6 = ibmSystemTrapNetworkAdapterFailedTimeStamp
+            # $7 = ibmSystemTrapNetworkAdapterFailedComponentID
+            ##########
+
+            $ibmSystemTrapNetworkAdapterFailedProviderName = $1
+            $ibmSystemTrapNetworkAdapterFailedEventID = $2
+            $ibmSystemTrapNetworkAdapterFailedAlertingManagedElement = $3
+            $ibmSystemTrapNetworkAdapterFailedSeverity = lookup($4, ibmSystemTrapNetworkAdapterFailedSeverity)
+            $ibmSystemTrapNetworkAdapterFailedDescription = $5
+            $ibmSystemTrapNetworkAdapterFailedTimeStamp = $6
+            $ibmSystemTrapNetworkAdapterFailedComponentID = $7
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapNetworkAdapterFailed"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "0": ### normal
+                            $SEV_KEY = $OS_EventId + "_normal"
+                            @Summary = "Network Adapter Referenced in Target Object Path Recovered"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "Network Adapter Referenced in Target Object Path Failed"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "Network Adapter Status Unknown"
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapNetworkAdapterFailedSeverity = $ibmSystemTrapNetworkAdapterFailedSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapNetworkAdapterFailedProviderName,$ibmSystemTrapNetworkAdapterFailedEventID,$ibmSystemTrapNetworkAdapterFailedAlertingManagedElement,$ibmSystemTrapNetworkAdapterFailedSeverity,$ibmSystemTrapNetworkAdapterFailedDescription,$ibmSystemTrapNetworkAdapterFailedTimeStamp,$ibmSystemTrapNetworkAdapterFailedComponentID)
+
+        case "27": ### ibmSystemTrapNetworkAdapterOffline
+
+            ##########
+            # $1 = ibmSystemTrapNetworkAdapterOfflineProviderName
+            # $2 = ibmSystemTrapNetworkAdapterOfflineEventID
+            # $3 = ibmSystemTrapNetworkAdapterOfflineAlertingManagedElement
+            # $4 = ibmSystemTrapNetworkAdapterOfflineSeverity
+            # $5 = ibmSystemTrapNetworkAdapterOfflineDescription
+            # $6 = ibmSystemTrapNetworkAdapterOfflineTimeStamp
+            # $7 = ibmSystemTrapNetworkAdapterOfflineComponentID
+            ##########
+
+            $ibmSystemTrapNetworkAdapterOfflineProviderName = $1
+            $ibmSystemTrapNetworkAdapterOfflineEventID = $2
+            $ibmSystemTrapNetworkAdapterOfflineAlertingManagedElement = $3
+            $ibmSystemTrapNetworkAdapterOfflineSeverity = lookup($4, ibmSystemWarningLookup)
+            $ibmSystemTrapNetworkAdapterOfflineDescription = $5
+            $ibmSystemTrapNetworkAdapterOfflineTimeStamp = $6
+            $ibmSystemTrapNetworkAdapterOfflineComponentID = $7
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapNetworkAdapterOffline"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's NIC Goes Offline"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's NIC State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+   
+            $ibmSystemTrapNetworkAdapterOfflineSeverity = $ibmSystemTrapNetworkAdapterOfflineSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapNetworkAdapterOfflineProviderName,$ibmSystemTrapNetworkAdapterOfflineEventID,$ibmSystemTrapNetworkAdapterOfflineAlertingManagedElement,$ibmSystemTrapNetworkAdapterOfflineSeverity,$ibmSystemTrapNetworkAdapterOfflineDescription,$ibmSystemTrapNetworkAdapterOfflineTimeStamp,$ibmSystemTrapNetworkAdapterOfflineComponentID)
+
+        case "28": ### ibmSystemTrapNetworkAdapterOnline
+
+            ##########
+            # $1 = ibmSystemTrapNetworkAdapterOnlineProviderName
+            # $2 = ibmSystemTrapNetworkAdapterOnlineEventID
+            # $3 = ibmSystemTrapNetworkAdapterOnlineAlertingManagedElement
+            # $4 = ibmSystemTrapNetworkAdapterOnlineSeverity
+            # $5 = ibmSystemTrapNetworkAdapterOnlineDescription
+            # $6 = ibmSystemTrapNetworkAdapterOnlineTimeStamp
+            # $7 = ibmSystemTrapNetworkAdapterOnlineComponentID
+            ##########
+
+            $ibmSystemTrapNetworkAdapterOnlineProviderName = $1
+            $ibmSystemTrapNetworkAdapterOnlineEventID = $2
+            $ibmSystemTrapNetworkAdapterOnlineAlertingManagedElement = $3
+            $ibmSystemTrapNetworkAdapterOnlineSeverity = $4
+            $ibmSystemTrapNetworkAdapterOnlineDescription = $5
+            $ibmSystemTrapNetworkAdapterOnlineTimeStamp = $6
+            $ibmSystemTrapNetworkAdapterOnlineComponentID = $7
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapNetworkAdapterOnline"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "System's NIC Goes Online"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapNetworkAdapterOnlineProviderName,$ibmSystemTrapNetworkAdapterOnlineEventID,$ibmSystemTrapNetworkAdapterOnlineAlertingManagedElement,$ibmSystemTrapNetworkAdapterOnlineSeverity,$ibmSystemTrapNetworkAdapterOnlineDescription,$ibmSystemTrapNetworkAdapterOnlineTimeStamp,$ibmSystemTrapNetworkAdapterOnlineComponentID)
+
+        case "29": ### ibmSystemTrapSPPowerSupply
+
+            ##########
+            # $1 = ibmSystemTrapSPPowerSupplyProviderName
+            # $2 = ibmSystemTrapSPPowerSupplyEventID
+            # $3 = ibmSystemTrapSPPowerSupplyAlertingManagedElement
+            # $4 = ibmSystemTrapSPPowerSupplySeverity
+            # $5 = ibmSystemTrapSPPowerSupplyDescription
+            # $6 = ibmSystemTrapSPPowerSupplyTimeStamp
+            ##########
+
+            $ibmSystemTrapSPPowerSupplyProviderName = $1
+            $ibmSystemTrapSPPowerSupplyEventID = $2
+            $ibmSystemTrapSPPowerSupplyAlertingManagedElement = $3
+            $ibmSystemTrapSPPowerSupplySeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapSPPowerSupplyDescription = $5
+            $ibmSystemTrapSPPowerSupplyTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapSPPowerSupply"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Power Supply Failed"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's  Power Supply State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapSPPowerSupplySeverity = $ibmSystemTrapSPPowerSupplySeverity + "( " + $4 + " )" 
+        
+            details($ibmSystemTrapSPPowerSupplyProviderName,$ibmSystemTrapSPPowerSupplyEventID,$ibmSystemTrapSPPowerSupplyAlertingManagedElement,$ibmSystemTrapSPPowerSupplySeverity,$ibmSystemTrapSPPowerSupplyDescription,$ibmSystemTrapSPPowerSupplyTimeStamp)
+
+        case "30": ### ibmSystemTrapDASDBackplane
+
+            ##########
+            # $1 = ibmSystemTrapDASDBackplaneProviderName
+            # $2 = ibmSystemTrapDASDBackplaneEventID
+            # $3 = ibmSystemTrapDASDBackplaneAlertingManagedElement
+            # $4 = ibmSystemTrapDASDBackplaneSeverity
+            # $5 = ibmSystemTrapDASDBackplaneDescription
+            # $6 = ibmSystemTrapDASDBackplaneTimeStamp
+            ##########
+
+            $ibmSystemTrapDASDBackplaneProviderName = $1
+            $ibmSystemTrapDASDBackplaneEventID = $2
+            $ibmSystemTrapDASDBackplaneAlertingManagedElement = $3
+            $ibmSystemTrapDASDBackplaneSeverity = $4
+            $ibmSystemTrapDASDBackplaneDescription = $5
+            $ibmSystemTrapDASDBackplaneTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapDASDBackplane"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "Drive Backplane Experiences a Critical Error"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapDASDBackplaneProviderName,$ibmSystemTrapDASDBackplaneEventID,$ibmSystemTrapDASDBackplaneAlertingManagedElement,$ibmSystemTrapDASDBackplaneSeverity,$ibmSystemTrapDASDBackplaneDescription,$ibmSystemTrapDASDBackplaneTimeStamp)
+
+        case "31": ### ibmSystemTrapGenericFan
+
+            ##########
+            # $1 = ibmSystemTrapGenericFanProviderName
+            # $2 = ibmSystemTrapGenericFanEventID
+            # $3 = ibmSystemTrapGenericFanAlertingManagedElement
+            # $4 = ibmSystemTrapGenericFanSeverity
+            # $5 = ibmSystemTrapGenericFanDescription
+            # $6 = ibmSystemTrapGenericFanTimeStamp
+            ##########
+
+            $ibmSystemTrapGenericFanProviderName = $1
+            $ibmSystemTrapGenericFanEventID = $2
+            $ibmSystemTrapGenericFanAlertingManagedElement = $3
+            $ibmSystemTrapGenericFanSeverity = lookup($4, ibmSystemCriticalLookup)
+            $ibmSystemTrapGenericFanDescription = $5
+            $ibmSystemTrapGenericFanTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapGenericFan"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Fan Stopped"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Fan State Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapGenericFanSeverity = $ibmSystemTrapGenericFanSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapGenericFanProviderName,$ibmSystemTrapGenericFanEventID,$ibmSystemTrapGenericFanAlertingManagedElement,$ibmSystemTrapGenericFanSeverity,$ibmSystemTrapGenericFanDescription,$ibmSystemTrapGenericFanTimeStamp)
+
+        case "32": ### ibmSystemTrapGenericVoltage
+
+            ##########
+            # $1 = ibmSystemTrapGenericVoltageProviderName
+            # $2 = ibmSystemTrapGenericVoltageEventID
+            # $3 = ibmSystemTrapGenericVoltageAlertingManagedElement
+            # $4 = ibmSystemTrapGenericVoltageSeverity
+            # $5 = ibmSystemTrapGenericVoltageDescription
+            # $6 = ibmSystemTrapGenericVoltageTimeStamp
+            ##########
+
+            $ibmSystemTrapGenericVoltageProviderName = $1
+            $ibmSystemTrapGenericVoltageEventID = $2
+            $ibmSystemTrapGenericVoltageAlertingManagedElement = $3
+            $ibmSystemTrapGenericVoltageSeverity = lookup($4, ibmSystemTrapGenericVoltageSeverity)
+            $ibmSystemTrapGenericVoltageDescription = $5
+            $ibmSystemTrapGenericVoltageTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapGenericVoltage"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "1": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's Voltage Sensor Exceeded a Manufacturer-Defined Warning Level Thresold"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Voltage Sensor Exceeded a Manufacturer-Defined Critical Level Thresold"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Voltage Sensor Status Unknown"
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapGenericVoltageSeverity = $ibmSystemTrapGenericVoltageSeverity + "( " + $4 + " )"
+
+            details($ibmSystemTrapGenericVoltageProviderName,$ibmSystemTrapGenericVoltageEventID,$ibmSystemTrapGenericVoltageAlertingManagedElement,$ibmSystemTrapGenericVoltageSeverity,$ibmSystemTrapGenericVoltageDescription,$ibmSystemTrapGenericVoltageTimeStamp)
+
+        case "33": ### ibmSystemTrapMgmtHwLogStatus
+
+            ##########
+            # $1 = ibmSystemTrapMgmtHwLogStatusProviderName
+            # $2 = ibmSystemTrapMgmtHwLogStatusEventID
+            # $3 = ibmSystemTrapMgmtHwLogStatusAlertingManagedElement
+            # $4 = ibmSystemTrapMgmtHwLogStatusSeverity
+            # $5 = ibmSystemTrapMgmtHwLogStatusDescription
+            # $6 = ibmSystemTrapMgmtHwLogStatusTimeStamp
+            ##########
+
+            $ibmSystemTrapMgmtHwLogStatusProviderName = $1
+            $ibmSystemTrapMgmtHwLogStatusEventID = $2
+            $ibmSystemTrapMgmtHwLogStatusAlertingManagedElement = $3
+            $ibmSystemTrapMgmtHwLogStatusSeverity = $4
+            $ibmSystemTrapMgmtHwLogStatusDescription = $5
+            $ibmSystemTrapMgmtHwLogStatusTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapMgmtHwLogStatus"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "IPMI Status Log Full"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapMgmtHwLogStatusProviderName,$ibmSystemTrapMgmtHwLogStatusEventID,$ibmSystemTrapMgmtHwLogStatusAlertingManagedElement,$ibmSystemTrapMgmtHwLogStatusSeverity,$ibmSystemTrapMgmtHwLogStatusDescription,$ibmSystemTrapMgmtHwLogStatusTimeStamp)
+
+        case "34": ### ibmSystemTrapxProcessor
+
+            ##########
+            # $1 = ibmSystemTrapxProcessorProviderName
+            # $2 = ibmSystemTrapxProcessorEventID
+            # $3 = ibmSystemTrapxProcessorAlertingManagedElement
+            # $4 = ibmSystemTrapxProcessorSeverity
+            # $5 = ibmSystemTrapxProcessorDescription
+            # $6 = ibmSystemTrapxProcessorTimeStamp
+            ##########
+
+            $ibmSystemTrapxProcessorProviderName = $1
+            $ibmSystemTrapxProcessorEventID = $2
+            $ibmSystemTrapxProcessorAlertingManagedElement = $3
+            $ibmSystemTrapxProcessorSeverity = $4
+            $ibmSystemTrapxProcessorDescription = $5
+            $ibmSystemTrapxProcessorTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapxProcessor"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "System Processor Working Normal"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapxProcessorProviderName,$ibmSystemTrapxProcessorEventID,$ibmSystemTrapxProcessorAlertingManagedElement,$ibmSystemTrapxProcessorSeverity,$ibmSystemTrapxProcessorDescription,$ibmSystemTrapxProcessorTimeStamp)
+
+        case "35": ### ibmSystemTrapxPhysicalMemory
+
+            ##########
+            # $1 = ibmSystemTrapxPhysicalMemoryProviderName
+            # $2 = ibmSystemTrapxPhysicalMemoryEventID
+            # $3 = ibmSystemTrapxPhysicalMemoryAlertingManagedElement
+            # $4 = ibmSystemTrapxPhysicalMemorySeverity
+            # $5 = ibmSystemTrapxPhysicalMemoryDescription
+            # $6 = ibmSystemTrapxPhysicalMemoryTimeStamp
+            ##########
+
+            $ibmSystemTrapxPhysicalMemoryProviderName = $1
+            $ibmSystemTrapxPhysicalMemoryEventID = $2
+            $ibmSystemTrapxPhysicalMemoryAlertingManagedElement = $3
+            $ibmSystemTrapxPhysicalMemorySeverity = $4
+            $ibmSystemTrapxPhysicalMemoryDescription = $5
+            $ibmSystemTrapxPhysicalMemoryTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapxPhysicalMemory"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "Physical Memory Working Normal"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapxPhysicalMemoryProviderName,$ibmSystemTrapxPhysicalMemoryEventID,$ibmSystemTrapxPhysicalMemoryAlertingManagedElement,$ibmSystemTrapxPhysicalMemorySeverity,$ibmSystemTrapxPhysicalMemoryDescription,$ibmSystemTrapxPhysicalMemoryTimeStamp)
+
+        case "36": ### ibmSystemTrapxAutomaticServerRestart
+
+            ##########
+            # $1 = ibmSystemTrapxAutomaticServerRestartProviderName
+            # $2 = ibmSystemTrapxAutomaticServerRestartEventID
+            # $3 = ibmSystemTrapxAutomaticServerRestartAlertingManagedElement
+            # $4 = ibmSystemTrapxAutomaticServerRestartSeverity
+            # $5 = ibmSystemTrapxAutomaticServerRestartDescription
+            # $6 = ibmSystemTrapxAutomaticServerRestartTimeStamp
+            ##########
+
+            $ibmSystemTrapxAutomaticServerRestartProviderName = $1
+            $ibmSystemTrapxAutomaticServerRestartEventID = $2
+            $ibmSystemTrapxAutomaticServerRestartAlertingManagedElement = $3
+            $ibmSystemTrapxAutomaticServerRestartSeverity = lookup($4, ibmSystemTrapxAutomaticServerRestartSeverity)
+            $ibmSystemTrapxAutomaticServerRestartDescription = $5
+            $ibmSystemTrapxAutomaticServerRestartTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapxAutomaticServerRestart"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            switch($4)
+                    {
+                        case "0": ### warning
+                            $SEV_KEY = $OS_EventId + "_warning"
+                            @Summary = "System's Voltage Sensor Exceeded a Manufacturer-Defined Warning Level Thresold"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### critical
+                            $SEV_KEY = $OS_EventId + "_critical"
+                            @Summary = "System's Voltage Sensor Exceeded a Manufacturer-Defined Critical Level Thresold"
+
+                            $DEFAULT_Severity = 5
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            @Summary = "System's Voltage Sensor Status Unknown"
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ibmSystemTrapxAutomaticServerRestartSeverity = $ibmSystemTrapxAutomaticServerRestartSeverity + "( " + $4 + " )"
+ 
+            details($ibmSystemTrapxAutomaticServerRestartProviderName,$ibmSystemTrapxAutomaticServerRestartEventID,$ibmSystemTrapxAutomaticServerRestartAlertingManagedElement,$ibmSystemTrapxAutomaticServerRestartSeverity,$ibmSystemTrapxAutomaticServerRestartDescription,$ibmSystemTrapxAutomaticServerRestartTimeStamp)
+
+        case "37": ### ibmSystemTrapMgmtHwLogEntry
+
+            ##########
+            # $1 = ibmSystemTrapMgmtHwLogEntryProviderName
+            # $2 = ibmSystemTrapMgmtHwLogEntryEventID
+            # $3 = ibmSystemTrapMgmtHwLogEntryAlertingManagedElement
+            # $4 = ibmSystemTrapMgmtHwLogEntrySeverity
+            # $5 = ibmSystemTrapMgmtHwLogEntryDescription
+            # $6 = ibmSystemTrapMgmtHwLogEntryTimeStamp
+            ##########
+
+            $ibmSystemTrapMgmtHwLogEntryProviderName = $1
+            $ibmSystemTrapMgmtHwLogEntryEventID = $2
+            $ibmSystemTrapMgmtHwLogEntryAlertingManagedElement = $3
+            $ibmSystemTrapMgmtHwLogEntrySeverity = lookup($4, ibmSystemTrapMgmtHwLogEntrySeverity) + "( " + $4 + " )"
+            $ibmSystemTrapMgmtHwLogEntryDescription = $5
+            $ibmSystemTrapMgmtHwLogEntryTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapMgmtHwLogEntry"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "Event Logged in the Management Hardware Log"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapMgmtHwLogEntryProviderName,$ibmSystemTrapMgmtHwLogEntryEventID,$ibmSystemTrapMgmtHwLogEntryAlertingManagedElement,$ibmSystemTrapMgmtHwLogEntrySeverity,$ibmSystemTrapMgmtHwLogEntryDescription,$ibmSystemTrapMgmtHwLogEntryTimeStamp)
+
+        case "38": ### ibmSystemTrapMgmtHwLogFull
+
+            ##########
+            # $1 = ibmSystemTrapMgmtHwLogFullProviderName
+            # $2 = ibmSystemTrapMgmtHwLogFullEventID
+            # $3 = ibmSystemTrapMgmtHwLogFullAlertingManagedElement
+            # $4 = ibmSystemTrapMgmtHwLogFullSeverity
+            # $5 = ibmSystemTrapMgmtHwLogFullDescription
+            # $6 = ibmSystemTrapMgmtHwLogFullTimeStamp
+            ##########
+
+            $ibmSystemTrapMgmtHwLogFullProviderName = $1
+            $ibmSystemTrapMgmtHwLogFullEventID = $2
+            $ibmSystemTrapMgmtHwLogFullAlertingManagedElement = $3
+            $ibmSystemTrapMgmtHwLogFullSeverity = lookup($4, ibmSystemTrapMgmtHwLogFullSeverity) + "( " + $4 + " )"
+            $ibmSystemTrapMgmtHwLogFullDescription = $5
+            $ibmSystemTrapMgmtHwLogFullTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapMgmtHwLogFull"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "Management Hardware Log Full"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapMgmtHwLogFullProviderName,$ibmSystemTrapMgmtHwLogFullEventID,$ibmSystemTrapMgmtHwLogFullAlertingManagedElement,$ibmSystemTrapMgmtHwLogFullSeverity,$ibmSystemTrapMgmtHwLogFullDescription,$ibmSystemTrapMgmtHwLogFullTimeStamp)
+
+        case "39": ### ibmSystemTrapMgmtHwLogClear
+
+            ##########
+            # $1 = ibmSystemTrapMgmtHwLogClearProviderName
+            # $2 = ibmSystemTrapMgmtHwLogClearEventID
+            # $3 = ibmSystemTrapMgmtHwLogClearAlertingManagedElement
+            # $4 = ibmSystemTrapMgmtHwLogClearSeverity
+            # $5 = ibmSystemTrapMgmtHwLogClearDescription
+            # $6 = ibmSystemTrapMgmtHwLogClearTimeStamp
+            ##########
+
+            $ibmSystemTrapMgmtHwLogClearProviderName = $1
+            $ibmSystemTrapMgmtHwLogClearEventID = $2
+            $ibmSystemTrapMgmtHwLogClearAlertingManagedElement = $3
+            $ibmSystemTrapMgmtHwLogClearSeverity = lookup($4, ibmSystemTrapMgmtHwLogClearSeverity) + "( " + $4 + " )"
+            $ibmSystemTrapMgmtHwLogClearDescription = $5
+            $ibmSystemTrapMgmtHwLogClearTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapMgmtHwLogClear"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "Management Hardware Log Cleared"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapMgmtHwLogClearProviderName,$ibmSystemTrapMgmtHwLogClearEventID,$ibmSystemTrapMgmtHwLogClearAlertingManagedElement,$ibmSystemTrapMgmtHwLogClearSeverity,$ibmSystemTrapMgmtHwLogClearDescription,$ibmSystemTrapMgmtHwLogClearTimeStamp)
+
+        case "40": ### ibmSystemTrapCSServiceEvent
+
+            ##########
+            # $1 = ibmSystemTrapCSServiceEventProviderName
+            # $2 = ibmSystemTrapCSServiceEventEventID
+            # $3 = ibmSystemTrapCSServiceEventAlertingManagedElement
+            # $4 = ibmSystemTrapCSServiceEventSeverity
+            # $5 = ibmSystemTrapCSServiceEventDescription
+            # $6 = ibmSystemTrapCSServiceEventTimeStamp
+            ##########
+
+            $ibmSystemTrapCSServiceEventProviderName = $1
+            $ibmSystemTrapCSServiceEventEventID = $2
+            $ibmSystemTrapCSServiceEventAlertingManagedElement = $3
+            $ibmSystemTrapCSServiceEventSeverity = lookup($4, ibmSystemTrapCSServiceEventSeverity) + "( " + $4 + " )"
+            $ibmSystemTrapCSServiceEventDescription = $5
+            $ibmSystemTrapCSServiceEventTimeStamp = $6
+
+            $OS_EventId = "SNMPTRAP-ibm-IBM-SYSTEM-TRAP-MIB-ibmSystemTrapCSServiceEvent"
+
+            @AlertGroup = "System Status"
+            @AlertKey = $2
+            @Summary = "Service Event Occurs on a System Machine"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ibmSystemTrapCSServiceEventProviderName,$ibmSystemTrapCSServiceEventEventID,$ibmSystemTrapCSServiceEventAlertingManagedElement,$ibmSystemTrapCSServiceEventSeverity,$ibmSystemTrapCSServiceEventDescription,$ibmSystemTrapCSServiceEventTimeStamp)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, ibm-IBM-SYSTEM-TRAP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, ibm-IBM-SYSTEM-TRAP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/ibm/ibm-IBM-SYSTEM-TRAP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/ibm/ibm-IBM-SYSTEM-TRAP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... ibm-IBM-SYSTEM-TRAP-MIB.include.snmptrap.rules >>>>>")

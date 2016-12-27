@@ -1,0 +1,78 @@
+Can one run commands when SQL*Plus starts up?
+When SQL*Plus starts up, it looks for a global login script called glogin.sql in the $ORACLE_HOME/sqlplus/admin directory. If found, this script will be executed. 
+
+Thereafter, sqlplus will try to find a local login script called login.sql in the directory where you start sqlplus from, alternatively the directories listed in the SQLPATH environment variable. When found, sqlplus will execute it. 
+
+NOTE: From Oracle 10g SQL*Plus will attempt to execute glogin.sql and login.sql after each successful connection. This is handy if you want to change the sqlprompt to include the current user. Here is an example (g)login.sql file: 
+
+prompt Loading login.sql file...
+set sqlprompt "&&_USER@&&_CONNECT_IDENTIFIER SQL>"
+define _editor=vi
+
+
+
+SQL>SPOOL /tmp/mydata.dat
+
+SQL>select myfield from userDB where IMSI like '22803%' and rownum < 11;
+
+SQL>SPOOL OFF
+
+
+
+
+SQL> select Serial, Summary from reporter_status where Summary like '%25 Circuit Do%';
+Serial  	46860673
+Summary		X.25 Circuit Down OML1
+AlertGroup	X25
+AlertKey	X.25 Circuit Down OML1
+Node		10:14:IAS:0
+NodeAlias	KHI003M__BSC13_Anum_Sh_1:KHI0344__S_Soldier_Bazar
+EventType	
+BSC_Name
+BTS_Name
+Class		
+
+
+
+SQL> select Serial, Summary from reporter_status where upper(Summary) like upper('%C-BSC Link Failure : BSC unreachab%');
+
+Serial  	
+Summary		
+AlertGroup	
+AlertKey	
+Node		
+NodeAlias	
+EventType	
+BSC_Name
+BTS_Name
+Class		
+
+
+SQL> select Serial, Summary from reporter_status where upper(Summary) like upper('%er OML Broken Alar%');
+
+Serial  	
+Summary		
+AlertGroup	
+AlertKey	
+Node		
+NodeAlias	
+EventType	
+BSC_Name
+BTS_Name
+Class		
+
+
+
+SQL> select Serial, Summary from reporter_status where upper(Summary) like upper('X25 [%');
+
+
+Serial  	47034204
+Summary		X25 [38] LINK-FLT[1]	
+AlertGroup	
+AlertKey	
+Node		
+NodeAlias	
+EventType	
+BSC_Name
+BTS_Name
+Class		

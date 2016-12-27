@@ -1,0 +1,638 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IETF-ISIS-MIB.include.snmptrap.rules 1.0 
+#    2006/03/01 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IETF-ISIS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.118": ### Cisco IS-IS Routing Protocol - Traps from CISCO-IETF-ISIS-MIB-V1SMI and Notifications from CISCO-IETF-ISIS-MIB (20050816)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IETF-ISIS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-IS-IS Routing Protocol"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciiDatabaseOverload
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiSysLevelOverloadState
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiSysLevelOverloadState = lookup($2, CiiLevelState) + " ( " + $2 + " )"
+            $ciiSysLevelIndex = extract($OID2, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiDatabaseOverload"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " Database Status"
+            @AlertKey = "ciiSysLevelEntry." + $ciiSysLevelIndex
+            switch($2)
+            {
+                case "1": ### off 
+                    $SEV_KEY = $OS_EventId + "_off"
+                    @Summary = $ciiNotifIsLevelIndex + " Database Off" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### on 
+                    $SEV_KEY = $OS_EventId + "_on"
+                    @Summary = $ciiNotifIsLevelIndex + " Database On" 
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### waiting 
+                    $SEV_KEY = $OS_EventId + "_waiting"
+                    @Summary = $ciiNotifIsLevelIndex + " Database Waiting" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### overloaded 
+                    $SEV_KEY = $OS_EventId + "_overloaded"
+                    @Summary = $ciiNotifIsLevelIndex + " Database Overloaded" 
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = $ciiNotifIsLevelIndex + " Database Status Unknown" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }  
+            @Summary = @Summary + "  ( " + @AlertKey + " )" 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiSysLevelOverloadState,$ciiSysLevelIndex)
+
+        case "2": ### ciiManualAddressDrops
+
+            ##########
+            # $1 = ciiNotifManualAddress
+            ##########
+
+            $ciiNotifManualAddress = $1
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiManualAddressDrops"
+
+            @AlertGroup = "IS-IS Manual Address Status"
+            @AlertKey = "Area Address: " + $ciiNotifManualAddress 
+            @Summary = "IS-IS Manual Area Address Dropped  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ciiNotifManualAddress)
+
+        case "3": ### ciiCorruptedLSPDetected
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiPduLspId
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiPduLspId = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiCorruptedLSPDetected"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "LSP ID: " + $ciiPduLspId
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Corrupted  ( " + @AlertKey + " )" 
+
+            $DEFAULT_Severity = 3 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiPduLspId)
+
+        case "4": ### ciiAttemptToExceedMaxSequence
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiPduLspId
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiPduLspId = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiAttemptToExceedMaxSequence"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "LSP ID: " + $ciiPduLspId
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Exceeds Max Sequence Number  ( " + @AlertKey + " )" 
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiPduLspId)
+
+        case "5": ### ciiIDLenMismatch
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiPduFieldLen 
+            # $3 = ciiCircIfIndex
+            # $4 = ciiPduFragment
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiPduFieldLen = $2
+            $ciiCircIfIndex = $3
+            $ciiPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiIDLenMismatch"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU ID Length Mismatch  ( " + @AlertKey + " )" 
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1 
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiPduFieldLen,$ciiCircIfIndex,$ciiPduFragment)
+
+        case "6": ### ciiMaxAreaAddressesMismatch
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiPduMaxAreaAddress 
+            # $3 = ciiCircIfIndex 
+            # $4 = ciiPduFragment
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiPduMaxAreaAddress = $2
+            $ciiCircIfIndex = $3
+            $ciiPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiMaxAreaAddressesMismatch"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Max Area Addresses Mismatch  ( " + @AlertKey + " )" 
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiPduMaxAreaAddress,$ciiCircIfIndex,$ciiPduFragment)
+
+        case "7": ### ciiOwnLSPPurge
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduLspId
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduLspId = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiOwnLSPPurge"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU with out System ID and Zero Age Received, ID: " + $3 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1 
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduLspId)
+
+        case "8": ### ciiSequenceNumberSkip
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex 
+            # $3 = ciiPduLspId 
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduLspId = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiSequenceNumberSkip"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Sequence Number Skipped, ID: " + $3 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduLspId)
+
+        case "9": ### ciiAuthenticationTypeFailure
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduFragment
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduFragment = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiAuthenticationTypeFailure"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU with Wrong Authentication Type Field  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduFragment)
+
+        case "10": ### ciiAuthenticationFailure
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiCircIfIndex 
+            # $3 = ciiPduFragment 
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduFragment = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiAuthenticationFailure"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU with Incorrect Authentication Information Field  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduFragment)
+
+        case "11": ### ciiVersionSkew
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduProtocolVersion 
+            # $4 = ciiPduFragment
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduProtocolVersion = $3
+            $ciiPduFragment = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiVersionSkew"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Hello PDU from Different IS Protocol Version  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduProtocolVersion,$ciiPduFragment)
+
+        case "12": ### ciiAreaMismatch
+
+            ##########
+            # $1 = ciiCircIfIndex
+            # $2 = ciiPduFragment 
+            ##########
+
+            $ciiCircIfIndex = $1
+            $ciiPduFragment = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiAreaMismatch"
+
+            @AlertGroup = "IS-IS LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = "IS-IS Area Mismatch  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ciiCircIfIndex,$ciiPduFragment)
+
+        case "13": ### ciiRejectedAdjacency
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduFragment 
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduFragment = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiRejectedAdjacency"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Received Hello PDU, Adjacency Not Established  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduFragment)
+
+        case "14": ### ciiLSPTooLargeToPropagate
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex 
+            # $3 = ciiPduLspSize 
+            # $4 = ciiPduLspId
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduLspSize = $3
+            $ciiPduLspId = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiLSPTooLargeToPropagate"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Too Large to Propagate, ID: " + $4 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduLspSize,$ciiPduLspId)
+
+        case "15": ### ciiOrigLSPBuffSizeMismatch
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduLspId
+            # $4 = ciiPduOriginatingBufferSize 
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduLspId = $3
+            $ciiPduOriginatingBufferSize = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiOrigLSPBuffSizeMismatch"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Original Buffer Size Mismatched, ID: " + $3 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduLspId,$ciiPduOriginatingBufferSize)
+
+        case "16": ### ciiProtocolsSupportedMismatch
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex 
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduProtocolsSupported
+            # $4 = ciiPduLspId
+            # $5 = ciiPduFragment
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduProtocolsSupported = $3
+            $ciiPduLspId = $4
+            $ciiPduFragment = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiProtocolsSupportedMismatch"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Supported Protocols Mismatch, ID: " + $4 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduProtocolsSupported,$ciiPduLspId,$ciiPduFragment)
+
+        case "17": ### ciiAdjacencyChange
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiCircIfIndex
+            # $3 = ciiPduLspId 
+            # $4 = ciiAdjState
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiCircIfIndex = $2
+            $ciiPduLspId = $3
+            $ciiAdjState = lookup($4, ciiAdjState) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiAdjacencyChange"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " Adjacency Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            switch($4)
+            {
+                case "1": ### down 
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = $ciiNotifIsLevelIndex + " Adjacency Down"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### initializing 
+                    $SEV_KEY = $OS_EventId + "_initializing"
+                    @Summary = $ciiNotifIsLevelIndex + " Adjacency Initializing"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12 
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### up 
+                    $SEV_KEY = $OS_EventId + "_up"
+                    @Summary = $ciiNotifIsLevelIndex + " Adjacency Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2 
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### failed 
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    @Summary = $ciiNotifIsLevelIndex + " Adjacency Failed"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                default: 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = $ciiNotifIsLevelIndex + " Adjacency Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary +  "  ( " + @AlertKey + " )" 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiCircIfIndex,$ciiPduLspId,$ciiAdjState)
+
+        case "18": ### ciiLSPErrorDetected
+
+            ##########
+            # $1 = ciiNotifIsLevelIndex
+            # $2 = ciiPduLspId
+            # $3 = ciiCircIfIndex
+            # $4 = ciiPduFragment
+            # $5 = ciiErrorOffset
+            # $6 = ciiErrorTLVType 
+            ##########
+
+            $ciiNotifIsLevelIndex = lookup($1, ciiNotifIsLevelIndex)
+            $ciiPduLspId = $2
+            $ciiCircIfIndex = $3
+            $ciiPduFragment = $4
+            $ciiErrorOffset = $5
+            $ciiErrorTLVType = $6
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISIS-MIB-ciiLSPErrorDetected"
+
+            @AlertGroup = $ciiNotifIsLevelIndex + " LSP Status" 
+            @AlertKey = "ciiCircEntry." + $ciiCircIfIndex
+            @Summary = $ciiNotifIsLevelIndex + " Link State PDU Parse Error, ID: " + $2 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1 
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ciiNotifIsLevelIndex = $ciiNotifIsLevelIndex + " ( " + $1 + " )" 
+            details($ciiNotifIsLevelIndex,$ciiPduLspId,$ciiCircIfIndex,$ciiPduFragment,$ciiErrorOffset,$ciiErrorTLVType)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IETF-ISIS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IETF-ISIS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IETF-ISIS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IETF-ISIS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IETF-ISIS-MIB.include.snmptrap.rules >>>>>")

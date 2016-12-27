@@ -1,0 +1,540 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IEEE-WMAN-IF-MIB.include.snmptrap.rules 1.0 
+#    2006/03/23 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  WMAN-IF-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.10.184.1.1.4.2": ### IEEE 802.16-2004 based Subscriber Station and Base Station - Notifications from WMAN-IF-MIB (20050802)
+
+    log(DEBUG, "<<<<< Entering... IEEE-WMAN-IF-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IEEE-802.16 Base Station"
+    @Class = ""
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### wmanIfBsSsStatusNotificationTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = wmanIfBsSsNotificationMacAddr 
+            # $3 = wmanIfBsSsStatusValue
+            # $4 = wmanIfBsSsStatusInfo
+            ##########
+
+            $ifIndex = $1
+            $wmanIfBsSsNotificationMacAddr = $2
+            $wmanIfBsSsStatusValue = lookup($3, wmanIfBsSsStatusValue) + " ( " + $3 + " )"
+            $wmanIfBsSsStatusInfo = $4
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfBsSsStatusNotificationTrap"
+
+            @AlertKey = "wmanIfBsSsNotificationObjectsEntry." + $ifIndex + "." + extract($OID2, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            switch($3)
+            {
+                case "1": ### ssInitRangingSucc 
+                    $SEV_KEY = $OS_EventId + "_ssInitRangingSucc"
+                    @AlertGroup = "WMAN SS Init Ranging Status"
+                    @Summary = "Wireless MAN SS Init Ranging Successful"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ssInitRangingFail 
+                    $SEV_KEY = $OS_EventId + "_ssInitRangingFail"
+                    @AlertGroup = "WMAN SS Init Ranging Status"
+                    @Summary = "Wireless MAN SS Init Ranging Failed"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### ssRegistered 
+                     $SEV_KEY = $OS_EventId + "_ssRegistered"
+                     @AlertGroup = "WMAN SS Registration Status" 
+                     @Summary = "Wireless MAN SS Registered"
+
+                     $DEFAULT_Severity = 1
+                     $DEFAULT_Type = 2
+                     $DEFAULT_ExpireTime = 0
+                case "4": ### ssRegistrationFail 
+                     $SEV_KEY = $OS_EventId + "_ssRegistrationFail"
+                     @AlertGroup = "WMAN SS Registration Status" 
+                     @Summary = "Wireless MAN SS Registration Failed"
+
+                     $DEFAULT_Severity = 3
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+                case "5": ### ssDeregistered 
+                     $SEV_KEY = $OS_EventId + "_ssDeregistered"
+                     @AlertGroup = "WMAN SS Registration Status" 
+                     @Summary = "Wireless MAN SS DeRegistered"
+
+                     $DEFAULT_Severity = 2
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+                case "6": ### ssBasicCapabilitySucc 
+                     $SEV_KEY = $OS_EventId + "_ssBasicCapabilitySucc"
+                     @AlertGroup = "WMAN SS Basic Capability Status" 
+                     @Summary = "Wireless MAN SS Basic Capability Successful"
+
+                     $DEFAULT_Severity = 1
+                     $DEFAULT_Type = 2
+                     $DEFAULT_ExpireTime = 0
+                case "7": ### ssBasicCapabilityFail 
+                     $SEV_KEY = $OS_EventId + "_ssBasicCapabilityFail"
+                     @AlertGroup = "WMAN SS Basic Capability Status" 
+                     @Summary = "Wireless MAN SS Basic Capability Failed"
+
+                     $DEFAULT_Severity = 3
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+                case "8": ### ssAuthorizationSucc 
+                     $SEV_KEY = $OS_EventId + "_ssAuthorizationSucc"
+                     @AlertGroup = "WMAN SS Authorization Status" 
+                     @Summary = "Wireless MAN SS Authorization Successful"
+
+                     $DEFAULT_Severity = 1
+                     $DEFAULT_Type = 2
+                     $DEFAULT_ExpireTime = 0
+                case "9": ### ssAuthorizationFail 
+                     $SEV_KEY = $OS_EventId + "_ssAuthorizationFail"
+                     @AlertGroup = "WMAN SS Authorization Status" 
+                     @Summary = "Wireless MAN SS Authorization Failed"
+
+                     $DEFAULT_Severity = 3
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+                case "10": ### tftpSucc 
+                     $SEV_KEY = $OS_EventId + "_tftpSucc"
+                     @AlertGroup = "WMAN SS TFTP Status" 
+                     @Summary = "Wireless MAN SS TFTP Successful"
+
+                     $DEFAULT_Severity = 1
+                     $DEFAULT_Type = 2
+                     $DEFAULT_ExpireTime = 0
+                case "11": ### tftpFail 
+                     $SEV_KEY = $OS_EventId + "_tftpFail"
+                     @AlertGroup = "WMAN SS TFTP Status" 
+                     @Summary = "Wireless MAN SS TFTP Failed" 
+
+                     $DEFAULT_Severity = 3
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+                case "12": ### sfCreationSucc 
+                     $SEV_KEY = $OS_EventId + "_sfCreationSucc"
+                     @AlertGroup = "WMAN SS SF Creation Status" 
+                     @Summary = "Wireless MAN SS Signal Flow Creation Successful" 
+
+                     $DEFAULT_Severity = 1
+                     $DEFAULT_Type = 2
+                     $DEFAULT_ExpireTime = 0
+                case "13": ### sfCreationFail 
+                     $SEV_KEY = $OS_EventId + "_sfCreationFail"
+                     @AlertGroup = "WMAN SS SF Creation Status" 
+                     @Summary = "Wireless MAN SS Signal Flow Creation Failed" 
+
+                     $DEFAULT_Severity = 3
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                     $SEV_KEY = $OS_EventId + "_unknown"
+                     @AlertGroup = "Wireless MAN SS Status"
+                     @Summary = "Wireless MAN SS Status Unknown"
+ 
+                     $DEFAULT_Severity = 2
+                     $DEFAULT_Type = 1
+                     $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + ", " + $4 + "  ( MAC Address: " + $2 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3 + " " + $4
+
+            details($ifIndex,$wmanIfBsSsNotificationMacAddr,$wmanIfBsSsStatusValue,$wmanIfBsSsStatusInfo)
+
+        case "2": ### wmanIfBsSsDynamicServiceFailTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = wmanIfBsSsNotificationMacAddr 
+            # $3 = wmanIfBsDynamicServiceType 
+            # $4 = wmanIfBsDynamicServiceFailReason
+            ##########
+
+            $ifIndex = $1
+            $wmanIfBsSsNotificationMacAddr = $2
+            $wmanIfBsDynamicServiceType = lookup($3, wmanIfBsDynamicServiceType)
+            $wmanIfBsDynamicServiceFailReason = $4
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfBsSsDynamicServiceFailTrap"
+
+            @AlertGroup = "WMAN " + $wmanIfBsDynamicServiceType + " Status" 
+            @AlertKey = "wmanIfBsSsNotificationObjectsEntry." + $ifIndex + "." + extract($OID2, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            @Summary = "Wireless MAN " + $wmanIfBsDynamicServiceType + " Failed, " + $4 + "  ( MAC Address: " + $2 + " )" 
+
+            $DEFAULT_Severity = 3 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            $wmanIfBsDynamicServiceType = $wmanIfBsDynamicServiceType + " ( " + $3 + " )"
+            details($ifIndex,$wmanIfBsSsNotificationMacAddr,$wmanIfBsDynamicServiceType,$wmanIfBsDynamicServiceFailReason)
+
+        case "3": ### wmanIfBsSsRssiStatusChangeTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = wmanIfBsSsNotificationMacAddr
+            # $3 = wmanIfBsSsRssiStatus
+            # $4 = wmanIfBsSsRssiStatusInfo
+            ##########
+
+            $ifIndex = $1
+            $wmanIfBsSsNotificationMacAddr = $2
+            $wmanIfBsSsRssiStatus = lookup($3, wmanIfBsSsRssiStatus) + " ( " + $3 + " )"
+            $wmanIfBsSsRssiStatusInfo = $4
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfBsSsRssiStatusChangeTrap"
+
+            @AlertGroup = "WMAN SS Uplink RSSI Status"
+            @AlertKey = "wmanIfBsSsNotificationObjectsEntry." + $1 + "." + extract($OID2, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            switch($3)
+            {
+                case "1": ### bsRssiAlarm 
+                    $SEV_KEY = $OS_EventId + "_bsRssiAlarm"
+                    @Summary = "Wireless MAN SS Uplink RSSI Alarm, " + $4
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### bsRssiNoAlarm 
+                    $SEV_KEY = $OS_EventId + "_bsRssiNoAlarm"
+                    @Summary = "Wireless MAN SS Uplink RSSI No Alarm"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default: 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Wireless MAN SS Uplink RSSI Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( MAC Address: " + $2 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " "  + $3 + " " + $4
+
+            details($ifIndex,$wmanIfBsSsNotificationMacAddr,$wmanIfBsSsRssiStatus,$wmanIfBsSsRssiStatusInfo)
+
+        case "4": ### wmanIfBsSsPkmFailTrap
+
+            ##########
+            # $1 = wmanIfBsSsNotificationMacAddr
+            ##########
+
+            $wmanIfBsSsNotificationMacAddr = $1
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfBsSsPkmFailTrap"
+
+            @AlertGroup = "WMAN SS PKM Operation Status"
+            @AlertKey = "wmanIfBsSsNotificationObjectsEntry." + $ifIndex + "." + extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            @Summary = "Wireless MAN SS PKM Opearation Failed  ( MAC Address: " + $1 + " )"
+
+            $DEFAULT_Severity = 3 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($wmanIfBsSsNotificationMacAddr,$ifIndex)
+
+        case "5": ### wmanIfBsSsRegistrerTrap
+
+            ##########
+            # $1 = wmanIfBsSsNotificationMacAddr 
+            # $2 = wmanIfBsSsRegisterStatus 
+            ##########
+
+            $wmanIfBsSsNotificationMacAddr = $1
+            $wmanIfBsSsRegisterStatus = lookup($2, wmanIfBsSsRegisterStatus) + " ( " + $2 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfBsSsRegistrerTrap"
+
+            @AlertGroup = "WMAN SS Registration Status"
+            @AlertKey = "wmanIfBsSsNotificationObjectsEntry." + $ifIndex + "." + extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            switch($2)
+            {
+                case "1": ### ssRegister
+                    $SEV_KEY = $OS_EventId + "_ssRegister"
+                    @Summary = "Wireless MAN SS Registered" 
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### ssDeregister 
+                    $SEV_KEY = $OS_EventId + "_ssDeregister"
+                    @Summary = "Wireless MAN SS De-Registered"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Wireless MAN SS Registration Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( MAC Address: " + $1 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            details($wmanIfBsSsNotificationMacAddr,$wmanIfBsSsRegisterStatus,$ifIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IEEE-WMAN-IF-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IEEE-WMAN-IF-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IEEE/IEEE-WMAN-IF-MIB_BS.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IEEE/IEEE-WMAN-IF-MIB_BS.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IEEE-WMAN-IF-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.2.1.10.184.1.2.3.2": ### IEEE 802.16-2004 based SS and Base Station - Notifications from WMAN-IF-MIB (20050802)
+
+    log(DEBUG, "<<<<< Entering... IEEE-WMAN-IF-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IEEE-802.16 Subscriber Station"
+    @Class = ""
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### wmanIfSsTlvUnknownTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = wmanIfSsMacAddress 
+            # $3 = wmanIfSsUnknownTlv 
+            ##########
+
+            $ifIndex = $1
+            $wmanIfSsMacAddress = $2
+            $wmanIfSsUnknownTlv = $3
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfSsTlvUnknownTrap"
+
+            @AlertGroup = "WMAN SS TLV Status"
+            @AlertKey = "wmanIfSsNotificationObjectsEntry." + $ifIndex
+            @Summary = "Wireless MAN SS Unknown TLV, " + $3 + "  ( MAC Address: " + $2 + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifIndex,$wmanIfSsMacAddress,$wmanIfSsUnknownTlv)
+
+        case "2": ### wmanIfSsDynamicServiceFailTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = wmanIfSsMacAddress 
+            # $3 = wmanIfSsDynamicServiceType 
+            # $4 = wmanIfSsDynamicServiceFailReason
+            ##########
+
+            $ifIndex = $1
+            $wmanIfSsMacAddress = $2
+            $wmanIfSsDynamicServiceType = lookup($3, wmanIfSsDynamicServiceType)
+            $wmanIfSsDynamicServiceFailReason = $4
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfSsDynamicServiceFailTrap"
+
+            @AlertGroup = "WMAN " + $wmanIfSsDynamicServiceType + " Status" 
+            @AlertKey = "wmanIfSsNotificationObjectsEntry." + $ifIndex
+            @Summary = "Wireless MAN " + $wmanIfSsDynamicServiceType + " Failed, " + $4 + "  ( MAC Address: " + $2 + " )" 
+
+            $DEFAULT_Severity = 3 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $wmanIfSsDynamicServiceType = $wmanIfSsDynamicServiceType + " ( " + $3 + " )"
+            details($ifIndex,$wmanIfSsMacAddress,$wmanIfSsDynamicServiceType,$wmanIfSsDynamicServiceFailReason)
+
+        case "3": ### wmanIfSsDhcpSuccessTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = wmanIfSsMacAddress 
+            ##########
+
+            $ifIndex = $1
+            $wmanIfSsMacAddress = $2
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfSsDhcpSuccessTrap"
+
+            @AlertGroup = "WMAN SS DHCP Status"
+            @AlertKey = "wmanIfSsNotificationObjectsEntry." + $ifIndex
+            @Summary = "Wireless MAN SS DHCP Successful  ( MAC Address: " + $2 + " )"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifIndex,$wmanIfSsMacAddress)
+
+        case "4": ### wmanIfSsRssiStatusChangeTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = wmanIfSsMacAddress 
+            # $3 = wmanIfSsRssiStatus
+            # $4 = wmanIfSsRssiStatusInfo 
+            ##########
+
+            $ifIndex = $1
+            $wmanIfSsMacAddress = $2
+            $wmanIfSsRssiStatus = lookup($3, wmanIfSsRssiStatus) + " ( " + $3 + " )"
+            $wmanIfSsRssiStatusInfo = $4
+
+            $OS_EventId = "SNMPTRAP-IEEE-WMAN-IF-MIB-wmanIfSsRssiStatusChangeTrap"
+
+            @AlertGroup = "WMAN SS Downlink RSSI Status"
+            @AlertKey = "wmanIfSsNotificationObjectsEntry." + $ifIndex
+            switch($3)
+            {
+                case "1": ### ssRssiAlarm 
+                    $SEV_KEY = $OS_EventId + "_ssRssiAlarm"
+                    @Summary = "Wireless MAN SS Downlink RSSI Alarm, " + $4
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### ssRssiNoAlarm 
+                    $SEV_KEY = $OS_EventId + "_ssRssiNoAlarm"
+                    @Summary = "Wireless MAN SS Downlink RSSI No Alarm"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Wireless MAN SS Downlink RSSI Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( MAC Address: " + $2 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            details($ifIndex,$wmanIfSsMacAddress,$wmanIfSsRssiStatus,$wmanIfSsRssiStatusInfo)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IEEE-WMAN-IF-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IEEE-WMAN-IF-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IEEE/IEEE-WMAN-IF-MIB_SS.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IEEE/IEEE-WMAN-IF-MIB_SS.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IEEE-WMAN-IF-MIB.include.snmptrap.rules >>>>>")

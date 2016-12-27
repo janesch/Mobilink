@@ -1,0 +1,209 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-DISMAN-SCRIPT-MIB.include.snmptrap.rules 2.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-DISMAN-SCRIPT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.64.2": ### Distributed Management Scripts - Notifications from DISMAN-SCRIPT-MIB
+
+    log(DEBUG, "<<<<< Entering... IETF-DISMAN-SCRIPT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-DISMAN-SCRIPT-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### smScriptAbort
+
+            ##########
+            # $1 = smRunExitCode
+            # $2 = smRunEndTime
+            # $3 = smRunError
+            ##########
+
+            $smRunExitCode = lookup($1, smRunExitCode) + " ( " + $1 + " )"
+            $smRunEndTime = $2
+            $smRunError = $3
+            details($smRunExitCode,$smRunEndTime,$smRunError)
+
+            $OS_EventId = "SNMPTRAP-IETF-DISMAN-SCRIPT-MIB-smScriptAbort"
+
+            @AlertGroup = "Script Status"
+            @AlertKey = "smRunEntry." + extract($OID1, "\.3\.6\.1\.2\.1\.64\.1\.4\.2\.1\.7\.(.*)$")
+            switch($1)
+            {
+                case "1": ### noError
+                    @Summary = "Script Aborted, No Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_noError"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### halted
+                    @Summary = "Script Aborted, Halted"
+                    
+                    $SEV_KEY = $OS_EventId + "_halted"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### lifeTimeExceeded
+                    @Summary = "Script Aborted, Lifetime Exceeded"
+                    
+                    $SEV_KEY = $OS_EventId + "_lifeTimeExceeded"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### noResourcesLeft
+                    @Summary = "Script Aborted, No Resources Left"
+                    
+                    $SEV_KEY = $OS_EventId + "_noResourcesLeft"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### languageError
+                    @Summary = "Script Aborted, Language Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_languageError"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### runtimeError
+                    @Summary = "Script Aborted, Runtime Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_runtimeError"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "7": ### invalidArgument
+                    @Summary = "Script Aborted, Invalid Argument"
+                    
+                    $SEV_KEY = $OS_EventId + "_invalidArgument"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "8": ### securityViolation
+                    @Summary = "Script Aborted, Security Violation"
+                    
+                    $SEV_KEY = $OS_EventId + "_securityViolation"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "9": ### genericError
+                    @Summary = "Script Aborted, Generic Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_genericError"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "Script Aborted, Reason Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $3
+
+        case "2": ### smScriptResult
+
+            ##########
+            # $1 = smRunResult
+            ##########
+
+            $smRunResult = $1
+            details($smRunResult)
+
+            $OS_EventId = "SNMPTRAP-IETF-DISMAN-SCRIPT-MIB-smScriptResult"
+
+            @AlertGroup = "Script Status"
+            @AlertKey = "smRunEntry." + extract($OID1, "\.[0-9]+\.(.*)$")
+            @Summary = "Script Completed, Result: " + $1 + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "3": ### smScriptException
+
+            ##########
+            # $1 = smRunError
+            ##########
+
+            $smRunError = $1
+            details($smRunError)
+
+            $OS_EventId = "SNMPTRAP-IETF-DISMAN-SCRIPT-MIB-smScriptException"
+
+            @AlertGroup = "Script Status"
+            @AlertKey = "smRunEntry." + extract($OID1, "\.[0-9]+\.(.*)$")
+            @Summary = "Script Exception, Error: " + $1 + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-DISMAN-SCRIPT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-DISMAN-SCRIPT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-DISMAN-SCRIPT-MIB.include.snmptrap.rules >>>>>")

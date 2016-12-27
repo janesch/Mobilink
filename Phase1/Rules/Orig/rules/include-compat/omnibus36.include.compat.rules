@@ -1,0 +1,65 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    omnibus36.include.compat.rules 1.0
+#    2005/03/01 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... omnibus36.include.compat.rules >>>>>")
+
+@EventId = $OS_EventId
+@ExpireTime = $OS_ExpireTime
+@ProcessReq = $OS_ProcessReq
+@SuppressEscl = $OS_SuppressEscl
+@Customer = $OS_Customer
+@Service = $OS_Service
+@PhysicalSlot = $OS_PhysicalSlot
+@PhysicalPort = $OS_PhysicalPort
+@PhysicalCard = $OS_PhysicalCard
+@TaskList = $OS_TaskList
+
+@NmosSerial = $OS_NmosSerial
+@NmosObjInst = $OS_NmosObjInst
+@NmosCauseType = $OS_NmosCauseType
+
+@LocalNodeAlias = $OS_LocalNodeAlias
+@LocalPriObj = $OS_LocalPriObj
+@LocalSecObj = $OS_LocalSecObj
+@LocalRootObj = $OS_LocalRootObj
+@RemoteNodeAlias = $OS_RemoteNodeAlias
+@RemotePriObj = $OS_RemotePriObj
+@RemoteSecObj = $OS_RemoteSecObj
+@RemoteRootObj = $OS_RemoteRootObj
+
+@X733EventType = $OS_X733EventType
+@X733ProbableCause = $OS_X733ProbableCause
+@X733SpecificProb = $OS_X733SpecificProb
+@X733CorrNotif = $OS_X733CorrNotif
+
+if(!match($OPTION_TypeFieldUsage, "3.6")) ### Must be written for 3.5 and earlier (we assume anyway).
+{
+    log(DEBUG, "<<<<< (omnibus36.include.compat.rules) $OPTION_TypeFieldUsage NOT set to 3.6. >>>>>")
+    
+    if(match($OS_ExpireTime, "")||match($OS_ExpireTime, "0")) ### Just to be sure someone hasn't set an Expire Time.
+    {
+        if(int(@Type)>9) ### Type is being used as an Expire Time.
+        {
+            @ExpireTime = @Type
+            @Type = 13
+        }
+    }
+}
+
+log(DEBUG, "<<<<< Leaving... omnibus36.include.compat.rules >>>>>")

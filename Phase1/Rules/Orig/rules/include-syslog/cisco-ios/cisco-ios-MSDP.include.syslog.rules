@@ -1,0 +1,110 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-MSDP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release. 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002).  
+#
+#     - Supports MOI fields in OMNIbus 3.6.
+#       
+###############################################################################
+
+case "MSDP": ### Multicast Source Discovery Protocol
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-MSDP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "PEER_IS_SELF":
+    
+            ##########
+            # The MSDP is peering with itself.
+            #
+            # %MSDP-5-PEER_IS_SELF: Peering with self ([IP_address])
+            ##########
+    
+            $MOI_Remote = extract($Message, "with self \((.*)\)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "PEER_UPDOWN":
+    
+            ##########
+            # The session to the peer is going up or down.
+            #
+            # %MSDP-5-PEER_UPDOWN: SessiSon to peer [IP_address] going [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "to peer (.*) going")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+            $CLARIFIER = rtrim(extract($Message, " going (.*)$"))
+            
+            switch($CLARIFIER)
+            {
+                case "Up"|"UP"|"up":
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+    
+        case "PKT_TOO_BIG":
+    
+            ##########
+            # A message larger than the maximum MSDP message size has been
+            # received.
+            #
+            # %MSDP-4-PKT_TOO_BIG: Message size violation on [int]-byte packet
+            # from [IP_address], discarded
+            ##########
+    
+            $MOI_Remote = extract($Message, "from (.*),? discarded")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "SA_LIMIT":
+    
+            ##########
+            # The number of MSDP SAs exceeds the configured maximum number. SA
+            # cache entries cannot be added unless the configuration is
+            # changed.
+            #
+            # %MSDP-4-SA_LIMIT: SA from peer [IP_address], RP [IP_address] for
+            # ([IP_address], [IP_address]) exceeded sa-limit of [dec]
+            ##########
+    
+            $MOI_Remote = extract($Message, "from peer (.*),? RP")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, "RP (.*) exceeded ")
+    
+        default:
+                    
+            $UseCiscoIosDefaults = 1
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-MSDP.include.syslog.rules >>>>>")

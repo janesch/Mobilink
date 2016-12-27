@@ -1,0 +1,675 @@
+------------------------------------------------------------------------------
+--
+-- (c) Copyright 2001-2009 mBalance.
+--
+--  This MIB is proprietary to and embodies the confidential technology of
+--  mBalance. Possession, use, duplication or dissemination of this MIB is
+--  authorized only pursuant to a valid written license from mBalance.
+--
+------------------------------------------------------------------------------
+-- $Id: textpass-lgp-mib.my,v 1.21 2010/02/26 16:53:45 fgrotepa Exp $
+------------------------------------------------------------------------------
+--
+-- File    : textpass-lgp-mib.my
+-- Release : R01.03
+--
+------------------------------------------------------------------------------
+
+    TEXTPASS-LGP-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        Gauge
+            FROM RFC1155-SMI
+        textpass
+            FROM MBALANCE-MIB
+        deviceType
+            FROM TEXTPASS-GEN-MIB
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215
+        Boolean, DateTime
+            FROM TEXTPASS-GEN-MIB;
+
+    -- Types
+
+    FileTransferProtocol ::=
+        INTEGER {
+            ftp(0),
+            sftp(1)
+        }
+
+    RTRNodeIndexType ::= INTEGER(1..200)
+
+    LgpDbKeyIndexType ::= INTEGER(1..10)
+
+    -- the LGP subsystem
+
+    lgp OBJECT IDENTIFIER ::= { textpass 91 }
+
+    -- the LGP node properties group
+
+    lgpProperties OBJECT IDENTIFIER ::= { lgp 1 }
+
+    lgpNodeName OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Name of the LGP node, used in collection for temporary
+            directories."
+        ::= { lgpProperties 1 }
+
+    lgpStaticWeight OBJECT-TYPE
+        SYNTAX  Gauge(0..100)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The static weight for the node, used in the collection allocation
+            algorithm. The bigger this parameter is, more files are allocated
+            to the node. For example, if it is 2 and all other nodes have this
+            set to 1, this node will receive twice as many files (bytes) to
+            load."
+        ::= { lgpProperties 2 }
+
+    lgpLoaderTimeoutInterval OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of seconds after which, if no statistics are received from
+            the Loader component, it is considered dead and is restarted."
+        ::= { lgpProperties 3 }
+
+    lgpAliveInterval OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Period in seconds with which to update the LGP node's statistics
+            in the TNL heartbeat user data. Recommended to be set to the same
+            value as the TNL heartbeat interval."
+        ::= { lgpProperties 4 }
+
+    lgpPollStart OBJECT-TYPE
+        SYNTAX  DateTime
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Start time of the polling scheme as UNIX timestamp: set to 0 will
+            indicate that the polling will start immediately. Otherwise the
+            start time must be set to an absolute value which will indicate
+            the absolute moment in time when the polling will start."
+        ::= { lgpProperties 5 }
+
+    lgpPollStop OBJECT-TYPE
+        SYNTAX  DateTime
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "End time of the polling scheme as UNIX timestamp: set to -1 will
+            indicate that the polling will never stop. Otherwise the stop time
+            must be set to an absolute value which will indicate the absolute
+            moment in time when the polling will stop."
+        ::= { lgpProperties 6 }
+
+    lgpPollPeriod OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Time interval between two subsequent polls, in minutes."
+        ::= { lgpProperties 7 }
+
+    lgpLocalLogDir OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Local directory to be used for temporarily storing log files to
+            be loaded. This directory needs to exist on the node."
+        ::= { lgpProperties 8 }
+
+    lgpDbHost OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Obsolete as of LGP R01.03.00.00."
+        ::= { lgpProperties 9 }
+
+    lgpDbUser OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Local node LGP DB connect user."
+        ::= { lgpProperties 10 }
+
+    lgpDbPassword OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Local node LGP DB connect password - scrambled."
+        ::= { lgpProperties 11 }
+
+    lgpDbDatabase OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Local node LGP DB connect database name."
+        ::= { lgpProperties 12 }
+
+    lgpDbPort OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Local node LGP DB connect port."
+        ::= { lgpProperties 13 }
+
+    lgpDbCleanOlderThan OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum file age in the DB in hours. Files that were loaded into
+            the DB more than this time ago are deleted at the next DB clean.
+            Default is 240 hours."
+        ::= { lgpProperties 14 }
+
+    lgpDbClean OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..200))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "DB clean schedule, written as a comma separated list of hh24mi
+            times. For example 1 AM and 1 PM is 0100,1300."
+        ::= { lgpProperties 15 }
+
+    lgpMaxMasterCollectorWait OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum interval in seconds for which the Collector process waits
+            for the Master process to complete before starting."
+        ::= { lgpProperties 16 }
+
+    lgpStartupWait OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Interval in seconds for which a newly started node stays in the
+            STARTUP state and does not assume MASTER role."
+        ::= { lgpProperties 17 }
+
+    lgpRecycleInterval OBJECT-TYPE 
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Time in hours after which files that were allocated on the FTP
+            server to a LGP node but were not picked up by it are
+            redistributed."
+        ::= { lgpProperties 18 }
+
+    lgpMaxLoadTime OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum time in minutes for the LGP local file queue to be
+            loaded.  If at the current loading speed it is estimated that it
+            will be surpassed, a trap is triggered."
+        ::= { lgpProperties 19 }
+
+    lgpMaxMasterRun OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum run time in seconds for the Master process. If it takes
+            longer it is assumed that the process failed and it is killed."
+        ::= { lgpProperties 20 }
+
+    lgpTransClean OBJECT-TYPE 
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum age for files in transfer, in hours. If a file is in the
+            transfer state after this much time, it is collected again."
+        ::= { lgpProperties 21 }
+
+    lgpDoneClean OBJECT-TYPE 
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Time for which to keep successfully transfered files on the FTP
+            server. In hours. Should cover the time between LGP DB backups."
+        ::= { lgpProperties 22 }
+
+    lgpMaxCollectorRun OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum run time in seconds for the Master process. If it takes
+            longer it is assumed that the process failed and it is killed."
+        ::= { lgpProperties 23 }
+
+    lgpAsnDisableFields OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..10240))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "List of ASN records to disable, writen as a comma separated
+            list of structure.substructure.field. Then names are those from 
+            the ASN log record spec."
+        ::= { lgpProperties 24 }
+
+    lgpLoadedRestartWaitInterval OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of seconds to wait before restarting the Loader process
+            in case it exited with a fatal error."
+        ::= { lgpProperties 25 }
+
+    lgpAlertDelay OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of minutes to wait before retransmitting a Loader trap."
+        ::= { lgpProperties 26 }
+
+    queryMaxNumberOf OBJECT-TYPE
+        SYNTAX  Gauge(0..64)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum number of parallel queries."
+        ::= { lgpProperties 27 }
+
+    queryMaxWait OBJECT-TYPE
+        SYNTAX  Gauge(1..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum run time for a query, in seconds."
+        ::= { lgpProperties 28 }
+
+    queryListenPort OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Query TCP listen port."
+        ::= { lgpProperties 29 }
+
+    queryBacklog OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Size of the TCP listen backlog on the query port."
+        ::= { lgpProperties 30 }
+
+    queryMaxRecords OBJECT-TYPE
+        SYNTAX  Gauge(0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Absolute maximum number of records to return for a query."
+        ::= { lgpProperties 31 }
+
+    queryGenerateSqlLogs OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Set to 1 to enable SQL query tracing to a separate log file."
+        ::= { lgpProperties 32 }
+
+    querySqlLogsPath OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..200))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The path and filename of the SQL query tracing log.
+            Can only be set when the logging is disabled, or the LGP
+            is not active."
+        ::= { lgpProperties 33 }
+
+    lgpFileTransferProtocol OBJECT-TYPE
+        SYNTAX  FileTransferProtocol
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Specifies the file transfer protocol used by the LogProcessor to
+            retrieve the log records from the Routers.
+            Default is 'ftp'."
+        ::= { lgpProperties 41 }
+
+    lgpLoaderTempDir OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Local directory to be used for creating temporary files used for 
+            batch loading. This directory is best placed on a tmpfs or ramfs 
+            filesystem. Placing this directory on the disk has no advantage. 
+            The data is not integral for the data safety.
+            Default is '/tmp'."
+        ::= { lgpProperties 42 }
+
+    lgpLoaderBatchSize OBJECT-TYPE
+        SYNTAX  Gauge(1000..100000)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The batch size in number of records for the batch files to 
+            be inserted into the database .
+            Default is 10000."
+        ::= { lgpProperties 43 }
+
+    lgpCompressSftpData OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Enable compression on the transfer of the data files when using
+            SFTP. This variable has no effect when using FTP. 
+            The default mode is off."
+        ::= { lgpProperties 44 }
+
+
+
+    -- the LGP node status group
+
+    lgpStatus OBJECT IDENTIFIER ::= { lgp 2 }
+
+    lgpActiveFlag OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag indicates if the LGP node is active and participating
+            in polling, loading and querying."
+        ::= { lgpStatus 1 }
+
+    lgpIsMasterFlag OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag indicates if the LGP node is the master node in the LGP
+            system."
+        ::= { lgpStatus 2 }
+
+    lgpLastCollection OBJECT-TYPE
+        SYNTAX  DateTime
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "UNIX timestamp of the last successfull collection (FTP poll)."
+        ::= { lgpStatus 3 }
+
+    lgpQueueFiles OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of files waiting to be loaded on the LGP node."
+        ::= { lgpStatus 4 }
+
+    lgpQueueSize OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Size in Kbytes of the files waiting to be loaded on the LGP
+            node."
+        ::= { lgpStatus 5 }
+
+    lgpLoadRecs OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Average (last 5 min) loading speed in records/s."
+        ::= { lgpStatus 6 }
+
+    lgpLoadBytes OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Average (last 5 min) loading speed in bytes/s."
+        ::= { lgpStatus 7 }
+
+    lgpDbFiles OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of files in the LGP DB."
+        ::= { lgpStatus 8 }
+
+    lgpDbSize OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Size of files in the LGP database, in Kbytes."
+        ::= { lgpStatus 9 }
+
+
+    -- the router nodes properties table
+  
+    routerNodeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RouterNodeEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing FTP access info about RTR and FWL nodes, from
+            which this LGP node collects files according to the polling
+            scheme.  This table must be the same on all LGP nodes in the
+            system."
+        ::= { lgp 3 }
+
+    routerNodeEntry OBJECT-TYPE
+        SYNTAX  RouterNodeEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry of table containing info about FTP acess to RTR and FWL
+            nodes"
+        INDEX   { routerNodeIndex }
+        ::= { routerNodeTable 1 }
+
+    RouterNodeEntry ::=
+        SEQUENCE {
+            routerNodeIndex                     RTRNodeIndexType,
+            routerNodeName                      OCTET STRING(SIZE (1..64)),
+            routerNodeDir                       OCTET STRING(SIZE (1..64)),
+            routerNodeUser                      OCTET STRING(SIZE (1..64)),
+            routerNodePassword                  OCTET STRING(SIZE (0..64)),
+            routerNodePattern                   OCTET STRING(SIZE (1..64))
+         }
+
+    routerNodeIndex OBJECT-TYPE
+        SYNTAX  RTRNodeIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing info of FTP acess table to 
+            RTR and FWL "
+        ::= { routerNodeEntry 1 }
+
+    routerNodeName OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Host address or name of router"
+        ::= { routerNodeEntry 2 }
+
+    routerNodeDir OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Log directory on the router. Can't contain :"
+        ::= { routerNodeEntry 3 }
+
+    routerNodeUser OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "FTP user name on the router"
+        ::= { routerNodeEntry 4 }
+
+    routerNodePassword OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "FTP user password on the router - scrambled. Can't contain :"
+        ::= { routerNodeEntry 5 }
+
+    routerNodePattern OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (1..64))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Log file pattern, used to select the files to be loaded from the
+            remote log directory. Perl-style regular expression, must match
+            only log files, must not contain the string start and end ^ $.
+            Can't contain :"
+        ::= { routerNodeEntry 6 }
+    
+    --lgpDbKeys
+    lgpDbKeyTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF LgpDbKeyEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing a list of keys that will be used for creating 
+            the message record tables. If no elements are present in the 
+            table, the default keys will be used. Keys can be multi-column 
+            keys. For multi-column keys, an entry contains a list of comma 
+            separated column names. In single column cases, an entry contains 
+            only the column name"
+        ::= { lgp 4 }
+
+    lgpDbKeyEntry OBJECT-TYPE
+        SYNTAX  LgpDbKeyEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Entry containing the key variable"
+        INDEX   { lgpDbKeyIndex }
+        ::= { lgpDbKeyTable 1 }
+
+    -- Maximum length is  set to 16 times the size of the largest element (64 chars) 
+    -- plus 15 times the separation (two chars) 
+    LgpDbKeyEntry ::=
+        SEQUENCE {
+            lgpDbKeyIndex                       LgpDbKeyIndexType,
+            lgpDbKey                            OCTET STRING(SIZE (1..1054))
+         }
+
+    lgpDbKeyIndex OBJECT-TYPE
+        SYNTAX  LgpDbKeyIndexType
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing database keys "
+        ::= { lgpDbKeyEntry 1 }
+
+    lgpDbKey OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE (0..1054))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "A comma separated list of database column names. This comma
+             separated list will be used to create a database key. The key
+             will use the same order as is provisioned. Column names will
+             be validated. No more than 16 columns will be allowed in 
+             single key" 
+        ::= { lgpDbKeyEntry 2 }
+
+    -- the LGP traps
+
+    controllerFailed TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The LGP Controller component encountered a fatal error
+            condition."
+        ::= 1
+
+    loaderFailed TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The DB Loader component encountered a fatal error condition."
+        ::= 2
+
+    queuesLowLoad TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The load time estimated by dividing the size of the files on disk
+             waiting to be loaded by the average loading speed in bytes per s
+             for the last five minutes is greater than the maximum configured
+             acceptable load delay."
+        ::= 3
+
+    masterFailed TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The poll Master component encountered a fatal error condition."
+        ::= 4
+
+    masterError TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The poll Master component encountered a non-fatal error
+            condition."
+        ::= 5
+
+    collectorFailed TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The Collector component encountered a fatal error condition."
+        ::= 6
+
+    collectorError TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The Collector component encountered a non-fatal error condition."
+        ::= 7
+
+    queryFailed TRAP-TYPE
+        ENTERPRISE lgp
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "The DB Query component encountered a fatal error condition."
+        ::= 8
+     
+
+    END

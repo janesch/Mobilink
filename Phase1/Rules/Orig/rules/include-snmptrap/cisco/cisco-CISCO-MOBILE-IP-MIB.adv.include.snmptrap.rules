@@ -1,0 +1,83 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-MOBILE-IP-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-MOBILE-IP-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-MOBILE-IP-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### cmiMrStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cmiMrStateChange"
+        $OS_OsiLayer = 3
+        
+    case "2": ### cmiMrCoaChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cmiMrCoaChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "mnRegistrationEntry." + $mnRegAgentAddress + "." + $mnRegCOA
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### cmiMrNewMA
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cmiMrNewMA"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "cmiMrMaAdvEntry." + $cmiMrMaAddressType_Raw + "." + $cmiMrMaAddress
+        $OS_LocalSecObj = "ifEntry." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "4": ### cmiHaMnRegReqFailed
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cmiMrCoaChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "MN NAI: " + $7
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-MOBILE-IP-MIB.adv.include.snmptrap.rules >>>>>")

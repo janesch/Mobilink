@@ -1,0 +1,476 @@
+###############################################################################
+#
+#	bcsi-SW-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for BCSI SW alarms
+#
+#       V0.1	20110711	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.1588.2.1.1.1":  ### - sw (from SW-MIB)
+
+	log(DEBUG, "<<<<< Entering... bcsi-SW-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "BCSI"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "bcsi-SW-MIB"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_BCSI_002"
+	
+	switch($specific-trap) {
+		case "1": ### - swFault
+			#######################
+			#
+			# Obsoleted this trap as firmware doesn't support this trap.
+			# A swFault(1) is generated whenever the diagnostics
+			# detects a fault with the switch.
+			#
+			# $1 = swDiagResult
+			#
+			#      The result of the power-on startup (POST)
+			#      diagnostics.
+			#
+			# $2 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			# $3 = swGroupName
+			#
+			#      This object identifies the name of the group.
+			#
+			# $4 = swGroupType
+			#
+			#      This object identifies the type of the group.
+			#
+			# $5 = swGroupMemPos
+			#
+			#      This object identifies position of the member
+			#      switch in the group. This is based on the order
+			#      that the switches were added in the group.
+			#
+			#######################
+			$swDiagResult = lookup($1,bcsi-SW-MIB-swDiagResult)
+			$swSsn = $2
+			$swGroupName = $3
+			$swGroupType = $4
+			$swGroupMemPos = $5
+		
+			if (int($1)==2 || int($1)==3)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==1)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				@ExpireTime = 18000
+			}
+			@AlertKey = "swFault " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			@Summary = "swFault: # Fault: " + $swDiagResult + " detected with the switch: " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "2": ### - swSensorScn
+			#######################
+			#
+			# A swSensorScn(2) is generated whenever an
+			# environment sensor changes its operational state. For instance,
+			# a fan stop working. The VarBind in the Trap Data Unit shall
+			# contain the corresponding instance of the sensor
+			# status, sensor index, sensor type, sensor value (reading)
+			# and sensor information. Note that the sensor information
+			# contains the type of sensor and its number in textual format.
+			#
+			# $1 = swSensorStatus
+			#
+			#      The current status of the sensor.
+			#
+			# $2 = swSensorIndex
+			#
+			#      This object identifies the sensor.
+			#
+			# $3 = swSensorType
+			#
+			#      This object identifies the sensor type.
+			#
+			# $4 = swSensorValue
+			#
+			#      The current value (reading) of the sensor.
+			#      The value, -2147483648, represents an unknown quantity.
+			#      It also means that the sensor does not have the capability to
+			#      measure the actual value. In V2.0, the temperature sensor
+			#      value will be in Celsius; the fan value will be in RPM
+			#      (revolution per minute); and the power supply sensor reading
+			#      will be unknown.
+			#
+			# $5 = swSensorInfo
+			#
+			#      Additional displayable information on the sensor.
+			#      In V2.x, it contains the sensor type and number
+			#      in textual format. For example, 'Temp 3', 'Fan 6'.
+			#
+			# $6 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			# $7 = swGroupName
+			#
+			#      This object identifies the name of the group.
+			#
+			# $8 = swGroupType
+			#
+			#      This object identifies the type of the group.
+			#
+			# $9 = swGroupMemPos
+			#
+			#      This object identifies position of the member
+			#      switch in the group. This is based on the order
+			#      that the switches were added in the group.
+			#
+			#######################
+			$swSensorStatus = lookup($1,bcsi-SW-MIB-swSensorStatus)
+			$swSensorIndex = $2
+			$swSensorType = lookup($3,bcsi-SW-MIB-swSensorType)
+			$swSensorValue = $4
+			$swSensorInfo = $5
+			$swSsn = $6
+			$swGroupName = $7
+			$swGroupType = $8
+			$swGroupMemPos = $9
+			
+			if (int($1)==1 || int($1)==2 || int($1)==3 || int($1)==5 || int($1)==6)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				@ExpireTime = 18000
+			}
+			@AlertKey = "swSensorScn " + $swSensorType + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			@Summary = "swSensorScn: # Sensor: " + $swSensorType + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos + " changed status to: " + $swSensorStatus + " Value: " + $swSensorValue + " " + $swSensorInfo
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "3": ### - swFCPortScn
+			#######################
+			#
+			# A swFCPortScn(3) is generated whenever an FC_Port
+			# changes its operational state. For instance, the FC_Port
+			# goes from on-line to offline. The VarBind in the Trap Data
+			# Unit shall contain the corresponding instance of the
+			# FC_Port's operational status, index, swFCPortName,swSsn and
+			# swFCPortFlag. swSsn is optional varbind sent when swExtTrap
+			# is also enabled. The three arguments swGroupName, swGroupType,
+			# swGroupMemPos belong to swGroup table which is obsolete
+			# and not implemented.
+			#
+			# $1 = swFCPortOpStatus
+			#
+			#      This object identifies the operational status of
+			#      the port. The online(1) state indicates that user frames
+			#      can be passed. The unknown(0) state indicates that likely
+			#      the port module is physically absent (see swFCPortPhyState).
+			#
+			# $2 = swFCPortIndex
+			#
+			#      This object identifies the switch port index.
+			#      Note that the value of a port index is 1 higher than the
+			#      port number labeled on the front panel.
+			#      E.g. port index 1 correspond to port number 0.
+			#
+			# $3 = swFCPortName
+			#
+			#      A string indicates the name of the addressed port.
+			#      The names should be persistent across switch reboots.
+			#      Port names do not have to be unique within a switch or
+			#      within a fabric.
+			#
+			# $4 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			# $5 = swFCPortFlag
+			#
+			#      A bit  map  of  port  status  flags which includes the information of port type.
+			#      Currently this will indicate if the port is virtual or physical.
+			#
+			# $6 = swGroupName
+			#
+			#      This object identifies the name of the group.
+			#
+			# $7 = swGroupType
+			#
+			#      This object identifies the type of the group.
+			#
+			# $8 = swGroupMemPos
+			#
+			#      This object identifies position of the member
+			#      switch in the group. This is based on the order
+			#      that the switches were added in the group.
+			#
+			#######################
+			$swFCPortOpStatus = lookup($1,bcsi-SW-MIB-swFCPortOpStatus)
+			$swFCPortIndex = $2
+			$swFCPortName = $3
+			$swSsn = $4
+			$swFCPortFlag = lookup($5,bcsi-SW-MIB-swFCPortFlag)
+			$swGroupName = $6
+			$swGroupType = $7
+			$swGroupMemPos = $8
+			
+			if (int($1)==0 || int($1)==2 || int($1)==3 || int($1)==4)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==1)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				@ExpireTime = 18000
+			}
+			@AlertKey = "swFCPortScn " + $swFCPortIndex + " " + $swFCPortName + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			@Summary = "swFCPortScn: # FC_Port: " + $swFCPortIndex + " " + $swFCPortName + " " + $swSsn + " " + $swFCPortFlag + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos + " changed status to: " + $swFCPortOpStatus
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type 
+			details($*)
+
+		case "4": ### - swEventTrap
+			#######################
+			#
+			# This trap is generated when an event whose
+			# level at or below swEventTrapLevel occurs.
+			#
+			# $1 = swEventIndex
+			#
+			#      This object identifies the event entry.
+			#
+			# $2 = swEventTimeInfo
+			#
+			#      This object identifies the date and time when this
+			#      event occurred, in textual format.
+			#
+			# $3 = swEventLevel
+			#
+			#      This object identifies the severity level of this
+			#      event entry.
+			#
+			# $4 = swEventRepeatCount
+			#
+			#      This object identifies how many times this particular
+			#      event has occurred.
+			#
+			# $5 = swEventDescr
+			#
+			#      This object identifies the textual description of
+			#      the event.
+			#
+			# $6 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			# $7 = swGroupName
+			#
+			#      This object identifies the name of the group.
+			#
+			# $8 = swGroupType
+			#
+			#      This object identifies the type of the group.
+			#
+			# $9 = swGroupMemPos
+			#
+			#      This object identifies position of the member
+			#      switch in the group. This is based on the order
+			#      that the switches were added in the group.
+			#
+			#######################
+			$swEventIndex = $1
+			$swEventTimeInfo = $2
+			$swEventLevel = lookup($3,bcsi-SW-MIB-swEventLevel)
+			$swEventRepeatCount = $4
+			$swEventDescr = $5
+			$swSsn = $6
+			$swGroupName = $7
+			$swGroupType = $8
+			$swGroupMemPos = $9
+			
+			@Type = 1
+			@Severity = 2
+			@ExpireTime = 18000
+
+			@AlertKey = "swEventTrap " + $swEventDescr + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			@Summary = "swEventTrap: # Event level for: " + $swEventDescr + " " + $swEventIndex + " " + $swEventTimeInfo + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos + " is: " + $swEventLevel
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "5": ### - swFabricWatchTrap
+			#######################
+			#
+			# trap to be sent by Fabric Watch to notify of an event
+			#
+			# $1 = swFwClassAreaIndex
+			#
+			#      This object identifies the class type.
+			#
+			# $2 = swFwThresholdIndex
+			#
+			#      This object identifies the element index of
+			#      an threshold.
+			#
+			# $3 = swFwName
+			#
+			#      This object is a name of the threshold.
+			#
+			# $4 = swFwLabel
+			#
+			#      This object is a label of the threshold.
+			#
+			# $5 = swFwLastEventVal
+			#
+			#      This object is a last event value of the threshold.
+			#
+			# $6 = swFwLastEventTime
+			#
+			#      This object is a last event time of the threshold.
+			#
+			# $7 = swFwLastEvent
+			#
+			#      This object is a last event type of the threshold.
+			#
+			# $8 = swFwLastState
+			#
+			#      This object is a last event state of the threshold.
+			#
+			# $9 = swFwLastSeverityLevel
+			#
+			#      This object is a last event severity level of the threshold.
+			#
+			# $10 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			# $11 = swGroupName
+			#
+			#      This object identifies the name of the group.
+			#
+			# $12 = swGroupType
+			#
+			#      This object identifies the type of the group.
+			#
+			# $13 = swGroupMemPos
+			#
+			#      This object identifies position of the member
+			#      switch in the group. This is based on the order
+			#      that the switches were added in the group.
+			#
+			#######################
+			$swFwClassAreaIndex = lookup($1,bcsi-SW-MIB-swFwClassAreaIndex)
+			$swFwThresholdIndex = $2
+			$swFwName = $3
+			$swFwLabel = $4
+			$swFwLastEventVal = $5
+			$swFwLastEventTime = $6
+			$swFwLastEvent = lookup($7,bcsi-SW-MIB-swFwLastEvent)
+			$swFwLastState = lookup($8,bcsi-SW-MIB-swFwLastState)
+			$swFwLastSeverityLevel = lookup($9,bcsi-SW-MIB-swFwLastSeverityLevel)
+			$swSsn = $10
+			$swGroupName = $11
+			$swGroupType = $12
+			$swGroupMemPos = $13
+
+			@Type = 1
+			@Severity = 3
+			@ExpireTime = 18000
+
+			@AlertKey = "swFabricWatchTrap " + $swFwClassAreaIndex + " " + $swFwName + " " + $swFwLabel + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			@Summary = "swFabricWatchTrap: " + $swFwClassAreaIndex + " " + $swFwName + " " + $swFwLabel + " " + $swFwLastEvent + " " + $swFwLastState + " " + $swFwLastSeverityLevel + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "6": ### - swTrackChangesTrap
+			#######################
+			#
+			# trap to be sent for tracking login/logout/config changes
+			#
+			# $1 = swTrackChangesInfo
+			#
+			#      Track changes string. For trap only
+			#
+			# $2 = swSsn
+			#
+			#      The soft serial number of the switch.
+			#
+			# $3 = swGroupName
+			#
+			#      This object identifies the name of the group.
+			#
+			# $4 = swGroupType
+			#
+			#      This object identifies the type of the group.
+			#
+			# $5 = swGroupMemPos
+			#
+			#      This object identifies position of the member
+			#      switch in the group. This is based on the order
+			#      that the switches were added in the group.
+			#
+			#######################
+			$swTrackChangesInfo = $1
+			$swSsn = $2
+			$swGroupName = $3
+			$swGroupType = $4
+			$swGroupMemPos = $5
+		
+			@Type = 1
+			@Severity = 3
+			@ExpireTime = 18000
+
+			@AlertKey = "swTrackChangesTrap " + $swTrackChangesInfo + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			@Summary = "swTrackChangesTrap: " + $swTrackChangesInfo + " " + $swSsn + " " + $swGroupName + " " + $swGroupType + " " + $swGroupMemPos
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... bcsi-SW-MIB.include.snmptrap.rules >>>>>")

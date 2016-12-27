@@ -1,0 +1,184 @@
+######
+# iMAP include file
+######
+case ".1.3.6.1.4.1.2011.2.15.2.1.2.1.1.1": # - iMAPNorthboundHeartbeatNotification
+	@Manager = "I2000"
+	switch($specific-trap)
+{
+case "5":### - iMAPNorthboundHeartbeatNotificationType
+			# SNMPv2
+			# The I2000 sends the heartbeat notification trap to the NMS
+			# regularly each period. If the NMS receives the trap, the
+			# connection between the NMS and the I2000 works. If not, 
+			# the connection fails.
+ 			$iMAPNorthboundHeartbeatSystemLabel = $1
+ 			$iMAPNorthboundHeartbeatPeriod = $2
+ 			$iMAPNorthboundHeartbeatTimeStamp = $3
+ 			@AlertGroup = "I2000"
+ 			@Agent = "IMAP_NORTHBOUND_MIB-V2"
+ 			@Summary = "iMAPNorthboundHeartbeatNotificationType: The I2000 sends the heartbeat notification trap to the NMS regularly each period. If the NMS receives the trap, the connection between the NMS and the I2000 works. If not, the connection fails."
+ 			@Severity = 2
+ 			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup  + @Summary + @Type
+			details($iMAPNorthboundHeartbeatSystemLabel,$iMAPNorthboundHeartbeatPeriod,$iMAPNorthboundHeartbeatTimeStamp)
+		default:
+			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+			@Severity = 1
+			details($*)
+}
+
+case ".1.3.6.1.4.1.2011.2.15.2.4.3.3": # - iMAPNorthboundFaultAlarmNotification
+	@Manager = "I2000"
+	switch($specific-trap) {
+		case "1": ### - iMAPNorthboundFaultAlarmReportNotificationType
+			# SNMPv2
+			# The I2000 system sends real-time alarms to the NMS using this trap.
+			# If an alarm occurs to an NE or the I2000, the I2000 sends the alarm
+			# trap to the NMS.
+# 			$iMAPNorthboundAlarmCSN = $1
+# 			$iMAPNorthboundAlarmCategory = $2
+# 			$iMAPNorthboundAlarmOccurTime = $3
+# 			$iMAPNorthboundAlarmMOName = $4
+# 				$iMAPNorthboundAlarmProductIDlook = "iMAPNorthboundAlarmProductID." + $5
+# 				$iMAPNorthboundAlarmProductID = lookup($iMAPNorthboundAlarmProductIDlook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmProductID,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmProductID = $5
+# 				} else {
+# 					$iMAPNorthboundAlarmProductID = $iMAPNorthboundAlarmProductID + " ( " + $5 + " )"
+# 				}
+# 			$iMAPNorthboundAlarmNEType = $6
+# 			$iMAPNorthboundAlarmNEDevID = $7
+# 			$iMAPNorthboundAlarmID = $8
+# 			$iMAPNorthboundAlarmType = $9
+# 				$iMAPNorthboundAlarmLevellook = "iMAPNorthboundAlarmLevel." + $10
+# 				$iMAPNorthboundAlarmLevel = lookup($iMAPNorthboundAlarmLevellook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmLevel,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmLevel = $10
+# 				} else {
+# 					$iMAPNorthboundAlarmLevel = $iMAPNorthboundAlarmLevel + " ( " + $10 + " )"
+# 				}
+# 				$iMAPNorthboundAlarmRestorelook = "iMAPNorthboundAlarmRestore." + $11
+# 				$iMAPNorthboundAlarmRestore = lookup($iMAPNorthboundAlarmRestorelook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmRestore,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmRestore = $11
+# 				} else {
+# 					$iMAPNorthboundAlarmRestore = $iMAPNorthboundAlarmRestore + " ( " + $11 + " )"
+# 				}
+# 				$iMAPNorthboundAlarmConfirmlook = "iMAPNorthboundAlarmConfirm." + $12
+# 				$iMAPNorthboundAlarmConfirm = lookup($iMAPNorthboundAlarmConfirmlook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmConfirm,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmConfirm = $12
+# 				} else {
+# 					$iMAPNorthboundAlarmConfirm = $iMAPNorthboundAlarmConfirm + " ( " + $12 + " )"
+# 				}
+# 			$iMAPNorthboundAlarmAckTime = $13
+# 			$iMAPNorthboundAlarmRestoreTime = $14
+# 			$iMAPNorthboundAlarmOperator = $15
+# 			$iMAPNorthboundAlarmExtendInfo = $16
+# 			$iMAPNorthboundAlarmProbablecause = $17
+# 			$iMAPNorthboundAlarmProposedrepairactions = $18
+# 			$iMAPNorthboundAlarmSpecificproblems = $19
+# 			$iMAPNorthboundAlarmClearOperator = $20
+# 			$iMAPNorthboundAlarmClearCategory = $21
+# 			$iMAPNorthboundAlarmAdditionalInfo = $22
+# 			@AlertGroup = ""
+# 			@Agent = "IMAP_NORTHBOUND_MIB-V2"
+# 			@Summary = "iMAPNorthboundFaultAlarmReportNotificationType: The I2000 system sends real-time alarms to the NMS using this trap. If an alarm occurs to an NE or the I2000, the I2000 sends the alarm trap to the NMS."
+# 			@Severity = 1
+# 			@Type = 0
+# 			@Identifier = @Node + @Summary
+# 			details($iMAPNorthboundAlarmCSN,$iMAPNorthboundAlarmCategory,$iMAPNorthboundAlarmOccurTime,$iMAPNorthboundAlarmMOName,$iMAPNorthboundAlarmProductID,$iMAPNorthboundAlarmNEType,$iMAPNorthboundAlarmNEDevID,$iMAPNorthboundAlarmID,$iMAPNorthboundAlarmType,$iMAPNorthboundAlarmLevel,$iMAPNorthboundAlarmRestore,$iMAPNorthboundAlarmConfirm,$iMAPNorthboundAlarmAckTime,$iMAPNorthboundAlarmRestoreTime,$iMAPNorthboundAlarmOperator,$iMAPNorthboundAlarmExtendInfo,$iMAPNorthboundAlarmProbablecause,$iMAPNorthboundAlarmProposedrepairactions,$iMAPNorthboundAlarmSpecificproblems,$iMAPNorthboundAlarmClearOperator,$iMAPNorthboundAlarmClearCategory,$iMAPNorthboundAlarmAdditionalInfo)
+
+		case "2": ### - iMAPNorthboundFaultAlarmQueryBeginNotificationType
+			# SNMPv2
+			# The I2000 notifies the NMS of the start of the query.
+			# After the NMS receives the active alarm query start 
+			# trap, the query starts.
+			# 
+			# The trap is triggered by NMS for alarm query.
+# 			@AlertGroup = ""
+# 			@Agent = "IMAP_NORTHBOUND_MIB-V2"
+# 			@Summary = "iMAPNorthboundFaultAlarmQueryBeginNotificationType: The I2000 notifies the NMS of the start of the query. After the NMS receives the active alarm query start trap, the query starts. The trap is triggered by NMS for alarm query."
+# 			@Severity = 1
+# 			@Type = 0
+# 			@Identifier = @Node + @Summary
+# 		case "3": ### - iMAPNorthboundFaultAlarmQueryNotificationType
+			# SNMPv2
+			# The I2000 system sends queried alarms to the NMS using this trap.
+# 			$iMAPNorthboundAlarmCSN = $1
+# 			$iMAPNorthboundAlarmCategory = $2
+# 			$iMAPNorthboundAlarmOccurTime = $3
+# 			$iMAPNorthboundAlarmMOName = $4
+# 				$iMAPNorthboundAlarmProductIDlook = "iMAPNorthboundAlarmProductID." + $5
+# 				$iMAPNorthboundAlarmProductID = lookup($iMAPNorthboundAlarmProductIDlook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmProductID,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmProductID = $5
+# 				} else {
+# 					$iMAPNorthboundAlarmProductID = $iMAPNorthboundAlarmProductID + " ( " + $5 + " )"
+# 				}
+# 			$iMAPNorthboundAlarmNEType = $6
+# 			$iMAPNorthboundAlarmNEDevID = $7
+# 			$iMAPNorthboundAlarmID = $8
+# 			$iMAPNorthboundAlarmType = $9
+# 				$iMAPNorthboundAlarmLevellook = "iMAPNorthboundAlarmLevel." + $10
+# 				$iMAPNorthboundAlarmLevel = lookup($iMAPNorthboundAlarmLevellook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmLevel,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmLevel = $10
+# 				} else {
+# 					$iMAPNorthboundAlarmLevel = $iMAPNorthboundAlarmLevel + " ( " + $10 + " )"
+# 				}
+# 				$iMAPNorthboundAlarmRestorelook = "iMAPNorthboundAlarmRestore." + $11
+# 				$iMAPNorthboundAlarmRestore = lookup($iMAPNorthboundAlarmRestorelook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmRestore,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmRestore = $11
+# 				} else {
+# 					$iMAPNorthboundAlarmRestore = $iMAPNorthboundAlarmRestore + " ( " + $11 + " )"
+# 				}
+# 				$iMAPNorthboundAlarmConfirmlook = "iMAPNorthboundAlarmConfirm." + $12
+# 				$iMAPNorthboundAlarmConfirm = lookup($iMAPNorthboundAlarmConfirmlook,I2000_lookup)
+# 				if(match($iMAPNorthboundAlarmConfirm,"UNKNOWN")) {
+# 					$iMAPNorthboundAlarmConfirm = $12
+# 				} else {
+# 					$iMAPNorthboundAlarmConfirm = $iMAPNorthboundAlarmConfirm + " ( " + $12 + " )"
+# 				}
+# 			$iMAPNorthboundAlarmAckTime = $13
+# 			$iMAPNorthboundAlarmRestoreTime = $14
+# 			$iMAPNorthboundAlarmOperator = $15
+# 			$iMAPNorthboundAlarmExtendInfo = $16
+# 			$iMAPNorthboundAlarmProbablecause = $17
+# 			$iMAPNorthboundAlarmProposedrepairactions = $18
+# 			$iMAPNorthboundAlarmSpecificproblems = $19
+# 			$iMAPNorthboundAlarmClearOperator = $20
+# 			$iMAPNorthboundAlarmClearCategory = $21
+# 			$iMAPNorthboundAlarmAdditionalInfo = $22
+# 			@AlertGroup = ""
+# 			@Agent = "IMAP_NORTHBOUND_MIB-V2"
+# 			@Summary = "iMAPNorthboundFaultAlarmQueryNotificationType: The I2000 system sends queried alarms to the NMS using this trap."
+# 			@Severity = 1
+# 			@Type = 0
+# 			@Identifier = @Node + @Summary
+# 			details($iMAPNorthboundAlarmCSN,$iMAPNorthboundAlarmCategory,$iMAPNorthboundAlarmOccurTime,$iMAPNorthboundAlarmMOName,$iMAPNorthboundAlarmProductID,$iMAPNorthboundAlarmNEType,$iMAPNorthboundAlarmNEDevID,$iMAPNorthboundAlarmID,$iMAPNorthboundAlarmType,$iMAPNorthboundAlarmLevel,$iMAPNorthboundAlarmRestore,$iMAPNorthboundAlarmConfirm,$iMAPNorthboundAlarmAckTime,$iMAPNorthboundAlarmRestoreTime,$iMAPNorthboundAlarmOperator,$iMAPNorthboundAlarmExtendInfo,$iMAPNorthboundAlarmProbablecause,$iMAPNorthboundAlarmProposedrepairactions,$iMAPNorthboundAlarmSpecificproblems,$iMAPNorthboundAlarmClearOperator,$iMAPNorthboundAlarmClearCategory,$iMAPNorthboundAlarmAdditionalInfo)
+
+		case "4": ### - iMAPNorthboundFaultAlarmQueryEndNotificationType
+			# SNMPv2
+			# The I2000 notifies the NMS of the stop of the query.
+			# After the NMS receives the active alarm query stop
+			# trap, it indicates that the query ends.
+			# 
+			# The NMS triggers the stop of the query, or the query
+			# ends after the NMS receives the active alarms.
+# 			@AlertGroup = ""
+# 			@Agent = "IMAP_NORTHBOUND_MIB-V2"
+# 			@Summary = "iMAPNorthboundFaultAlarmQueryEndNotificationType"
+# 			@Severity = 1
+# 			@Type = 0
+# 			@Identifier = @Node + @Summary
+		default:
+# 			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+# 			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+# 			@Severity = 1
+# 			details($*)
+ 	}
+ 
+    

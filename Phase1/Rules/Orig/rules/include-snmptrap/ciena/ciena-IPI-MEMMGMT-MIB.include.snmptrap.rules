@@ -1,0 +1,303 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    ciena-IPI-MEMMGMT-MIB.include.snmptrap.rules 1.0
+#    2005/09/17 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IPI-MEMMGMT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.7737.6.2.15.3.2": ### Ciena (formerly Internet Photonics) CN4200 Memory Management Module - Notifications from IPI-MEMMGMT-MIB
+
+    log(DEBUG, "<<<<< Entering... ciena-IPI-MEMMGMT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Internet Photonics-IPI-MEMMGMT-MIB"
+    @Class = "40506"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### rfileXferActionReport
+
+            ##########
+            # $1 = memMgmtNotificationHelperPEOID
+            # $2 = memMgmtNotificationActionState
+            # $3 = memMgmtNotificationDesc
+            ##########
+
+            $memMgmtNotificationHelperPEOID = $1
+            $memMgmtNotificationActionState = lookup($2, memMgmtNotificationActionState) + " ( " + $2 + " )"
+            $memMgmtNotificationDesc = $3
+            details($memMgmtNotificationHelperPEOID,$memMgmtNotificationActionState,$memMgmtNotificationDesc)
+
+            $OS_EventId = "SNMPTRAP-ciena-IPI-MEMMGMT-MIB-rfileXferActionReport"
+
+            @AlertGroup = "Remote File Upload/Download Status"
+            @AlertKey = "PE OID: " + $1
+            switch($2)
+            {
+                case "1": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Remote File Upload/Download Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### not-applicable
+                    $SEV_KEY = $OS_EventId + "_not-applicable"
+                    @Summary = "Remote File Upload/Download Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### none - no action associated with the notification
+                    $SEV_KEY = $OS_EventId + "_none"
+                    @Summary = "Remote File Upload/Download Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### set - alarm/event set
+                    $SEV_KEY = $OS_EventId + "_set"
+                    @Summary = "Remote File Upload/Download Alarm"
+                    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### clear - alarm/event clear
+                    $SEV_KEY = $OS_EventId + "_clear"
+                    @Summary = "Remote File Upload/Download Alarm Cleared"
+                    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### transient - no set/clear condition
+                    $SEV_KEY = $OS_EventId + "_transient"
+                    @Summary = "Remote File Upload/Download Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### clearall
+                    $SEV_KEY = $OS_EventId + "_clearall"
+                    @Summary = "Remote File Upload/Download Alarm Cleared"
+                    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Remote File Upload/Download Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+
+        case "2": ### memCopyActionReport
+
+            ##########
+            # $1 = memMgmtNotificationHelperPEOID
+            # $2 = memMgmtNotificationActionState
+            # $3 = memMgmtNotificationDesc
+            ##########
+
+            $memMgmtNotificationHelperPEOID = $1
+            $memMgmtNotificationActionState = lookup($2, memMgmtNotificationActionState) + " ( " + $2 + " )"
+            $memMgmtNotificationDesc = $3
+            details($memMgmtNotificationHelperPEOID,$memMgmtNotificationActionState,$memMgmtNotificationDesc)
+
+            $OS_EventId = "SNMPTRAP-ciena-IPI-MEMMGMT-MIB-memCopyActionReport"
+
+            @AlertGroup = "Memory Activation Status"
+            @AlertKey = "PE OID: " + $1
+            switch($2)
+            {
+                case "1": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Memory Activation Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### not-applicable
+                    $SEV_KEY = $OS_EventId + "_not-applicable"
+                    @Summary = "Memory Activation Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### none - no action associated with the notification
+                    $SEV_KEY = $OS_EventId + "_none"
+                    @Summary = "Memory Activation Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### set - alarm/event set
+                    $SEV_KEY = $OS_EventId + "_set"
+                    @Summary = "Memory Activation Alarm"
+                    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### clear - alarm/event clear
+                    $SEV_KEY = $OS_EventId + "_clear"
+                    @Summary = "Memory Activation Alarm Cleared"
+                    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### transient - no set/clear condition
+                    $SEV_KEY = $OS_EventId + "_transient"
+                    @Summary = "Memory Activation Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### clearall
+                    $SEV_KEY = $OS_EventId + "_clearall"
+                    @Summary = "Memory Activation Alarm Cleared"
+                    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Memory Activation Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+
+        case "3": ### rfileXferStatusReport
+
+            ##########
+            # $1 = memMgmtNotificationHelperPEOID
+            # $2 = memMgmtNotificationFileName
+            # $3 = memMgmtNotificationDesc
+            ##########
+
+            $memMgmtNotificationHelperPEOID = $1
+            $memMgmtNotificationFileName = $2
+            $memMgmtNotificationDesc = $3
+            details($memMgmtNotificationHelperPEOID,$memMgmtNotificationFileName,$memMgmtNotificationDesc)
+
+            $OS_EventId = "SNMPTRAP-ciena-IPI-MEMMGMT-MIB-rfileXferStatusReport"
+
+            @AlertGroup = "Remote File Transfer Status"
+            @AlertKey = "File: " + $2
+            @Summary = "Remote File Transfer"
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+        case "4": ### swDownloadStatusReport
+
+            ##########
+            # $1 = memMgmtNotificationHelperPEOID
+            # $2 = memMgmtNotificationFileName
+            # $3 = memMgmtNotificationDesc
+            ##########
+
+            $memMgmtNotificationHelperPEOID = $1
+            $memMgmtNotificationFileName = $2
+            $memMgmtNotificationDesc = $3
+            details($memMgmtNotificationHelperPEOID,$memMgmtNotificationFileName,$memMgmtNotificationDesc)
+
+            $OS_EventId = "SNMPTRAP-ciena-IPI-MEMMGMT-MIB-swDownloadStatusReport"
+
+            @AlertGroup = "Software Download Status"
+            @AlertKey = "PE OID: " + $1
+            @Summary = "Software Download "
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, ciena-IPI-MEMMGMT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, ciena-IPI-MEMMGMT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/ciena/ciena-IPI-MEMMGMT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/ciena/ciena-IPI-MEMMGMT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... ciena-IPI-MEMMGMT-MIB.include.snmptrap.rules >>>>>")

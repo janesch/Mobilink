@@ -1,0 +1,76 @@
+////////////////////////////////////////////////
+//
+//	CoreMediaOutage.ipl
+//
+//	Impact policy for Mobilink - CORE Media Outage Alarm Handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100524	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+
+
+//Set Default Sleeptime
+Default_SleepTime = 60;
+
+// Get Sleep Time
+DataType = "CMDB_SleepTime";		// this needs to be setup
+Filter = "Node = '" + @Node + "'";		// this needs to be setup
+CountOnly = False;
+CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+Num_CMDB_SleepTime = Num;
+
+Log("Num_CMDB_SleepTime= " + Num_CMDB__SleepTime);
+if(Num_CMDB_SleepTime == 0)
+{
+	//No record for this so set default Time 
+	SleepTime = Default_SleepTime ;
+}
+else
+{
+	SleepTime = CMDB_SleepTime[0].SleepTime;
+	if (SleepTime == 0)
+	{
+		SleepTime = Default_SleepTime ;
+	}
+}
+
+	Log("SleepTime = " + SleepTime );
+//	Log("ServerSerial = " + EventContainer.ServerSerial);
+//Log("Impact Flag = " + EventContainer.ImpactFlag);
+if(EventContainer.ImpactFlag == 0)
+{
+	Log("Going To Sleep "  + @ServerSerial);
+
+	EventContainer.ImpactFlag = 1;
+	ReturnEvent(EventContainer);
+
+	ActionKey = "CoreMediaOutage" + @ServerSerial + @ServerName;
+	Log("ActionKey = " + ActionKey );
+	Hibernate(ActionKey , wait, SleepTime);
+	
+	EventContainer.ImpactFlag = 2;
+	ReturnEvent(EventContainer);
+	Log ("Wake Up " + @ServerSerial);
+	RemoveHibernation(ActionKey);
+
+	// Does the event still exist?
+	DataType = "Status";		// this needs to be setup
+	Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+	CountOnly = False;
+	Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+	Num_Existing_Event = Num;
+	if (Num_Existing_Event == 0)
+	{
+		// Event has Cleared
+	}
+	else
+	{
+		// Enrich Event
+		EventContainer.AddText = "Signalling Percentage Down to ";
+		// Raise TT
+		EventContainer.MaximoStatus = 1;
+		ReturnEvent(EventContainer);
+	}
+}

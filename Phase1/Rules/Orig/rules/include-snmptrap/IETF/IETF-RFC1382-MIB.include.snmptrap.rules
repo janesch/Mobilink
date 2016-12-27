@@ -1,0 +1,119 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-RFC1382-MIB.include.snmptrap.rules 2.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-RFC1382-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-RFC1382-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.2.1.10.5": ### X.25 - Traps from RFC1382-MIB
+
+    @Agent = "IETF-RFC1382-MIB (X.25)"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### x25Restart
+        
+            ##########
+            # $1 = x25OperIndex
+            ##########
+            
+            $x25OperIndex = $1
+            details($x25OperIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-RFC1382-MIB-x25Restart"
+
+            @AlertGroup = "X.25 Interface Status"
+            @AlertKey = "x25OperEntry." + $1
+            @Summary = "X.25 Interface Restart, PLE Sent/Received Restart Packet  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+        case "2": ### x25Reset
+        
+            ##########
+            # $1 = x25CircuitIndex
+            # $2 = x25CircuitChannel
+            ##########
+            
+            $x25CircuitIndex = $1
+            $x25CircuitChannel = $2
+            details($x25CircuitIndex,$x25CircuitChannel)
+
+            $OS_EventId = "SNMPTRAP-IETF-RFC1382-MIB-x25Reset"
+
+            @AlertGroup = "X.25 Circuit Status"
+            @AlertKey = "x25CircuitEntry." + $1 + "." + $2
+            @Summary = "X.25 Circuit Reset, PLE Sent/Received Reset Packet  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-RFC1382-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-RFC1382-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-RFC1382-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-RFC1382-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-RFC1382-MIB.include.snmptrap.rules >>>>>")

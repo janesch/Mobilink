@@ -1,0 +1,48 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-DIAL5.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "DIAL5":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-DIAL5.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "MSG":
+            
+            if(match($Message, ""))
+            {
+                discard
+            }
+            else
+            {
+                @AlertKey = ""
+                $CLARIFIER = $Message
+            }
+            
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-DIAL5.include.syslog.rules >>>>>")

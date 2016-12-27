@@ -1,0 +1,49 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CONFIG-COPY-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CONFIG-COPY-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-CONFIG-COPY-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ccCopyCompletion
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3011
+        $OS_X733SpecificProb = "ccCopyCompletion"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "ccCopyEntry." + $ccCopyIndex
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CONFIG-COPY-MIB.adv.include.snmptrap.rules >>>>>")

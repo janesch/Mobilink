@@ -1,0 +1,521 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-PING-MIB.include.snmptrap.rules 6.0
+#    2008/04/09 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-PING-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.9": ### Juniper Ping - Notifications from JUNIPER-PING-MIB
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-PING-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Ping"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    $OS_RemoteNodeAlias = @NodeAlias
+    @Node = $2
+    $OS_LocalNodeAlias = $2
+    switch($1)
+    {
+        case "16":
+            @NodeAlias = ""
+        default:
+            @NodeAlias = $2
+    }
+    
+    switch($specific-trap)
+    {
+        case "1": ### jnxPingRttThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinRttUs
+            # $7 = jnxPingResultsMaxRttUs
+            # $8 = jnxPingResultsAvgRttUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsRttSumOfSquares
+            # $12 = pingResultsLastGoodProbe
+            # $13 = jnxPingCtlRttThreshold
+            # $14 = jnxPingResultsRttUs
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinRttUs = $6 + "us"
+            $jnxPingResultsMaxRttUs = $7 + "us"
+            $jnxPingResultsAvgRttUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsRttSumOfSquares = $11
+            $pingResultsLastGoodProbe = $12
+            $jnxPingCtlRttThreshold = $13 + "us"
+            $jnxPingResultsRttUs = $14 + "us"
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinRttUs,$jnxPingResultsMaxRttUs,$jnxPingResultsAvgRttUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsRttSumOfSquares,$pingResultsLastGoodProbe,$jnxPingCtlRttThreshold,$jnxPingResultsRttUs)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingRttThresholdExceeded"
+
+            @AlertGroup = "Ping RTT Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Round Trip Time, " + $jnxPingResultsRttUs + ", Exceeded " + $jnxPingCtlRttThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### jnxPingRttStdDevThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinRttUs
+            # $7 = jnxPingResultsMaxRttUs
+            # $8 = jnxPingResultsAvgRttUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsRttSumOfSquares
+            # $12 = pingResultsLastGoodProbe
+            # $13 = jnxPingCtlRttStdDevThreshold
+            # $14 = jnxPingResultsStdDevRttUs
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinRttUs = $6 + "us"
+            $jnxPingResultsMaxRttUs = $7 + "us"
+            $jnxPingResultsAvgRttUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsRttSumOfSquares = $11
+            $pingResultsLastGoodProbe = $12
+            $jnxPingCtlRttStdDevThreshold = $13 + "us"
+            $jnxPingResultsStdDevRttUs = $14 + "us"
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinRttUs,$jnxPingResultsMaxRttUs,$jnxPingResultsAvgRttUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsRttSumOfSquares,$pingResultsLastGoodProbe,$jnxPingCtlRttStdDevThreshold,$jnxPingResultsStdDevRttUs)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingRttStdDevThresholdExceeded"
+
+            @AlertGroup = "Ping RTT Std. Dev. Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Round Trip Time Standard Deviation, " + $jnxPingResultsStdDevRttUs + ", Exceeded " + $jnxPingCtlRttStdDevThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### jnxPingRttJitterThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinRttUs
+            # $7 = jnxPingResultsMaxRttUs
+            # $8 = jnxPingResultsAvgRttUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsRttSumOfSquares
+            # $12 = pingResultsLastGoodProbe
+            # $13 = jnxPingCtlRttJitterThreshold
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinRttUs = $6 + "us"
+            $jnxPingResultsMaxRttUs = $7 + "us"
+            $jnxPingResultsAvgRttUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsRttSumOfSquares = $11
+            $pingResultsLastGoodProbe = $12
+            $jnxPingCtlRttJitterThreshold = $13 + "us"
+            $Jitter = int($7) - int($6)
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinRttUs,$jnxPingResultsMaxRttUs,$jnxPingResultsAvgRttUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsRttSumOfSquares,$pingResultsLastGoodProbe,$jnxPingCtlRttJitterThreshold)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingRttJitterThresholdExceeded"
+
+            @AlertGroup = "Ping RTT Jitter Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Round Trip Time Jitter, " + $Jitter + "us, Exceeded " + $jnxPingCtlRttStdDevThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### jnxPingEgressThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinEgressUs
+            # $7 = jnxPingResultsMaxEgressUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsLastGoodProbe
+            # $12 = jnxPingCtlEgressTimeThreshold
+            # $13 = jnxPingResultsEgressUs
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinEgressUs = $6 + "us"
+            $jnxPingResultsMaxEgressUs = $7 + "us"
+            $jnxPingResultsAvgEgressUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsLastGoodProbe = $11
+            $jnxPingCtlEgressTimeThreshold = $12 + "us"
+            $jnxPingResultsEgressUs = $13 + "us"
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinEgressUs,$jnxPingResultsMaxEgressUs,$jnxPingResultsAvgEgressUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsLastGoodProbe,$jnxPingCtlEgressTimeThreshold,$jnxPingResultsEgressUs)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingEgressThresholdExceeded"
+
+            @AlertGroup = "Ping Egress Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Egress Time, " + $jnxPingResultsEgressUs + ", Exceeded " + $jnxPingCtlEgressTimeThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### jnxPingEgressStdDevThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinEgressUs
+            # $7 = jnxPingResultsMaxEgressUs
+            # $8 = jnxPingResultsAvgEgressUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsLastGoodProbe
+            # $12 = jnxPingResultsStddevEgressUs
+            # $13 = jnxPingCtlEgressStdDevThreshold
+            # $14 = jnxPingResultsStddevEgressUs
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinEgressUs = $6 + "us"
+            $jnxPingResultsMaxEgressUs = $7 + "us"
+            $jnxPingResultsAvgEgressUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsLastGoodProbe = $11
+            $jnxPingResultsStddevEgressUs = $12 + "us"
+            $jnxPingCtlEgressStdDevThreshold = $13 + "us"
+            $jnxPingResultsStddevEgressUs = $14 + "us"
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinEgressUs,$jnxPingResultsMaxEgressUs,$jnxPingResultsAvgEgressUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsLastGoodProbe,$jnxPingResultsStddevEgressUs,$jnxPingCtlEgressStdDevThreshold,$jnxPingResultsStddevEgressUs)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingEgressStdDevThresholdExceeded"
+
+            @AlertGroup = "Ping Egress Std. Dev. Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Egress Time Standard Deviation, " + $jnxPingResultsStddevEgressUs + ", Exceeded " + $jnxPingCtlEgressStdDevThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### jnxPingEgressJitterThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinEgressUs
+            # $7 = jnxPingResultsMaxEgressUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsLastGoodProbe
+            # $12 = jnxPingCtlEgressJitterThreshold
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinEgressUs = $6 + "us"
+            $jnxPingResultsMaxEgressUs = $7 + "us"
+            $jnxPingResultsAvgEgressUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsLastGoodProbe = $11
+            $jnxPingCtlEgressJitterThreshold = $12 + "us"
+            $Jitter = int($7) - int($6)
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinEgressUs,$jnxPingResultsMaxEgressUs,$jnxPingResultsAvgEgressUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsLastGoodProbe,$jnxPingCtlEgressJitterThreshold)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingEgressJitterThresholdExceeded"
+
+            @AlertGroup = "Ping Egress Jitter Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Egress Time Jitter, " + $Jitter + "us, Exceeded " + $jnxPingCtlEgressJitterThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### jnxPingIngressThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinIngressUs
+            # $7 = jnxPingResultsMaxIngressUs
+            # $8 = jnxPingResultsAvgIngressUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsLastGoodProbe
+            # $12 = jnxPingCtlIngressTimeThreshold
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinIngressUs = $6 + "us"
+            $jnxPingResultsMaxIngressUs = $7 + "us"
+            $jnxPingResultsAvgIngressUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsLastGoodProbe = $11
+            $jnxPingCtlIngressTimeThreshold = $12 + "us"
+            $jnxPingResultsIngressUs = $13 + "us"
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinIngressUs,$jnxPingResultsMaxIngressUs,$jnxPingResultsAvgIngressUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsLastGoodProbe,$jnxPingCtlIngressTimeThreshold,$jnxPingResultsIngressUs)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingIngressThresholdExceeded"
+
+            @AlertGroup = "Ping Ingress Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Ingress Time, " + $jnxPingResultsIngressUs + ", Exceeded " + $jnxPingCtlIngressTimeThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### jnxPingIngressStddevThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinIngressUs
+            # $7 = jnxPingResultsMaxIngressUs
+            # $8 = jnxPingResultsAvgIngressUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsLastGoodProbe
+            # $12 = jnxPingResultsStddevIngressUs
+            # $13 = jnxPingCtlIngressStddevThreshold
+            # $14 = jnxPingResultsStddevIngressUs
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinIngressUs = $6 + "us"
+            $jnxPingResultsMaxIngressUs = $7 + "us"
+            $jnxPingResultsAvgIngressUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsLastGoodProbe = $11
+            $jnxPingResultsStddevIngressUs = $12 + "us"
+            $jnxPingCtlIngressStddevThreshold = $13 + "us"
+            $jnxPingResultsStddevIngressUs = $14 + "us"
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinIngressUs,$jnxPingResultsMaxIngressUs,$jnxPingResultsAvgIngressUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsLastGoodProbe,$jnxPingResultsStddevIngressUs,$jnxPingCtlIngressStddevThreshold,$jnxPingResultsStddevIngressUs)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingIngressStddevThresholdExceeded"
+
+            @AlertGroup = "Ping Ingress Std. Dev. Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Ingress Time Standard Deviation, " + $jnxPingResultsStddevIngressUs + ", Exceeded " + $jnxPingCtlIngressStddevThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### jnxPingIngressJitterThresholdExceeded
+
+            ##########
+            # $1 = pingCtlTargetAddressType
+            # $2 = pingCtlTargetAddress
+            # $3 = pingResultsOperStatus
+            # $4 = pingResultsIpTargetAddressType
+            # $5 = pingResultsIpTargetAddress
+            # $6 = jnxPingResultsMinIngressUs
+            # $7 = jnxPingResultsMaxIngressUs
+            # $8 = jnxPingResultsAvgIngressUs
+            # $9 = pingResultsProbeResponses
+            # $10 = pingResultsSentProbes
+            # $11 = pingResultsLastGoodProbe
+            # $12 = jnxPingCtlIngressJitterThreshold
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $pingCtlTargetAddressType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $pingCtlTargetAddress = $2
+            $pingResultsOperStatus = lookup($3, pingResultsOperStatus) + " ( " + $3 + " )"
+            $pingResultsIpTargetAddressType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $pingResultsIpTargetAddress = $5
+            $jnxPingResultsMinIngressUs = $6 + "us"
+            $jnxPingResultsMaxIngressUs = $7 + "us"
+            $jnxPingResultsAvgIngressUs = $8 + "us"
+            $pingResultsProbeResponses = $9
+            $pingResultsSentProbes = $10
+            $pingResultsLastGoodProbe = $11
+            $jnxPingCtlIngressJitterThreshold = $12 + "us"
+            $Jitter = int($7) - int($6)
+            details($pingCtlTargetAddressType,$pingCtlTargetAddress,$pingResultsOperStatus,$pingResultsIpTargetAddressType,$pingResultsIpTargetAddress,$jnxPingResultsMinIngressUs,$jnxPingResultsMaxIngressUs,$jnxPingResultsAvgIngressUs,$pingResultsProbeResponses,$pingResultsSentProbes,$pingResultsLastGoodProbe,$jnxPingCtlIngressJitterThreshold)
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-PING-MIB-jnxPingIngressJitterThresholdExceeded"
+
+            @AlertGroup = "Ping Ingress Jitter Threshold"
+            @AlertKey = "pingCtlEntry." + extract($OID2, "3\.6\.1\.2\.1\.80\.1\.2\.1\.4\.(.*)$")
+            @Summary = "Ping Ingress Time Jitter, " + $Jitter + "us, Exceeded " + $jnxPingCtlIngressJitterThreshold + "  ( Target: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-PING-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-PING-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-PING-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-PING-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-PING-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,717 @@
+###############################################################################
+#
+#	mbalance-TEXTPASS-XS-TIE-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for TekMedia XS-TIE alarms
+#
+#       V0.1	20110706	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.9679.1.139":  ### - xsTie (from TEXTPASS-XS-TIE-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-XS-TIE-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "NETBOSS1"
+    @Domain = "CORE"
+    @Vendor = "Tekelec"
+	@Manager = "MTTrapd-XS-TIE"
+
+	@Class = "302020"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Agent = "TEXTPASS-XS-TIE-MIB"
+	@AlertGroup = "XS-TIETrap"
+
+	$OS_EventId = "NET_TEK_XST_001"
+
+	[$node] =  lookup($IPaddress, mbalance-TEXTPASS-node)
+	@Node = $node
+	@NodeAlias = $node
+
+	$OS_ExpireTime = 18000
+
+	switch($specific-trap) {
+		case "1": ### - noUcs2UrlConfigured
+			#######################
+			#
+			# No URL has been configured for HTTP requests triggered by UCS-2 
+			# encoded messages.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+		
+		    @Type = 1
+			@Severity = 4
+
+			@AlertKey = "noUcs2UrlConfigured " + $deviceType
+			@Summary = "noUcs2UrlConfigured: # No URL has been configured for HTTP requests triggered by UCS-2 encoded messages"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "2": ### - noGsm7UrlConfigured
+			#######################
+			#
+			# No URL has been configured for HTTP requests triggered by GSM 
+			# default alphabet encoded messages.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+		
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "noGsm7UrlConfigured " + $deviceType
+			@Summary = "noGsm7UrlConfigured: # No URL has been configured for HTTP requests triggered by GSM default alphabet encoded messages"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "3": ### - trapInvalidUcs2Url
+			#######################
+			#
+			# Invalid URL has been configured for HTTP requests triggered by
+			# UCS-2 encoded messages.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "trapInvalidUcs2Url " + $deviceType
+			@Summary = "trapInvalidUcs2Url: # Invalid URL has been configured for HTTP requests triggered by UCS-2 encoded messages"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "4": ### - trapInvalidGsm7Url
+			#######################
+			#
+			# Invalid URL has been configured for HTTP requests triggered by 
+			# GSM default alphabet encoded messages.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "trapInvalidGsm7Url " + $deviceType
+			@Summary = "trapInvalidGsm7Url: # Invalid URL has been configured for HTTP requests triggered by GSM default alphabet encoded messages"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "5": ### - trapUcs2DnsLookupFailed
+			#######################
+			#
+			# DNS resolver library could not resolv UCS2 URL domain name.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "trapUcs2DnsLookupFailed " + $deviceType
+			@Summary = "trapUcs2DnsLookupFailed: # DNS resolver library could not resolv UCS2 URL domain name"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "6": ### - trapGsm7DnsLookupFailed
+			#######################
+			#
+			# DNS resolver library could not resolv GSM7 URL domain name.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "trapGsm7DnsLookupFailed " + $deviceType
+			@Summary = "trapGsm7DnsLookupFailed: # DNS resolver library could not resolv GSM7 URL domain name"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "7": ### - trapProxyNotConfigured
+			#######################
+			#
+			# Proxy enabled and not configured correctly.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "trapProxyNotConfigured " + $deviceType
+			@Summary = "trapProxyNotConfigured: # Proxy enabled and not configured correctly"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "8": ### - trapProxyLookupError
+			#######################
+			#
+			# Proxy hostname DNS lookup failed.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "trapProxyLookupError " + $deviceType
+			@Summary = "trapProxyLookupError: # Proxy hostname DNS lookup failed"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "11": ### - addressDataFileUnavailable
+			#######################
+			#
+			# The specified data file cannot be read.
+			#
+			# $1 = xsTieAddressDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      addresses.
+			#      The file shall consist of one address per line. Addresses shall be
+			#      in international format, starting with the country code. The 
+			#      leading '+' will be optional.
+			#      
+			#      Data file example:
+			#      # some addresses,
+			#      311000000000
+			#      +311000000001
+			#      311000000002
+			#      
+			#      When a duplicate address is found, it will be ignored.
+			#
+			# $2 = xsTieLastAddressDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieAddressDataFilePath = $1
+			$xsTieLastAddressDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "addressDataFileUnavailable-" + $xsTieAddressDataFilePath + "-" + $xsTieLastAddressDataFileError + "-" + $deviceType
+			@Summary = "addressDataFileUnavailable: # The specified data file cannot be read"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "12": ### - addressDataFileIncorrectlyFormatted
+			#######################
+			#
+			# The specified data file contains a line which is improperly 
+			# formed.
+			#
+			# $1 = xsTieAddressDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      addresses.
+			#      The file shall consist of one address per line. Addresses shall be
+			#      in international format, starting with the country code. The 
+			#      leading '+' will be optional.
+			#      
+			#      Data file example:
+			#      # some addresses,
+			#      311000000000
+			#      +311000000001
+			#      311000000002
+			#      
+			#      When a duplicate address is found, it will be ignored.
+			#
+			# $2 = xsTieLastAddressDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieAddressDataFilePath = $1
+			$xsTieLastAddressDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "addressDataFileIncorrectlyFormatted-" + $xsTieAddressDataFilePath + "-" + $xsTieLastAddressDataFileError + "-" + $deviceType
+			@Summary = "addressDataFileIncorrectlyFormatted: # The specified data file contains a line which is improperly formed"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "13": ### - addressDataFileTooBig
+			#######################
+			#
+			# The specified data file contains too many entries (> 1.000.000).
+			#
+			# $1 = xsTieAddressDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      addresses.
+			#      The file shall consist of one address per line. Addresses shall be
+			#      in international format, starting with the country code. The 
+			#      leading '+' will be optional.
+			#      
+			#      Data file example:
+			#      # some addresses,
+			#      311000000000
+			#      +311000000001
+			#      311000000002
+			#      
+			#      When a duplicate address is found, it will be ignored.
+			#
+			# $2 = xsTieLastAddressDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieAddressDataFilePath = $1
+			$xsTieLastAddressDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "addressDataFileTooBig-" + $xsTieAddressDataFilePath + "-" + $xsTieLastAddressDataFileError + "-" + $deviceType
+			@Summary = "addressDataFileTooBig: # The specified data file contains too many entries (> 1.000.000)"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "14": ### - addressDataFileEmpty
+			#######################
+			#
+			# The specified data file is empty.
+			#
+			# $1 = xsTieAddressDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      addresses.
+			#      The file shall consist of one address per line. Addresses shall be
+			#      in international format, starting with the country code. The 
+			#      leading '+' will be optional.
+			#      
+			#      Data file example:
+			#      # some addresses,
+			#      311000000000
+			#      +311000000001
+			#      311000000002
+			#      
+			#      When a duplicate address is found, it will be ignored.
+			#
+			# $2 = xsTieLastAddressDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieAddressDataFilePath = $1
+			$xsTieLastAddressDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "addressDataFileEmpty-" + $xsTieAddressDataFilePath + "-" + $xsTieLastAddressDataFileError + "-" + $deviceType
+			@Summary = "addressDataFileEmpty: # The specified data file is empty"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "21": ### - textDataFileUnavailable
+			#######################
+			#
+			# The specified data file cannot be read.
+			#
+			# $1 = xsTieTextDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      texts.
+			#      Each line should take the following general form:
+			#      
+			#      *** N.B. All double quotes have been sanitized with single
+			#      quotes due to ASN.1 restrictions. ***
+			#      
+			#      <weight>,<'category'>,<'sponsor'>,<dcs>,['prologue'],['epilogue']
+			#      
+			#      where:
+			#      
+			#      <weight> := An integer in range [1,5], with 1 as lowest 
+			#      weighting possible. Default setting should be 1.
+			#      <category>  := Describes the class to which the text belongs 
+			#      e.g. 'Sportswear', 'Food \'and\' Drink'  
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.   
+			#      <sponsor>   := The 'owner' of the text. e.g. 'Coca-Cola'
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      <dcs>       := The DCS of the *MT/SM* to which this text can be 
+			#      applied. Must be one character: 
+			#      'G' for GSM default alphabet encoded SMs.
+			#      'U' for UCS-2 encoded SMs.
+			#      'B' for both types of encoding.
+			#      [prologue]  := (optional) The text to be inserted before the 
+			#      MT/SM user data (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      [epilogue]  := (optional) The text to be inserted after the  
+			#      MT/SM user data  (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      
+			#      N.B. 
+			#      * All are mandatory, unless otherwise indicated. 
+			#      * One of the last 2 fields must, of course, be present!
+			#      * Each line entry must contain exactly 5 commas.
+			#      
+			#      Example:
+			#      
+			#      # Some comment
+			#      1,'Food & drink','Coca-Cola',G,'Always Coca-Cola',
+			#      'Drink Coca-Cola'
+			#      ; Next line has no prologue
+			#      4,'Food & drink','McDonalds',G,,'I'm Lovin' it.'
+			#      5,'Sportswear','Nike',G,'Just do it!', 
+			#      3,'Sportswear','Nike',G,'Air Jordan sale now on.',
+			#      2,'Golf equipment','Nike',G,,
+			#      'Eldrick \'Tiger\' Woods recommends...'
+			#
+			# $2 = xsTieLastTextDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieTextDataFilePath = $1
+			$xsTieLastTextDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "textDataFileUnavailable-" + $xsTieTextDataFilePath + "-" + $xsTieLastTextDataFileError + "-" + $deviceType
+			@Summary = "textDataFileUnavailable: # The specified data file cannot be read"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "22": ### - textDataFileIncorrectlyFormatted
+			#######################
+			#
+			# The specified data file contains lines which are improperly 
+			# formed.
+			#
+			# $1 = xsTieTextDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      texts.
+			#      Each line should take the following general form:
+			#      
+			#      *** N.B. All double quotes have been sanitized with single
+			#      quotes due to ASN.1 restrictions. ***
+			#      
+			#      <weight>,<'category'>,<'sponsor'>,<dcs>,['prologue'],['epilogue']
+			#      
+			#      where:
+			#      
+			#      <weight> := An integer in range [1,5], with 1 as lowest 
+			#      weighting possible. Default setting should be 1.
+			#      <category>  := Describes the class to which the text belongs 
+			#      e.g. 'Sportswear', 'Food \'and\' Drink'  
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.   
+			#      <sponsor>   := The 'owner' of the text. e.g. 'Coca-Cola'
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      <dcs>       := The DCS of the *MT/SM* to which this text can be 
+			#      applied. Must be one character: 
+			#      'G' for GSM default alphabet encoded SMs.
+			#      'U' for UCS-2 encoded SMs.
+			#      'B' for both types of encoding.
+			#      [prologue]  := (optional) The text to be inserted before the 
+			#      MT/SM user data (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      [epilogue]  := (optional) The text to be inserted after the  
+			#      MT/SM user data  (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      
+			#      N.B. 
+			#      * All are mandatory, unless otherwise indicated. 
+			#      * One of the last 2 fields must, of course, be present!
+			#      * Each line entry must contain exactly 5 commas.
+			#      
+			#      Example:
+			#      
+			#      # Some comment
+			#      1,'Food & drink','Coca-Cola',G,'Always Coca-Cola',
+			#      'Drink Coca-Cola'
+			#      ; Next line has no prologue
+			#      4,'Food & drink','McDonalds',G,,'I'm Lovin' it.'
+			#      5,'Sportswear','Nike',G,'Just do it!', 
+			#      3,'Sportswear','Nike',G,'Air Jordan sale now on.',
+			#      2,'Golf equipment','Nike',G,,
+			#      'Eldrick \'Tiger\' Woods recommends...'
+			#
+			# $2 = xsTieLastTextDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieTextDataFilePath = $1
+			$xsTieLastTextDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "textDataFileIncorrectlyFormatted-" + $xsTieTextDataFilePath + "-" + $xsTieLastTextDataFileError + "-" + $deviceType
+			@Summary = "textDataFileIncorrectlyFormatted: # The specified data file contains lines which are improperly formed"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "23": ### - textDataFileTooBig
+			#######################
+			#
+			# The specified data file contains too many entries (> 1.000).
+			#
+			# $1 = xsTieTextDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      texts.
+			#      Each line should take the following general form:
+			#      
+			#      *** N.B. All double quotes have been sanitized with single
+			#      quotes due to ASN.1 restrictions. ***
+			#      
+			#      <weight>,<'category'>,<'sponsor'>,<dcs>,['prologue'],['epilogue']
+			#      
+			#      where:
+			#      
+			#      <weight> := An integer in range [1,5], with 1 as lowest 
+			#      weighting possible. Default setting should be 1.
+			#      <category>  := Describes the class to which the text belongs 
+			#      e.g. 'Sportswear', 'Food \'and\' Drink'  
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.   
+			#      <sponsor>   := The 'owner' of the text. e.g. 'Coca-Cola'
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      <dcs>       := The DCS of the *MT/SM* to which this text can be 
+			#      applied. Must be one character: 
+			#      'G' for GSM default alphabet encoded SMs.
+			#      'U' for UCS-2 encoded SMs.
+			#      'B' for both types of encoding.
+			#      [prologue]  := (optional) The text to be inserted before the 
+			#      MT/SM user data (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      [epilogue]  := (optional) The text to be inserted after the  
+			#      MT/SM user data  (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      
+			#      N.B. 
+			#      * All are mandatory, unless otherwise indicated. 
+			#      * One of the last 2 fields must, of course, be present!
+			#      * Each line entry must contain exactly 5 commas.
+			#      
+			#      Example:
+			#      
+			#      # Some comment
+			#      1,'Food & drink','Coca-Cola',G,'Always Coca-Cola',
+			#      'Drink Coca-Cola'
+			#      ; Next line has no prologue
+			#      4,'Food & drink','McDonalds',G,,'I'm Lovin' it.'
+			#      5,'Sportswear','Nike',G,'Just do it!', 
+			#      3,'Sportswear','Nike',G,'Air Jordan sale now on.',
+			#      2,'Golf equipment','Nike',G,,
+			#      'Eldrick \'Tiger\' Woods recommends...'
+			#
+			# $2 = xsTieLastTextDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieTextDataFilePath = $1
+			$xsTieLastTextDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "textDataFileTooBig-" + $xsTieTextDataFilePath + "-" + $xsTieLastTextDataFileError + "-" + $deviceType
+			@Summary = "textDataFileTooBig: # The specified data file contains too many entries (> 1.000)"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "24": ### - textDataFileEmpty
+			#######################
+			#
+			# The specified data file is empty.
+			#
+			# $1 = xsTieTextDataFilePath
+			#
+			#      Full filename of the data file containing the list of
+			#      texts.
+			#      Each line should take the following general form:
+			#      
+			#      *** N.B. All double quotes have been sanitized with single
+			#      quotes due to ASN.1 restrictions. ***
+			#      
+			#      <weight>,<'category'>,<'sponsor'>,<dcs>,['prologue'],['epilogue']
+			#      
+			#      where:
+			#      
+			#      <weight> := An integer in range [1,5], with 1 as lowest 
+			#      weighting possible. Default setting should be 1.
+			#      <category>  := Describes the class to which the text belongs 
+			#      e.g. 'Sportswear', 'Food \'and\' Drink'  
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.   
+			#      <sponsor>   := The 'owner' of the text. e.g. 'Coca-Cola'
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      <dcs>       := The DCS of the *MT/SM* to which this text can be 
+			#      applied. Must be one character: 
+			#      'G' for GSM default alphabet encoded SMs.
+			#      'U' for UCS-2 encoded SMs.
+			#      'B' for both types of encoding.
+			#      [prologue]  := (optional) The text to be inserted before the 
+			#      MT/SM user data (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      [epilogue]  := (optional) The text to be inserted after the  
+			#      MT/SM user data  (and any configured separator).
+			#      This must be *double* quoted; double quotes within
+			#      this field must be escaped.
+			#      
+			#      N.B. 
+			#      * All are mandatory, unless otherwise indicated. 
+			#      * One of the last 2 fields must, of course, be present!
+			#      * Each line entry must contain exactly 5 commas.
+			#      
+			#      Example:
+			#      
+			#      # Some comment
+			#      1,'Food & drink','Coca-Cola',G,'Always Coca-Cola',
+			#      'Drink Coca-Cola'
+			#      ; Next line has no prologue
+			#      4,'Food & drink','McDonalds',G,,'I'm Lovin' it.'
+			#      5,'Sportswear','Nike',G,'Just do it!', 
+			#      3,'Sportswear','Nike',G,'Air Jordan sale now on.',
+			#      2,'Golf equipment','Nike',G,,
+			#      'Eldrick \'Tiger\' Woods recommends...'
+			#
+			# $2 = xsTieLastTextDataFileError
+			#
+			#      Describes the last error encountered when loading
+			#      the datafile.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$xsTieTextDataFilePath = $1
+			$xsTieLastTextDataFileError = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "textDataFileEmpty-" + $xsTieTextDataFilePath + "-" + $xsTieLastTextDataFileError + "-" + $deviceType
+			@Summary = "textDataFileEmpty: # The specified data file is empty"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-XS-TIE-MIB.include.snmptrap.rules >>>>>")

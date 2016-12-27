@@ -1,0 +1,46 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    AssignSev.include.common.rules 1.0
+#    2005/03/01 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+#
+# The logic in this file is responsible for properly setting the
+# Severity-related values if using "sev" lookup tables.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... AssignSev.include.common.rules >>>>>")
+
+switch($OS_Severity)
+{
+    case "d":
+        log(DEBUG, "<<<<< (AssignSev.include.common.rules) Discarding event. >>>>>")
+        
+        discard
+    case "Unknown"|"":
+        log(DEBUG, "<<<<< (AssignSev.include.common.rules) Setting Severity, Type, and ExpireTime to event's DEFAULT values. >>>>>")
+        
+        @Severity = $DEFAULT_Severity
+        @Type = $DEFAULT_Type
+        $OS_ExpireTime = $DEFAULT_ExpireTime
+    default:
+        log(DEBUG, "<<<<< (AssignSev.include.common.rules) Setting Severity, Type, and ExpireTime to values found via lookup. >>>>>")
+        
+        @Severity = $OS_Severity
+        @Type = $OS_Type
+}
+
+log(DEBUG, "<<<<< Leaving... AssignSev.include.common.rules >>>>>")

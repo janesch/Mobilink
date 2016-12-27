@@ -1,0 +1,44 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-BULK-FILE-MIB.adv.include.snmptrap.rules 1.0
+#    2006/09/19 Sagar Karangle
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-BULK-FILE-MIB
+#
+###############################################################################
+log(DEBUG, "<<<<< Entering... cisco-CISCO-BULK-FILE-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### cbfDefineFileCompletion
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "cbfDefineFileCompletion"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "cbfStatusFileEntry." + $cbfDefineFileIndex + "." + $cbfStatusFileIndex
+        $OS_LocalRootObj = "cbfDefineFileEntry." + $cbfDefineFileIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-BULK-FILE-MIB.adv.include.snmptrap.rules >>>>>")

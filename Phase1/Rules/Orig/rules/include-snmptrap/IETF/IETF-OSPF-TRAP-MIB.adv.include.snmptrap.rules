@@ -1,0 +1,308 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-OSPF-TRAP-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  OSPF-TRAP-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-OSPF-TRAP-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ospfVirtIfStateChange
+
+        $OS_X733SpecificProb = "ospfVirtIfStateChange"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfVirtIfEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+            
+    case "2": ### ospfNbrStateChange
+
+        $OS_X733SpecificProb = "ospfNbrStateChange"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfNbrEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $2
+        if(!match($3, "0"))
+        {
+            $OS_RemotePriObj = "ifEntry." + $3
+            $OS_RemoteRootObj = $OS_LocalPriObj
+        }
+        
+    case "3": ### ospfVirtNbrStateChange
+
+        $OS_X733SpecificProb = "ospfVirtNbrStateChange"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfVirtNbrEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+        
+    case "4": ### ospfIfConfigError
+
+        $OS_X733SpecificProb = "ospfIfConfigError"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfIfEntry." + $2 + "." + $3
+        if(match($3, "0"))
+        {
+            $OS_LocalNodeAlias = $2
+            $OS_LocalRootObj = "ospfIfEntry." + $2 + "." + $3
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else
+        {
+            $OS_LocalRootObj = "ifEntry." + $3
+            $VAR_RelateLRO2LPO = 2
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+            
+    case "5": ### ospfVirtIfConfigError
+
+        $OS_X733SpecificProb = "ospfVirtIfConfigError"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfVirtIfEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+            
+    case "6": ### ospfIfAuthFailure
+
+        $OS_X733SpecificProb = "ospfIfAuthFailure"
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100168
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfIfEntry." + $2 + "." + $3
+        
+        if(match($3, "0"))
+        {
+            $OS_LocalNodeAlias = $2
+            $OS_LocalRootObj = "ospfIfEntry." + $2 + "." + $3
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else
+        {
+            $OS_LocalRootObj = "ifEntry." + $3
+            $VAR_RelateLRO2LPO = 2
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+            
+    case "7": ### ospfVirtIfAuthFailure
+
+        $OS_X733SpecificProb = "ospfVirtIfAuthFailure"
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100168
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfVirtIfEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+            
+    case "8": ### ospfIfRxBadPacket
+
+        $OS_X733SpecificProb = "ospfIfRxBadPacket"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1013
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfIfEntry." + $2 + "." + $3
+        if(match($3, "0"))
+        {
+            $OS_LocalNodeAlias = $2
+            $OS_LocalRootObj = "ospfIfEntry." + $2 + "." + $3
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else
+        {
+            $OS_LocalRootObj = "ifEntry." + $3
+            $VAR_RelateLRO2LPO = 2
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+            
+    case "9": ### ospfVirtIfRxBadPacket
+
+        $OS_X733SpecificProb = "ospfVirtIfRxBadPacket"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1013
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfVirtIfEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+            
+    case "10": ### ospfTxRetransmit
+
+        $OS_X733SpecificProb = "ospfTxRetransmit"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1014
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfIfEntry." + $2 + "." + $3
+        if(match($3, "0"))
+        {
+            $OS_LocalNodeAlias = $2
+            $OS_LocalRootObj = "ospfIfEntry." + $2 + "." + $3
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else
+        {
+            $OS_LocalRootObj = "ifEntry." + $3
+            $VAR_RelateLRO2LPO = 2
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        $OS_RemoteNodeAlias = $4
+            
+    case "11": ### ospfVirtIfTxRetransmit
+
+        $OS_X733SpecificProb = "ospfVirtIfTxRetransmit"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1014
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfVirtIfEntry." + $2 + "." + $3
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+            
+    case "12": ### ospfOriginateLsa
+    
+        $OS_X733SpecificProb = "ospfOriginateLsa"
+        $OS_X733EventType = 0
+        $OS_X733ProbableCause = 0
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfLsdbEntry." + $2 + "." + $3 + "." + $4 + "." + $5
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+            
+    case "13": ### ospfMaxAgeLsa
+
+        $OS_X733SpecificProb = "ospfMaxAgeLsa"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfLsdbEntry." + $2 + "." + $3 + "." + $4 + "." + $5
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+            
+    case "14": ### ospfLsdbOverflow
+
+        $OS_X733SpecificProb = "ospfLsdbOverflow"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+    case "15": ### ospfLsdbApproachingOverflow
+
+        $OS_X733SpecificProb = "ospfLsdbApproachingOverflow"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+    case "16": ### ospfIfStateChange
+
+        $OS_X733SpecificProb = "ospfIfStateChange"
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ospfIfEntry." + $2 + "." + $3
+        if(match($3, "0"))
+        {
+            $OS_LocalNodeAlias = $2
+            $OS_LocalRootObj = "ospfIfEntry." + $2 + "." + $3
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else
+        {
+            $OS_LocalRootObj = "ifEntry." + $3
+            $VAR_RelateLRO2LPO = 2
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+            
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-OSPF-TRAP-MIB.adv.include.snmptrap.rules >>>>>")

@@ -1,0 +1,1452 @@
+###############################################################################
+#
+#	mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for TekMedia SS7 alarms
+#
+#       V0.1	20110705	Mihai Strava of Innovise
+###############################################################################
+case ".1.3.6.1.4.1.9679.1.20":  ### - sua (from TEXTPASS-SS7-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "NETBOSS1"
+   	@Domain = "CORE"
+    	@Vendor = "Tekelec"
+	@Manager = "MTTrapd-SS7"
+
+	@Class = "302020"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Agent = "TEXTPASS-SS7-MIB"
+	@AlertGroup = "SS7Trap"
+
+	$OS_EventId = "NET_TEK_SS7_001"
+	
+	[$node] =  lookup($IPaddress, mbalance-TEXTPASS-node)
+	@Node = $node
+	@NodeAlias = $node
+
+	switch($specific-trap) {
+		case "11": ### - suaAspOperationalStateChanged
+			#######################
+			#
+			# Operational state of a SUA ASP changed
+			#
+			# $1 = suaAspOperationalState
+			#
+			#      Operational state of the SUA ASP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+
+			$suaAspOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-suaAspOperationalState)
+			$deviceType = $2
+
+			if (int($1)==0 || int($1)==1 || int($1)==2 || int($1)==4)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "suaAspOperationalStateChanged " + $deviceType
+			@Summary = "suaAspOperationalStateChanged: # Operational state of a SUA ASP changed to: " + $suaAspOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "12": ### - suaAspSctpOperationalStateChanged
+			#######################
+			#
+			# Operational state of the SCTP association of a SUA ASP changed
+			#
+			# $1 = suaAspSctpOperationalState
+			#
+			#      Operation state of the SCTP association that TextPass maintains
+			#      with the remote SUA ASP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+
+			$suaAspSctpOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-suaAspSctpOperationalState)
+			$deviceType = $2
+		
+			if (int($1)==0 || int($1)==1 || int($1)==2 || int($1)==3 || int($1)==5 || int($1)==6 || int($1)==7 || int($1)==8 || int($1)==9)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "suaAspSctpOperationalStateChanged " + $deviceType
+			@Summary = "suaAspSctpOperationalStateChanged: # Operational state of the SCTP association of a SUA ASP changed to: " + $suaAspSctpOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "13": ### - suaAspRemoteAddressOperationalStateChanged
+			#######################
+			#
+			# Operational state of a remote address of a SUA ASP changed.
+			#
+			# $1 = suaAspRemoteAddressOperationalState
+			#
+			#      Operational state of IP address of remote SUA ASP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+
+			$suaAspRemoteAddressOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-suaAspRemoteAddressOperationalState)
+			$deviceType = $2
+		
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3 || int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "suaAspRemoteAddressOperationalStateChanged " + $deviceType
+			@Summary = "suaAspRemoteAddressOperationalStateChanged: # Operational state of a remote address of a SUA ASP changed to: " + $suaAspRemoteAddressOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "14": ### - suaAsOperationalStateChanged
+			#######################
+			#
+			# Operational state of a SUA AS changed.
+			#
+			# $1 = suaAsOperationalState
+			#
+			#      Operational state of remote SUA AS.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+
+			$suaAsOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-suaAsOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "suaAsOperationalStateChanged " + $deviceType
+			@Summary = "suaAsOperationalStateChanged: # Operational state of a SUA AS changed to: " + $suaAsOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "15": ### - suaAsInstanceOperationalStateChanged
+			#######################
+			#
+			# Operational state of a SUA AS instance changed.
+			#
+			# $1 = suaAsInstanceOperationalState
+			#
+			#      Operational state of remote AS instance.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+
+			$suaAsInstanceOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-suaAsInstanceOperationalState)
+			$deviceType = $2
+	
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "suaAsInstanceOperationalStateChanged " + $deviceType
+			@Summary = "suaAsInstanceOperationalStateChanged: # Operational state of a SUA AS instance changed to: " + $suaAsInstanceOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.9679.1.11":  ### - mtp (from TEXTPASS-SS7-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+
+	switch($specific-trap) {
+		case "1": ### - trunkOperationalStateChanged
+			#######################
+			#
+			# Operational state of SS7 trunk has changed
+			#
+			# $1 = mtpTrunkOperationalState
+			#
+			#      Operational state of E1/T1 trunk.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+
+			$mtpTrunkOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-mtpTrunkOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2  || int($1)==3  || int($1)==4)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==5)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "trunkOperationalStateChanged " + $deviceType
+			@Summary = "trunkOperationalStateChanged: # Operational state of SS7 trunk has changed to: " + $mtpTrunkOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "2": ### - linkOperationalStateChanged
+			#######################
+			#
+			# Operational state of MTP link has changed
+			#
+			# $1 = mtpLinkOperationalState
+			#
+			#      Operational state of link.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-mtpLinkOperationalState)
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+		
+			if (int($1)==0 || int($1)==1 || int($1)==2  || int($1)==3  || int($1)==6 || int($1)==7 || int($1)==8)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==4 || int($1)==5 || int($1)==9)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "linkOperationalStateChanged" + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $deviceType
+			@Summary = "linkOperationalStateChanged: # Operational state of MTP link has changed to: " + $mtpLinkOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "3": ### - linkSetOperationalStateChanged
+			#######################
+			#
+			# Operational state of MTP linkset has changed
+			#
+			# $1 = mtpLinkSetOperationalState
+			#
+			#      Operational state of linkset.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkSetOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-mtpLinkSetOperationalState)
+			$mtpLinkSetName = $2
+			$deviceType = $3
+
+			if (int($1)==0 || int($1)==1)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==2)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "linkSetOperationalStateChanged" + "-" + $mtpLinkSetName + "-" + $deviceType
+			@Summary = "linkSetOperationalStateChanged: # Operational state of MTP linkset has changed to: " + $mtpLinkSetOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "4": ### - destinationOperationalStateChanged
+			#######################
+			#
+			# Operational state of MTP destination has changed
+			#
+			# $1 = mtpDestinationOperationalState
+			#
+			#      Operational state of destination.
+			#
+			# $2 = mtpDestinationName
+			#
+			#      Name of destination. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpDestinationPointCode
+			#
+			#      Point code of destination and formatted as commonly done 
+			#      in ITU-T.
+			#      Only modify-able if the entry's administrative state is 
+			#      'inactive'.
+			#      Note that this point code can be changed/viewed by this object as 
+			#      well as the mtpDestinationPointCodeString object.
+			#
+			# $4 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpDestinationOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-mtpDestinationOperationalState)
+			$mtpDestinationName = $2
+			$mtpDestinationPointCode = $3
+			$deviceType = $4
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "destinationOperationalStateChanged" + "-" + $mtpDestinationName + "-" + $mtpDestinationPointCode + "-" + $deviceType
+			@Summary = "destinationOperationalStateChanged: # Operational state of MTP destination has changed to: " + $mtpDestinationOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "5": ### - routeOperationalStateChanged
+			#######################
+			#
+			# Operational state of MTP route has changed
+			#
+			# $1 = mtpRouteOperationalState
+			#
+			#      Operational state of route.
+			#
+			# $2 = mtpDestinationName
+			#
+			#      Name of destination. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpRouteLinkSet
+			#
+			#      Name of M3UA SGP entry that the route uses. Only modify-able if 
+			#      the entry's administrative state is 'inactive'. Note that presence
+			#      of this attribute is mutually exclusive with mtpRouteM3uaSgp and
+			#      mtpRouteM3uaAs.
+			#
+			# $4 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpRouteOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-mtpRouteOperationalState)
+			$mtpDestinationName = $2
+			$mtpRouteLinkSet = $3
+			$deviceType = $4
+		
+			if (int($1)==0 || int($1)==1 || int($1)==2  || int($1)==3  || int($1)==4 || int($1)==5 || int($1)==6)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==7)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "routeOperationalStateChanged" + "-" + $mtpDestinationName + "-" + $mtpRouteLinkSet + "-" + $deviceType
+			@Summary = "routeOperationalStateChanged: # Operational state of MTP route has changed to: " + $mtpRouteOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "6": ### - linkCodeMismatch
+			#######################
+			#
+			# Mismatch in configuration of link's SLC. Value for SLC as 
+			# configured on TextPass device and value for SLC as configured on 
+			# adjacent differ.
+			#
+			# $1 = mtpLinkCodeError
+			#
+			#      Error message which is present in case of a mismatch in 
+			#      configuration of link's SLC. The error message shows value for SLC 
+			#      as configured on TextPass device and value for SLC as configured on 
+			#      adjacent.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkCodeError = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+		
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "linkCodeMismatch" + "-" + $mtpLinkCodeError + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $mtpLinkTimeSlot + "-" + $deviceType
+			@Summary = "linkCodeMismatch: # Mismatch in configuration of link's SLC. Value for SLC as configured on TextPass device and value for SLC as configured on adjacent differ"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "7": ### - linkTextPassPcMismatch
+			#######################
+			#
+			# Mismatch in configuration of TextPass's point code. Value for this 
+			# point code as configured on TextPass device and value for this point 
+			# code as configured on adjacent differ.
+			#
+			# $1 = mtpLinkTextPassPcError
+			#
+			#      Error message which is present in case of a mismatch in 
+			#      configuration of TextPass's point code. The error message shows 
+			#      value for this point code as configured on TextPass device and value 
+			#      for this point code as configured on adjacent.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkTextPassPcError = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+		
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "linkTextPassPcMismatch" + "-" + $mtpLinkTextPassPcError + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $mtpLinkTimeSlot + "-" + $deviceType
+			@Summary = "linkTextPassPcMismatch: # Mismatch in configuration of TextPass's point code. Value for this point code as configured on TextPass device and value for this point code as configured on adjacent differ"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "8": ### - linkAdjacentPcMismatch
+			#######################
+			#
+			# Mismatch in configuration of TextPass's point code. Value for this 
+			# point code as configured on TextPass device and value for this point 
+			# code as configured on adjacent differ.
+			#
+			# $1 = mtpLinkAdjacentPcError
+			#
+			#      Error message which is present in case of a mismatch in 
+			#      configuration of adjacent's point code. The error message shows 
+			#      value for this point code as configured on TextPass device and value 
+			#      for this point code as configured on adjacent.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkAdjacentPcError = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+			
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "linkAdjacentPcMismatch" + "-" + $mtpLinkAdjacentPcError + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $mtpLinkTimeSlot + "-" + $deviceType
+			@Summary = "linkAdjacentPcMismatch: # Mismatch in configuration of TextPass's point code. Value for this point code as configured on TextPass device and value for this point code as configured on adjacent differ"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "9": ### - linkNetworkIndicatorMismatch
+			#######################
+			#
+			# Mismatch in configuration of TextPass's point code. Value for this 
+			# point code as configured on TextPass device and value for this point 
+			# code as configured on adjacent differ.
+			#
+			# $1 = mtpLinkNetworkIndicatorError
+			#
+			#      Error message which is present in case of a mismatch in 
+			#      configuration of the network indicator. The error message shows 
+			#      value for the network indicator as configured on TextPass device 
+			#      and value for the network indicator as configured on adjacent.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkNetworkIndicatorError = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+			
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "linkNetworkIndicatorMismatch" + "-" + $mtpLinkNetworkIndicatorError + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $mtpLinkTimeSlot + "-" + $deviceType
+			@Summary = "linkNetworkIndicatorMismatch: # Mismatch in configuration of TextPass's point code. Value for this point code as configured on TextPass device and value for this point code as configured on adjacent differ"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "10": ### - linkRxUtilisationGrowing
+			#######################
+			#
+			# Link utilisation on the receiving stream is growing and just hit a 
+			# threshold. Thresholds can be configured at mtpProperties.
+			#
+			# $1 = mtpLinkRxUtilisation
+			#
+			#      Link utilisation on receiving stream during previous second. Link
+			#      utilisation is defined as the rate between the actual load and the
+			#      maximum load possible. Expressed in percents (e.g. 0.4 Erlang 
+			#      results in a utilisation value of 40). Only applicable for NSL and
+			#      HSL.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkRxUtilisation = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+			
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "linkRxUtilisation" + "-" + $mtpLinkRxUtilisation + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $deviceType
+			@Summary = "linkRxUtilisationGrowing: # Link utilisation on the receiving stream: " + $mtpLinkSetName + " " + $mtpLinkCode + " is growing and just hit a threshold: " + $mtpLinkRxUtilisation
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "11": ### - linkRxUtilisationShrinking
+			#######################
+			#
+			# Link utilisation on the receiving stream is shrinking and just hit a 
+			# threshold. Thresholds can be configured at mtpProperties.
+			#
+			# $1 = mtpLinkRxUtilisation
+			#
+			#      Link utilisation on receiving stream during previous second. Link
+			#      utilisation is defined as the rate between the actual load and the
+			#      maximum load possible. Expressed in percents (e.g. 0.4 Erlang 
+			#      results in a utilisation value of 40). Only applicable for NSL and
+			#      HSL.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkRxUtilisation = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+			
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "linkRxUtilisation" + "-" + $mtpLinkRxUtilisation + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $deviceType
+			@Summary = "linkRxUtilisationShrinking: # Link utilisation on the receiving stream: " + $mtpLinkSetName + " " + $mtpLinkCode + " is shrinking and just hit a threshold: " + $mtpLinkRxUtilisation
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "12": ### - linkTxUtilisationGrowing
+			#######################
+			#
+			# Link utilisation on the transmitting stream is growing and just hit a 
+			# threshold. Thresholds can be configured at mtpProperties.
+			#
+			# $1 = mtpLinkTxUtilisation
+			#
+			#      Link utilisation on transmitting stream during previous second. 
+			#      Link utilisation is defined as the rate between the actual load and
+			#      the maximum load possible. Expressed in percents (e.g. 0.4 Erlang 
+			#      results in a utilisation value of 40). Only applicable for NSL and
+			#      HSL.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkTxUtilisation = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+			
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "linkTxUtilisation" + "-" + $mtpLinkTxUtilisation + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $deviceType
+			@Summary = "linkTxUtilisationGrowing: # Link utilisation on the transmitting stream: " + $mtpLinkSetName + " " + $mtpLinkCode + " is growing and just hit a threshold: " + $mtpLinkTxUtilisation
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "13": ### - linkTxUtilisationShrinking
+			#######################
+			#
+			# Link utilisation on the transmitting stream is shrinking and just hit a 
+			# threshold. Thresholds can be configured at mtpProperties.
+			#
+			# $1 = mtpLinkTxUtilisation
+			#
+			#      Link utilisation on transmitting stream during previous second. 
+			#      Link utilisation is defined as the rate between the actual load and
+			#      the maximum load possible. Expressed in percents (e.g. 0.4 Erlang 
+			#      results in a utilisation value of 40). Only applicable for NSL and
+			#      HSL.
+			#
+			# $2 = mtpLinkSetName
+			#
+			#      Name of linkset. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $3 = mtpLinkCode
+			#
+			#      Signalling link code (SLC) of link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $4 = mtpLinkTrunk
+			#
+			#      Trunk used for link. Only modify-able if the entry's administrative 
+			#      state is 'inactive'.
+			#
+			# $5 = mtpLinkTimeSlot
+			#
+			#      Timeslot on trunk used for link. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$mtpLinkTxUtilisation = $1
+			$mtpLinkSetName = $2
+			$mtpLinkCode = $3
+			$mtpLinkTrunk = $4
+			$mtpLinkTimeSlot = $5
+			$deviceType = $6
+			
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "linkTxUtilisation" + "-" + $mtpLinkTxUtilisation + "-" + $mtpLinkSetName + "-" + $mtpLinkCode + "-" + $mtpLinkTrunk + "-" + $deviceType
+			@Summary = "linkTxUtilisationShrinking: # Link utilisation on the transmitting stream: " + $mtpLinkSetName + " " + $mtpLinkCode + " is shrinking and just hit a threshold: " + $mtpLinkTxUtilisation
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.9679.1.12":  ### - sccp (from TEXTPASS-SS7-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+
+	switch($specific-trap) {
+		case "1": ### - stpOperationalStateChanged
+			#######################
+			#
+			# Operational state of SCCP STP has changed
+			#
+			# $1 = sccpStpOperationalState
+			#
+			#      Operational state of STP.
+			#
+			# $2 = sccpStpName
+			#
+			#      Operational state of STP. Only modify-able if the entry's 
+			#      administrative state is 'inactive'.
+			#
+			# $3 = sccpStpMtpDestination
+			#
+			#      Name of entry in MTP destination table. Refers to the MTP 
+			#      destination that runs the STP.
+			#
+			# $4 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$sccpStpOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-sccpStpOperationalState)
+			$sccpStpName = $2
+			$sccpStpMtpDestination = $3
+			$deviceType = $4
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2  || int($1)==3)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "stpOperationalStateChanged" + "-" + $sccpStpName + "-" + $sccpStpMtpDestination + "-" + $deviceType
+			@Summary = "stpOperationalStateChanged: # Operational state of SCCP STP has changed to: " + $sccpStpOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.9679.1.19":  ### - m3ua (from TEXTPASS-SS7-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")
+
+
+	switch($specific-trap) {
+		case "1": ### - m3uaSgpOperationalStateChanged
+			#######################
+			#
+			# Operational state of a M3UA SGP changed
+			#
+			# $1 = m3uaSgpOperationalState
+			#
+			#      Operational state of the M3UA SGP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaSgpOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaSgpOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2  || int($1)==4)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaSgpOperationalStateChanged " + $deviceType
+			@Summary = "m3uaSgpOperationalStateChanged: # Operational state of a M3UA SGP changed to: " + $m3uaSgpOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "2": ### - m3uaSgpSctpOperationalStateChanged
+			#######################
+			#
+			# Operational state of the SCTP association of a M3UA SGP changed
+			#
+			# $1 = m3uaSgpSctpOperationalState
+			#
+			#      Operation state of the SCTP association that TextPass maintains
+			#      with the remote M3UA SGP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaSgpSctpOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaSgpSctpOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2  || int($1)==3 || int($1)==5 || int($1)==6 || int($1)==7 || int($1)==8 || int($1)==9)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaSgpSctpOperationalStateChanged " + $deviceType
+			@Summary = "m3uaSgpSctpOperationalStateChanged: # Operational state of the SCTP association of a M3UA SGP changed to: " + $m3uaSgpSctpOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "3": ### - m3uaSgpRemoteAddressOperationalStateChanged
+			#######################
+			#
+			# Operational state of a remote address of a M3UA SGP changed.
+			#
+			# $1 = m3uaSgpRemoteAddressOperationalState
+			#
+			#      Operational state of IP address of remote M3UA SGP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaSgpRemoteAddressOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaSgpRemoteAddressOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3 || int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaSgpRemoteAddressOperationalStateChanged " + $deviceType
+			@Summary = "m3uaSgpRemoteAddressOperationalStateChanged: # Operational state of a remote address of a M3UA SGP changed to: " + $m3uaSgpRemoteAddressOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "4": ### - m3uaSgpActualSpcOperationalStateChanged
+			#######################
+			#
+			# Operational state of a M3UA SGP for the actual SPC of TextPass 
+			# changed.
+			#
+			# $1 = m3uaSgpActualSpcOperationalState
+			#
+			#      Operational state of the M3UA SGP for the actual SPC of TextPass.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaSgpActualSpcOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaSgpActualSpcOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==3)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==2)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaSgpActualSpcOperationalStateChanged " + $deviceType
+			@Summary = "m3uaSgpActualSpcOperationalStateChanged: # Operational state of a M3UA SGP for the actual SPC of TextPass changed to: " + $m3uaSgpActualSpcOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "5": ### - m3uaSgpVirtualSpcOperationalStateChanged
+			#######################
+			#
+			# Operational state of a M3UA SGP for the virtual SPC of TextPass 
+			# changed.
+			#
+			# $1 = m3uaSgpVirtualSpcOperationalState
+			#
+			#      Operational state of the M3UA SGP for the virtual SPC of TextPass.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaSgpVirtualSpcOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaSgpVirtualSpcOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==3)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==2)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaSgpVirtualSpcOperationalStateChanged " + $deviceType
+			@Summary = "m3uaSgpVirtualSpcOperationalStateChanged: # Operational state of a M3UA SGP for the virtual SPC of TextPass changed to: " + $m3uaSgpVirtualSpcOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "11": ### - m3uaAspOperationalStateChanged
+			#######################
+			#
+			# Operational state of a M3UA ASP changed
+			#
+			# $1 = m3uaAspOperationalState
+			#
+			#      Operational state of the M3UA ASP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaAspOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaAspOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2 || int($1)==4)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaAspOperationalStateChanged " + $deviceType
+			@Summary = "m3uaAspOperationalStateChanged: # Operational state of a M3UA ASP changed to: " + $m3uaAspOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "12": ### - m3uaAspSctpOperationalStateChanged
+			#######################
+			#
+			# Operational state of the SCTP association of a M3UA ASP changed
+			#
+			# $1 = m3uaAspSctpOperationalState
+			#
+			#      Operation state of the SCTP association that TextPass maintains
+			#      with the remote M3UA ASP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaAspSctpOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaAspSctpOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2 || int($1)==3 || int($1)==5 || int($1)==6 || int($1)==7 || int($1)==8 || int($1)==9)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaAspSctpOperationalStateChanged " + $deviceType
+			@Summary = "m3uaAspSctpOperationalStateChanged: # Operational state of the SCTP association of a M3UA ASP changed to: " + $m3uaAspSctpOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "13": ### - m3uaAspRemoteAddressOperationalStateChanged
+			#######################
+			#
+			# Operational state of a remote address of a M3UA ASP changed.
+			#
+			# $1 = m3uaAspRemoteAddressOperationalState
+			#
+			#      Operational state of IP address of remote M3UA ASP.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaAspRemoteAddressOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaAspRemoteAddressOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3 || int($1)==4)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaAspRemoteAddressOperationalStateChanged " + $deviceType
+			@Summary = "m3uaAspRemoteAddressOperationalStateChanged: # Operational state of a remote address of a M3UA ASP changed to: " + $m3uaAspRemoteAddressOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "14": ### - m3uaAsOperationalStateChanged
+			#######################
+			#
+			# Operational state of a M3UA AS changed.
+			#
+			# $1 = m3uaAsOperationalState
+			#
+			#      Operational state of remote M3UA AS.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaAsOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaAsOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaAsOperationalStateChanged " + $deviceType
+			@Summary = "m3uaAsOperationalStateChanged: # Operational state of a M3UA AS changed to: " + $m3uaAsOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		case "15": ### - m3uaAsInstanceOperationalStateChanged
+			#######################
+			#
+			# Operational state of a M3UA AS instance changed.
+			#
+			# $1 = m3uaAsInstanceOperationalState
+			#
+			#      Operational state of remote AS instance.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$m3uaAsInstanceOperationalState = lookup($1,mbalance-TEXTPASS-SS7-MIB-m3uaAsInstanceOperationalState)
+			$deviceType = $2
+			
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "m3uaAsInstanceOperationalStateChanged " + $deviceType
+			@Summary = "m3uaAsInstanceOperationalStateChanged: # Operational state of a M3UA AS instance changed to: " + $m3uaAsInstanceOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules >>>>>")

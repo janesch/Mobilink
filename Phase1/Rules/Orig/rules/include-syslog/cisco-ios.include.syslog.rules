@@ -1,0 +1,251 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios.include.syslog.rules 1.3
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.3 - Added basic debug logging.
+#
+# 1.2 - Modified the construction of $Header and reconstruction of $Details to
+#       ensure better matching, and easier compatibility with syslog messages
+#       received via SNMP traps (SYSLOG-MIB).
+#
+#     - Introduced the $CLARIFIER token which is to be assigned, if necessary,
+#       in the facility-specific include files, and is added to @Identifier to
+#       ensure accurate deduplication.
+#
+# 1.1 - Each individual Facility is now handled in a seperate include file for
+#       which cisco-ios.include.syslog.rules is now the base file.
+#
+# 1.0 - Initial Release [INCOMPLETE].  
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#     - Covers thru IOS 12.2.
+#       
+###############################################################################
+
+case "Cisco-IOS":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios.include.syslog.rules >>>>>")
+
+    @Agent = "Cisco-IOS"
+    
+    if(regmatch($Details,"^[A-Za-z0-9 \*]+ [0-9]+:[0-9]+:[0-9]+:.*"))
+    {
+        $Details = ltrim(extract($Details,"^[A-Za-z0-9 \*]+ [0-9]+[0-9]+:[0-9]+:[0-9]+:(.*)"))
+    }
+    
+    if(regmatch($Token5, "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"))
+    {
+        @Node = $Token5
+        @NodeAlias = $Token5
+    }
+    
+    $Header = rtrim(extract($Details, "%([A-Z0-9_ \-]+):"))
+    $Facility = extract($Header, "^([A-Z0-9_ ]+)-")
+    switch($Facility)
+    {
+        case "CIP"|"CIP2"|"ECPA"|"ECPA4"|"PCPA":
+            $Details = extract($Details,"%[A-Z24]+-[0-9]-[A-Z0-9_ \-]+: [A-Za-z0-9_/]+ (%[A-Z0-9]+.*)")
+            $Header = rtrim(extract($Details, "%([A-Z0-9_ \-]+):"))
+            $Facility = extract($Header, "^([A-Z0-9_ ]+)-")
+        default:
+    }
+    if(regmatch($Header, "-([A-Z0-9_]+)-[0-7]-"))
+    {
+        $SubFacility = extract($Header, "-([A-Z0-9_]+)-[0-7]-")
+    }
+    $Severity = extract($Header, "-([0-7])-")
+    $Mnemonic = extract($Header, "-[0-7]-(.*)")
+    
+    $Message = ltrim(rtrim(extract($Details, "-[0-7]-[A-Z0-9_]+:(.*)$")))
+    
+    if(exists($SubFacility))
+    {
+        @AlertGroup = $Facility + "-" + $SubFacility + "-" + $Mnemonic
+    }
+    else
+    {
+        @AlertGroup = $Facility + "-" + $Mnemonic
+    }
+    
+    @Agent = @Agent + " ( " + $Facility + " )"
+    @Summary = $Message
+    
+    $OS_EventId = "SYSLOG-cisco-ios-" + @AlertGroup
+    
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-ios_sev)
+    switch($OS_Severity)
+    {
+        case "d":
+            discard
+        case "Unknown":
+            switch($Severity)
+            {
+                case "0": ### emergency - System unusable
+                    @Severity = 5
+                    @Type = 1
+                case "1": ### alert - Immediate action needed
+                    @Severity = 5
+                    @Type = 1
+                case "2": ### critical - Critical condition
+                    @Severity = 4
+                    @Type = 1
+                case "3": ### error - Error condition
+                    @Severity = 3
+                    @Type = 1
+                case "4": ### warning - Warning condition
+                    @Severity = 2
+                    @Type = 1
+                case "5": ### notification - Normal, but significant, condition
+                    @Severity = 2
+                    @Type = 1
+                case "6": ### informational - Informational message only
+                    @Severity = 2
+                    @Type = 13
+                case "7": ### debugging - Appears during debugging only
+                    @Severity = 1
+                    @Type = 13
+                default:
+                    @Severity = 2
+                    @Type = 1
+            }
+            $OS_ExpireTime = 0
+        default:
+            @Severity = $OS_Severity
+            @Type = $OS_Type
+    }
+    
+    switch($Facility)
+    {
+        case "dummy case statement": ### This will prevent syntax errors in case no includes are added below.
+            
+        #######################################################################
+        # Enter rules file Includes below with the following syntax:
+        #
+        # include "<$NCHOME>/etc/rules/include-syslog/cisco-ios/
+        # cisco-ios-<Facility>.include.syslog.rules"
+        #######################################################################
+    
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AAA.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AAAA.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AAA_CACHE.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ACL.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ACLMERGE.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ALIGN.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ARAP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-BGP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-C1700_EM.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CBUS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CCH323.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CDP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CI.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CLEAR.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CONTROLLER.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CRYPTO.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CSM.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-CWAN_RP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DBUS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DHCPD.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DIAG.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DIAL1.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DIAL4.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DIAL5.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DIAL8.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DIALSHELF.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-DUAL.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ENVM.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ETHERNET.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-FBINFO.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-FIB.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-FILESYS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-FR.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-FTPSERVER.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-IP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-IPC.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-IPCOIR.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-IPC_RSP_CBUS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-ISDN.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-LANCE.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-LANE.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-LAPP_ON_MSGS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-LDP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-LINEPROTO.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-LINK.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-MICA.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-MODEM.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-MSDP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-NI2.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-NSP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-OIR.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-OSPF.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-PA.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-PNNI.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-POT1E1.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-PQUICC.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-PW_WATCHER.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-QUICC.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-QUICC_ETHER.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-RADIUS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-RSP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-RTD.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-S4T68360.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SCHED.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SEC.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SHELF.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SLOT.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SLOTDUMP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SNMP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SONET.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SPANTREE.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-STANDBY.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SUNI_DUAL.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SYS.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-SYSCTLR.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-TCP.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-TRUNK_CLOCK.include.syslog.rules"
+        include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-TTY.include.syslog.rules"
+        
+        #######################################################################
+        # End of rules file Includes
+        #######################################################################
+               
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+    
+    switch($UseCiscoIosDefaults)
+    {
+        case "1":
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-defaults.include.syslog.rules"
+            if(match(@AlertKey, ""))
+            {
+                $CLARIFIER = $Message
+            }
+        default:
+    }
+    
+    if(exists($SubFacility))
+    {
+        @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $Facility + "-" + $SubFacility + "-" + $Mnemonic + " " + @Type+ " " + @Agent + " " + @Manager
+    }
+    else
+    {
+        @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $Facility + "-" + $Mnemonic + " " + @Type+ " " + @Agent + " " + @Manager
+    }
+    
+    if(exists($CLARIFIER))
+    {
+        @Identifier = @Identifier + " " + $CLARIFIER
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios.include.syslog.rules >>>>>")

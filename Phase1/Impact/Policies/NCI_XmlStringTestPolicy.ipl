@@ -1,0 +1,55 @@
+/* This policy demonstrates how to read XML data from a string. */
+/* The XML data that is to be parsed will be present in the     */
+/* Filter variable below. Once a GetByFilter is done on that    */
+/* Filter, the rest of the parsing is similar to the one in the */
+/* XmlFileTestPolicy and XmlHttpTestPolicy                      */
+/*                                                              */
+/* Before running this policy make sure the XmlStringTOC        */
+/* datatypes and other types in the TOC.dtd files are created   */
+/* using the CreateDtdTypes script in the bin directory         */
+/****************************************************************/
+function xmlStringTestPolicy(OrgNodes) {
+  log("**XmlStringTestPolicy**");
+  Type = "XmlStringTOC";
+  Filter = '<JavaXML:Book xmlns:JavaXML="http"> <JavaXML:Title>Simple Book</JavaXML:Title> <JavaXML:Contents> <JavaXML:Chapter focus="Small XML Data"> <JavaXML:Heading>Introduction</JavaXML:Heading> <JavaXML:Topic subSections="1">What Is It?</JavaXML:Topic> <JavaXML:Topic subSections="0">Whats Next?</JavaXML:Topic> </JavaXML:Chapter> <JavaXML:SectionBreak/> </JavaXML:Contents> </JavaXML:Book>';
+  log("Filter is " + Filter);
+  GetByFilter(Type, Filter, CountOnly);
+  if (Num > 0) {
+    xmlStringLookupTopNode(OrgNodes);
+  }
+}
+
+function xmlStringLookupTopNode(OrgNodes) {
+  log("**XmlStringLookupTopNode**");
+  Types = {"STEST_JavaXML_Book"};
+  LinkFilter = "";
+  GetByLinks(Types, LinkFilter, MaxNum, OrgNodes);
+  if (Num > 0) {
+    xmlStringDisplayContents(OrgNodes);
+  }
+}
+
+function xmlStringDisplayContents(OrgNodes) {
+  log("**XmlStringDisplayContents**");
+
+  /* Equivalent to LookupLink action module */
+  BookNode = OrgNodes[0].links.STEST_JavaXML_Contents.first;
+  log("BookNode.xmlns_JavaXML = " + OrgNodes[0].xmlns_JavaXML);
+
+  /* Equivalent to a lookupLink action module */
+  ChapterList = BookNode.links.STEST_JavaXML_Chapter.array;
+
+  log("Printing the contents of Chapter[0]");
+  log("ChapterList[0].focus = " + ChapterList[0].focus);
+  Heading = ChapterList[0].links.STEST_JavaXML_Heading.first;
+
+  log("ChapterList[0] heading is " + Heading.PCDATA);
+}
+
+xmlStringTestPolicy(OrgNodes);
+
+
+
+
+
+

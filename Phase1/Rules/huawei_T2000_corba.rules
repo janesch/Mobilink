@@ -1,0 +1,453 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       5724-P16 
+#       
+#       (C) Copyright IBM Corp. 2002, 2008. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#
+# Ident: $Id: huawei_T2000_corba.rules 1.5 2002/10/25 17:11:25 tademiju Development $
+#
+#######################################################################
+# Available Elements:
+#	
+#	$notificationId
+#	$objectName
+#	$nativeEMSName
+#	$nativeProbableCause
+#	$objectType
+#       $event_type
+#	$emsTime
+#	$neTime (optional)
+#	$isClearable ("true" or "false")
+#	$layerRate
+#	$probableCause
+#	$probableCauseQualifier (optional)
+#	$perceivedSeverity
+#	$serviceAffecting
+#	$affectedTPList (optional)
+#	$additionalText
+#	$additionalInfo
+#
+#	#Specific to NT_TCA alarms#
+#	$granularity
+#	$pmParameterName
+#	$pmLocation
+#	$thresholdType 
+#	$value
+#	$unit 
+#	
+#	Further dynamic elements may be generated depending on the alarm sent.
+#######################################################################
+#
+# Lookup tables for ObjectType
+#
+# Huawei T2000 V2.0 objectType definition
+
+
+
+array names;
+
+table ObjectType_t2_0 =
+{
+        {"0","OT_EMS"},
+        {"1","OT_MANAGED_ELEMENT"},
+        {"2","OT_MULTILAYER_SUBNETWORK"},
+        {"3","OT_TOPOLOGICAL_LINK"},
+        {"4","OT_SUBNETWORK_CONNECTION"},
+        {"5","OT_PHYSICAL_TERMINATION_POINT"},
+        {"6","OT_CONNECTION_TERMINATION_POINT"},
+        {"7","OT_TERMINATION_POINT_POOL"},
+        {"8","OT_EQUIPMENT_HOLDER"},
+        {"9","OT_EQUIPMENT"},
+        {"10","OT_PROTECTION_GROUP"},
+        {"11","OT_TRAFFIC_DESCRIPTOR"},
+        {"12","OT_AID"}
+}
+default= "Unknown ObjectType"
+
+# Huawei T2000 V2.1 objectType definition
+table ObjectType_t2_1 =
+{
+        {"0","OT_EMS"},
+        {"1","OT_MANAGED_ELEMENT"},
+        {"2","OT_MULTILAYER_SUBNETWORK"},
+        {"3","OT_TOPOLOGICAL_LINK"},
+        {"4","OT_SUBNETWORK_CONNECTION"},
+        {"5","OT_PHYSICAL_TERMINATION_POINT"},
+        {"6","OT_CONNECTION_TERMINATION_POINT"},
+        {"7","OT_TERMINATION_POINT_POOL"},
+        {"8","OT_EQUIPMENT_HOLDER"},
+        {"9","OT_EQUIPMENT"},
+        {"10","OT_PROTECTION_GROUP"},
+        {"11","OT_TRAFFIC_DESCRIPTOR"},
+        {"12","OT_VB"},
+        {"13","OT_VLAN"},
+        {"14","OT_ATM_PROTECTION_GROUP"},
+        {"15","OT_RPR_NODE"},
+        {"16","OT_ATM_SERVICE"},
+        {"17","OT_ETH_SERVICE"},     
+        {"18","OT_AID"}
+}
+default= "Unknown ObjectType"
+
+#
+# Lookup table for Perceived Severity
+#
+table PerceivedSeverity_t =
+{
+        {"0", "PS_INDETERMINATE"},
+        {"1", "PS_CRITICAL"},
+        {"2", "PS_MAJOR"},
+        {"3", "PS_MINOR"},
+        {"4", "PS_WARNING"},
+        {"5", "PS_CLEARED"}
+}
+default= "Unknown PerceivedSeverity"
+
+#
+# Lookup table for ServiceAffecting
+#
+table ServiceAffecting_t =
+{
+        {"0","SA_UNKNOWN"},
+        {"1","SA_SERVICE_AFFECTING"},
+        {"2","SA_NON_SERVICE_AFFECTING"}
+}
+default = "Unknown ServiceAffecting Status"
+
+
+#
+# Lookup table for PM Threshold Type
+#
+table PMThresholdType_t =
+{
+        {"0", "TWM_HIGHEST"},
+        {"1", "TWM_HIGH"},
+        {"2", "TWM_LOW"},
+        {"3", "TWM_LOWEST"}
+}
+default= "Unknown PMThresholdType"
+
+table pmParameterName_tbl =
+{
+	{"PMP_AISS","Alarm Indication Signal (AIS) Seconds (counter) "},
+	{"PMP_B1_CVS","B1 Coding Violation Seconds(counter) "},
+	{"PMP_BBE","Background Blocks Errored (counter)"},
+	{"PMP_BBER","BBE Ratio (counter) "},
+	{"PMP_BER","Bit Error Rate"},
+	{"PMP_BER_AVG","Average Bit Error Rate during the interval"},
+	{"PMP_BER_MIN","Minimum Bit Error Rate during the interval"},
+	{"PMP_BER_MAX","Maximum Bit Error Rate during the interval"},
+	{"PMP_BES","Bursty Errored Seconds(counter) "},
+	{"PMP_CRC","Cyclical Redundancy Check(counter) "},
+	{"PMP_CV","Coding Violation (counter)"},
+	{"PMP_EB","Errored Blocks(counter)"},
+	{"PMP_ES","Errored Seconds (counter)"},
+	{"PMP_ES_TA","Errored Seconds Type A(counter) "},
+	{"PMP_ES_TB","Errored Seconds Type B(counter) "},
+	{"PMP_ESR","Errored Seconds Ratio (counter) "},
+	{"PMP_FC","Failure Count (counter) "},
+	{"PMP_FEBE","Far End Bit Errors(counter) "},
+	{"PMP_FEC_EC","Forward Error Correction Error Count(counter) "},
+	{"PMP_FEC_UBC","Forward Error Correction Uncorrectable Block Count(counter) "},
+	{"PMP_FREQUENCY","optical channel frequency"},
+	{"PMP_FREQUENCY_AVG","Average optical channel frequency during the interval"},
+	{"PMP_FREQUENCY_MIN","Minimum optical channel frequency during the interval"},
+	{"PMP_FREQUENCY_MAX","Maximum optical channel frequency during the interval"},
+	{"PMP_LBC","Laser BackFire Current (gauge) "},
+	{"PMP_LBC_AVG","Laser BackFire Current Average (gauge) "},
+	{"PMP_LBC_MAX","Laser BackFire Current Maximum (gauge) "},
+	{"PMP_LBC_MIN","Laser BackFire Current Minimum (gauge) "},
+	{"PMP_LSS","Loss of Signal Seconds (counter) "},
+	{"PMP_NPJ","Negative Pointer Justification(counter) "},
+	{"PMP_OPT_LBIAS","Current Laser Bias Current (also known as Pump Current)"},
+	{"PMP_OPT_LBIAS_AVG","Average Laser Bias Current during the interval"},
+	{"PMP_OPT_LBIAS_MAX","Maximum Laser Bias Current during the interval"},
+	{"PMP_OPT_LBIAS_MIN","Minimum Laser Bias Current during the interval"},
+	{"PMP_OPT_LBIASN","Laser Bias Current Normalized"},
+	{"PMP_OPT_LBIASN_AVG","Average Laser Bias Current Normalized during the interval"},
+	{"PMP_OPT_LBIASN_MIN","Minimum Laser Bias Current Normalized during the interval"},
+	{"PMP_OPT_LBIASN_MAX","Maximum Laser Bias Current Normalized during the interval"},
+	{"PMP_OPT_LTEMP","Current Laser Temperature"},
+	{"PMP_OPT_LTEMP_AVG","Average Laser Temperature during the interval"},
+	{"PMP_OPT_LTEMP_MAX","Maximum Laser Temperature during the interval"},
+	{"PMP_OPT_LTEMP_MIN","Minimum Laser Temperature during the interval"},
+	{"PMP_PJE","Pointer Justification Errored (counter)"},
+	{"PMP_PPJ","Positive Pointer Justification(counter) "},
+	{"PMP_PSC","Protection Switch Count(counter) "},
+	{"PMP_PSD","Protection Switch Duration (counter) "},
+	{"PMP_RPL","Current Receive Power Level (Input Signal Power)"},
+	{"PMP_RPL_AVG","Average Receive Power Level (Input Signal Power) during the interval"},
+	{"PMP_RPL_MAX","Maximum Receive Power Level (Input Signal Power) during the interval"},
+	{"PMP_RPL_MIN","Minimum Receive Power Level (Input Signal Power) during the interval"},
+	{"PMP_RPLN","Received Power Level Normalized"},
+	{"PMP_RPLN_AVG","Average Received Power Level Normalized during the interval"},
+	{"PMP_RPLN_MIN","Minimum Received Power Level Normalized during the interval"},
+	{"PMP_RPLN_MAX","Maximum Received Power Level Normalized during the interval"},
+	{"PMP_RSQ","Received Signal Quality Indicator"},
+	{"PMP_RSQ_AVG","Average Received Signal Quality Indicator during the interval"},
+	{"PMP_RSQ_MIN","Minimum Received Signal Quality Indicator during the interval"},
+	{"PMP_RSQ_MAX","Maximum Received Signal Quality Indicator during the interval"},
+	{"PMP_SEF_AISS","Severly Errored Frame (SEF)/Alarm Indication Signal (AIS)Seconds"},
+	{"PMP_SEFS","Severly Errored Frame Seconds(counter)"},
+	{"PMP_SEP","Severely Errored Period (counter) "},
+	{"PMP_SEPI","Severely Errored Period Intensity (counter) "},
+	{"PMP_SES","Severely Errored Seconds (counter)"},
+	{"PMP_SESR","Severely Errored Seconds Ration (counter) "},
+	{"PMP_SNR","Signal Noise Ratio"},
+	{"PMP_SNR_AVG","Average Signal Noise Ratio during the interval"},
+	{"PMP_SNR_MAX","Maximum Signal Noise Ratio during the interval"},
+	{"PMP_SNR_MIN","Minimum Signal Noise Ratio during the interval"},
+	{"PMP_TCM_BBE","(counter) Tandem Connection Monitoring BBE"},
+	{"PMP_TCM_ES","(counter) Tandem Connection Monitoring Errored Seconds"},
+	{"PMP_TCM_SES","(counter) Tandem Connection Monitoring Severely Errored Seconds"},
+	{"PMP_TCM_UAS","(counter) Tandem Connection Monitoring Unavailable seconds"},
+	{"PMP_TPL","Current Transmit Power Level (Output Signal Power)"},
+	{"PMP_TPL_AVG","Average Transmit Power Level (Output Signal Power) during the interval"},
+	{"PMP_TPL_MAX","Maximum Transmit Power Level (Output Signal Power) during the interval"},
+	{"PMP_TPL_MIN","Minimum Transmit Power Level (Output Signal Power) during the interval"},
+	{"PMP_UAS","Unavailable seconds (counter)"}
+
+}
+default= "Unknown pmParameterName"
+
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+#
+# This section deals with internal probe events
+#
+	switch(@Summary)
+	{
+		case "Running ...":
+			@Severity = 1  # Clear (1 is actually indeterminate, but needed for auto deletion of active)
+			@AlertGroup = "probestat"
+			@Type = 2      # Clear (Resolution)
+		case "Going Down ...":
+			@Severity = 5  # Critical
+			@AlertGroup = "probestat"
+			@Type = 1
+		case "ClientSession event loss cleared.":
+			@AlertGroup = "probestat"
+			@Severity = 1  # Clear
+			@Type = 2      # Clear (Resolution)
+			@Identifier = @Node + " " + @Agent + " " + @AlertGroup + " " + @Manager
+		case "ClientSession event loss occurred.":
+			@AlertGroup = "probestat"
+			@Severity = 5  # Critical
+			@Type = 1
+			@Identifier = @Node + " " + @Agent + " " + @AlertGroup + " " + @Manager
+	        case "Performing Resynch....":
+       		         @Severity = 2
+	       	         @AlertGroup = "probestat"
+       		         @Type = 100
+		default:
+			@Severity = 2  # Warning
+			@Type = 1      # Problem
+	}
+	@AlertKey = @Agent
+	@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+        #@ExpireTime = 72000 #Expire Time Added By FF Innovise ESM 20-07-10 ** comment out by Alex Silva 27-07-2010
+}
+else
+{
+
+	# convert integer enumerated types into text
+        $PerceivedSeverity_T = lookup($perceivedSeverity, PerceivedSeverity_t)
+        $ServiceAffecting_T = lookup($serviceAffecting,ServiceAffecting_t)
+	if(exists($thresholdType))
+	{
+        	$PMThresholdType_T = lookup($thresholdType, PMThresholdType_t)
+	}
+	
+	############################################################################################
+	#
+	# NOTE: 40474 Huawei T2000 Version differences V2.0 vs V2.1 - ObjectType enumeration changes.
+	#
+	############################################################################################
+	# The enumeration defined by Huawei differs depending on which version of T2000 is installed.
+        # By default the probe will use the definition from version 2.0. 
+	# For version 2.1 installations please comment out the line which uses ObjectType_t2_0 below 
+	# and uncomment the line below that, which uses ObjectType_t2_1.
+	###########################################################################################
+
+	$ObjectType_T = lookup($objectType,ObjectType_t2_0)
+	# $ObjectType_T = lookup($objectType,ObjectType_t2_1)
+
+	$pmParameterName_T=lookup($pmParameterName, pmParameterName_tbl)
+
+	#@Manager = "Huawei T2000 CORBA probe on " + hostname()
+	# Added by Alex Silva Innovise ESM 27-07-2010
+#       20100929        Change by Chris Janes of Innovise for Lack OMC Events Policy
+#       @Manager = "TXN_Huawei_T2000"
+        @Manager = "huawei"
+        @OmcEms = "T2000 SDH"
+#       20100929        End of Changes
+
+	@Manager = "TXN_Huawei_T2000"
+	@Class = 8889
+        @Agent = "TXN_Huawei_T2000@"  + hostname()
+
+	#@AlertGroup = $(X.733::EventType) + " " + $probableCause
+	#@AlertKey = extract($nativeEMSName,"[A-Za-z0-9/ -]+;[A-Za-z0-9/ ._-]+;([A-Za-z0-9/=]+)")
+
+        #@ExpireTime = 72000 #Expire Time Added By FF Innovise ESM 20-07-10
+
+
+	if (match($nativeEMSName,""))
+	{
+		@Node = $ManagedElement
+	}
+	else 
+	{
+		#@Node = extract($nativeEMSName,"[A-Za-z0-9/]+;([A-Za-z0-9._-]+);[A-Za-z0-9/]")
+		# Added by Alex Silva Innovise ESM 21-07-2010
+		@Node = extract($nativeEMSName, "Huawei_T2000;([^;]+)")
+	}	
+	@NodeAlias = @Node
+
+        # By default only want NT_ALARM event types.
+        #
+        # Other event types are -
+        #   NT_ATTRIBUTE_VALUE_CHANGE
+        #   NT_OBJECT_CREATION
+        #   NT_OBJECT_DELETION
+        #   NT_STATE_CHANGE
+        #
+
+	switch($event_type)
+	{
+		case "NT_ALARM" | "NT_TCA":
+	#
+	# If NT_TCA alarms are to be included the following line should be uncommented.
+	# case "NT_TCA":
+		# If isClearable is TRUE, then this is an active alarm.
+		# If it is FALSE, then this is a transient alarm and no 
+		# clear will be received, therefore set expiry. 
+		if (match($event_type, "NT_ALARM"))
+		{
+			#@Summary =  $nativeProbableCause + "  " + $AlarmReason + " " + $nativeEMSName 
+			# Added by Alex Silva Innovise ESM 21-07-2010:
+			@Summary =  $AlarmReason
+			@AddText = $nativeEMSName
+			
+		}
+		else 
+		{
+			@Summary =  $pmLocation + " " +  $pmParameterName_T + " " + $nativeEMSName
+			@AlertGroup = "NT_TCA"	 
+		}
+
+		if(match($isClearable, "true"))
+		{
+			
+			# Active Alarm
+			if(match($PerceivedSeverity_T,"PS_CLEARED"))
+			{
+				@Type = 2    # Clear (Resolution)
+			}
+			else
+			{
+				@Type = 1    # Problem
+			}
+		}
+		else
+		{
+			# Transient Alarm
+			#@Type = 300  # Expire after 5 minutes
+			# Added by Alex Silva Innovise ESM 21-07-2010: Type > 10 is not being used anymore to expire events
+			@ExpireTime = 300  # Expire after 5 minutes
+		}
+
+
+		if(match($PerceivedSeverity_T,"PS_INDETERMINATE"))
+		{
+			@Severity = 1 
+		}
+		else if(match($PerceivedSeverity_T,"PS_WARNING"))
+		{
+			@Severity = 2 
+		}
+		else if(match($PerceivedSeverity_T,"PS_MINOR"))
+		{
+			@Severity = 3 
+		}
+		else if(match($PerceivedSeverity_T,"PS_MAJOR"))
+		{
+			@Severity = 4 
+		}
+		else if(match($PerceivedSeverity_T,"PS_CRITICAL"))
+		{
+			@Severity = 5 
+		}
+		else if(match($PerceivedSeverity_T,"PS_CLEARED"))
+		{
+			@Severity = 1    # Set severity to Indeterminate to allow active  
+			                 # and corresponding clear to be automatically deleted
+		}
+		else
+		{
+			@Severity = 1    # Default to Indeterminate if no severity found
+		}
+
+	case "NT_ATTRIBUTE_VALUE_CHANGE" | "NT_OBJECT_CREATION" | "NT_OBJECT_DELETION" | "NT_STATE_CHANGE" | "NT_HEARTBEAT":
+		# Added by Alex Silva Innovise ESM 22-07-2010
+		discard
+		
+
+	default:
+		# Currently, the following events will be flagged as invalid -
+		#   NT_ATTRIBUTE_VALUE_CHANGE
+		#   NT_OBJECT_CREATION
+		#   NT_OBJECT_DELETION
+		#   NT_STATE_CHANGE
+		#
+		#@Type = 0  # Invalid
+		#@Type = 15 # Invalid setting is not discarding the events, so set to 15 secs for the moment
+		#discard
+		# Added by Alex Silva Innovise ESM 21-07-2010
+		@Severity = 1
+		@Summary = $event_type + @Summary
+	}
+
+      	If(match($serviceAffecting,  "1"))
+	{
+            @Summary = @Summary +" " + "Service affecting"
+	} 
+
+################################################################################
+# Mobilink's Customized Rules
+# Alex Silva Innovise 27-07-2010
+################################################################################
+	
+	# Setting First and LastOccurrence using EMS time
+	if(exists($emsTime))
+	{
+		# $emsTime= 20100708143145.0Z
+		$probeTime=extract($emsTime, "^([^.]+)")
+		@FirstOccurrence = DateToTime($probeTime, "%Y%m%d%H%M%S")
+		@LastOccurrence = DateToTime($probeTime, "%Y%m%d%H%M%S")
+	}
+
+	@EventType = $(X.733::EventType)
+	@AddText = $nativeEMSName
+	@AlertGroup = $nativeProbableCause
+	if (exists($AlarmSerialNo))
+	{
+		@AlertKey = $AlarmSerialNo
+	}
+	else
+	{
+		@ExpireTime = 300
+	}
+
+	@Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager
+}
+# Uncomment the following line for extra information
+details($*)

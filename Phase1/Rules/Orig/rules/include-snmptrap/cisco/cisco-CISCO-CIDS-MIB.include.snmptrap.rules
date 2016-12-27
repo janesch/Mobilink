@@ -1,0 +1,254 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CIDS-MIB.include.snmptrap.rules 1.0
+#    2006/04/07 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CIDS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.383": ### Cisco Intrusion Detection System - Notifications from CISCO-CIDS-MIB (20031218)
+
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CIDS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Intrusion Detection System"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoCidsAlert
+
+            ##########
+            # $1 = cidsGeneralEventId          
+            # $2 = cidsGeneralLocalTime
+            # $3 = cidsGeneralUTCTime
+            # $4 = cidsGeneralOriginatorHostId
+            # $5 = cidsAlertSeverity
+            # $6 = cidsAlertSignatureSigName 
+            # $7 = cidsAlertSignatureSigId
+            # $8 = cidsAlertSignatureSubSigId
+            # $9 = cidsAlertAlarmTraits
+            # $10 = cidsAlertAttackerAddress
+            # $11 = cidsAlertVictimAddress
+            ##########
+
+            $cidsGeneralEventId = $1
+            $cidsGeneralLocalTime = $2
+            $cidsGeneralUTCTime = $3
+            $cidsGeneralOriginatorHostId = $4
+            $cidsAlertSeverity = $5
+            $cidsAlertSignatureSigName = $6
+            $cidsAlertSignatureSigId = $7
+            $cidsAlertSignatureSubSigId = $8
+            $cidsAlertAlarmTraits = $9
+            $cidsAlertAttackerAddress = $10
+            $cidsAlertVictimAddress = $11       
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CIDS-MIB-ciscoCidsAlert"
+
+            @AlertGroup = "IDS Alert Status"
+            @AlertKey = "IDS: " + $4 
+            @Summary = "Intrusion Detection System Raised Alert  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + $specific-trap
+
+            details($cidsGeneralEventId,$cidsGeneralLocalTime,$cidsGeneralUTCTime,$cidsGeneralOriginatorHostId,$cidsAlertSeverity,$cidsAlertSignatureSigName,$cidsAlertSignatureSigId,$cidsAlertSignatureSubSigId,$cidsAlertAlarmTraits,$cidsAlertAttackerAddress,$cidsAlertVictimAddress)
+            
+        case "2": ### ciscoCidsError
+
+           ########### 
+           #$1 = cidsGeneralEventId
+           # $2 = cidsGeneralLocalTime
+           # $3 = cidsGeneralUTCTime
+           # $4 = cidsGeneralOriginatorHostId
+           # $5 = cidsErrorSeverity
+           # $6 = cidsErrorName
+           # $7 = cidsErrorMessage
+           ###########   
+                                                   
+           $cidsGeneralEventId = $1
+           $cidsGeneralLocalTime = $2
+           $cidsGeneralUTCTime = $3
+           $cidsGeneralOriginatorHostId = $4
+           $cidsErrorSeverity = $5
+           $cidsErrorName = lookup($6, CidsErrorCode)
+           $cidsErrorMessage = $7
+       
+           $OS_EventId = "SNMPTRAP-cisco-CISCO-CIDS-MIB-ciscoCidsError" 
+
+           @AlertGroup = "IDS Error Status"
+           @AlertKey = "IDS: " + $4  
+	     switch($6)
+	     {
+	         case "1": ### errAuthenticationTokenExpired
+		       $SEV_KEY = $OS_EventId + "_errAuthenticationTokenExpired"
+
+          	       $DEFAULT_Severity = 3
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "2": ### errConfigCollision
+		       $SEV_KEY = $OS_EventId + "_errConfigCollision"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "3": ### errInUse
+		       $SEV_KEY = $OS_EventId + "_errInUse"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "4": ### errInvalidDocument
+		       $SEV_KEY = $OS_EventId + "_errInvalidDocument"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "5": ### errLimitExceeded
+		       $SEV_KEY = $OS_EventId + "_errLimitExceeded"
+
+          	       $DEFAULT_Severity = 3
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "6": ### errNotAvailable
+		       $SEV_KEY = $OS_EventId + "_errNotAvailable"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "7": ### errNotFound
+		       $SEV_KEY = $OS_EventId + "_errNotFound"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "8": ### errNotSupported
+		       $SEV_KEY = $OS_EventId + "_errNotSupported"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "9": ### errPermissionDenied
+		       $SEV_KEY = $OS_EventId + "_errPermissionDenied"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "10": ### errSyslog
+		       $SEV_KEY = $OS_EventId + "_errSyslog"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 12
+           	       $DEFAULT_ExpireTime = 0
+	         case "11": ### errSystemError
+		       $SEV_KEY = $OS_EventId + "_errSystemError"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "12": ### errTransport
+		       $SEV_KEY = $OS_EventId + "_errTransport"
+
+          	       $DEFAULT_Severity = 3
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "13": ### errUnacceptableValue
+		       $SEV_KEY = $OS_EventId + "_errUnacceptableValue"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "14": ### errUnclassified
+		       $SEV_KEY = $OS_EventId + "_errUnclassified"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         case "15": ### errWarning
+		       $SEV_KEY = $OS_EventId + "_errWarning"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	         default: ### unknown
+		       $SEV_KEY = $OS_EventId + "_unknown"
+
+          	       $DEFAULT_Severity = 2
+           	       $DEFAULT_Type = 1
+           	       $DEFAULT_ExpireTime = 0
+	     }
+           @Summary = "IDS Error, " + $cidsErrorName
+           if(!match($7,""))
+            {
+              @Summary = @Summary + ", " + $7 
+            }
+           @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+           @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + $specific-trap + " " + $6 
+
+           $cidsErrorName = $cidsErrorName + " ( " + $6 + " )" 
+           details($cidsGeneralEventId,$cidsGeneralLocalTime,$cidsGeneralUTCTime,$cidsGeneralOriginatorHostId,$cidsErrorSeverity,$cidsErrorName,$cidsErrorMessage)
+           
+       default:
+
+           @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+           @Severity = 1
+           @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+
+           details($*)
+  }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CIDS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CIDS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CIDS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CIDS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CIDS-MIB.include.snmptrap.rules >>>>>")         

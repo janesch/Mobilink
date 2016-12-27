@@ -1,0 +1,186 @@
+/*    *****************************************************************************
+    *
+    *    ML_IP_Service_Impacting Polciy
+    *
+    *    Description: Raise a single Synthetic Event for all "XXXX" network event 
+    *               (EventId = XXXX ) from same Z_Node and add all Node into its 
+    *                Information field  and add  network events details in its journal. 
+    *                A trouble ticket will generated if the SE is not cleared in 5min.(TTHibernate = 300).
+    *
+    *               Please note that this is based upon Alex's Policy 'ML_HW_Service_Impacting' Policy
+    *
+    *    Author:  Chris Janes of Innovise ESM
+    *    Date:    26-08-2011
+    *
+    *    V 1.0    20110826      Chris Janes
+    *    
+    *
+    *  
+    *****************************************************************************
+    *****************************************************************************
+    *
+    *    Datatypes: OS_Status - alerts.status
+    *
+    *   
+    *
+    *
+    *    EventReader Filter:
+    *        (ImpactFlag = 4 And Severity > 2 And Type = 1 And MaintFlag in (1,2) And EventId = 'XXXX')
+    *        OR (ImpactFlag in (5,6) And Severity = 0 And Type = 1 And EventId = 'XXXX')
+    *
+    ***************************************************************************** */
+    
+    Log("Current Serial = " + @Serial + " : " + @Node + "###########################################");
+    Log("Current Serial = " + @Serial + " : " + @Node + "************* ML_IP_Service_Impacting BEGIN ******************");
+    Log("Current Serial = " + @Serial + " : " + @Node + "############################################");
+
+// if it is a clear event    
+    if(@Severity == 0)
+    {
+        @ImpactFlag = 99;   //  in progress by ML_ClearSyntheticEvent
+        ReturnEvent(EventContainer);
+        
+        // Get other events with the same Synthetic Event
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For Other Net Event From Same SE");
+        IPNetDataType = "OS_Status";
+        IPNetFilter = "SyntheticServerSerial = " + @SyntheticServerSerial + " And Severity > 2 ";
+        IPNetOutput = GetByFilter(IPNetDataType, IPNetFilter, False);
+        NumIPNetOutput = Length(IPNetOutput);
+        Log("Current Serial = " + @Serial + " : IP_Service 1 IBMDEBUG : no. of rows : " + NumIPNetOutput);
+        
+        if(NumIPNetOutput == 0) // There are no active events with the same Synthetic Event
+        {
+            //  Clear the associated synthetic event as it is no longer needed
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Clear IP-IP SE Event Serial = " + @SyntheticServerSerial);
+            IPSEDataType = "OS_Status";        
+            IPSEUpdateFilter = "ServerSerial = " + @SyntheticServerSerial  + " And Severity > 0 And LastOccurrence <= "+@ClearTime+"";     
+            IPSEUpdateExpression = "Severity = 0, ExpireID= 65690, ClearTime = " + @ClearTime;
+            BatchUpdate(IPSEDataType, IPSEUpdateFilter, IPSEUpdateExpression);
+            
+        }
+        else    //  there are active events with the same Synthetic Event
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Other Net Event Still Active In OS, Just Add Journal Into SE");
+        }
+        // Add this event to Journal
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Journal Entry");
+        MobiLib.AddGenericJournal(@SyntheticServerSerial,@Summary,@ServerSerial,@ClearTime,@NodeAlias,2);
+        @ImpactFlag = 100;  //  complete processing by ML_ClearSyntheticEvent
+        ReturnEvent(EventContainer);
+    }
+    else    // It's an active event
+    {
+    
+        @ImpactFlag = 5;    //  Specific policy in progress
+        ReturnEvent(EventContainer);
+    
+        // Find Synthetic Event
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Look For Existing SE With Node = @Z_Node and EventId= 'XXXX'and Severity = 5");
+        IPSISEDataType = "OS_Status";
+        IPSISEInOSFilter = "Node = '"+@Z_Node+"' And Class = 204120 And Severity = 5 And EventId = 'XXXX' ";
+        IPSISEInOSOutput = GetByFilter(IPSISEDataType, IPSISEInOSFilter,False);
+        NumIPSISEInOSOutput = Length(IPSISEInOSOutput);
+        Log("Current Serial = " + @Serial + " : IP_Service 2 IBMDEBUG : no. of rows : " + NumIPSISEInOSOutput);
+    
+        if(NumIPSISEInOSOutput > 0) //  there is an synthetic event
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": SE Found Store its Server Serial");
+            se_si_server_serial = IPSISEInOSOutput[0].ServerSerial;
+            @SyntheticServerSerial =  IPSISEInOSOutput[0].ServerSerial;
+            @SyntheticServerName = IPSISEInOSOutput[0].ServerName;
+            
+            // Get the Info field and add the the current events NodeAlias to it
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Adding @NodeAlias into Information Field And Convert It to Unique Values");
+            se_si_informantion = IPSISEInOSOutput[0].Information + "," + @NodeAlias;
+            
+            node_alias_array = split(se_si_informantion, ",");
+            node_alias_array = distinct(node_alias_array);
+            num_nodes = Length(node_alias_array);
+            node_array_counter = 0;
+            while (num_nodes > node_array_counter)
+            {
+                if(node_array_counter == 0)
+                {
+                    node_list = node_alias_array[node_array_counter];
+                }
+                else
+                {
+                    node_list = node_list + "," + node_alias_array[node_array_counter];
+                }
+                node_array_counter = node_array_counter + 1;
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Building the Information NodeAlias list = " + node_list);
+            }
+            IPSISEInOSOutput[0].Information = node_list;
+            
+        }
+        else    // there is no Synthetic Event so create one
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": SE NOT FOUND, RAISE SE");
+        
+            IPSErvImp = NewObject();
+            IPSErvImp.Node = @Z_Node;
+            IPSErvImp.NodeAlias = @Z_Node;
+            IPSErvImp.Z_Node = @Z_Node;
+            IPSErvImp.Summary = "IP-IP Out of Service";
+            IPSErvImp.AlertGroup = "IP-IP Service Impacting";
+            IPSErvImp.TTHibernate = 300;
+            IPSErvImp.Severity = 5;
+            IPSErvImp.Type = 1;
+            IPSErvImp.Agent = "Netcool Impact";
+            IPSErvImp.Manager = "Netcool Impact";
+            IPSErvImp.FirstOccurrence = @LastOccurrence;
+            IPSErvImp.LastOccurrence = @LastOccurrence;
+            IPSErvImp.EventId = "XXXX";
+            IPSErvImp.Identifier = IPSErvImp.Node + IPSErvImp.Summary + IPSErvImp.Type + IPSErvImp.EventId + @LastOccurrence;
+            IPSErvImp.Class = 204120;
+            IPSErvImp.Domain = @Domain;
+            IPSErvImp.Region = @Region;
+            IPSErvImp.ManCity = @ManCity;
+            IPSErvImp.ImpactFlag = 6;
+            IPSErvImp.MaintFlag = @MaintFlag;
+            IPSErvImp.OutsourceContractor = @OutsourceContractor;
+            IPSErvImp.BusImportance = @BusImportance;
+            IPSErvImp.Vendor = @Vendor;
+            IPSErvImp.OmcEms = @OmcEms;
+            IPSErvImp.Information = @NodeAlias;
+            IPSErvImp.AdvCorrServerSerial = @ServerSerial;
+            IPSErvImp.OwnerUID = 65534;
+            AddDataItem('OS_Status', IPSErvImp);
+    
+            Log("Current Serial = " + @Serial + " : " + @Node + ": New IP Service Impacting SE Created ");
+        
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For Service Impacting SE Just Created");
+            
+            // getthedetails of the synthetic event just created
+            IPSIDataType = "OS_Status";
+            IPSIFilter = "Node = '"+@Z_Node+"' And Class = 204120 And Severity = 5 And EventId = 'XXXX' ";
+            IPSIOutput = GetByFilter(IPSIDataType,IPSIFilter,False);
+            NumIPSIOutput = Length(IPSIOutput);
+            Log("Current Serial = " + @Serial + " : IP_Service 3 IBMDEBUG : no. of rows : " + NumIPSIOutput);
+        
+            if(NumIPSIOutput == 0)  //  event not in ObjectServer (yet)
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + "*********########## IP SI SE NOT IN OBJECT SERVER YET ########**********");
+            }
+            else    //  the Synthetic event is there so populate @SSS and @SSN 
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Store SE’s ServerSerial");
+                se_si_server_serial = IPSIOutput[0].ServerSerial;
+                @SyntheticServerSerial = IPSIOutput[0].ServerSerial;
+                @SyntheticServerName = IPSIOutput[0].ServerName;
+                
+            }
+    
+        }
+    
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Current Event Details Into SE's Journal");
+        // add current event details to Journal of Synthetic Event
+        MobiLib.AddGenericJournal(se_si_server_serial, @Summary,@ServerSerial,@LastOccurrence,@NodeAlias,@Type);
+    
+        @ImpactFlag = 6;    //  Specific policy complete
+        ReturnEvent(EventContainer);    
+    }
+    
+    Log("Current Serial = " + @Serial + " : " + @Node + "######################################");
+    Log("Current Serial = " + @Serial + " : " + @Node + "*********** ML_IP_Service_Impacting END ***********");
+    Log("Current Serial = " + @Serial + " : " + @Node + "######################################");    

@@ -1,0 +1,194 @@
+/*            
+    ML_CellGPRS Policy
+    
+    The following Cell GPRS failure events should be correlated together after 5 minutes sleep
+    time to allow the alarm to clear. If the alarm does not clear after 5 minutes, using enrichment
+    with BSC and to allow them to be associated together correctly.
+    EventReader Filter:
+    EventId = CellGPRS_001
+    V1.0    10-09-2010    Chris Janes
+    V1.1    19/10/2010    Nitesh Patel
+    
+*/
+/*
+    This is where the event is enriched according to Source
+*/
+Log("Current Serail:"+@Serial);
+@ImpactFlag = 5;
+Log("Set ImpactFlag=5 to mark of start processing...Type:"+@Type+"#Severity:"+@Severity);
+Log("Cell GPRS event:[Node:"+@Node+"],[Type:"+@Type+"],[Severity:"+@Severity+"],[BSC_Name:"+@BSC_Name+"],[Identifier:"+@Identifier+"]");
+ReturnEvent(EventContainer);
+JournalInsert = 'Default Journal Message';
+isClear = false;
+//Local variable for common journal function
+paramSummary=@Summary;
+paramType=@Type;
+paramNodeAlias=@NodeAlias;
+paramLastOcc=@LastOccurrence;
+paramSerial=@Serial;
+//Check current event is clear or not
+if(@Type == 2 && @Severity==0){
+    isClear = true;
+    paramSerial=@ProblemSerial;
+}
+// Alcatel Events
+if(@Class == 4915)
+{
+    Log ("Class Alcatel ");
+}
+// Huawei Events
+elseif(@Class == 8891){
+    Log ("Class Huawei ");
+}
+// Motorola Events
+elseif(@Class == 2057){
+    Log ("Class Motorola ");
+}
+//    SGSN Events
+elseif(@Class == 999998){
+    // Note this needs the correct value inserted
+    Log ("Class SGSN ");
+}
+// Test Events
+elseif(@Class == 999999){
+    Log ("Class = Test");
+}else{
+    Log ("Class Unknown");
+    @ImpactFlag = 6; //Mark successful completion of policy
+    exit();
+}
+// Here we check if we have a valid BscName
+if (@BSC_Name == ''){
+    Log("Exit as there is NO BSC_Name for Node:"+@Node+"Identifier:"+@Identifier);
+    @ImpactFlag = 6; //Mark successful completion of policy
+    Exit();
+}
+if(!isClear){
+    sleep_time = 300;
+    //MobiLib.getSleepTime(site_name,"Cell GPRS failure",sleep_time);
+    Log("Sleep_time:"+sleep_time);
+
+    log (" Hibernate for: " +  sleep_time + " seconds ");
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    EventContainer.HibernateFlag = 1;        
+    ReturnEvent(EventContainer);
+    Action_key = 'CellGPRS' + @ServerSerial + @ServerName+ "#" + getdate();
+
+    Log("Action_key  = " + Action_key  );
+    Hibernate(Action_key, "Sleeping", sleep_time);
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    EventContainer.HibernateFlag = 2;
+    ReturnEvent(EventContainer);
+    // Does the Source Event still exist?
+    DataType = "OS_Status";  // this needs to be setup
+    Filter = "ServerSerial = " + EventContainer.ServerSerial + " and ServerName = '" + EventContainer.ServerName + "' and Severity > 0";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    ExistingEventOutput = GetByFilter(DataType, Filter, CountOnly);
+    NumExistingEvent = Length(ExistingEventOutput);
+    
+    // If the Event has cleared then Exit
+    if (NumExistingEvent == 0){
+        EventContainer.ImpactFlag = 6;   
+        Log("current event get cleared...");     
+        ReturnEvent(EventContainer);    
+        Exit();
+    }
+    //Does the Synthetic event exist?
+    DataType = "OS_Status";  // this needs to be setup
+    Filter = "Class = 200016 and EventId = 'GPRS_001' and Node = '" + @BSC_Name+ "' and Severity=5";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    SyntheticEventOutput = GetByFilter(DataType, Filter, CountOnly);
+    NumSyntheticEvent = Length(SyntheticEventOutput);
+    // If there is no Synthetic Event Create One
+    if (NumSyntheticEvent == 0){
+        SynthEvent = NewObject();
+        SynthEvent .Node= @BSC_Name;
+        SynthEvent .NodeAlias= @BSC_Name;
+        SynthEvent .Agent = "Netcool Impact";
+        SynthEvent .Manager = "Netcool Impact";
+        SynthEvent .Summary= "Cell GPRS Failure Alarm Handling for " + @BSC_Name;
+        SynthEvent .AlertGroup = @BSC_Name;
+        SynthEvent .AlertKey = @AlertKey;
+        SynthEvent .EventType = @EventType;
+        SynthEvent .EventId = 'GPRS_001';
+        SynthEvent .Severity= 5;
+        SynthEvent .Type= 1;
+        SynthEvent .Identifier= SynthEvent.Node + SynthEvent.Summary + SynthEvent.Type + @LastOccurrence;
+        SynthEvent .FirstOccurrence = getdate();
+        SynthEvent .LastOccurrence = getdate();
+        SynthEvent .LogTicket = 1;
+        SynthEvent .Class = 200016;
+        SynthEvent .ImpactFlag = 4;
+        SynthEvent .MaintFlag = @MaintFlag;
+        SynthEvent .Site = @Site;
+        SynthEvent .Domain= @Domain;
+        SynthEvent .Region= @Region;
+        SynthEvent .ManCity= @ManCity;
+        SynthEvent .CovCity= @CovCity;
+        SynthEvent .OutsourceContractor = @OutsourceContractor;
+        SynthEvent .BusImportance = @BusImportance;
+        SynthEvent .Vendor = @Vendor;
+        SynthEvent .OmcEms = @OmcEms;
+//    20110718 INC22618 Chris Janes 
+        SynthEvent.OwnerUID = 65534;
+//    20110718    End Change
+        AddDataItem('OS_Status', SynthEvent );
+    }
+    //Find the existing/newly inserted synthetic event
+    DataType = "OS_Status";  
+    Filter = "Class = 200016 and EventId = 'GPRS_001' and Node = '" + @BSC_Name+ "' and Severity=5";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    SyntheticEvent = GetByFilter(DataType, Filter, CountOnly);
+    //Update Source Event
+    //Set SyntheticServerName and SyntheticSeverSerial to cell alarm
+    @SyntheticServerSerial = SyntheticEvent[0].ServerSerial;
+    @SyntheticServerName = SyntheticEvent[0].ServerName;
+    ReturnEvent(EventContainer);
+
+    //Update Synthetic Event's Journal
+    SyntheticServerSerial = SyntheticEvent[0].ServerSerial;
+    MobiLib.AddGenericJournal(SyntheticServerSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+    
+    ReturnEvent(EventContainer);
+}else{
+    Log("This is clear event...");
+    //Does the Synthetic event exist?
+    DataType = "OS_Status";  // this needs to be setup
+    Filter = "Class = 200016 and EventId = 'GPRS_001' and Node = '" + @BSC_Name+ "' and Severity=5";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    SyntheticEventOutput = GetByFilter(DataType, Filter, CountOnly);
+    NumSyntheticEvent = Length(SyntheticEventOutput );
+
+    //Check if synthetic exists or not. If yes then insert journal entry and check whether need to clear synthetic event or not
+    if(NumSyntheticEvent >0){
+        //Set SyntheticServerName and SyntheticSeverSerial to cell alarm
+        @SyntheticServerSerial = SyntheticEventOutput[0].ServerSerial;
+        @SyntheticServerName = SyntheticEventOutput[0].ServerName;
+        ReturnEvent(EventContainer);
+
+        //Update Synthetic Event's Journal
+        SyntheticServerSerial = SyntheticEventOutput[0].ServerSerial;
+        MobiLib.AddGenericJournal(SyntheticServerSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+
+        CellGprsDataType = "OS_Status";  // this needs to be setup
+        GPRSFilter = "Class = "+@Class+" and BSC_Name = '" + @BSC_Name+ "' and EventId = 'NET_GPRS_001' and Type = 1 and Severity > 0";  
+        log("GPRSFilter = " + GPRSFilter);
+        CountOnly = False;
+        ExistingGPRSEventOutput = GetByFilter(CellGprsDataType, GPRSFilter, CountOnly);
+        NumExistingGPRSEvent = Length(ExistingGPRSEventOutput);
+        Log("For clear Event : NumExistingGPRSEvent"+NumExistingGPRSEvent);
+        // If there is no Synthetic Event Create One
+        if (NumExistingGPRSEvent== 0){
+            Log("No more Cell GPRS outage alarms so clear synthetic event");
+            SyntheticEventOutput[0].Severity = 0;
+        }
+    }
+
+}
+@ImpactFlag = 6; //Mark successful completion of policy
+ReturnEvent(EventContainer);

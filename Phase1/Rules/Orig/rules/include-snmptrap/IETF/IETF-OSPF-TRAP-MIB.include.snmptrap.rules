@@ -1,0 +1,1655 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-OSPF-TRAP-MIB.include.snmptrap.rules 3.1 
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  OSPF-TRAP-MIB
+#
+###############################################################################
+#
+# 3.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 3.0 - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+#         - Added logic to handle incorrectly encoded IP addresses from some
+#           Cisco gear.
+#
+# 2.3 - Now recognizes both enterprises .1.3.6.1.2.1.14.16.2 and
+#       .1.3.6.1.2.1.14.16.
+#
+#     - Improved readability of various AlertGroup values.
+#
+# 2.2 - Assigned Class# 40086 - IETF (Internet Engineering Task Force)
+#
+# 2.1 - Enhanced to fully support OMNIbus 3.6.
+#
+# 2.0 - Complete Rewrite based on OSPF-MIB and OSPF-TRAP-MIB and raw trap data
+#       from Juniper devices.  Complies with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Added recognition of enterprise .1.3.6.1.2.1.14.16.2.
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.14.16.2"|".1.3.6.1.2.1.14.16": ### OSPF Version 2 - Notifications from RFC1850 (OSPF-TRAP-MIB)
+
+    log(DEBUG, "<<<<< Entering... IETF-OSPF-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-OSPF-TRAP-MIB"
+    @Class = "40086"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    ##########
+    # All traps defined by the OSPF-TRAP-MIB contain the following ar the first
+    # variable binding.
+    #
+    # $1 = ospfRouterId - A 32-bit integer uniquely identifying the router in
+    #        the Autonomous System. By convention, to ensure uniqueness, this
+    #        should default to the value of one of the router's IP interface
+    #        addresses. 
+    ##########
+
+    switch($specific-trap)
+    {
+        case "1": ### ospfVirtIfStateChange
+
+            ##########
+            # An ospfIfStateChange trap signifies that there has been a change
+            # in the state of an OSPF virtual interface. This trap should be
+            # generated when the interface state regresses (e.g., goes from
+            # Point-to-Point to Down) or progresses to a terminal state (i.e.,
+            # Point-to-Point).
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #                         traverses. By definition, this is not
+            #                         0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfVirtIfState - OSPF virtual interface states.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+            
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($3, "^[0-9]+$"))
+            {
+                $Integer = $3
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $3 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfVirtIfState = lookup($4, ospfVirtIfState) + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfVirtIfState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfVirtIfState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfVirtIfStateChange"
+            
+            @AlertGroup = "OSPF Virtual Interface Status"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            switch($4)
+            {
+                case "1": ### down
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = "OSPF Virtual Interface Down"
+                    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### pointToPoint
+                    $SEV_KEY = $OS_EventId + "_pointToPoint"
+                    @Summary = "OSPF Virtual Interface Point-to-Point"
+                    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "OSPF Virtual Interface Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( Area: " + $2 + ", Virt. Neighbor: " + $3 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        case "2": ### ospfNbrStateChange
+
+            ##########
+            # An ospfNbrStateChange trap signifies that there has been a change
+            # in the state of a non-virtual OSPF neighbor. This trap should be
+            # generated when the neighbor state regresses (e.g., goes from
+            # Attempt or Full to 1-Way or Down) or progresses to a terminal
+            # state (e.g., 2-Way or Full). When an neighbor transitions from or
+            # to Full on non-broadcast multi-access and broadcast networks, the
+            # trap should be generated by the designated router. A designated
+            # router transitioning to Down will be noted by ospfIfStateChange.
+            #
+            # $2 = ospfNbrIpAddr - The IP address this neighbor is using in its
+            #        IP Source Address. Note that, on addressless links, this
+            #        will not be 0.0.0.0, but the address of another of the
+            #        neighbor's interfaces.
+            # $3 = ospfNbrAddressLessIndex - On an interface having an IP
+            #        Address, zero. On addressless interfaces, the
+            #        corresponding value of ifIndex in the Internet Standard
+            #        MIB. On row creation, this can be derived from the
+            #        instance.
+            # $4 = ospfNbrRtrId - A 32-bit integer (represented as a type
+            #        IpAddress) uniquely identifying the neighboring router in
+            #        the Autonomous System.
+            # $5 = ospfNbrState - The State of the relationship with this
+            #        Neighbor.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($4, "^[0-9]+$"))
+            {
+                $Integer = $4
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $4 = $IPv4addr
+            }
+
+            if(match($2, "0.0.0.0"))
+            {
+                $AmsPriObjText = $2 + " ( ifEntry. " + $3 + " )"
+            }
+            else
+            {
+                $AmsPriObjText = $2
+            }
+            
+            $ospfRouterId = $1
+            $ospfNbrIpAddr = $2
+            $ospfNbrAddressLessIndex = $3
+            $ospfNbrRtrId = $4
+            $ospfNbrState = lookup($5, ospfNbrState) + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfNbrIpAddr,$ospfNbrAddressLessIndex,$ospfNbrRtrId,$ospfNbrState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfNbrIpAddr,$ospfNbrAddressLessIndex,$ospfNbrRtrId,$ospfNbrState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfNbrStateChange"
+            
+            @AlertGroup = "OSPF Neighbor Status"
+            @AlertKey = "ospfNbrEntry." + $2 + "." + $3
+            switch($5)
+            {
+                case "1": ### down
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = "OSPF Neighbor Down"
+                    
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### attempt
+                    @Summary = "OSPF Neighbor Attempt"
+                    
+                    $SEV_KEY = $OS_EventId + "_attempt"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### init
+                    $SEV_KEY = $OS_EventId + "_init"
+                    @Summary = "OSPF Neighbor Init"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### twoWay
+                    $SEV_KEY = $OS_EventId + "_twoWay"
+                    @Summary = "OSPF Neighbor 2-Way"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### exchangeStart
+                    $SEV_KEY = $OS_EventId + "_exchangeStart"
+                    @Summary = "OSPF Neighbor Exchange Start"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### exchange
+                    $SEV_KEY = $OS_EventId + "_exchange"
+                    @Summary = "OSPF Neighbor Exchange"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "7": ### loading
+                    $SEV_KEY = $OS_EventId + "_loading"
+                    @Summary = "OSPF Neighbor Loading"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "8": ### full
+                    $SEV_KEY = $OS_EventId + "_full"
+                    @Summary = "OSPF Neighbor Fully Adjacent"
+                    
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "OSPF Neighbor State Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( Neighbor: " + $AmsPriObjText + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+        case "3": ### ospfVirtNbrStateChange
+
+            ##########
+            # An ospfIfStateChange trap signifies that there has been a change in the
+            # state of an OSPF virtual neighbor. This trap should be generated when
+            # the neighbor state regresses (e.g., goes from Attempt or Full to 1-Way
+            # or Down) or progresses to a terminal state (e.g., Full).
+            #
+            # $2 = ospfVirtNbrArea - The Transit Area Identifier.
+            # $3 = ospfVirtNbrRtrId - A 32-bit integer uniquely identifying the
+            #                         neighboring router in the Autonomous System.
+            # $4 = ospfVirtNbrState - The state of the Virtual Neighbor Relationship.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($3, "^[0-9]+$"))
+            {
+                $Integer = $3
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $3 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtNbrArea = $2
+            $ospfVirtNbrRtrId = $3
+            $ospfVirtNbrState = lookup($4, ospfVirtNbrState) + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtNbrArea,$ospfVirtNbrRtrId,$ospfVirtNbrState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtNbrArea,$ospfVirtNbrRtrId,$ospfVirtNbrState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfVirtNbrStateChange"
+            
+            @AlertGroup = "OSPF Virtual Neighbor Status"
+            @AlertKey = "ospfVirtNbrEntry." + $2 + "." + $3
+            switch($4)
+            {
+                case "1": ### down
+                    @Summary = "OSPF Virtual Neighbor Down"
+                    
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### attempt
+                    @Summary = "OSPF Virtual Neighbor Attempt"
+                    
+                    $SEV_KEY = $OS_EventId + "_attempt"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### init
+                    @Summary = "OSPF Virtual Neighbor Init"
+                    
+                    $SEV_KEY = $OS_EventId + "_init"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### twoWay
+                    @Summary = "OSPF Virtual Neighbor 2-Way"
+                    
+                    $SEV_KEY = $OS_EventId + "_twoWay"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### exchangeStart
+                    @Summary = "OSPF Virtual Neighbor Exchange Start"
+                    
+                    $SEV_KEY = $OS_EventId + "_exchangeStart"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### exchange
+                    @Summary = "OSPF Virtual Neighbor Exchange"
+                    
+                    $SEV_KEY = $OS_EventId + "_exchange"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "7": ### loading
+                    @Summary = "OSPF Virtual Neighbor Loading"
+                    
+                    $SEV_KEY = $OS_EventId + "_loading"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "8": ### full
+                    @Summary = "OSPF Virtual Neighbor Fully Adjacent"
+                    
+                    $SEV_KEY = $OS_EventId + "_full"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "OSPF Virtual Neighbor State Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = @Summary + "  ( Area: " + $2 + ", Virt. Neighbor: " + $3 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        case "4": ### ospfIfConfigError
+
+            ##########
+            # An ospfIfConfigError trap signifies that a packet has been
+            # received on a non-virtual interface from a router whose
+            # configuration parameters conflict with this router's
+            # configuration parameters. Note that the event optionMismatch
+            # should cause a trap only if it prevents an adjacency from
+            # forming.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfPacketSrc - The IP address of an inbound packet that
+            #        cannot be identified by a neighbor instance.
+            # $5 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $6 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($4, "^[0-9]+$"))
+            {
+                $Integer = $4
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $4 = $IPv4addr
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+                        
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfPacketSrc = $4
+            $ospfConfigErrorType = lookup($5, ospfConfigErrorType)
+            $ospfPacketType = lookup($6, ospfPacketType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfIfConfigError"
+            
+            @AlertGroup = "OSPF Interface Configuration"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( Neighbor: " + $AmsPriObjText + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+            
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $5 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $6 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+
+        case "5": ### ospfVirtIfConfigError
+
+            ##########
+            # An ospfConfigError trap signifies that a packet has been received
+            # on a virtual interface from a router whose configuration
+            # parameters conflict with this router's configuration parameters.
+            # Note that the event optionMismatch should cause a trap only if it
+            # prevents an adjacency from forming.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $5 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($3, "^[0-9]+$"))
+            {
+                $Integer = $3
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $3 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfConfigErrorType = lookup($4, ospfConfigErrorType)
+            $ospfPacketType = lookup($5, ospfPacketType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfVirtIfConfigError"
+            
+            @AlertGroup = "OSPF Virtual Interface Configuration"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( Area: " + $2 + ", Neighbor: " + $3 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4 + " " + $5
+            
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $4 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfConfigErrorType,$ospfPacketType)
+            }
+            
+        case "6": ### ospfIfAuthFailure
+
+            ##########
+            # An ospfIfAuthFailure trap signifies that a packet has been
+            # received on a non-virtual interface from a router whose
+            # authentication key or authentication type conflicts with this
+            # router's authentication key or authentication type.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfPacketSrc - The IP address of an inbound packet that
+            #        cannot be identified by a neighbor instance.
+            # $5 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $6 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($4, "^[0-9]+$"))
+            {
+                $Integer = $4
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $4 = $IPv4addr
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+            
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfPacketSrc = $4
+            $ospfConfigErrorType = lookup($5, ospfConfigErrorType)
+            $ospfPacketType = lookup($6, ospfPacketType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfIfAuthFailure"
+            
+            @AlertGroup = "OSPF Interface Authorization"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( " + $AmsPriObjText + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $5 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $6 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+
+        case "7": ### ospfVirtIfAuthFailure
+
+            ##########
+            # An ospfVirtIfAuthFailure trap signifies that a packet has been
+            # received on a virtual interface from a router whose
+            # authentication key or authentication type conflicts with this
+            # router's authentication key or authentication type.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $5 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($3, "^[0-9]+$"))
+            {
+                $Integer = $3
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $3 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfConfigErrorType = lookup($4, ospfConfigErrorType)
+            $ospfPacketType = lookup($5, ospfPacketType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfVirtIfAuthFailure"
+            
+            @AlertGroup = "OSPF Virtual Interface Authorization"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( Area: " + $2 + ", Virt. Neighbor: " + $3 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4 + " " + $5
+
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $4 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfConfigErrorType,$ospfPacketType)
+            }
+            
+        case "8": ### ospfIfRxBadPacket
+
+            ##########
+            # An ospfIfRxBadPacket trap signifies that an OSPF packet has been
+            # received on a non-virtual interface that cannot be parsed.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfPacketSrc - The IP address of an inbound packet that
+            #        cannot be identified by a neighbor instance.
+            # $5 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($4, "^[0-9]+$"))
+            {
+                $Integer = $4
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $4 = $IPv4addr
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+                                    
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfPacketSrc = $4
+            $ospfPacketType = lookup($5, ospfPacketType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfIfRxBadPacket"
+            
+            @AlertGroup = "OSPF Interface Rx Packet"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: Received " + $ospfPacketType + " Packet Cannot Be Parsed  ( " + $AmsPriObjText + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfPacketType)
+            }
+            
+        case "9": ### ospfVirtIfRxBadPacket
+
+            ##########
+            # An ospfRxBadPacket trap signifies that an OSPF packet has been
+            # received on a virtual interface that cannot be parsed.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($3, "^[0-9]+$"))
+            {
+                $Integer = $3
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $3 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfPacketType = lookup($4, ospfPacketType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfVirtIfRxBadPacket"
+            
+            @AlertGroup = "OSPF Virtual Interface Rx Packet"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: Received " + $ospfPacketType + " Packet Cannot Be Parsed  ( Area: " + $2 + ", Virt. Neighbor: " + $3 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            $ospfPacketType = $ospfPacketType + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfPacketType)
+            }
+            
+        case "10": ### ospfTxRetransmit
+
+            ##########
+            # An ospfTxRetransmit trap signifies than an OSPF packet has been
+            # retransmitted on a non-virtual interface. All packets that may be
+            # retransmitted are associated with an LSDB entry. The LS type, LS
+            # ID, and Router ID are used to identify the LSDB entry.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfNbrRtrId - A 32-bit integer (represented as a type
+            #        IpAddress) uniquely identifying the neighboring router in
+            #        the Autonomous System.
+            # $5 = ospfPacketType - OSPF packet types.
+            # $6 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $7 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $8 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+                $7 = $8
+                $8 = $9
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($4, "^[0-9]+$"))
+            {
+                $Integer = $4
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $4 = $IPv4addr
+            }
+            if(regmatch($8, "^[0-9]+$"))
+            {
+                $Integer = $8
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $8 = $IPv4addr
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+            
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfNbrRtrId = $4
+            $ospfPacketType = lookup($5, ospfPacketType)
+            $ospfLsdbType = lookup($6, ospfLsdbType)
+            $ospfLsdbLsid = $7
+            $ospfLsdbRouterId = $8
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfTxRetransmit"
+            
+            @AlertGroup = "OSPF Interface Retransmit"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF " + $ospfPacketType + " Packet Retransmitted to " + $4 + "  ( " + $AmsPriObjText + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            $ospfLsdbType = $ospfLsdbType + " ( " + $6 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfNbrRtrId,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfNbrRtrId,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "11": ### ospfVirtIfTxRetransmit
+
+            ##########
+            # An ospfTxRetransmit trap signifies than an OSPF packet has been
+            # retransmitted on a virtual interface. All packets that may be
+            # retransmitted are associated with an LSDB entry. The LS type, LS
+            # ID, and Router ID are used to identify the LSDB entry.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfPacketType - OSPF packet types.
+            # $5 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $6 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $7 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+                $7 = $8
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($3, "^[0-9]+$"))
+            {
+                $Integer = $3
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $3 = $IPv4addr
+            }
+            if(regmatch($7, "^[0-9]+$"))
+            {
+                $Integer = $7
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $7 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfPacketType = lookup($4, ospfPacketType)
+            $ospfLsdbType = lookup($5, ospfLsdbType)
+            $ospfLsdbLsid = $6
+            $ospfLsdbRouterId = $7
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfVirtIfTxRetransmit"
+            
+            @AlertGroup = "OSPF Virtual Interface Retransmit"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet Retransmitted  ( Area: " + $2 + ", Virt. Neighbor: " + $3 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            $ospfPacketType = $ospfPacketType + " ( " + $4 + " )"
+            $ospfLsdbType = $ospfLsdbType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "12": ### ospfOriginateLsa
+        
+            ##########
+            # An ospfOriginateLsa trap signifies that a new LSA has been
+            # originated by this router. This trap should not be invoked for
+            # simple refreshes of LSAs (which happesn every 30 minutes), but
+            # instead will only be invoked when an LSA is (re)originated due to
+            # a topology change. Additionally, this trap does not include LSAs
+            # that are being flushed because they have reached MaxAge.
+            #
+            # $2 = ospfLsdbAreaId - The 32 bit identifier of the Area from
+            #        which the LSA was received.
+            # $3 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $4 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $5 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($5, "^[0-9]+$"))
+            {
+                $Integer = $5
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $5 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfLsdbAreaId = $2
+            $ospfLsdbType = lookup($3, ospfLsdbType)
+            $ospfLsdbLsid = $4
+            $ospfLsdbRouterId = $5
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfOriginateLsa"
+            
+            @AlertGroup = "OSPF LSA Status"
+            @AlertKey = "ospfLsdbEntry." + $2 + "." + $3 + "." + $4 + "." + $5
+            @Summary = "New LSA Originated  ( Area: " + $2 + ", Type: " + $ospfLsdbType + ", LSID: " + $4 + ", Router: " + $5 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ospfLsdbType = $ospfLsdbType + " ( " + $3 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "13": ### ospfMaxAgeLsa
+
+            ##########
+            # An ospfMaxAgeLsa trap signifies that one of the LSA in the
+            # router's link-state database has aged to MaxAge.
+            #
+            # $2 = ospfLsdbAreaId - The 32 bit identifier of the Area from
+            #        which the LSA was received.
+            # $3 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $4 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $5 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+            if(regmatch($5, "^[0-9]+$"))
+            {
+                $Integer = $5
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $5 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfLsdbAreaId = $2
+            $ospfLsdbType = lookup($3, ospfLsdbType)
+            $ospfLsdbLsid = $4
+            $ospfLsdbRouterId = $5
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfMaxAgeLsa"
+            
+            @AlertGroup = "OSPF LSA Age"
+            @AlertKey = "ospfLsdbEntry." + $2 + "." + $3 + "." + $4 + "." + $5
+            @Summary = "LSA Aged to MaxAge  ( Area: " + $2 + ", Type: " + $ospfLsdbType + ", LSID: " + $4 + ", Router: " + $5 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ospfLsdbType = $ospfLsdbType + " ( " + $3 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "14": ### ospfLsdbOverflow
+
+            ##########
+            # An ospfLsdbOverflow trap signifies that the number of LSAs in the
+            # router's link-state database has exceeded ospfExtLsdbLimit.
+            #
+            # $2 = ospfExtLsdbLimit - The maximum number of non-default
+            #        AS-external-LSAs entries that can be stored in the
+            #        link-state database. If the value is -1, then there is no
+            #        limit. When the number of non-default AS-external-LSAs in
+            #        a router's link-state database reaches ospfExtLsdbLimit,
+            #        the router enters Overflow-State. The router never holds
+            #        more than ospfExtLsdbLimit non-default AS-external-LSAs in
+            #        its database. OspfExtLsdbLimit MUST be set identically in
+            #        all routers attached to the OSPF backbone and/or any
+            #        regular OSPF area. (i.e., OSPF stub areas and NSSAs are
+            #        excluded).
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfExtLsdbLimit = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfExtLsdbLimit)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfExtLsdbLimit)
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfLsdbOverflow"
+            
+            @AlertGroup = "OSPF LSDB Status"
+            @AlertKey = ""
+            @Summary = "Number of LSAs Exceeds ospfExtLsdbLimit ( " + $2 + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "15": ### ospfLsdbApproachingOverflow
+
+            ##########
+            # An ospfLsdbApproachingOverflow trap signifies that the number of
+            # LSAs in the router's link-state database has exceeded ninety
+            # percent of ospfExtLsdbLimit.
+            #
+            # $2 = ospfExtLsdbLimit - The maximum number of non-default
+            #        AS-external-LSAs entries that can be stored in the
+            #        link-state database. If the value is -1, then there is no
+            #        limit. When the number of non-default AS-external-LSAs in
+            #        a router's link-state database reaches ospfExtLsdbLimit,
+            #        the router enters Overflow-State. The router never holds
+            #        more than ospfExtLsdbLimit non-default AS-external-LSAs in
+            #        its database. OspfExtLsdbLimit MUST be set identically in
+            #        all routers attached to the OSPF backbone and/or any
+            #        regular OSPF area. (i.e., OSPF stub areas and NSSAs are
+            #        excluded).
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+
+            $ospfRouterId = $1
+            $ospfExtLsdbLimit = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfExtLsdbLimit)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfExtLsdbLimit)
+            }
+            
+            $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfLsdbApproachingOverflow"
+            
+            @AlertGroup = "OSPF LSDB Status"
+            @AlertKey = ""
+            @Summary = "Number of LSAs Exceeds 90% of ospfExtLsdbLimit ( " + $2 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "16": ### ospfIfStateChange
+
+            ##########
+            # An ospfIfStateChange trap signifies that there has been a change
+            # in the state of a non-virtual OSPF interface. This trap should be
+            # generated when the interface state regresses (e.g., goes from Dr
+            # to Down) or progresses to a terminal state (i.e., Point-to-Point,
+            # DR Other, Dr, or Backup).
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfIfState - The OSPF Interface State.
+            ##########
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = "IETF-OSPF-TRAP-MIB-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            if(regmatch($1, "^[0-9]+$"))
+            {
+                $Integer = $1
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $1 = $IPv4addr
+            }
+            if(regmatch($2, "^[0-9]+$"))
+            {
+                $Integer = $2
+                include "$NC_RULES_HOME/include-snmptrap/decodeInteger2Ip.include.snmptrap.rules"
+                $2 = $IPv4addr
+            }
+
+            if(match($3, "0"))
+            {
+                $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfIfStateChangeIP"
+                $AmsPriObjText = "Interface: " + $2
+            }
+            else
+            {
+                $OS_EventId = "SNMPTRAP-IETF-OSPF-TRAP-MIB-ospfIfStateChange"
+                $AmsPriObjText = "Interface: ifEntry." + $3
+            }
+
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfIfState = lookup($4, ospfIfState) + " ( " + $4 + " )"
+
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfIfState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfIfState)
+            }
+
+
+            @AlertGroup = "OSPF Interface Status"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            switch($4)
+            {
+                case "1": ### down
+                    @Summary = "OSPF Interface Down" 
+                    
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### loopback
+                    @Summary = "OSPF Interface Loopback"
+                    
+                    $SEV_KEY = $OS_EventId + "_loopback"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### waiting
+                    @Summary = "OSPF Interface Waiting"
+                    
+                    $SEV_KEY = $OS_EventId + "_waiting"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### pointToPoint
+                    @Summary = "OSPF Interface Point-To-Point"
+                    
+                    $SEV_KEY = $OS_EventId + "_pointToPoint"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### designatedRouter
+                    @Summary = "OSPF Interface Designated Router"
+                    
+                    $SEV_KEY = $OS_EventId + "_designatedRouter"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### backupDesignatedRouter
+                    @Summary = "OSPF Interface Backup Designated Router"
+                    
+                    $SEV_KEY = $OS_EventId + "_backupDesignatedRouter"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "7": ### otherDesignatedRouter
+                    @Summary = "OSPF Interface Other Designated Router"
+                    
+                    $SEV_KEY = $OS_EventId + "_otherDesignatedRouter"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "OSPF Interface Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = @Summary + "  ( " + $AmsPriObjText + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-OSPF-TRAP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-OSPF-TRAP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-OSPF-TRAP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-OSPF-TRAP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-OSPF-TRAP-MIB.include.snmptrap.rules >>>>>")

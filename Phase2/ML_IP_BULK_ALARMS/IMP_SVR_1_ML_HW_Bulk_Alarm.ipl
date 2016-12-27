@@ -1,0 +1,169 @@
+/*  *****************************************************************************
+    *
+    *    ML_HW_Bulk_Alarm Polciy
+    *
+    *    Description:    Raise a single Synthetic Event for each kind of Bulk events from 
+    *    same Node grouped by alarmName and add all network events in its journal. A trouble 
+    *    ticket will generated if the SE is not cleared in 15min.(TTHibernate = 900)
+    *
+    *    Author:    Alex Silva of Innovise ESM
+    *    Date:    30-06-2011
+    *
+    *    V 1.0    18/07/2011        Alex Silva: First release
+    *     V 1.1    25/07/2011        Alex Silva: Replace Summary with AddText in SE's journal    
+    *    
+    *
+    *  
+    *****************************************************************************
+    *****************************************************************************
+    *
+    *    Datatypes: OS_Status - alerts.status
+    *
+    *   
+    *
+    *
+    *    EventReader Filter:
+    *        (ImpactFlag = 4 And Severity > 2  And Type = 1 And MaintFlag in (1,2) And EventId = 'NET_CORE_BA_001')
+    *        OR (ImpactFlag in (5,6) And Severity = 0 And Type = 1 And EventId =    'NET_CORE_BA_001')
+    *
+    ***************************************************************************** */
+    
+    Log("Current Serial = " + @Serial + " : " + @Node + "###########################################");
+    Log("Current Serial = " + @Serial + " : " + @Node + "************* ML_HW_Bulk_Alarm BEGIN ******************");
+    Log("Current Serial = " + @Serial + " : " + @Node + "###########################################");
+    
+    if(@Severity == 0)
+    {
+        @ImpactFlag = 99;
+        ReturnEvent(EventContainer);
+        
+        //19-08-2011 - NP
+        // Exclude event having SSS=0
+        if(@SyntheticServerSerial !=0)
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For Other Net Event From Same SE");
+            HwNetDataType = "OS_Status";
+            HwNetFilter = "SyntheticServerSerial = " + @SyntheticServerSerial + " And Severity > 2 ";
+            HwNetOutput = GetByFilter(HwNetDataType, HwNetFilter, False);
+            NumHwNetOutput = Length(HwNetOutput);
+            log("IBMDEBUG: HW Bulk 1#no. rows:" + NumHwNetOutput);
+
+
+            if(NumHwNetOutput == 0)
+            {
+
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Clear Huawei SE Event Serial = " + @SyntheticServerSerial);
+                HwSEDataType = "OS_Status";        
+                HwSEUpdateFilter = "ServerSerial = " + @SyntheticServerSerial  + " And Severity > 0 And LastOccurrence <= "+@ClearTime+"";     
+                HwSEUpdateExpression = "Severity = 0, ExpireID= 65690, ClearTime = " + @ClearTime;
+                BatchUpdate(HwSEDataType, HwSEUpdateFilter, HwSEUpdateExpression);
+
+            }
+            else
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Other Net Event Still Active In OS, Just Add Journal Into SE");
+            }
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Journal Entry");
+            MobiLib.AddGenericJournal(@SyntheticServerSerial,@AddText,@ServerSerial,@ClearTime,@NodeAlias,2);
+        }
+
+        @ImpactFlag = 100;
+        ReturnEvent(EventContainer);
+            
+    }
+    else
+    {
+        @ImpactFlag = 5;
+        ReturnEvent(EventContainer);
+    
+        se_ba_event_id = "SYN_CORE_BA_001";
+    
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Look For Existing BA SE With Node = @Node and and Severity = 5 And EventId =" + se_ba_event_id);
+        HwBASEInOSDataType = "OS_Status";
+        HwBASEInOSFilter = "Node = '"+@Node+"' And Summary = '"+@Summary+"' And Class = 204110 And Severity = 5 And EventId = '"+se_ba_event_id+"'";
+        HwBASEInOSOutput = GetByFilter(HwBASEInOSDataType, HwBASEInOSFilter,False);
+        NumHwBASEInOSOutput = Length(HwBASEInOSOutput);
+        log("IBMDEBUG: HW Bulk 2#no. rows:" + NumHwBASEInOSOutput);
+    
+        if(NumHwBASEInOSOutput > 0)
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": BA SE Found Store its Server Serial");
+            se_ba_server_serial = HwBASEInOSOutput[0].ServerSerial;
+            @SyntheticServerSerial = HwBASEInOSOutput[0].ServerSerial;
+            @SyntheticServerName = HwBASEInOSOutput[0].ServerName;
+            se_last_occurrence = HwBASEInOSOutput[0].LastOccurrence;
+        
+        /*    if(@LastOccurrence> se_last_occurrence)
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Updating SE LastOccurrence");
+                HwBASEInOSOutput[0].LastOccurrence = @LastOccurrence;
+            } */
+        }
+        else
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": SE NOT FOUND, RAISE SE");
+        
+            HwBAImp = NewObject();
+            HwBAImp.Node = @Node;
+            HwBAImp.NodeAlias = @Node;
+            HwBAImp.Summary = @Summary;
+            HwBAImp.AlertGroup = "Huawei Bulk Alarm";
+            HwBAImp.TTHibernate = 900;
+            HwBAImp.Severity = 5;
+            HwBAImp.Type = 1;
+            HwBAImp.Agent = "Netcool Impact";
+            HwBAImp.Manager = "Netcool Impact";
+            HwBAImp.FirstOccurrence = @LastOccurrence;
+            HwBAImp.LastOccurrence = @LastOccurrence;
+            HwBAImp.EventId = se_ba_event_id;
+            HwBAImp.Identifier = HwBAImp.Node + HwBAImp.Summary + HwBAImp.Type + HwBAImp.EventId + @LastOccurrence;
+            HwBAImp.Class = 204110;
+            HwBAImp.Domain = @Domain;
+            HwBAImp.Region = @Region;
+            HwBAImp.ManCity = @ManCity;
+            HwBAImp.ImpactFlag = 6;
+            HwBAImp.MaintFlag = @MaintFlag;
+            HwBAImp.OutsourceContractor = @OutsourceContractor;
+            HwBAImp.BusImportance = @BusImportance;
+            HwBAImp.Vendor = @Vendor;
+            HwBAImp.OmcEms = @OmcEms;
+            HwBAImp.Information = @NodeAlias;
+            HwBAImp.AdvCorrServerSerial = @ServerSerial;
+            HwBAImp.OwnerUID = 65534;
+            AddDataItem('OS_Status', HwBAImp);
+    
+            Log("Current Serial = " + @Serial + " : " + @Node + ": New Huawei Bulk Alarm SE Created ");
+        
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For BA SE Just Created");
+            HwBADataType = "OS_Status";
+            HwBAFilter = "Node = '"+@Node+"' And Class = 204110 And Severity = 5 And EventId = '"+se_ba_event_id+"' And Summary = '"+@Summary+"'";
+            HwBAOutput = GetByFilter(HwBADataType,HwBAFilter,False);
+            NumHwBAOutput = Length(HwBAOutput);
+            log("IBMDEBUG: HW Bulk 3#no. rows:" + NumHwBAOutput);
+
+        
+            if(NumHwBAOutput == 0)
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + "*********########## HW BA SE NOT IN OBJECT SERVER YET ########**********");
+            }
+            else
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Store BA SE’s ServerSerial");
+                se_ba_server_serial = HwBAOutput[0].ServerSerial;
+                @SyntheticServerSerial = HwBAOutput[0].ServerSerial;
+                @SyntheticServerName = HwBAOutput[0].ServerName;
+            }
+    
+        }
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Current Event Details Into SE's Journal");
+    
+        MobiLib.AddGenericJournal(se_ba_server_serial, @AddText,@ServerSerial,@LastOccurrence,@NodeAlias,@Type);
+        
+        @ImpactFlag = 6;
+        ReturnEvent(EventContainer);
+    }
+    
+ 
+    Log("Current Serial = " + @Serial + " : " + @Node + "##################################");
+    Log("Current Serial = " + @Serial + " : " + @Node + "*********** ML_HW_Bulk_Alarm END ***********");
+    Log("Current Serial = " + @Serial + " : " + @Node + "###################################");

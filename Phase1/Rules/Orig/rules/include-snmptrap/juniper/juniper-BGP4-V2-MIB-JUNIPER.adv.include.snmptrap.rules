@@ -1,0 +1,104 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-BGP4-V2-MIB-JUNIPER.adv.include.snmptrap.rules 6.0
+#    2008/04/08 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  BGP4-V2-MIB-JUNIPER
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... juniper-BGP4-V2-MIB-JUNIPER.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### jnxBgpM2Established
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxBgpM2Established"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalNodeAlias = $jnxBgpM2PeerLocalAddr
+        $OS_LocalPriObj = "jnxBgpM2PeerEntry." + $jnxBgpM2PeerEntry_INDEX
+        if(match($1, "1"))
+        {
+            $OS_LocalRootObj = "bgpPeerEntry." + $jnxBgpM2PeerRemoteAddr
+            $VAR_RelateLRO2LPO = 2
+        }
+        else
+        {
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+        }
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $jnxBgpM2PeerRemoteAddr
+        if(match($3, "1"))
+        {
+            $OS_RemotePriObj = "bgpPeerEntry." + $jnxBgpM2PeerLocalAddr
+            $OS_RemoteRootObj = $OS_RemotePriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+
+    case "2": ### jnxBgpM2BackwardTransition
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxBgpM2BackwardTransition"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalNodeAlias = $jnxBgpM2PeerLocalAddr
+        $OS_LocalPriObj = "jnxBgpM2PeerEntry." + $jnxBgpM2PeerEntry_INDEX
+        if(match($1, "1"))
+        {
+            $OS_LocalRootObj = "bgpPeerEntry." + $jnxBgpM2PeerRemoteAddr
+            $VAR_RelateLRO2LPO = 2
+        }
+        else
+        {
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+        }
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $jnxBgpM2PeerRemoteAddr
+        if(match($3, "1"))
+        {
+            $OS_RemotePriObj = "bgpPeerEntry." + $jnxBgpM2PeerLocalAddr
+            $OS_RemoteRootObj = $OS_RemotePriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... juniper-BGP4-V2-MIB-JUNIPER.adv.include.snmptrap.rules >>>>>")

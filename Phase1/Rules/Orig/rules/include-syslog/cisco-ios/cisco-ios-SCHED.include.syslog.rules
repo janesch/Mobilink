@@ -1,0 +1,69 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SCHED.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SCHED": ### Scheduler
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-SCHED.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "STUCKMTMR":
+            
+            ##########
+            # A process can register to be notified when various events
+            # occur in the router. A registered timer has expired, and
+            # the timer value has remained unchanged after the process
+            # has been executed two successive times. This message
+            # indicates a software failure that does not impact the
+            # functionality of the router.
+            #
+            # %SCHED-3-STUCKMTMR : Sleep with expired managed timer
+            # [hex], time [time-stamp] ([time-stamp] ago).
+            ##########
+
+            @AlertKey = "Timer: " + extract($Message, "timer (.*) time")
+        
+        case "THRASHING":
+            
+            ##########
+            # A process can register to be notified when various events
+            # occur in the router. The process has taken and released
+            # control of the processor 50 consecutive times, and not
+            # all outstanding events were processed. The systems will
+            # recover, and the functionality of the router is not
+            # affected.
+            #
+            # %SCHED-3-THRASHING : Process thrashing on watched
+            # [chars].
+            ##########
+
+            @AlertKey = ""
+            update(@Summary)
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SCHED.include.syslog.rules >>>>>")

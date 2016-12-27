@@ -1,0 +1,97 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    cisco-CISCO-PIM-MIB.adv.include.snmptrap.rules 1.0
+#    2007/05/15 Alka Girdhar
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  cisco-CISCO-PIM-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-PIM-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ciscoPimInterfaceUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoPimInterfaceUp"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "pimInterfaceEntry." + $pimInterfaceIfIndex 
+        $OS_LocalRootObj = "ifEntry." + $pimInterfaceIfIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### ciscoPimInterfaceDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoPimInterfaceDown"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "pimInterfaceEntry." + $pimInterfaceIfIndex
+        $OS_LocalRootObj = "ifEntry." + $pimInterfaceIfIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### ciscoPimRPMappingChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoPimRPMappingChange"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "pimRPSetEntry." + $pimRPSetComponent + "." + $pimRPSetGroupAddress + "." + $pimRPSetGroupMask + "." + $pimRPSetAddress 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "4": ### ciscoPimInvalidRegister
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoPimInvalidRegister"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = $2 + "." + $4 + "." + $6 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "5": ### ciscoPimInvalidJoinPrune
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoPimInvalidJoinPrune"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = $2 + "." + $4 + "." + $6 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-PIM-MIB.adv.include.snmptrap.rules >>>>>")

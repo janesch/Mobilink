@@ -1,0 +1,67 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-L2ALD-MIB.adv.include.snmptrap.rules 6.0
+#    2008/03/04 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-L2ALD-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... juniper-JUNIPER-L2ALD-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### jnxl2aldRoutingInstMacLimit
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxl2aldRoutingInstMacLimit"
+        $OS_OsiLayer = 0
+
+    case "2": ### jnxl2aldInterfaceMacLimit
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxl2aldInterfaceMacLimit"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "jnxl2aldEntry." + $ifindex 
+        $OS_LocalRootObj = "ifEntry." + $ifindex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### jnxl2aldGlobalMacLimit
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxl2aldGlobalMacLimit"
+        $OS_OsiLayer = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-L2ALD-MIB.adv.include.snmptrap.rules >>>>>")

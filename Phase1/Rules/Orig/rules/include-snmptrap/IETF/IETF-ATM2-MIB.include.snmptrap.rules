@@ -1,0 +1,104 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-ATM2-MIB.include.snmptrap.rules 1.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-ATM2-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.37.1.14.2.1": ### Cisco Supplemental ATM Management Objects - Notifications from ATM2-MIB
+
+    log(DEBUG, "<<<<< Entering... IETF-ATM2-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-ATM2-MIB"
+    @Class = "40086"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### atmIntfPvcFailuresTrap
+        
+            ##########
+            # $1 = ifIndex
+            # $2 = atmIntfPvcFailures
+            # $3 = atmIntfCurrentlyFailingPVpls
+            # $4 = atmIntfCurrentlyFailingPVcls
+            ##########
+ 
+            $ifIndex = $1
+            $atmIntfPvcFailures = $2
+            $atmIntfCurrentlyFailingPVpls = $3
+            $atmIntfCurrentlyFailingPVcls = $4
+            details($ifIndex,$atmIntfPvcFailures,$atmIntfCurrentlyFailingPVpls,$atmIntfCurrentlyFailingPVcls)
+            
+            $OS_EventId = "SNMPTRAP-IETF-ATM2-MIB-atmIntfPvcFailuresTrap"
+            
+            @AlertGroup = "ATM Interface PVPL/PVCL Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = $3 + " PVPLs or PVCLs Failed on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            update(@Summary)
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+    
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ATM2-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ATM2-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ATM2-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ATM2-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-ATM2-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,1533 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    juniper-JUNIPER-V1-TRAPS.include.snmptrap.rules 1.0 
+#    2005/01/20 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  JUNIPER-V1-TRAPS
+#
+###############################################################################
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!! NOTE: ANY CHANGES MADE TO JUNIPER OSPF TRAPS SHOULD ALSO BE MADE TO  !!!!
+#!!!!       IETF-OSPF-TRAP-MIB.include.rules                               !!!!
+#!!!!                                                                      !!!!
+#!!!!       ANY CHANGES MADE TO JUNIPER BGP TRAPS SHOULD ALSO BE MADE TO   !!!!
+#!!!!       IETF-BGP.include.rules                                         !!!!
+#!!!!                                                                      !!!!
+#!!!!       MPLS TRAPS ARE FOUND UNDER BOTH THE JUNIPER-MIB and MPLS-MIB.  !!!!
+#!!!!       ANY CHANGES MUST BE MADE TWICE, ONCE FOR EACH ENTERPRISE.      !!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+case ".1.3.6.1.4.1.2636": ### Juniper SNMPv1 Traps - Traps from JUNIPER-V1-TRAPS, JUNIPER-V1-TRAPS-BGP,
+                          ### JUNIPER-V1-TRAPS-CHAS, JUNIPER-V1-TRAPS-MPLS, JUNIPER-V1-TRAPS-OSPF
+
+    @Class = "40200"
+
+    switch($specific-trap)
+    {
+        case "1"|"2":
+
+            ##########
+            # 1: bgpEstablished - The BGP Established event is generated when
+            #      the BGP FSM enters the ESTABLISHED state.
+            # 2: bgpBackwardTransition - The BGPBackwardTransition Event is
+            #      generated when the BGP FSM moves from a higher numbered
+            #      state to a lower numbered state.
+            #
+            # Variable bindings as defined in BGP4-MIB:
+            #
+            #   $1 = bgpPeerLastError - The last error code and subcode seen by
+            #          this peer on this connection. If no error has occurred,
+            #          this field is zero. Otherwise, the first byte of this
+            #          two byte OCTET STRING contains the error code, and the
+            #          second byte contains the subcode.
+            #   $2 = bgpPeerState - The BGP peer connection state.
+            #
+            # Variable bindings as defined in RFC1269-MIB:
+            #
+            #   $1 = bgpPeerRemoteAddr - The remote IP address of this entry's
+            #          BGP peer.
+            #   $2 = bgpPeerLastError
+            #   $3 = bgpPeerState
+            ##########
+
+            @Agent = "Juniper-BGP"
+                        
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*")) ### BGP SNMPv2 Trap from Juniper JUNOS
+            {
+                @Agent = "IETF-BGP-Juniper " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts)
+                @Class = "40200"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $bgpPeerRemoteAddr = extract($OID3, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            }
+            else if(regmatch($OID1, "^1\.3\.6\.1\.2\.1\.15\.3\.1\.7.*")) ### Trap as defined in RFC1269-MIB
+            {
+                $bgpPeerRemoteAddr = $1
+                $1 = $2
+                $2 = $3
+            }
+            else ### Trap as defined in BGP4-MIB
+            {
+                $bgpPeerRemoteAddr = extract($OID2, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            }
+            
+            $bgpPeerLastError = $1
+            $bgpPeerState = lookup($2, bgpPeerState) + " ( " + $2 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$bgpPeerLastError,$bgpPeerState,$bgpPeerRemoteAddr)
+            }
+            else
+            {
+                details($bgpPeerLastError,$bgpPeerState,$bgpPeerRemoteAddr)
+            }
+            
+            @AlertGroup = "BGP Peer Status"
+            @AlertKey = "bgpPeerEntry." + $bgpPeerRemoteAddr
+            switch ($2)
+            {
+                case "1": ### idle
+                    @Summary = "BGP Peer Connection Idle  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 3
+                    @Type = 1
+                case "2": ### connect
+                    @Summary = "BGP Peer Connection Connected  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "3": ### active
+                    @Summary = "BGP Peer Connection Active  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "4": ### opensent
+                    @Summary = "BGP Peer Connection Open Sent  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "5": ### openconfirm
+                    @Summary = "BGP Peer Connection Open Confirmed  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "6": ### established
+                    @Summary = "BGP Peer Connection Established  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 1
+                    @Type = 2
+                default:
+                    @Summary = "Unknown BGP Peer Connection Status (see Details)  ( bgpPeerRemoteAddr: " + $bgpPeerRemoteAddr + " )"
+                    @Severity = 2
+                    @Type = 1
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+ 
+        case "3": ### jnxPowerSupplyFailureV1
+
+            ##########
+            # A jnxPowerSupplyFailure trap signifies that the specified power
+            # supply in the chassis has been in the failure (bad DC output)
+            # condition.
+            #
+            # $1 = jnxContentsContainerIndex - The associated
+            #        jnxContainersIndex in the jnxContainersTable.
+            # $2 = jnxContentsL1Index - The level one index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $3 = jnxContentsL2Index - The level two index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $4 = jnxContentsL3Index - The level three index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $5 = jnxContentsDescr - The name or detailed description of this
+            #        subject.
+            ##########
+
+            @Agent = "Juniper-Chassis"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr)
+            }
+            
+            @AlertGroup = "Power Supply Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Power Supply Failure, Bad DC Output  ( " + $5 + " )"
+            @Severity = 4
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### jnxFanFailureV1
+
+            ##########
+            # A jnxFanFailure trap signifies that the specified cooling fan or
+            # impeller in the chassis has been in the failure (not spinning)
+            # condition.
+            #
+            # $1 = jnxContentsContainerIndex - The associated
+            #        jnxContainersIndex in the jnxContainersTable.
+            # $2 = jnxContentsL1Index - The level one index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $3 = jnxContentsL2Index - The level two index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $4 = jnxContentsL3Index - The level three index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $5 = jnxContentsDescr - The name or detailed description of this
+            #        subject.
+            ##########
+
+            @Agent = "Juniper-Chassis"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr)
+            }
+            
+            @AlertGroup = "Fan Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Fan Failure, Not Spinning  ( " + $5 + " )"
+            @Severity = 4
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### jnxOverTemperatureV1
+
+            ##########
+            # A jnxOverTemperature trap signifies that the specified hardware
+            # component in the chassis has experienced over temperature
+            # condition.
+            #
+            # $1 = jnxContentsContainerIndex - The associated
+            #        jnxContainersIndex in the jnxContainersTable.
+            # $2 = jnxContentsL1Index - The level one index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $3 = jnxContentsL2Index - The level two index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $4 = jnxContentsL3Index - The level three index of the container
+            #        housing this subject. Zero if unavailable or
+            #        nonapplicable.
+            # $5 = jnxContentsDescr - The name or detailed description of this
+            #        subject.
+            ##########
+
+            @Agent = "Juniper-Chassis"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr)
+            }
+            
+            @AlertGroup = "Temperature Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Temperature Too High  ( " + $5 + " )"
+            @Severity = 4
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### mplsLspUpV1
+
+            ##########
+            # An mplsLspUp trap signifies that the specified LSP is up. The
+            # current active path for the LSP is mplsPathName.
+            #
+            # $1 = mplsLspName - Name of the Label Switched Path.
+            # $2 = mplsPathName - The name of the active path for this LSP, if
+            #        any. If there is none, the name should be empty; in that
+            #        case, the rest of the fields in mplsLspEntry are
+            #        meaningless.
+            ##########
+
+            @Agent = "Juniper-MPLS"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            $mplsLspName = $1
+            $mplsPathName = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$mplsLspName,$mplsPathName)
+            }
+            else
+            {
+                details($mplsLspName,$mplsPathName)
+            }
+                
+            @AlertGroup = "MPLS LSP Status"
+            @AlertKey = "mplsLspEntry." + $1
+            @Summary = "MPLS LSP Up  ( " + $1 + " ( Active Path Name: " + $2 + " ) )"
+            @Severity = 1
+            @Type = 2
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "7": ### mplsLspDownV1
+
+            ##########
+            # An mplsLspDown trap signifies that the specified LSP is down,
+            # because the current active path mplsPathName went down.
+            #
+            # $1 = mplsLspName - Name of the Label Switched Path.
+            # $2 = mplsPathName - The name of the active path for this LSP, if
+            #        any. If there is none, the name should be empty; in that
+            #        case, the rest of the fields in mplsLspEntry are
+            #        meaningless.
+            ##########
+
+            @Agent = "Juniper-MPLS"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            $mplsLspName = $1
+            $mplsPathName = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$mplsLspName,$mplsPathName)
+            }
+            else
+            {
+                details($mplsLspName,$mplsPathName)
+            }
+                
+            @AlertGroup = "MPLS LSP Status"
+            @AlertKey = "mplsLspEntry." + $1
+            @Summary = "MPLS LSP Down  ( " + $1 + " ( Active Path Name: " + $2 + " ) )"
+            @Severity = 4
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "8": ### mplsLspChangeV1
+
+            ##########
+            # An mplsLspChange trap signifies that the the specified LSP has
+            # switched traffic to the new active path 'toLspPath'. The LSP
+            # maintains up state before and after the switch over
+            #
+            # $1 = mplsLspName - Name of the Label Switched Path.
+            # $2 = mplsPathName - The name of the active path for this LSP, if
+            #        any. If there is none, the name should be empty; in that
+            #        case, the rest of the fields in mplsLspEntry are
+            #        meaningless.
+            ##########
+
+            @Agent = "Juniper-MPLS"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            $mplsLspName = $1
+            $mplsPathName = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$mplsLspName,$mplsPathName)
+            }
+            else
+            {
+                details($mplsLspName,$mplsPathName)
+            }
+                
+            @AlertGroup = "MPLS LSP Path Change"
+            @AlertKey = "mplsLspEntry." + $1
+            @Summary = "MPLS LSP Switched to New Active Path  ( " + $1 + " ( Active Path Name: " + $2 + " ) )"
+            @Severity = 2
+            @Type = 600
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "9": ### ospfVirtIfStateChangeV1
+
+            ##########
+            # An ospfIfStateChange trap signifies that there has been a change
+            # in the state of an OSPF virtual interface. This trap should be
+            # generated when the interface state regresses (e.g., goes from
+            # Point-to-Point to Down) or progresses to a terminal state (i.e.,
+            # Point-to-Point).
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #                         traverses. By definition, this is not
+            #                         0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfVirtIfState - OSPF virtual interface states.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfVirtIfState = lookup($4, ospfVirtIfState) + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfVirtIfState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfVirtIfState)
+            }
+            
+            @AlertGroup = "OSPF Virt IF Status"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            switch($4)
+            {
+                case "1": ### down
+                    @Summary = "OSPF Virtual Interface Down  ( " + $2 + " to " + $3 + " )"
+                    @Severity = 4
+                    @Type = 1
+                case "4": ### pointToPoint
+                    @Summary = "OSPF Virtual Interface Point-to-Point  ( " + $2 + " to " + $3 + " )"
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        case "10": ### ospfNbrStateChangeV1
+
+            ##########
+            # An ospfNbrStateChange trap signifies that there has been a change
+            # in the state of a non-virtual OSPF neighbor. This trap should be
+            # generated when the neighbor state regresses (e.g., goes from
+            # Attempt or Full to 1-Way or Down) or progresses to a terminal
+            # state (e.g., 2-Way or Full). When an neighbor transitions from or
+            # to Full on non-broadcast multi-access and broadcast networks, the
+            # trap should be generated by the designated router. A designated
+            # router transitioning to Down will be noted by ospfIfStateChange.
+            #
+            # $2 = ospfNbrIpAddr - The IP address this neighbor is using in its
+            #        IP Source Address. Note that, on addressless links, this
+            #        will not be 0.0.0.0, but the address of another of the
+            #        neighbor's interfaces.
+            # $3 = ospfNbrAddressLessIndex - On an interface having an IP
+            #        Address, zero. On addressless interfaces, the
+            #        corresponding value of ifIndex in the Internet Standard
+            #        MIB. On row creation, this can be derived from the
+            #        instance.
+            # $4 = ospfNbrRtrId - A 32-bit integer (represented as a type
+            #        IpAddress) uniquely identifying the neighboring router in
+            #        the Autonomous System.
+            # $5 = ospfNbrState - The State of the relationship with this
+            #        Neighbor.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(match($2, "0.0.0.0"))
+            {
+                $AmsPriObjText = $2 + " ( ifEntry. " + $3 + " )"
+            }
+            else
+            {
+                $AmsPriObjText = $2
+            }
+            
+            $ospfRouterId = $1
+            $ospfNbrIpAddr = $2
+            $ospfNbrAddressLessIndex = $3
+            $ospfNbrRtrId = $4
+            $ospfNbrState = lookup($5, ospfNbrState) + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfNbrIpAddr,$ospfNbrAddressLessIndex,$ospfNbrRtrId,$ospfNbrState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfNbrIpAddr,$ospfNbrAddressLessIndex,$ospfNbrRtrId,$ospfNbrState)
+            }
+            
+            @AlertGroup = "OSPF Nbr Status"
+            @AlertKey = "ospfNbrEntry." + $2 + "." + $3
+            switch($5)
+            {
+                case "1": ### down
+                    @Summary = "OSPF Neighbor Down  ( " + $AmsPriObjText + " )"
+                    @Severity = 4
+                    @Type = 1
+                case "2": ### attempt
+                    @Summary = "OSPF Neighbor Attempt  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "3": ### init
+                    @Summary = "OSPF Neighbor Init  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "4": ### twoWay
+                    @Summary = "OSPF Neighbor 2-Way  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "5": ### exchangeStart
+                    @Summary = "OSPF Neighbor Exchange Start  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "6": ### exchange
+                    @Summary = "OSPF Neighbor Exchange  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "7": ### loading
+                    @Summary = "OSPF Neighbor Loading  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "8": ### full
+                    @Summary = "OSPF Neighbor Fully Adjacent  ( " + $AmsPriObjText + " )"
+                    @Severity = 1
+                    @Type = 2
+                default:
+                    @Summary = "OSPF Neighbor State Unknown  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+        case "11": ### ospfVirtNbrStateChangeV1
+
+            ##########
+            # An ospfIfStateChange trap signifies that there has been a change in the
+            # state of an OSPF virtual neighbor. This trap should be generated when
+            # the neighbor state regresses (e.g., goes from Attempt or Full to 1-Way
+            # or Down) or progresses to a terminal state (e.g., Full).
+            #
+            # $2 = ospfVirtNbrArea - The Transit Area Identifier.
+            # $3 = ospfVirtNbrRtrId - A 32-bit integer uniquely identifying the
+            #                         neighboring router in the Autonomous System.
+            # $4 = ospfVirtNbrState - The state of the Virtual Neighbor Relationship.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtNbrArea = $2
+            $ospfVirtNbrRtrId = $3
+            $ospfVirtNbrState = lookup($4, ospfVirtNbrState) + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtNbrArea,$ospfVirtNbrRtrId,$ospfVirtNbrState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtNbrArea,$ospfVirtNbrRtrId,$ospfVirtNbrState)
+            }
+            
+            @AlertGroup = "OSPF Virt Nbr Status"
+            @AlertKey = "ospfVirtNbrEntry." + $2 + "." + $3
+            switch($4)
+            {
+                case "1": ### down
+                    @Summary = "OSPF Virtual Neighbor Down  ( " + $3 + " )"
+                    @Severity = 4
+                    @Type = 1
+                case "2": ### attempt
+                    @Summary = "OSPF Virtual Neighbor Attempt  ( " + $3 + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "3": ### init
+                    @Summary = "OSPF Virtual Neighbor Init  ( " + $3 + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "4": ### twoWay
+                    @Summary = "OSPF Virtual Neighbor 2-Way  ( " + $3 + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "5": ### exchangeStart
+                    @Summary = "OSPF Virtual Neighbor Exchange Start  ( " + $3 + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "6": ### exchange
+                    @Summary = "OSPF Virtual Neighbor Exchange  ( " + $3 + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "7": ### loading
+                    @Summary = "OSPF Virtual Neighbor Loading  ( " + $3 + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "8": ### full
+                    @Summary = "OSPF Virtual Neighbor Fully Adjacent  ( " + $3 + " )"
+                    @Severity = 1
+                    @Type = 2
+                default:
+                    @Summary = "OSPF Virtual Neighbor State Unknown  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        case "12": ### ospfIfConfigErrorV1
+
+            ##########
+            # An ospfIfConfigError trap signifies that a packet has been
+            # received on a non-virtual interface from a router whose
+            # configuration parameters conflict with this router's
+            # configuration parameters. Note that the event optionMismatch
+            # should cause a trap only if it prevents an adjacency from
+            # forming.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfPacketSrc - The IP address of an inbound packet that
+            #        cannot be identified by a neighbor instance.
+            # $5 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $6 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+                        
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfPacketSrc = $4
+            $ospfConfigErrorType = lookup($5, ospfConfigErrorType)
+            $ospfPacketType = lookup($6, ospfPacketType)
+            
+            @AlertGroup = "OSPF IF Config"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( " + $AmsPriObjText + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+            
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $5 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $6 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+
+        case "13": ### ospfVirtIfConfigErrorV1
+
+            ##########
+            # An ospfConfigError trap signifies that a packet has been received
+            # on a virtual interface from a router whose configuration
+            # parameters conflict with this router's configuration parameters.
+            # Note that the event optionMismatch should cause a trap only if it
+            # prevents an adjacency from forming.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $5 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfConfigErrorType = lookup($4, ospfConfigErrorType)
+            $ospfPacketType = lookup($5, ospfPacketType)
+            
+            @AlertGroup = "OSPF Virt IF Config"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( Area: " + $2 + ", Neighbor: " + $3 + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4 + " " + $5
+            
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $4 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            
+        case "14": ### ospfIfAuthFailureV1
+
+            ##########
+            # An ospfIfAuthFailure trap signifies that a packet has been
+            # received on a non-virtual interface from a router whose
+            # authentication key or authentication type conflicts with this
+            # router's authentication key or authentication type.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfPacketSrc - The IP address of an inbound packet that
+            #        cannot be identified by a neighbor instance.
+            # $5 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $6 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+            
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfPacketSrc = $4
+            $ospfConfigErrorType = lookup($5, ospfConfigErrorType)
+            $ospfPacketType = lookup($6, ospfPacketType)
+            
+            @AlertGroup = "OSPF IF Authorization"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( " + $AmsPriObjText + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $5 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $6 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+
+        case "15": ### ospfVirtIfAuthFailureV1
+
+            ##########
+            # An ospfVirtIfAuthFailure trap signifies that a packet has been
+            # received on a virtual interface from a router whose
+            # authentication key or authentication type conflicts with this
+            # router's authentication key or authentication type.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfConfigErrorType - Potential types of configuration
+            #        conflicts. Used by the ospfConfigError and
+            #        ospfConfigVirtError traps.
+            # $5 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfConfigErrorType = lookup($4, ospfConfigErrorType)
+            $ospfPacketType = lookup($5, ospfPacketType)
+            
+            @AlertGroup = "OSPF Virt IF Authorization"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet, " + $ospfConfigErrorType + "  ( Area: " + $2 + ", Neighbor: " + $3 + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4 + " " + $5
+
+            $ospfConfigErrorType = $ospfConfigErrorType + " ( " + $4 + " )"
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfConfigErrorType,$ospfPacketType)
+            }
+            
+        case "16": ### ospfIfRxBadPacketV1
+
+            ##########
+            # An ospfIfRxBadPacket trap signifies that an OSPF packet has been
+            # received on a non-virtual interface that cannot be parsed.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfPacketSrc - The IP address of an inbound packet that
+            #        cannot be identified by a neighbor instance.
+            # $5 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+                                    
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfPacketSrc = $4
+            $ospfPacketType = lookup($5, ospfPacketType)
+            
+            @AlertGroup = "OSPF IF Rx Packet"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: Received " + $ospfPacketType + " Packet Cannot Be Parsed  ( " + $AmsPriObjText + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfPacketType)
+            }
+            
+        case "17": ### ospfVirtIfRxBadPacketV1
+
+            ##########
+            # An ospfRxBadPacket trap signifies that an OSPF packet has been
+            # received on a virtual interface that cannot be parsed.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfPacketType - OSPF packet types.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfPacketType = lookup($4, ospfPacketType)
+            
+            @AlertGroup = "OSPF Virt IF Rx Packet"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: Received " + $ospfPacketType + " Packet Cannot Be Parsed  ( Area: " + $2 + ", Neighbor: " + $3 + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            $ospfPacketType = $ospfPacketType + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfPacketType)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfPacketSrc,$ospfPacketType)
+            }
+            
+        case "18": ### ospfTxRetransmitV1
+
+            ##########
+            # An ospfTxRetransmit trap signifies than an OSPF packet has been
+            # retransmitted on a non-virtual interface. All packets that may be
+            # retransmitted are associated with an LSDB entry. The LS type, LS
+            # ID, and Router ID are used to identify the LSDB entry.
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfNbrRtrId - A 32-bit integer (represented as a type
+            #        IpAddress) uniquely identifying the neighboring router in
+            #        the Autonomous System.
+            # $5 = ospfPacketType - OSPF packet types.
+            # $6 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $7 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $8 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+                $7 = $8
+                $8 = $9
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+            
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfNbrRtrId = $4
+            $ospfPacketType = lookup($5, ospfPacketType)
+            $ospfLsdbType = lookup($6, ospfLsdbType)
+            $ospfLsdbLsid = $7
+            $ospfLsdbRouterId = $8
+            
+            @AlertGroup = "OSPF IF Retransmit"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet Retransmitted To " + $4 + "  ( " + $AmsPriObjText + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+            $ospfPacketType = $ospfPacketType + " ( " + $5 + " )"
+            $ospfLsdbType = $ospfLsdbType + " ( " + $6 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfNbrRtrId,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfNbrRtrId,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "19": ### ospfVirtIfTxRetransmitV1
+
+            ##########
+            # An ospfTxRetransmit trap signifies than an OSPF packet has been
+            # retransmitted on a virtual interface. All packets that may be
+            # retransmitted are associated with an LSDB entry. The LS type, LS
+            # ID, and Router ID are used to identify the LSDB entry.
+            #
+            # $2 = ospfVirtIfAreaId - The Transit Area that the Virtual Link
+            #        traverses. By definition, this is not 0.0.0.0
+            # $3 = ospfVirtIfNeighbor - The Router ID of the Virtual Neighbor.
+            # $4 = ospfPacketType - OSPF packet types.
+            # $5 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $6 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $7 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+                $6 = $7
+                $7 = $8
+            }
+
+            $ospfRouterId = $1
+            $ospfVirtIfAreaId = $2
+            $ospfVirtIfNeighbor = $3
+            $ospfPacketType = lookup($4, ospfPacketType)
+            $ospfLsdbType = lookup($5, ospfLsdbType)
+            $ospfLsdbLsid = $6
+            $ospfLsdbRouterId = $7
+            
+            @AlertGroup = "OSPF Virt IF Retransmit"
+            @AlertKey = "ospfVirtIfEntry." + $2 + "." + $3
+            @Summary = "OSPF: " + $ospfPacketType + " Packet Retransmitted  ( Area: " + $2 + ", Neighbor: " + $3 + " )"
+            @Severity = 3
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+            $ospfPacketType = $ospfPacketType + " ( " + $4 + " )"
+            $ospfLsdbType = $ospfLsdbType + " ( " + $5 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfVirtIfAreaId,$ospfVirtIfNeighbor,$ospfPacketType,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "20": ### ospfOriginateLsaV1
+        
+            ##########
+            # An ospfOriginateLsa trap signifies that a new LSA has been
+            # originated by this router. This trap should not be invoked for
+            # simple refreshes of LSAs (which happesn every 30 minutes), but
+            # instead will only be invoked when an LSA is (re)originated due to
+            # a topology change. Additionally, this trap does not include LSAs
+            # that are being flushed because they have reached MaxAge.
+            #
+            # $2 = ospfLsdbAreaId - The 32 bit identifier of the Area from
+            #        which the LSA was received.
+            # $3 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $4 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $5 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $ospfRouterId = $1
+            $ospfLsdbAreaId = $2
+            $ospfLsdbType = lookup($3, ospfLsdbType)
+            $ospfLsdbLsid = $4
+            $ospfLsdbRouterId = $5
+            
+            @AlertGroup = "OSPF LSA Status"
+            @AlertKey = "ospfLsdbEntry." + $2 + "." + $3 + "." + $4 + "." + $5
+            @Summary = "New LSA Originated  ( Area: " + $2 + ", Type: " + $ospfLsdbType + ", LSID: " + $4 + ", Router: " + $5 + " )"
+            @Severity = 1
+            @Type = 2
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ospfLsdbType = $ospfLsdbType + " ( " + $3 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "21": ### ospfMaxAgeLsaV1
+
+            ##########
+            # An ospfMaxAgeLsa trap signifies that one of the LSA in the
+            # router's link-state database has aged to MaxAge.
+            #
+            # $2 = ospfLsdbAreaId - The 32 bit identifier of the Area from
+            #        which the LSA was received.
+            # $3 = ospfLsdbType - The type of the link state advertisement.
+            #        Each link state type has a separate advertisement format.
+            # $4 = ospfLsdbLsid - The Link State ID is an LS Type Specific
+            #        field containing either a Router ID or an IP Address; it
+            #        identifies the piece of the routing domain that is being
+            #        described by the advertisement.
+            # $5 = ospfLsdbRouterId - The 32 bit number that uniquely
+            #        identifies the originating router in the Autonomous
+            #        System.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+                $5 = $6
+            }
+
+            $ospfRouterId = $1
+            $ospfLsdbAreaId = $2
+            $ospfLsdbType = lookup($3, ospfLsdbType)
+            $ospfLsdbLsid = $4
+            $ospfLsdbRouterId = $5
+            
+            @AlertGroup = "OSPF LSA Age"
+            @AlertKey = "ospfLsdbEntry." + $2 + "." + $3 + "." + $4 + "." + $5
+            @Summary = "LSA Aged to MaxAge  ( Area: " + $2 + ", Type: " + $ospfLsdbType + ", LSID: " + $4 + ", Router: " + $5 + " )"
+            @Severity = 2
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $ospfLsdbType = $ospfLsdbType + " ( " + $3 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfLsdbAreaId,$ospfLsdbType,$ospfLsdbLsid,$ospfLsdbRouterId)
+            }
+            
+        case "22": ### ospfLsdbOverflowV1
+
+            ##########
+            # An ospfLsdbOverflow trap signifies that the number of LSAs in the
+            # router's link-state database has exceeded ospfExtLsdbLimit.
+            #
+            # $2 = ospfExtLsdbLimit - The maximum number of non-default
+            #        AS-external-LSAs entries that can be stored in the
+            #        link-state database. If the value is -1, then there is no
+            #        limit. When the number of non-default AS-external-LSAs in
+            #        a router's link-state database reaches ospfExtLsdbLimit,
+            #        the router enters Overflow-State. The router never holds
+            #        more than ospfExtLsdbLimit non-default AS-external-LSAs in
+            #        its database. OspfExtLsdbLimit MUST be set identically in
+            #        all routers attached to the OSPF backbone and/or any
+            #        regular OSPF area. (i.e., OSPF stub areas and NSSAs are
+            #        excluded).
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            $ospfRouterId = $1
+            $ospfExtLsdbLimit = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfExtLsdbLimit)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfExtLsdbLimit)
+            }
+            
+            @AlertGroup = "OSPF LSDB Status"
+            @AlertKey = ""
+            @Summary = "Number of LSAs Exceeds ospfExtLsdbLimit ( " + $2 + " )"
+            @Severity = 4
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "23": ### ospfLsdbApproachingOverflowV1
+
+            ##########
+            # An ospfLsdbApproachingOverflow trap signifies that the number of
+            # LSAs in the router's link-state database has exceeded ninety
+            # percent of ospfExtLsdbLimit.
+            #
+            # $2 = ospfExtLsdbLimit - The maximum number of non-default
+            #        AS-external-LSAs entries that can be stored in the
+            #        link-state database. If the value is -1, then there is no
+            #        limit. When the number of non-default AS-external-LSAs in
+            #        a router's link-state database reaches ospfExtLsdbLimit,
+            #        the router enters Overflow-State. The router never holds
+            #        more than ospfExtLsdbLimit non-default AS-external-LSAs in
+            #        its database. OspfExtLsdbLimit MUST be set identically in
+            #        all routers attached to the OSPF backbone and/or any
+            #        regular OSPF area. (i.e., OSPF stub areas and NSSAs are
+            #        excluded).
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+            }
+
+            $ospfRouterId = $1
+            $ospfExtLsdbLimit = $2
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfExtLsdbLimit)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfExtLsdbLimit)
+            }
+            
+            @AlertGroup = "OSPF LSDB Status"
+            @AlertKey = ""
+            @Summary = "Number of LSAs Exceeds 90% of ospfExtLsdbLimit ( " + $2 + " )"
+            @Severity = 2
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "24": ### ospfIfStateChangeV1
+
+            ##########
+            # An ospfIfStateChange trap signifies that there has been a change
+            # in the state of a non-virtual OSPF interface. This trap should be
+            # generated when the interface state regresses (e.g., goes from Dr
+            # to Down) or progresses to a terminal state (i.e., Point-to-Point,
+            # DR Other, Dr, or Backup).
+            #
+            # $2 = ospfIfIpAddress - The IP address of this OSPF interface.
+            # $3 = ospfAddressLessIf - For the purpose of easing the instancing
+            #        of addressed and addressless interfaces; This variable
+            #        takes the value 0 on interfaces with IP Addresses, and the
+            #        corresponding value of ifIndex for interfaces having no IP
+            #        Address.
+            # $4 = ospfIfState - The OSPF Interface State.
+            ##########
+            
+            @Agent = "Juniper-OSPF"
+            
+            if(regmatch($1, ".*\.2636\.1\.1\.1\.2\..*"))
+            {
+                @Agent = @Agent + " ( " + lookup(extract($1, "\.([0-9]+)$"), juniperProducts) + " )"
+                
+                $snmpTrapEnterprise = $1
+                $1 = $2
+                $2 = $3
+                $3 = $4
+                $4 = $5
+            }
+
+            if(match($3, "0"))
+            {
+                $AmsPriObjText = $2
+            }
+            else
+            {
+                $AmsPriObjText = "ifEntry." + $3
+            }
+                        
+            $ospfRouterId = $1
+            $ospfIfIpAddress = $2
+            $ospfAddressLessIf = $3
+            $ospfIfState = lookup($4, ospfIfState) + " ( " + $4 + " )"
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfIfState)
+            }
+            else
+            {
+                details($ospfRouterId,$ospfIfIpAddress,$ospfAddressLessIf,$ospfIfState)
+            }
+            
+            @AlertGroup = "OSPF IF Status"
+            @AlertKey = "ospfIfEntry." + $2 + "." + $3
+            switch($4)
+            {
+                case "1": ### down
+                    @Summary = "OSPF Interface Down  ( " + $AmsPriObjText + " )" 
+                    @Severity = 4
+                    @Type = 1
+                case "2": ### loopback
+                    @Summary = "OSPF Interface Loopback  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "3": ### waiting
+                    @Summary = "OSPF Interface Waiting  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+                case "4": ### pointToPoint
+                    @Summary = "OSPF Interface Point-To-Point  ( " + $AmsPriObjText + " )"
+                    @Severity = 1
+                    @Type = 2
+                case "5": ### designatedRouter
+                    @Summary = "OSPF Interface Designated Router  ( " + $AmsPriObjText + " )"
+                    @Severity = 1
+                    @Type = 2
+                case "6": ### backupDesignatedRouter
+                    @Summary = "OSPF Interface Backup Designated Router  ( " + $AmsPriObjText + " )"
+                    @Severity = 1
+                    @Type = 2
+                case "7": ### otherDesignatedRouter
+                    @Summary = "OSPF Interface Other Designated Router  ( " + $AmsPriObjText + " )"
+                    @Severity = 1
+                    @Type = 2
+                default:
+                    @Summary = "OSPF Interface Status Unknown  ( " + $AmsPriObjText + " )"
+                    @Severity = 2
+                    @Type = 1
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }

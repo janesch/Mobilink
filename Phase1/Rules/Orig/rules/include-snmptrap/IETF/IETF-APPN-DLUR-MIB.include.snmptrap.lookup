@@ -1,0 +1,51 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-APPN-DLUR-MIB.include.snmptrap.lookup 1.1
+#    2004/09/28 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-APPN-DLUR-MIB
+#
+###############################################################################
+table dlurDlusSessnStatus =
+{
+    ##########
+    # Status of the CPSVRMGR pipe between the DLUR and this DLUS. This is a
+    # combination of the separate states for the contention-winner and
+    # contention-loser sessions. The following matrix provides a different
+    # representation of how the values of this object are related to the
+    # individual states of the contention-winner and contention-loser sessions:
+    #
+    #           Conwinner
+    #           | pA | pI | A | X = !(pA | pI | A)
+    #      C ++++++++++++++++++++++++++++++++++
+    #      o pA | 2  |  2 | 2 | 2
+    #      n ++++++++++++++++++++++++++++++++++
+    #      l pI | 2  |  4 | 4 | 4
+    #      o ++++++++++++++++++++++++++++++++++
+    #      s A  | 2  |  4 | 3 | 1
+    #      e ++++++++++++++++++++++++++++++++++
+    #      r X  | 2  |  4 | 1 | 1
+    #        ++++++++++++++++++++++++++++++++++
+    ########## 
+
+    {"1","Reset"}, ### reset - none of the cases below
+    {"2","Pending Active"}, ### pendingActive - either contention-winner session or contention-loser session is pending active
+    {"3","Active"}, ### active - contention-winner and contention-loser sessions are both active
+    {"4","Pending Inactive"} ### pendingInactive - either contention-winner session or contention-loser session is pending inactive - this test is made AFTER the 'pendingActive' test
+}
+default = "Unknown"

@@ -1,0 +1,163 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-CFGMGMT-MIB.include.snmptrap.rules 6.0
+#    2008/02/26 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-CFGMGMT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.5": ### Juniper Configuration Management - Notifications from JUNIPER-CFGMGMT-MIB
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-CFGMGMT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Configuration Management"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxCmCfgChange
+
+            ##########
+            # $1 = jnxCmCfgChgEventTime
+            # $2 = jnxCmCfgChgEventDate
+            # $3 = jnxCmCfgChgEventSource
+            # $4 = jnxCmCfgChgEventUser
+            # $5 = jnxCmCfgChgEventLog
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxCmCfgChgEventTime = $1
+            $jnxCmCfgChgEventDate = $2
+            $jnxCmCfgChgEventSource = lookup($3, JnxCmCfgChgSource)
+            $jnxCmCfgChgEventUser = $4
+            $jnxCmCfgChgEventLog = $5            
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-CFGMGMT-MIB-jnxCmCfgChange"
+
+            @AlertGroup = "Configuration Change"
+            @AlertKey = "jnxCmCfgChgEventEntry." + extract($OID2, "\.([0-9]+)$")
+            @Summary = "Configuration Changed via " + $jnxCmCfgChgEventSource + "  ( User: " + $4 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $jnxCmCfgChgEventSource = $jnxCmCfgChgEventSource + " ( " + $3 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxCmCfgChgEventTime,$jnxCmCfgChgEventDate,$jnxCmCfgChgEventSource,$jnxCmCfgChgEventUser,$jnxCmCfgChgEventLog)
+            }
+            else
+            {
+                details($jnxCmCfgChgEventTime,$jnxCmCfgChgEventDate,$jnxCmCfgChgEventSource,$jnxCmCfgChgEventUser,$jnxCmCfgChgEventLog)
+            }
+
+        case "2": ### jnxCmRescueChange
+
+            ##########
+            # $1 = jnxCmRescueChgTime
+            # $2 = jnxCmRescueChgDate
+            # $3 = jnxCmRescueChgSource
+            # $4 = jnxCmRescueChgUser
+            # $5 = jnxCmRescueChgState
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxCmRescueChgTime = $1
+            $jnxCmRescueChgDate = $2
+            $jnxCmRescueChgSource = lookup($3, JnxCmCfgChgSource)
+            $jnxCmRescueChgUser = $4
+            $jnxCmRescueChgState = lookup($5, JnxCmRescueCfgState) + " ( " + $5 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-CFGMGMT-MIB-jnxCmRescueChange"
+
+            @AlertGroup = "Rescue Configuration Change"
+            @AlertKey = "User: " + $4
+            @Summary = "Rescue Configuration Changed via " + $jnxCmRescueChgSource + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $jnxCmRescueChgSource = $jnxCmRescueChgSource + " ( " + $3 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxCmRescueChgTime,$jnxCmRescueChgDate,$jnxCmRescueChgSource,$jnxCmRescueChgUser,$jnxCmRescueChgState)
+            }
+            else
+            {
+                details($jnxCmRescueChgTime,$jnxCmRescueChgDate,$jnxCmRescueChgSource,$jnxCmRescueChgUser,$jnxCmRescueChgState)
+            }
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-CFGMGMT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-CFGMGMT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-CFGMGMT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-CFGMGMT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-CFGMGMT-MIB.include.snmptrap.rules >>>>>")

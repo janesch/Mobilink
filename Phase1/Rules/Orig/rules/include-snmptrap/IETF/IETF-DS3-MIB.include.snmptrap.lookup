@@ -1,0 +1,52 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-DS3-MIB.include.snmptrap.lookup 1.0
+#    2002/05/22 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-DS3-MIB
+#
+###############################################################################
+table dsx3LineStatus =
+{
+    ##########
+    # This variable indicates the Line Status of the interface. It contains
+    # loopback state information and failure state information. The
+    # dsx3LineStatus is a bit map represented as a sum, therefore, it can
+    # represent multiple failures and a loopback (see dsx3LoopbackConfig object
+    # for the type of loopback) simultaneously. The dsx3NoAlarm must be set if
+    # and only if no other flag is set.
+    #
+    # If the dsx3loopbackState bit is set, the loopback in effect can be
+    # determined from the dsx3loopbackConfig object.
+    ##########
+    
+    {"1","No Alarm"}, ### dsx3NoAlarm - No alarm present
+    {"2","Far End Remote Alarm Indication"}, ### dsx3RcvRAIFailure - Receiving Yellow/Remote Alarm Indication
+    {"4","Remote Alarm Indication"}, ### dsx3XmitRAIAlarm - Transmitting Yellow/Remote Alarm Indication
+    {"8","Far End Alarm Indication Signal"}, ### dsx3RcvAIS - Receiving AIS failure state
+    {"16","Alarm Indication Signal"}, ### dsx3XmitAIS - Transmitting AIS
+    {"32","Loss of Frame"}, ### dsx3LOF - Receiving LOF failure state
+    {"64","Loss of Signal"}, ### dsx3LOS - Receiving LOS failure state
+    {"96","Loss of Frame and Signal"},
+    {"128","Loopback"}, ### dsx3LoopbackState - Looping the received signal
+    {"256","Test Pattern Detected"}, ### dsx3RcvTestCode - Receiving a Test Pattern
+    {"512","Unknown"}, ### dsx3OtherFailure - any line status not defined here
+    {"1024","Unavailable Signal State"}, ### dsx3UnavailSigState - Near End in Unavailable Signal State
+    {"2048","Carrier Equipment Out of Service"} ### dsx3NetEquipOOS - Carrier Equipment Out of Service
+}
+default = "Multiple Alarms"

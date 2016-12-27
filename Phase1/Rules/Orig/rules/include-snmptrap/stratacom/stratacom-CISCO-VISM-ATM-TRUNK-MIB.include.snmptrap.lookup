@@ -1,0 +1,96 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    stratacom-CISCO-VISM-ATM-TRUNK-MIB.include.snmptrap.lookup 1.0
+#    2006/05/31 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-VISM-ATM-TRUNK-MIB
+#
+###############################################################################
+table vismAal2CidState =
+{
+    ##########
+    # Indicates the state of the CID.
+    # 'cidStateActive' : The CID is in service and operational. 
+    # 'cidStateFailed' : The CID is in service but not operational, 
+    #  e.g. because the PVC that the CID belongs to is receiving F5(Operation, 
+    #  Administration and Maintenance Flow) level alarm.
+    # When VISM sees alarm on a CID (network side) sets this object to 
+    # 'cidStateFailed', and an AIS will be sent on the ds0(Time Division 
+    # Multiplexed voice channel) that this CID corresponds to. 
+    # If the whole PVC is in alarm then all the CIDs on that PVC will be set 
+    # to 'cidStateFailed',trapVismChanFailed trap will be sent and all the ds0's 
+    # that corresponds to each of the CIDs on this PVC will be in alarm. 
+    # If VISM sees an alarm on a ds0 in a line then an RAI(Remote Alarm 
+    # Indication) will be sent on the CID that corresponds to this ds0, however
+    # the CID will not be put in failed state.
+    ##########
+    
+    {"1","Active"}, ### cidStateActive
+    {"2","Failed"}, ### cidStateFailed
+}
+default = "Unknown"
+
+table vismAal2CidFailReason =
+{
+    ##########
+    # This object is used to indicate the CID failure reason.
+    # 'self': fail because of non-PVC alarm
+    # 'highLevel': fail because of PVC alarm
+    # 'both': fail because of both PVC and non-PVC alarm
+    # 'notFail': not fail
+    ########## 
+
+    {"1","Non-PVC Alarm"}, ### self
+    {"2","PVC Alarm"}, ### highLevel
+    {"3","PVC and Non-PVC Alarm"}, ### both
+    {"4","Not Failed"}, ### notFail
+}
+default = "Unknown"
+
+table vismAal2CidAdminState =
+{
+    ##########
+    # This attribute defines the operational administrative state of the 
+    # bearer connection.
+    # cidInService: This is an operational state of the bearer connection 
+    #  where it is ready to transmit/receive data/voice packets. The user 
+    #  can take the bearer connection into cidInService.
+    # cidCommandedOutOfService: This is an operational state of the bearer
+    #  connection where it is not ready to transmit/receive data/voice
+    #  packets.The user can take the bearer connection into 
+    #  cidPendingOutOfService.
+    # cidPendingInService: It is a transient state. In this state the bearer
+    #  connection is waiting for the user to transition it to the 
+    #  cidInService state.This value cannot be specified in a management
+    #  protocol set operation.
+    # cidPendingOutOfService: It is a transient state. In this state the 
+    #  bearer connection is waiting for the user to transition it to the 
+    #  cidOutOfService state. This value cannot be specified in a management 
+    #  protocol set operation.
+    # cidUnknownState: This is an abnormal state of the bearer connection.This 
+    #  state would indicate to the user that there is some data integrity issue
+    #  on the bearer administrative state. 
+    ##########
+
+    {"1","Pending In Service"}, ### cidPendingInService
+    {"2","In Service"}, ### cidInService
+    {"3","Commanded Out Of Service"}, ### cidCommandedOutOfService
+    {"4","Pending Out Of Service"}, ### cidPendingOutOfService
+    {"5","Abnormal State"}, ### cidUnknownState
+}
+default = "Unknown"

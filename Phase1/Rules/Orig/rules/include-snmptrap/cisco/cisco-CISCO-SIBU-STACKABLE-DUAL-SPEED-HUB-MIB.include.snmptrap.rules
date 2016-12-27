@@ -1,0 +1,185 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.include.snmptrap.rules 2.2
+#    2005/12/19 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB
+#
+###############################################################################
+#
+# 2.2 - Corrected the values of default Type and Severity for
+#       ciscoSibuStackableDualSpeedHubRptrPortLinkChange traps when the status
+#       is link.
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.44.2"|".1.3.6.1.4.1.9.10.44.2.0": ### Cisco SIBU Stackable Dual-Speed Hub - Notifications from CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-SIBU Stackable Dual-Speed Hub"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch($specific-trap)
+    {
+        case "1": ### ciscoSibuStackableDualSpeedHubRptrPortLinkChange
+
+            ##########
+            # $1 = cssRepeaterPortLinkStatus - The current port link status.
+            ##########
+
+            $cssRepeaterPortLinkStatus = lookup($1, cssRepeaterPortLinkStatus) + " ( " + $1 + " )"
+            $rptrPortGroupIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $rptrPortIndex = extract($OID1, "\.([0-9]+)$")
+            details($cssRepeaterPortLinkStatus,$rptrPortGroupIndex,$rptrPortIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB-ciscoSibuStackableDualSpeedHubRptrPortLinkChange"
+
+            @AlertGroup = "Repeater Port Link Status"
+            @AlertKey = "cssRepeaterPortEntry." + $rptrPortGroupIndex + "." + $rptrPortIndex
+            switch($1)
+            {
+                case "1": ### link
+                    @Summary = "Repeater Port Link OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_link"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### noLink
+                    @Summary = "No Link on Repeater Port"
+                    
+                    $SEV_KEY = $OS_EventId + "_noLink"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Repeater Port Link Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( Group: " + $rptrPortGroupIndex + ", Port: " + $rptrPortIndex + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+        
+        case "2": ### ciscoSibuStackableDualSpeedHubSwitchPortLinkChange
+
+            ##########
+            # $1 = cssSwitchPortLinkStatus - Indicates the link STATUS of
+            #        switch port.
+            ##########
+
+            $cssSwitchPortLinkStatus = lookup($1, cssSwitchPortLinkStatus) + " ( " + $1 + " )"
+            $rptrGroupIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $cssSwitchPortModuleID = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cssSwitchPortPortID = extract($OID1, "\.([0-9]+)$")
+            details($cssSwitchPortLinkStatus,$rptrGroupIndex,$cssSwitchPortModuleID,$cssSwitchPortPortID)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB-ciscoSibuStackableDualSpeedHubSwitchPortLinkChange"
+
+            @AlertGroup = "Switch Port Link Status"
+            @AlertKey = "cssSwitchPortEntry." + $rptrGroupIndex + "." + $cssSwitchPortModuleID + "." + $cssSwitchPortPortID
+            switch($1)
+            {
+                case "1": ### link
+                    @Summary = "Switch Port Link OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_link"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### noLink
+                    @Summary = "No Link on Switch Port"
+                    
+                    $SEV_KEY = $OS_EventId + "_noLink"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Switch Port Link Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( Group: " + $rptrGroupIndex + ", Module: " + $cssSwitchPortModuleID + ", Port: " + $cssSwitchPortPortID + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+        
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.include.snmptrap.rules >>>>>")

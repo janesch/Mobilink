@@ -1,0 +1,90 @@
+###############################################################################
+#
+#	netSnmp-NET-SNMP-AGENT-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for NET SNMP Agent alarms
+#
+#       V0.1	20110711	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.8072.4":  ### - netSnmpNotificationPrefix (from NET-SNMP-AGENT-MIB)
+
+	log(DEBUG, "<<<<< Entering... netSnmp-NET-SNMP-AGENT-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "SUN"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "NET-SNMP-AGENT-MIB"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_SNMP_001"
+
+	switch($specific-trap) {
+		case "1": ### - nsNotifyStart
+			#######################
+			#
+			# An indication that the agent has started running.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 2
+			@ExpireTime = 18000
+			@AlertKey = "nsNotifyStart"
+			@Summary = "nsNotifyStart: # An indication that the agent has started running"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "2": ### - nsNotifyShutdown
+			#######################
+			#
+			# An indication that the agent is in the process of being shut down.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 2
+			@ExpireTime = 18000
+			@AlertKey = "nsNotifyShutdown"
+			@Summary = "nsNotifyShutdown: # An indication that the agent is in the process of being shut down"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "3": ### - nsNotifyRestart
+			#######################
+			#
+			# An indication that the agent has been restarted.
+			# This does not imply anything about whether the configuration has
+			# changed or not (unlike the standard coldStart or warmStart traps)
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 2
+			@ExpireTime = 18000
+			@AlertKey = "nsNotifyRestart"
+			@Summary = "nsNotifyRestart: # An indication that the agent has been restarted"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... netSnmp-NET-SNMP-AGENT-MIB.include.snmptrap.rules >>>>>")

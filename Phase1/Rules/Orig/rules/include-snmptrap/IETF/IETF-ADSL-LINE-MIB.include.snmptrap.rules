@@ -1,0 +1,422 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-ADSL-LINE-MIB.include.snmptrap.rules 3.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-ADSL-LINE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.10.94.1.2.1": ### (ATUC) Modem at Near (Central) End of Line - adslAtucTraps from ADSL-LINE-MIB (RFC2662)
+
+    log(DEBUG, "<<<<< Entering... IETF-ADSL-LINE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-ADSL-LINE-MIB (ATUC)"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### adslAtucPerfLofsThreshTrap
+
+            ##########
+            # $1 = adslAtucPerfCurr15MinLofs
+            # $2 = adslAtucThresh15MinLofs
+            ##########
+
+            $adslAtucPerfCurr15MinLofs = $1
+            $adslAtucThresh15MinLofs = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAtucPerfCurr15MinLofs,$adslAtucThresh15MinLofs,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucPerfLofsThreshTrap"
+                
+            @AlertGroup = "ATUC Loss of Framing"
+            @AlertKey = "adslAtucPerfDataEntry." + $ifIndex
+            @Summary = "ATUC Loss of Framing, " + $1 + " LOF Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### adslAtucPerfLossThreshTrap
+
+            ##########
+            # $1 = adslAtucPerfCurr15MinLoss
+            # $2 = adslAtucThresh15MinLoss
+            ##########
+
+            $adslAtucPerfCurr15MinLoss = $1
+            $adslAtucThresh15MinLoss = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAtucPerfCurr15MinLoss,$adslAtucThresh15MinLoss,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucPerfLossThreshTrap"
+                
+            @AlertGroup = "ATUC Loss of Signal"
+            @AlertKey = "adslAtucPerfDataEntry." + $ifIndex
+            @Summary = "ATUC Loss of Signal, " + $1 + " LOS Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### adslAtucPerfLprsThreshTrap
+
+            ##########
+            # $1 = adslAtucPerfCurr15MinLprs
+            # $2 = adslAtucThresh15MinLprs
+            ##########
+
+            $adslAtucPerfCurr15MinLprs = $1
+            $adslAtucThresh15MinLprs = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAtucPerfCurr15MinLprs,$adslAtucThresh15MinLprs,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucPerfLprsThreshTrap"
+                
+            @AlertGroup = "ATUC Loss of Power"
+            @AlertKey = "adslAtucPerfDataEntry." + $ifIndex
+            @Summary = "ATUC Loss of Power, " + $1 + " LOP Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### adslAtucPerfESsThreshTrap
+
+            ##########
+            # $1 = adslAtucPerfCurr15MinESs
+            # $2 = adslAtucThresh15MinESs
+            ##########
+
+            $adslAtucPerfCurr15MinESs = $1
+            $adslAtucThresh15MinESs = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAtucPerfCurr15MinESs,$adslAtucThresh15MinESs,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucPerfESsThreshTrap"
+                
+            @AlertGroup = "ATUC Errored Second"
+            @AlertKey = "adslAtucPerfDataEntry." + $ifIndex
+            @Summary = "ATUC Errored Second, " + $1 + " ES Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### adslAtucRateChangeTrap
+
+            ##########
+            # $1 = adslAtucChanCurrTxRate
+            # $2 = adslAtucChanPrevTxRate
+            ##########
+
+            $adslAtucChanCurrTxRate = $1 + "bps"
+            $adslAtucChanPrevTxRate = $2 + "bps"
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAtucChanCurrTxRate,$adslAtucChanPrevTxRate,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucRateChangeTrap"
+                
+            @AlertGroup = "ATUC Transmit Rate"
+            @AlertKey = "adslAtucChanEntry." + $ifIndex
+            @Summary = "ATUC Transmit Rate, " + $adslAtucChanCurrTxRate + ", Changed, was " + $adslAtucChanPrevTxRate + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### adslAtucPerfLolsThreshTrap
+
+            ##########
+            # $1 = adslAtucPerfCurr15MinLols
+            # $2 = adslAtucThresh15MinLols
+            ##########
+
+            $adslAtucPerfCurr15MinLols = $1
+            $adslAtucThresh15MinLols = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAtucPerfCurr15MinLols,$adslAtucThresh15MinLols,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucPerfLolsThreshTrap"
+                
+            @AlertGroup = "ATUC Loss of Link"
+            @AlertKey = "adslAtucPerfDataEntry." + $ifIndex
+            @Summary = "ATUC Loss of Link, " + $1 + " LOL Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### adslAtucInitFailureTrap
+
+            ##########
+            # $1 = adslAtucCurrStatus
+            ##########
+
+            $adslAtucCurrStatus = lookup($1, adslAtucCurrStatus)
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAtucInitFailureTrap"
+                
+            @AlertGroup = "ATUC Initialization"
+            @AlertKey = "adslAtucPhysEntry." + $ifIndex
+            if(match($adslAtucCurrStatus, "Multiple Alarms"))
+            {
+                @Summary = "ATUC Initialization Failed, Multiple Alarms, adslAtucCurrStatus: " + $1 + "  ( " + @AlertKey + " )"
+            }
+            else
+            {
+                @Summary = "ATUC Initialization Failed, " + $adslAtucCurrStatus + "  ( " + @AlertKey + " )"
+            }
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            $adslAtucCurrStatus = $adslAtucCurrStatus + " ( " + $1 + " )"
+            details($adslAtucCurrStatus,$ifIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+    
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+    
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ADSL-LINE-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ADSL-LINE-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+    
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+    
+    include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ADSL-LINE-MIB_ATUC.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ADSL-LINE-MIB_ATUC.user.include.snmptrap.rules"
+    
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+    
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-ADSL-LINE-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.2.1.10.94.1.2.2": ### (ATUR) Modem at Remote End of Line - adslAturTraps from ADSL-LINE-MIB (RFC2662)
+
+    log(DEBUG, "<<<<< Entering... IETF-ADSL-LINE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-ADSL-LINE-MIB (ATUR)"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {    
+        case "1": ### adslAturPerfLofsThreshTrap
+
+            ##########
+            # $1 = adslAturPerfCurr15MinLofs
+            # $2 = adslAturThresh15MinLofs
+            ##########
+
+            $adslAturPerfCurr15MinLofs = $1
+            $adslAturThresh15MinLofs = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAturPerfCurr15MinLofs,$adslAturThresh15MinLofs,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAturPerfLofsThreshTrap"
+                
+            @AlertGroup = "ATUR Loss of Framing"
+            @AlertKey = "adslAturPerfDataEntry." + $ifIndex
+            @Summary = "ATUR Loss of Framing, " + $1 + " LOF Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### adslAturPerfLossThreshTrap
+
+            ##########
+            # $1 = adslAturPerfCurr15MinLoss
+            # $2 = adslAturThresh15MinLoss
+            ##########
+
+            $adslAturPerfCurr15MinLoss = $1
+            $adslAturThresh15MinLoss = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAturPerfCurr15MinLoss,$adslAturThresh15MinLoss,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAturPerfLossThreshTrap"
+                
+            @AlertGroup = "ATUR Loss of Signal"
+            @AlertKey = "adslAturPerfDataEntry." + $ifIndex
+            @Summary = "ATUR Loss of Signal, " + $1 + " LOS Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### adslAturPerfLprsThreshTrap
+
+            ##########
+            # $1 = adslAturPerfCurr15MinLprs
+            # $2 = adslAturThresh15MinLprs
+            ##########
+
+            $adslAturPerfCurr15MinLprs = $1
+            $adslAturThresh15MinLprs = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAturPerfCurr15MinLprs,$adslAturThresh15MinLprs,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAturPerfLprsThreshTrap"
+                
+            @AlertGroup = "ATUR Loss of Power"
+            @AlertKey = "adslAturPerfDataEntry." + $ifIndex
+            @Summary = "ATUR Loss of Power, " + $1 + " LOP Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### adslAturPerfESsThreshTrap
+
+            ##########
+            # $1 = adslAturPerfCurr15MinESs
+            # $2 = adslAturThresh15MinESs
+            ##########
+
+            $adslAturPerfCurr15MinESs = $1
+            $adslAturThresh15MinESs = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAturPerfCurr15MinESs,$adslAturThresh15MinESs,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAturPerfESsThreshTrap"
+                
+            @AlertGroup = "ATUR Errored Second"
+            @AlertKey = "adslAturPerfDataEntry." + $ifIndex
+            @Summary = "ATUR Errored Second, " + $1 + " ES Seconds Crossed Threshold, " + $2 + ", in 15 Min. Interval  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### adslAturRateChangeTrap
+
+            ##########
+            # $1 = adslAturChanCurrTxRate
+            # $2 = adslAturChanPrevTxRate
+            ##########
+
+            $adslAturChanCurrTxRate = $1 + "bps"
+            $adslAturChanPrevTxRate = $2 + "bps"
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($adslAturChanCurrTxRate,$adslAturChanPrevTxRate,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF-ADSL-LINE-MIB-adslAturRateChangeTrap"
+                
+            @AlertGroup = "ATUR Transmit Rate"
+            @AlertKey = "adslAturChanEntry." + $ifIndex
+            @Summary = "ATUR Transmit Rate, " + $adslAturChanCurrTxRate + ", Changed, was " + $adslAturChanPrevTxRate + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+    
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+    
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ADSL-LINE-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ADSL-LINE-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+    
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+    
+    include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ADSL-LINE-MIB_ATUR.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ADSL-LINE-MIB_ATUR.user.include.snmptrap.rules"
+    
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-common/load_include.rules"
+
+    log(DEBUG, "<<<<< Leaving... IETF-ADSL-LINE-MIB.include.snmptrap.rules >>>>>")

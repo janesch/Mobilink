@@ -1,0 +1,1881 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Initial Release (introduced in NIM-02)
+#
+#       Compatible with:
+#
+#         -  Netcool/OMNIbus 3.6 and 7.x
+#         -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#         -  HUAWEI-BASE-TRAP-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.1": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwEntityRemove
+
+            ##########
+            # Entity has been removed.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityRemove"
+
+            @AlertGroup = "Entity Insert/Remove"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity has been Removed  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwEntityInsert
+
+            ##########
+            # Entity has been inserted.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityInsert"
+
+            @AlertGroup = "Entity Insert/Remove"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity has been Inserted  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### hwEntityUnstable
+
+            ##########
+            # Entity has been inserted but position unstable.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityUnstable"
+
+            @AlertGroup = "Entity Status"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity is in an Unstable state  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### hwEntityUnstableResume
+
+            ##########
+            # Resume from entity position unstable situation.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityUnstableResume"
+
+            @AlertGroup = "Entity Status"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Resumed from Unstable State  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### hwEntityReset
+
+            ##########
+            # Entity will be reseted.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityReset"
+
+            @AlertGroup = "Entity Reset"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Reset: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### hwEntityResetDone
+
+            ##########
+            # Entity has been reseted and in good health now.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityResetDone"
+
+            @AlertGroup = "Entity Reset"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Reset Completed: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### hwEntityCommunicateError
+
+            ##########
+            # Communication error has been detected. Include all kinds of communication error between boards.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityCommunicateError"
+
+            @AlertGroup = "Entity Communication"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Communication Error: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### hwEntityCommunicateResume
+
+            ##########
+            # Resume from communication error situation.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityCommunicateResume"
+
+            @AlertGroup = "Entity Communication"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "End of Entity Communication Error: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### hwEntityInvalid
+
+            ##########
+            # Entity is invalid for some reason.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityInvalid"
+
+            @AlertGroup = "Entity Invalid"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity is Invalid: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### hwEntityResume
+
+            ##########
+            # Entity reusme from invalid situation.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityResume"
+
+            @AlertGroup = "Entity Invalid"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Resumed from Invalid Situation: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "11": ### hwEntityLeaveMaster
+
+            ##########
+            # Redundant entity leave master role.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityLeaveMaster"
+
+            @AlertGroup = "Entity Leave Master"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Redundant Entity Leave Master Role: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "12": ### hwEntityBecomeMaster
+
+            ##########
+            # Redundant entity become master role.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityBecomeMaster"
+
+            @AlertGroup = "Entity Leave Master"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Redundant Entity Becomes Master Role: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### hwEntityOffline
+
+            ##########
+            # Entity change to OFFLINE status.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityOffline"
+
+            @AlertGroup = "Entity Online Status"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Offline: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "14": ### hwEntityOnline
+
+            ##########
+            # Entity change to ONLINE status.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            # $6 = hwBaseTrapRelativeResource - Relative resource of an entity.
+            # $7 = hwBaseTrapReasonDescr - Reason of trap in DisplayString style.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            $hwBaseTrapRelativeResource = $6
+            $hwBaseTrapReasonDescr = $7
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName,$hwBaseTrapRelativeResource,
+                    $hwBaseTrapReasonDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwEntityOnline"
+
+            @AlertGroup = "Entity Online Status"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Entity Online: " + $7 + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Entity.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Entity.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.2": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwTempRisingAlarm
+
+            ##########
+            # Temperature rise over HIGH threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwTempRisingAlarm"
+
+            @AlertGroup = "Temperature High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Temperature HIGH, Actual: " + $8 + " " + $hwBaseThresholdUnit + ", Threshold: " + $5 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "2": ### hwTempFallingAlarm
+
+            ##########
+            # Temperature fall below LOW threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwTempFallingAlarm"
+
+            @AlertGroup = "Temperature High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Temperature LOW, Actual: " + $7 + " " + $hwBaseThresholdUnit + ", Threshold: " + $5 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "3": ### hwTempResume
+
+            ##########
+            # Temperature back to normal level.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwTempResume"
+
+            @AlertGroup = "Temperature High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Temperature Normal, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "4": ### hwHumidityRisingAlarm
+
+            ##########
+            # Humidity rise over HIGH threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwHumidityRisingAlarm"
+
+            @AlertGroup = "Humidity High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Humidity Level HIGH, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "5": ### hwHumidityFallingAlarm
+
+            ##########
+            # Humidity fall below LOW threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwHumidityFallingAlarm"
+
+            @AlertGroup = "Humidity High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Humidity Level LOW, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "6": ### hwHumidityResume
+
+            ##########
+            # Humidity back to normal level.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwHumidityResume"
+
+            @AlertGroup = "Humidity High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Humidity Level Normal, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "7": ### hwVoltRisingAlarm
+
+            ##########
+            # Voltage of power rise over HIGH threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwVoltRisingAlarm"
+
+            @AlertGroup = "Voltage High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Voltage Level HIGH, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "8": ### hwVoltFallingAlarm
+
+            ##########
+            # Voltage of power fall below LOW threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwVoltFallingAlarm"
+
+            @AlertGroup = "Voltage High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Voltage Level LOW, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "9": ### hwVoltResume
+
+            ##########
+            # Voltage back to normal level.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwVoltResume"
+
+            @AlertGroup = "Voltage High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Voltage Level Normal, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Env.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Env.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.3": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwPowerOff
+
+            ##########
+            # One of the power is shutting down.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwPowerOff"
+
+            @AlertGroup = "Power Status"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Power Shutting Down  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwPowerOn
+
+            ##########
+            # One of the power is starting up.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalContainedIn - The value of entPhysicalIndex for
+            #        the physical entity which 'contains' this physical entity.
+            # $5 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalContainedIn = $4
+            $entPhysicalName = $5
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalContainedIn,
+                    $entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwPowerOn"
+
+            @AlertGroup = "Power Status"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Power Starting Up  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Power.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Power.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.4": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwCPUUtilizationRisingAlarm
+
+            ##########
+            # CPU utilization exceed threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdHighWarning = $7
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwCPUUtilizationRisingAlarm"
+
+            @AlertGroup = "CPU Usage High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "CPU Usage HIGH, Actual: " + $6 + " " + $hwBaseThresholdUnit + ", Threshold: " + $5 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdHighWarning)
+
+        case "2": ### hwCPUUtilizationResume
+
+            ##########
+            # CPU utilization back to normal level.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdHighWarning = $7
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwCPUUtilizationResume"
+
+            @AlertGroup = "CPU Usage High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "CPU Usage Normal, Actual: " + $6 + " " + $hwBaseThresholdUnit + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdHighWarning)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Cpu.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Cpu.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.5": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwPortPhysicalDown
+
+            ##########
+            # One of the port physical connect down.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwPortPhysicalDown"
+
+            @AlertGroup = "Physical Port Up/Down"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Physical Port DOWN  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwPortPhysicalUp
+
+            ##########
+            # One of the port physical connect up.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwPortPhysicalUp"
+
+            @AlertGroup = "Physical Port Up/Down"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Physical Port UP  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Port.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Port.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.6": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwStorageUtilizationRisingAlarm
+
+            ##########
+            # Storage device utilization rise over threshold.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwStorageUtilizationRisingAlarm"
+
+            @AlertGroup = "Stotage Utilization High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Storage Utilisation HIGH, Actual: " + $8 + " " + $hwBaseThresholdUnit + ", Threshold: " + $5 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        case "2": ### hwStorageUtilizationResume
+
+            ##########
+            # Storage utilization resume to normal level.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = entPhysicalName - The textual name of the physical entity.
+            # $5 = hwBaseThresholdValue - The current value that been measured.
+            # $6 = hwBaseThresholdUnit - The current value that been measured.
+            # $7 = hwBaseThresholdLowWarning - The normal warning threshold
+            #        for falling alarm. 
+            # $8 = hwBaseThresholdHighWarning - The normal warning threshold
+            #        for rising alarm. 
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $entPhysicalName = $4
+            $hwBaseThresholdValue = $5
+            $hwBaseThresholdUnit = lookup($6,hwBaseThresholdUnit)
+            $hwBaseThresholdLowWarning = $7
+            $hwBaseThresholdHighWarning = $8
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwStorageUtilizationResume"
+
+            @AlertGroup = "Stotage Utilization High/Low"
+            $entPhysicalIndex = extract($OID4, "\.([0-9]+)$")
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "Storage Utilisation Normal, Actual: " + $7 + " " + $hwBaseThresholdUnit
+            @Summary = @Summary + "  ( " + $entPhysicalName + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwBaseThresholdUnit = $hwBaseThresholdUnit + " ( " + $6 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$entPhysicalName,
+                    $hwBaseThresholdValue,$hwBaseThresholdUnit,
+                    $hwBaseThresholdLowWarning,$hwBaseThresholdHighWarning)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Storage.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Storage.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.9": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwFIBOverloadSuspend
+
+            ##########
+            # The board is suspended for IPv4/IPv6 FIB capability overload.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = hwFIBOverloadModule - Module is ipv4 or ipv6
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $hwFIBOverloadModule = lookup($4,hwFIBOverloadModule)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwFIBOverloadSuspend"
+
+            @AlertGroup = "FIB Overload Suspend"
+            @AlertKey = ""
+            @Summary = "Board Suspended for FIB Capability Overload  ( Type: " +$hwFIBOverloadModule + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwFIBOverloadModule = $hwFIBOverloadModule + " ( " + $4 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$hwFIBOverloadModule)
+
+        case "2": ### hwFIBOverloadSusResume
+
+            ##########
+            # The board is recovered for FIB capability overload suspend.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwFIBOverloadSusResume"
+
+            @AlertGroup = "FIB Overload Suspend"
+            @AlertKey = "" 
+            @Summary = "Board Recovered from FIB Capability Overload Suspend"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType)
+
+        case "3": ### hwFIBOverloadForward
+
+            ##########
+            # The board is forwarding for IPv4/IPv6 FIB capability overload.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = hwFIBOverloadModule - Module is ipv4 or ipv6
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $hwFIBOverloadModule = lookup($4,hwFIBOverloadModule)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwFIBOverloadForward"
+
+            @AlertGroup = "FIB Overload Forwarding"
+            @AlertKey = "FIB Module: " + $hwFIBOverloadModule
+            @Summary = "Board Forwarding for FIB Capability Overload  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwFIBOverloadModule = $hwFIBOverloadModule + " ( " + $4 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$hwFIBOverloadModule)
+
+        case "4": ### hwFIBOverloadFwResume
+
+            ##########
+            # The board is recovered for IPv4/IPv6 FIB capability overload forward.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = hwFIBOverloadModule - Module is ipv4 or ipv6
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $hwFIBOverloadModule = lookup($4,hwFIBOverloadModule)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwFIBOverloadFwResume"
+
+            @AlertGroup = "FIB Overload Forwarding"
+            @AlertKey = "FIB Module: " + $hwFIBOverloadModule
+            @Summary = "Board Recovered from Forwarding for FIB Capability Overload  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwFIBOverloadModule = $hwFIBOverloadModule + " ( " + $4 + " )"
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$hwFIBOverloadModule)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Fib.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Fib.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.5.25.129.2.10": ### Huawei Technologies - Notifications from HUAWEI-BASE-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwPppLoopbackDetect
+
+            ##########
+            # The interface Loopback is detected.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = ifIndex - A unique value for each interface.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $ifIndex = $4
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwPppLoopbackDetect"
+
+            @AlertGroup = "Interface Loopback"
+            @AlertKey = "ifEntry." + $ifIndex
+            @Summary = "Interface Loopback Detected  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwPppLoopbackDetResume
+
+            ##########
+            # The interface is recovered for Loopback.
+            #
+            # $1 = hwBaseTrapSeverity - The level of trap.
+            # $2 = hwBaseTrapProbableCause - Probable cause of trap.
+            # $3 = hwBaseTrapEventType - Type of trap.
+            # $4 = ifIndex - A unique value for each interface.
+            ##########
+
+            $hwBaseTrapSeverity = lookup($1,hwItuPerceivedSeverity) + " ( " + $1 + " )"
+            $hwBaseTrapProbableCause = lookup($2,hwIANAItuProbableCause) + " ( " + $2 + " )"
+            $hwBaseTrapEventType =lookup($3,hwIANAItuEventType) + " ( " + $3 + " )"
+            $ifIndex = $4
+            details($hwBaseTrapSeverity,$hwBaseTrapProbableCause,
+                    $hwBaseTrapEventType,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-BASE-TRAP-MIB-hwPppLoopbackDetResume"
+
+            @AlertGroup = "Interface Loopback"
+            @AlertKey = "ifEntry." + $ifIndex
+            @Summary = "Interface Recovered from Loopback  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-BASE-TRAP-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+    
+    ##########
+    # End of Severity via Lookup.
+    ##########
+    
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+    
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Ppp.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-BASE-TRAP-MIB_Ppp.user.include.snmptrap.rules"
+    
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+    
+    log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-BASE-TRAP-MIB.include.snmptrap.rules >>>>>")
+

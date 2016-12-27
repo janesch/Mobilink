@@ -1,0 +1,218 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-FBINFO.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "FBINFO": ### Cisco AS5800 feature board crash information subsystem
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-FBINFO.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CRASH":
+            
+            ##########
+            # The feature board in the slot indicated has crashed and sent a
+            # "CRASH_START" message to the DSI. The DSI is now waiting for the
+            # rest of the crash information (stack trace, context, version,
+            # etc.) from the line card to be sent via the MBus. The crash
+            # information should be sent a few milliseconds after receiving the
+            # "CRASH_START" message. The DSI software will be notified of the
+            # line card crash after all the crash information has been sent to
+            # the DSI. In the unlikely event that the subsequent crash
+            # information messages are not received by the DSI within a
+            # reasonable time limit (perhaps 10 seconds), the DSI will print a
+            # "TIMEOUT" error message indicating that the DSI did not receive
+            # the crash information messages and will notify the rest of the
+            # DSI software that the feature board has crashed.
+            #
+            # %FBINFO-3-CRASH: Feature board in slot [int] crashed
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + extract(@Summary, " slot ([0-9]+) ")
+            
+        case "INVDEV":
+            
+            ##########
+            # The feature board crash information subsystem on the DSI was
+            # called from the MBus subsystem with an invalid DEVICE identifier.
+            # The DEVICE in this case is supposed to be the slot number of the
+            # line card, but it was out of range. This indicates a software
+            # defect in the system.
+            #
+            # %FBINFO-3-INVDEV: Invalid feature board number in MBUS callback
+            # (LC=[int]) 
+            ##########
+            
+            @AlertKey = ""
+            
+        case "INVSTATE":
+            
+            ##########
+            # The feature board crash information subsystem for the feature
+            # board indicates that it is in an unknown state. This is due to a
+            # software defect in that subsystem.
+            #
+            # %FBINFO-3-INVSTATE: Feature board crash server in bad state
+            # (LC=[int], state=[int])
+            ##########
+            
+            @AlertKey = ""
+            
+        case "NOPROCESS":
+            
+            ##########
+            # The create_process call failed while creating the crash complete
+            # process for the crash information subsystem. This error is
+            # probably due to a software defect or hardware failure and should
+            # happen only during initialization.
+            #
+            # %FBINFO-3-NOPROCESS: Failed creating feature board slot [int]
+            # complete process
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "NOSPACE":
+            
+            ##########
+            # The attempt to write the crash information following a feature
+            # board crash failed because of insufficient free space in the
+            # Flash device. The crash information is available via a show
+            # context slot N command but will be lost after the next reload of
+            # the system.
+            #
+            # %FBINFO-4-NOSPACE: Insufficient space to write crashinfo file
+            # [chars]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "crashinfo file (.*)$"))
+            
+            @AlertKey = "File: " + $MOI_Local
+            
+        case "OPENFAIL":
+            
+            ##########
+            # The attempt to open a file in Flash memory to store the crash
+            # information following a feature board crash has failed. The crash
+            # information is available via a show context slot N command but
+            # will be lost after the next reload of the system.
+            #
+            # %FBINFO-4-OPENFAIL: Open of crashinfo file [chars] failed
+            ##########
+            
+            $MOI_Local = extract($Message, "crashinfo file (.*) failed")
+            
+            @AlertKey = "File: " + $MOI_Local
+            
+        case "TIMEOUT":
+            
+            ##########
+            # The crash information complete timer expired. When a feature
+            # board crashes, it sends information to the DSI for debugging and
+            # analysis. When the "START OF CRASH" message is received, a timer
+            # is set for approximately 10 seconds. The line card has 10 seconds
+            # to send all the crash information to the DSI. This process is not
+            # the same as a crash dump; this process contains a small amount of
+            # information that usually includes context, stack trace, etc. The
+            # information will be less than 8k bytes long. If an "END OF CRASH"
+            # information message is not received before the timer expires, the
+            # crash information record, which contains partial information is
+            # closed, this message is displayed, and the rest of the system is
+            # notified that the feature board has crashed, at which point it is
+            # probably reloaded. If the feature board sends more crash
+            # information after the timer goes off and before the system
+            # resets, the feature board additional "UNXMSG" error message might
+            # be displayed.
+            #
+            # %FBINFO-3-TIMEOUT: Timeout waiting for crash info from slot [int]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "TRUNC":
+            
+            ##########
+            # A feature board crashed and was sending crash information to the
+            # RS. The RS received a "CRASH RECORD START" message that indicated
+            # how many bytes of data would be received. Before the indicated
+            # number of bytes had been received, the RS received another "CRASH
+            # RECORD START" message indicating the start of another record. The
+            # first record was marked as truncated, and the next record was
+            # received, but the truncation of the first message is noted in the
+            # later message. This error might be a symptom of another
+            # underlying problem in addition to the line card crash that
+            # resulted in the sending of the first "CRASH RECORD START"
+            # message.
+            #
+            # %FBINFO-4-TRUNC: Crash record ([int]=[chars]) truncated
+            # (expected=[int], actual=[int])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "record \((.*)\) truncated"))
+            
+            @AlertKey = "Crash Record: " + $MOI_Local
+            
+        case "UNXMSG":
+            
+            ##########
+            # The feature board crash information subsystem has received an
+            # unexpected message for its state. The state and message type are
+            # given in the error message. This message does not have any
+            # adverse effect on the DSI since the DSI ignores the message and
+            # recovers from this occurrence. This message could occur if a
+            # feature board is failing. The source of the crash on the line
+            # card is more significant. If this message occurs and a line card
+            # has not crashed, it is caused by a stray or errant MBus message
+            # that should be researched. This problem could also be the result
+            # of a dropped MBus message.
+            #
+            # %FBINFO-4-UNXMSG: Unexpected crash info msg type ([chars]) in
+            # state [chars] (LC=[int])
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "type (.* in state .*)  \(LC=")
+            
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-FBINFO.include.syslog.rules >>>>>")

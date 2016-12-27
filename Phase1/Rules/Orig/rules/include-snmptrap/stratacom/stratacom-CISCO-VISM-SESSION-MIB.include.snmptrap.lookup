@@ -1,0 +1,98 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    stratacom-CISCO-VISM-SESSION-MIB.include.snmptrap.lookup 1.0
+#    2006/05/31 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-VISM-SESSION-MIB
+#
+###############################################################################
+table vismRudpSessionState =
+{
+    ##########
+    # This object indicates the current session operational state. The 
+    # possible operational states are as follows:
+    # 'oos': Out of service state. This is the initial state when a RUDP 
+    #  session is created.
+    # 'is' : In service state. When a channel has been created between 
+    #  gateway and MGC and gateway has sent Start message the state of the 
+    #  session changes to 'is'. If the communication is lost between GW
+    #  (gateway) and the MGC, the state of this session becomes 'oos'.
+    # 'unknown': This is the state other than the above states 
+    ##########
+    
+    {"1","Out Of Service"}, ### oos
+    {"2","In Service"}, ### is
+    {"3","Unknown"}, ### unknown
+}
+default = "Unknown"
+
+table vismSessionGrpState =
+{
+    ##########
+    # This object indicates the operational state of the session
+    # group. The possible operational states are as follows:
+    # 'idle': This is the initial state.
+    # 'oos' : Out of service state. when a session group has been created the 
+    #  state of the session group becomes 'oos' or when all sessions belonging 
+    #  to this group are deleted, session group state becomes 'oos'
+    # 'is': In service state. After at least one  session has been added to 
+    #  the group, socket has been successfully set up and the session has sent 
+    #  a START message to MGC the group state changes to 'is'.
+    # 'unknown': This is the state other than the above states
+    ##########
+
+    {"1","Idle"}, ### idle
+    {"2","Out Of Service"}, ### oos
+    {"3","In Service"}, ### is
+    {"4","Unknown"}, ### unknown
+}
+default = "Unknown"
+
+table vismSessionSetState =
+{
+    ##########
+    # When an entry in vismSessionSetTable is created and no group
+    # has been added to this set yet or group has been created in this set but 
+    # no session has been added yet the set state is 'idle'.
+    # After a group has been created in this set and one session has been 
+    # added to the group the set state becomes 'oos',i.e, out of service.
+    # After successfully open socket and the session has sent START message 
+    # to MGC, the state of the set will be changed based on whether this set 
+    # is fault tolerant(FT) or none fault tolerant(NFT) specify in 
+    # vismSessionSetFaultTolerant.
+    # In NFT case the set state becomes 'activeIs'.
+    # In FT case, if one session from a group received an active message from 
+    # MGC and no standby message received from a session in the other group, 
+    # the state of the set will change to 'activeIs'.
+    # On the other hand, if at least one session from a group received standby 
+    # message from MGC and no other session from the other group received 
+    # active message then the set state is transferred to 'standbyIs'.
+    # The set becomes 'fullIs' when at least one  session from one group 
+    # receives active message and at least one session from the other group 
+    # receives standby message.
+    # 'unknown' is a state other than the above states
+    ##########
+
+    {"1","Idle"}, ### idle
+    {"2","Out Of Service"}, ### oos
+    {"3","In Service, Received 'Active' Message"}, ### activeIs 
+    {"4","In Service, Received 'Standby' Message"}, ### standbyIs 
+    {"5","In Service, Received 'Active' and 'Standby' Message"}, ### fullIs 
+    {"6","Unknown"}, ### unknown
+}
+default = "Unknown"

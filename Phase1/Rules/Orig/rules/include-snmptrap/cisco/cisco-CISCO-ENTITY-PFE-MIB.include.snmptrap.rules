@@ -1,0 +1,195 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ENTITY-PFE-MIB.include.snmptrap.rules 1.0
+#    2006/03/30 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ENTITY-PFE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.265": ### Cisco Packet Forwarding Engine (PFE) Processors - Notifications from CISCO-ENTITY-PFE-MIB (20021127)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ENTITY-PFE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-PFE Processors"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cePfeHistThldEvent
+
+            ##########
+            # $1 = cePfeHistEntPhysIndex 
+            # $2 = cePfeHistType 
+            # $3 = cePfeHistThld 
+            # $4 = cePfeHistValue 
+            ##########
+
+            $cePfeHistEntPhysIndex = $1
+            $cePfeHistType = lookup($2, HistEventType) + " ( " + $2 + " )" 
+            $cePfeHistThld = $3
+            $cePfeHistValue = $4 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ENTITY-PFE-MIB-cePfeHistThldEvent"
+
+            @AlertKey = "entPhysicalEntry." + $1
+            switch($2)
+            { 
+                case "1" : ### thldUtilizationEvent
+                    $SEV_KEY = $OS_EventId + "_thldUtilizationEvent"
+                    @AlertGroup = "PFE Utilization Threshold"
+                    @Summary = "PFE Current Utilization, " + $4 + ", Equal or Above Threshold, " + $3 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "2" : ### thldEfficiencyEvent
+                    $SEV_KEY = $OS_EventId + "_thldEfficiencyEvent"
+                    @AlertGroup = "PFE Efficiency Threshold"
+                    @Summary = "PFE Current Efficiency, " + $4 + ", Equal or Below Threshold, " + $3 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "3" : ### thld1MinUtilizationEvent
+                    $SEV_KEY = $OS_EventId + "_thld1MinUtilizationEvent"
+                    @AlertGroup = "PFE 1 Minute Utilization Threshold"
+                    @Summary = "PFE 1 Minute Utilization, " + $4 + ", Equal or Above Threshold, " + $3 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "4" : ### thld1MinEfficiencyEvent
+                    $SEV_KEY = $OS_EventId + "_thld1MinEfficiencyEvent"
+                    @AlertGroup = "PFE 1 Minute Efficiency Threshold"
+                    @Summary = "PFE 1 Minute Efficiency, " + $4 + ", Equal or Below Threshold, " + $3 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5" : ### thld5MinUtilizationEvent
+                    $SEV_KEY = $OS_EventId + "_thld5MinUtilizationEvent"
+                    @AlertGroup = "PFE 5 Minute Utilization Threshold"
+                    @Summary = "PFE 5 Minute Utilization, " + $4 + ", Equal or Above Threshold, " + $3 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "6" : ### thld5MinEfficiencyEvent
+                    $SEV_KEY = $OS_EventId + "_thld5MinEfficiencyEvent"
+                    @AlertGroup = "PFE 5 Minute Efficiency Threshold"
+                    @Summary = "PFE 5 Minute Efficiency, " + $4 + ", Equal or Below Threshold, " + $3 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7" : ### restartEvent
+                    $SEV_KEY = $OS_EventId + "_restartEvent"
+                    @AlertGroup = "PFE Status"
+                    @Summary = "PFE Restarted" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @AlertGroup = "PFE Status"
+                    @Summary = "PFE Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+ 
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            details($cePfeHistEntPhysIndex,$cePfeHistType,$cePfeHistThld,$cePfeHistValue)  
+
+        case "2": ### cePfeHistRestartEvent
+
+            ##########
+            # $1 = cePfeHistEntPhysIndex 
+            # $2 = cePfeHistRestartReason 
+            ##########
+
+            $cePfeHistEntPhysIndex = $1
+            $cePfeHistRestartReason = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ENTITY-PFE-MIB-cePfeHistRestartEvent"
+
+            @AlertGroup = "PFE Pipeline Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "PFE Pipeline Restarted"
+
+            if(!match($2,""))
+             {
+               @Summary = @Summary + ", " + $2
+             } 
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            details($cePfeHistEntPhysIndex,$cePfeHistRestartReason)  
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ENTITY-PFE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ENTITY-PFE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ENTITY-PFE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ENTITY-PFE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ENTITY-PFE-MIB.include.snmptrap.rules >>>>>")

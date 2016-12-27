@@ -1,0 +1,109 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-JS-NAT-MIB.include.snmptrap.rules 6.0
+#    2008/02/28 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-JS-NAT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.3.39.1.7.1": ### Juniper NAT Monitor - Notification from JUNIPER-JS-NAT-MIB (20070413)
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-JS-NAT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-NAT Monitor"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxJsNatAddrPoolThresholdStatus
+
+            ##########
+            # $1 = jnxJsNatSrcIpPoolName 
+            # $2 = jnxJsNatAddrPoolUtil 
+            ##########
+
+            $jnxJsNatSrcIpPoolName = $1
+            $jnxJsNatAddrPoolUtil = $2
+            $jnxJsNatSrcIpPoolName_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $jnxJsNatSrcGlobalAddr = extract($OID1, "\.[0-9]+\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-JS-NAT-MIB-jnxJsNatAddrPoolThresholdStatus"
+
+            @AlertGroup = "NAT Pool Status"
+            @AlertKey = "jnxJsSrcNatEntry." + $jnxJsNatSrcIpPoolName_Raw + "." + $jnxJsNatSrcGlobalAddr
+            @Summary = "NAT Pool Utilization Exceeds Threshold"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxJsNatSrcIpPoolName,$jnxJsNatAddrPoolUtil,$jnxJsNatSrcIpPoolName_Raw,$jnxJsNatSrcGlobalAddr)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-JS-NAT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-JS-NAT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-JS-NAT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-JS-NAT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-JS-NAT-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,45 @@
+#############################################################################
+#
+#		snmp_discard.include.rules
+#
+#		These rules are to allow a consistent method of discarding events
+#		$Discard = 0	#	no discard
+#		$Discard = 1	#	std event discard with log message
+#		$Discard = 2	#	Probe Load discard with log message
+#
+#	V0.0	20100430	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+	switch($Discard)
+	{
+		case "1":	### Std Discard
+			discard
+			if(exists($enterpriseName))
+			{
+				$DiscardString = $enterpriseName
+			}
+			else
+			{
+				$DiscardString = $enterprise
+			}
+			log(WARNING,"Event Discarded(1) Host = " + $Node + " Enterprise = " + $DiscardString + "  Generic Trap = " + $generic-trap + "  Specific Trap = " + $specific-trap + "  SNMP Version + " + $SNMP_Version)
+			if(exists($DiscardText))
+			{
+				log(WARNING,"                   " + $DiscardText)
+			}
+
+		case "2":	### Probe Load Discard
+			discard
+			if(exists($enterpriseName))
+			{
+				$DiscardString = $enterpriseName
+			}
+			else
+			{
+			$DiscardString = $enterprise
+			}
+			log(WARNING,"Event Discarded due to Probe Load Host = " + $Node + " Enterprise = " + $DiscardString + "  Generic Trap = " + $generic-trap + "  Specific Trap = " + $specific-trap + "  SNMP Version + " + $SNMP_Version)
+		default:
+	}

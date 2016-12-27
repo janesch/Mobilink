@@ -1,0 +1,100 @@
+#######################################################################
+#
+#       Copyright (C) 2000 Micromuse Inc.
+#       All Rights Reserved
+#
+#       RESTRICTED RIGHTS:
+#
+#       This file may have been supplied under a license.
+#       It may be used, disclosed, and/or copied only as permitted
+#       under such license agreement.  Any copy must contain the
+#       above copyright notice and this restricted rights notice.
+#       Use, copying, and/or disclosure of the file is strictly
+#       prohibited unless otherwise provided in the license agreement.
+#
+#
+# Ident:  $
+#
+#######################################################################
+# Available Elements:
+#
+#$OSI Alarm     
+#$Alarm_Object   
+#$Managed_Object      
+#$Event_Type     
+#$Event_Time     
+#$DateTime      
+#$UTC           
+#$Probable_Cause         
+#$Perceived_Severity     
+#$Additional_Text  
+#
+#######################################################################
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+#
+# This section deals with internal probe events
+#
+    switch(@Summary)
+    {
+    case "Running ...":
+            @Severity = 1
+            @AlertGroup = "probestat"
+            @Type = 2
+    case "Going Down ...":
+            @Severity = 5
+            @AlertGroup = "probestat"
+            @Type = 1
+    default:
+	#            @Severity = 2
+    }
+    @AlertKey = @Agent
+	@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+#       20100929        Change by Chris Janes of Innovise for Lack OMC Events Policy
+#	@Manager = "Alcatel OMCR 1353 RA-B9/B10 probe running on " + hostname()
+        @Manager = "alcatel"
+        @OmcEms = "OMC1"
+#       20100929        End of Changes
+
+
+
+	@Agent = "Alcatel OMCR 1353 RA-B9/B10"
+
+	@Class = 4915
+
+	if ( exists($r_perceivedSeverity) ) {
+
+	 	@Type = 1
+	
+		# These are the only allowed values for perceived serverity
+
+ 		if (match($r_perceivedSeverity,"cleared")) {
+			@Severity = 0
+			@Type = 2
+		} else if (match($r_perceivedSeverity,"critical")) {
+			@Severity = 5 
+		} else if (match($r_perceivedSeverity,"major")) {
+			@Severity = 4
+		} else if (match($r_perceivedSeverity,"minor")) {
+			@Severity = 3
+		} else if (match($r_perceivedSeverity,"warning")) {
+			@Severity = 2	
+		} 
+	}  else {
+		@Severity = 1
+		@Type = 13 
+	}
+
+	@Identifier = $Event+$nsap+$MOInstance
+ 	@Summary = $Event+": "+$r_additionalText
+	@AlertKey = $MOInstance
+	@AlertGroup = $Event
+	@Node = $nsap+": "+$i_val_0_0_namingAttributeValue_val
+	@NodeAlias = $nsap+": "+$i_val_0_0_namingAttributeValue_val
+}
+
+#details($*)

@@ -1,0 +1,744 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-LOCAL-DIRECTOR-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-LOCAL-DIRECTOR-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.99.2": ### Cisco LocalDirector - Notifications from CISCO-LOCAL-DIRECTOR-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-LOCAL-DIRECTOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-LocalDirector"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoLocalDirectorVirtualStateChange
+
+            ##########
+            # When a Virtual machine changes state, a notification is sent.
+            #
+            # $1 = cldVirtualState - The service state of the virtual machine.
+            ##########
+
+            $cldVirtualState = lookup($1, CldMachineState) + " ( " + $1 + " )"
+            $cldVirtualIpAddress = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+$")
+            $cldVirtualPort = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cldVirtualBindID = extract($OID1, "\.([0-9]+)$")
+            details($cldVirtualState,$cldVirtualIpAddress,$cldVirtualPort,$cldVirtualBindID)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorVirtualStateChange"
+
+            @AlertGroup = "Virtual Machine Status"
+            @AlertKey = "cldVirtualTableEntry." + $cldVirtualIpAddress + "." + $cldVirtualPort + "." + $cldVirtualBindID
+            switch($1)
+            {
+                case "1": ### inService
+                    @Summary = "Virtual Machine In Service"
+                    
+                    $SEV_KEY = $OS_EventId + "_inService"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### outOfService
+                    @Summary = "Virtual Machine Out of Service, Manually"
+                    
+                    $SEV_KEY = $OS_EventId + "_outOfService"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### testing
+                    @Summary = "Virtual Machine Failed, Testing"
+                    
+                    $SEV_KEY = $OS_EventId + "_testing"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### failed
+                    @Summary = "Virtual Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### maxCapacity
+                    @Summary = "Virtual Machine Reached Connection Limit"
+                    
+                    $SEV_KEY = $OS_EventId + "_maxCapacity"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### maintenance
+                    @Summary = "Virtual Machine Manually Taken Offline"
+                    
+                    $SEV_KEY = $OS_EventId + "_maintenance"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### stickyOnly
+                    @Summary = "Virtual Machine Only Accepting 'Sticky Association' Connections"
+                    
+                    $SEV_KEY = $OS_EventId + "_stickyOnly"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### externalFailed
+                    @Summary = "Virtual Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_externalFailed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Virtual Machine Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( VM IP: " + $cldVirtualIpAddress + ", TCP Port: " + $cldVirtualPort + ", Bind ID: " + $cldVirtualBindID + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "2": ### ciscoLocalDirectorRealStateChange
+
+            ##########
+            # When a Real machine changes state, a notification is sent.
+            #
+            # $1 = cldRealState - The service state of the real machine.
+            ##########
+
+            $cldRealState = lookup($1, CldMachineState) + " ( " + $1 + " )"
+            $cldRealIpAddress = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+$")
+            $cldRealPort = extract($OID1, "\.([0-9]+)$")
+            details($cldRealState,$cldRealIpAddress,$cldRealPort)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorRealStateChange"
+
+            @AlertGroup = "Real Machine Status"
+            @AlertKey = "cldRealTableEntry." + $cldRealIpAddress + "." + $cldRealPort
+            switch($1)
+            {
+                case "1": ### inService
+                    @Summary = "Real Machine In Service"
+                    
+                    $SEV_KEY = $OS_EventId + "_inService"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### outOfService
+                    @Summary = "Real Machine Out of Service, Manually"
+                    
+                    $SEV_KEY = $OS_EventId + "_outOfService"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### testing
+                    @Summary = "Real Machine Failed, Testing"
+                    
+                    $SEV_KEY = $OS_EventId + "_testing"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### failed
+                    @Summary = "Real Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### maxCapacity
+                    @Summary = "Real Machine Reached Connection Limit"
+                    
+                    $SEV_KEY = $OS_EventId + "_maxCapacity"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### maintenance
+                    @Summary = "Real Machine Manually Taken Offline"
+                    
+                    $SEV_KEY = $OS_EventId + "_maintenance"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### stickyOnly
+                    @Summary = "Real Machine Only Accepting 'Sticky Association' Connections"
+                    
+                    $SEV_KEY = $OS_EventId + "_stickyOnly"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### externalFailed
+                    @Summary = "Real Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_externalFailed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Real Machine Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( IP: " + $cldRealIpAddress + ", TCP Port: " + $cldRealPort + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "3": ### ciscoLocalDirectorFailoverEnableChange
+
+            ##########
+            # Failover is turned on/off.
+            #
+            # $1 = cldFailoverEnabled - Is failover mechanism enabled.
+            ##########
+
+            $cldFailoverEnabled = lookup($1, CldFailoverEnabledState) + " ( " + $1 + " )"
+            details($cldFailoverEnabled)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorFailoverEnableChange"
+
+            @AlertGroup = "Failover Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### failoverOn
+                    @Summary = "LocalDirector Failover Enabled"
+                    
+                    $SEV_KEY = $OS_EventId + "_failoverOn"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### failoverOff
+                    @Summary = "LocalDirector Failover Disabled"
+                    
+                    $SEV_KEY = $OS_EventId + "_failoverOff"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "LocalDirector Failover Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "4": ### ciscoLocalDirectorFailoverCableChange
+
+            ##########
+            # Failover's serial cable has a status change.
+            #
+            # $1 = cldFailoverCableStatus - Status of failover serial cable.
+            ##########
+
+            $cldFailoverCableStatus = lookup($1, CldFailoverCableState) + " ( " + $1 + " )"
+            details($cldFailoverCableStatus)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorFailoverCableChange"
+
+            @AlertGroup = "Failover Cable Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### normalConnected
+                    @Summary = "Failover Serial Cable Connected, both Units Powered On"
+                    
+                    $SEV_KEY = $OS_EventId + "_normalConnected"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### otherSidePoweredOff
+                    @Summary = "Failover Serial Cable Connected, Remote Unit Powered Off"
+                    
+                    $SEV_KEY = $OS_EventId + "_otherSidePoweredOff"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### mySideNotConnected
+                    @Summary = "Failover Serial Cable Disconnected Locally"
+                    
+                    $SEV_KEY = $OS_EventId + "_mySideNotConnected"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### otherSideNotConnected
+                    @Summary = "Failover Serial Cable Disconnected from Remote Unit"
+                    
+                    $SEV_KEY = $OS_EventId + "_otherSideNotConnected"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### badCable
+                    @Summary = "Failover Serial Cable Bad"
+                    
+                    $SEV_KEY = $OS_EventId + "_badCable"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Failover Serial Cable Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "5": ### ciscoLocalDirectorFailoverUnitStatus
+
+            ##########
+            # Failover event occurs.
+            #
+            # $1 = cldFailoverUnitStatus - The unit's failover activity; active
+            #        or standby.
+            ##########
+
+            $cldFailoverUnitStatus = lookup($1, CldFailoverUnitStatusDescriptor) + " ( " + $1 + " )"
+            details($cldFailoverUnitStatus)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorFailoverUnitStatus"
+
+            @AlertGroup = "Failover Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "": ### active
+                    @Summary = "LocalDirector Active: Currently Active and Handling Load-Balancing"
+                    
+                    $SEV_KEY = $OS_EventId + "_active"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                    
+                case "": ### standby
+                    @Summary = "LocalDirector in Standby: Not Active and Only Monitoring 'Active' Unit"
+                    
+                    $SEV_KEY = $OS_EventId + "_standby"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                    
+                default:
+                    @Summary = "LocalDirector Failover Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "6": ### ciscoLocalDirectorEVirtualStateChange
+
+            ##########
+            # When a Virtual machine changes state, a notification is sent.
+            #
+            # $1 = cldeVirtualState - The service state of the virtual machine.
+            ##########
+
+            $cldeVirtualState = lookup($1, CldMachineState) + " ( " + $1 + " )"
+            $cldeVirtualIpAddress = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $cldeVirtualPort = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $cldeVirtualBindID = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cldeVirtualProtocol_Raw = extract($OID1, "\.([0-9]+)$")
+            $cldeVirtualProtocol = lookup($cldeVirtualProtocol_Raw, MachineProtocol)
+                        
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorEVirtualStateChange"
+
+            @AlertGroup = "Virtual Machine Status"
+            @AlertKey = "cldeVirtualTableEntry." + $cldeVirtualIpAddress + "." + $cldeVirtualPort + "." + $cldeVirtualBindID + "." + $cldeVirtualProtocol_Raw
+            switch($1)
+            {
+                case "1": ### inService
+                    @Summary = "Virtual Machine In Service"
+                    
+                    $SEV_KEY = $OS_EventId + "_inService"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### outOfService
+                    @Summary = "Virtual Machine Out of Service, Manually"
+                    
+                    $SEV_KEY = $OS_EventId + "_outOfService"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### testing
+                    @Summary = "Virtual Machine Failed, Testing"
+                    
+                    $SEV_KEY = $OS_EventId + "_testing"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### failed
+                    @Summary = "Virtual Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### maxCapacity
+                    @Summary = "Virtual Machine Reached Connection Limit"
+                    
+                    $SEV_KEY = $OS_EventId + "_maxCapacity"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### maintenance
+                    @Summary = "Virtual Machine Manually Taken Offline"
+                    
+                    $SEV_KEY = $OS_EventId + "_maintenance"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### stickyOnly
+                    @Summary = "Virtual Machine Only Accepting 'Sticky Association' Connections"
+                    
+                    $SEV_KEY = $OS_EventId + "_stickyOnly"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### externalFailed
+                    @Summary = "Virtual Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_externalFailed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Virtual Machine Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( VM IP: " + $cldeVirtualIpAddress + ", TCP Port: " + $cldeVirtualPort + ", Bind ID: " + $cldeVirtualBindID + ", Protocol: " + $cldeVirtualProtocol + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            $cldeVirtualProtocol = $cldeVirtualProtocol + " ( " + $cldeVirtualProtocol_Raw + " )"
+            details($cldeVirtualState,$cldeVirtualIpAddress,$cldeVirtualPort,$cldeVirtualBindID,$cldeVirtualProtocol)
+
+        case "7": ### ciscoLocalDirectorERealStateChange
+
+            ##########
+            # When a Real machine changes state, a notification is sent.
+            #
+            # $1 = cldeRealState - The service state of the real machine
+            #        (default is 0, which is all clients.
+            ##########
+
+            $cldeRealState = lookup($1, CldMachineState) + " ( " + $1 + " )"
+            $cldeRealIpAddress = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $cldeRealPort = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $cldeRealBindID = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cldeRealProtocol_Raw = extract($OID1, "\.([0-9]+)$")
+            $cldeRealProtocol = lookup($cldeRealProtocol_Raw, MachineProtocol)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorERealStateChange"
+
+            @AlertGroup = "Real Machine Status"
+            @AlertKey = "cldeRealTableEntry." + $cldeRealIpAddress + "." + $cldeRealPort + "." + $cldeRealBindID + "." + $cldeRealProtocol_Raw
+            switch($1)
+            {
+                case "1": ### inService
+                    @Summary = "Real Machine In Service"
+                    
+                    $SEV_KEY = $OS_EventId + "_inService"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### outOfService
+                    @Summary = "Real Machine Out of Service, Manually"
+                    
+                    $SEV_KEY = $OS_EventId + "_outOfService"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### testing
+                    @Summary = "Real Machine Failed, Testing"
+                    
+                    $SEV_KEY = $OS_EventId + "_testing"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### failed
+                    @Summary = "Real Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### maxCapacity
+                    @Summary = "Real Machine Reached Connection Limit"
+                    
+                    $SEV_KEY = $OS_EventId + "_maxCapacity"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### maintenance
+                    @Summary = "Real Machine Manually Taken Offline"
+                    
+                    $SEV_KEY = $OS_EventId + "_maintenance"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### stickyOnly
+                    @Summary = "Real Machine Only Accepting 'Sticky Association' Connections"
+                    
+                    $SEV_KEY = $OS_EventId + "_stickyOnly"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### externalFailed
+                    @Summary = "Real Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_externalFailed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Real Machine Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( IP: " + $cldeRealIpAddress + ", TCP Port: " + $cldeRealPort + ", Bind ID: " + $cldeRealBindID + ", Protocol: " + $cldeRealProtocol + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            $cldeRealProtocol = $cldeRealProtocol + " ( " + $cldeRealProtocol_Raw + " )"
+            details($cldeRealState,$cldeRealIpAddress,$cldeRealPort,$cldeRealBindID,$cldeRealProtocol)
+
+        case "8": ### ciscoLocalDirectorExVirtualStateChange
+
+            ##########
+            # When a Virtual machine changes state, a notification is sent.
+            #
+            # $1 = cldexVirtualState - The service state of the virtual
+            #        machine.
+            ##########
+
+            $cldexVirtualState = lookup($1, CldMachineState) + " ( " + $1 + " )"
+            $cldexVirtualIpAddress = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.99\.1\.1\.3\.1\.6\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\..*$")
+            $cldexVirtualPort = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.99\.1\.1\.3\.1\.6\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+\.[0-9]+\..*$")
+            $cldexVirtualBindID = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.99\.1\.1\.3\.1\.6\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)\.[0-9]+\..*$")
+            $cldexVirtualProtocol_Raw = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.99\.1\.1\.3\.1\.6\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)\..*$")
+            $cldexVirtualProtocol = lookup($cldexVirtualProtocol_Raw, MachineProtocol)
+            
+            $cldexVirtualRule_OctetString = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.99\.1\.1\.3\.1\.6\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.(.*)$")
+            $OctetString = $cldexVirtualRule_OctetString
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cldexVirtualRule = $String
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-LOCAL-DIRECTOR-MIB-ciscoLocalDirectorExVirtualStateChange"
+
+            @AlertGroup = "Virtual Machine Status"
+            @AlertKey = "cldexVirtualTableEntry." + $cldexVirtualIpAddress + "." + $cldexVirtualPort + "." + $cldexVirtualBindID + "." + $cldexVirtualProtocol_Raw + "." + $cldexVirtualRule_OctetString
+            switch($1)
+            {
+                case "1": ### inService
+                    @Summary = "Virtual Machine In Service"
+                    
+                    $SEV_KEY = $OS_EventId + "_inService"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### outOfService
+                    @Summary = "Virtual Machine Out of Service, Manually"
+                    
+                    $SEV_KEY = $OS_EventId + "_outOfService"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### testing
+                    @Summary = "Virtual Machine Failed, Testing"
+                    
+                    $SEV_KEY = $OS_EventId + "_testing"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### failed
+                    @Summary = "Virtual Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### maxCapacity
+                    @Summary = "Virtual Machine Reached Connection Limit"
+                    
+                    $SEV_KEY = $OS_EventId + "_maxCapacity"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### maintenance
+                    @Summary = "Virtual Machine Manually Taken Offline"
+                    
+                    $SEV_KEY = $OS_EventId + "_maintenance"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### stickyOnly
+                    @Summary = "Virtual Machine Only Accepting 'Sticky Association' Connections"
+                    
+                    $SEV_KEY = $OS_EventId + "_stickyOnly"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### externalFailed
+                    @Summary = "Virtual Machine Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_externalFailed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Virtual Machine Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( VM IP: " + $cldexVirtualIpAddress + ", TCP Port: " + $cldexVirtualPort + ", Bind ID: " + $cldexVirtualBindID + ", Protocol: " + $cldexVirtualProtocol + ", Rule: " + $cldexVirtualRule + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            $cldexVirtualProtocol = $cldexVirtualProtocol + " ( " + $cldexVirtualProtocol_Raw + " )"
+            details($cldexVirtualState,$cldexVirtualIpAddress,$cldexVirtualPort,$cldexVirtualBindID,$cldexVirtualProtocol,$cldexVirtualRule)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-LOCAL-DIRECTOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-LOCAL-DIRECTOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-LOCAL-DIRECTOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-LOCAL-DIRECTOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-LOCAL-DIRECTOR-MIB.include.snmptrap.rules >>>>>")

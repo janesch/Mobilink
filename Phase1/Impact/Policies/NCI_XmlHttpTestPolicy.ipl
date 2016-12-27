@@ -1,0 +1,53 @@
+function xmlHttpTestPolicy(OrgNodes) {
+  log("**XmlHttpTestPolicy**");
+  Type = "XmlHttpTOC";
+  //Filter = "Operation = 'POST' AND FilePath = '/axis/XmlDsaTest' AND NAME1 = 'VALUE1'";
+  Filter = "Operation = 'GET' AND FilePath = '/axis/XmlDsaTest' AND NAME1 = 'VALUE1'";
+  log("Filter is " + Filter);
+  GetByFilter(Type, Filter, CountOnly);
+  if (Num > 0) {
+    httpLookupTopNode(OrgNodes);
+  }
+}
+
+function httpLookupTopNode(OrgNodes) {
+  log("**HttpLookupTopNode**");
+  Types = { "HTEST_JavaXML_Book" };
+  LinkFilter = "";
+  GetByLinks(Types, LinkFilter, MaxNum, OrgNodes);
+  if (Num > 0) {
+    httpDisplayContents(OrgNodes);
+  }
+}
+
+function httpDisplayContents(OrgNodes) {
+  log("**HttpDisplayContents**");
+
+  log("BookNode.xmlns_JavaXML = " + OrgNodes[0].xmlns_JavaXML);
+
+  /* Equivalent to LookupLink action module */
+  BookNode = OrgNodes[0].links.HTEST_JavaXML_Contents.first;
+
+  /* Equivalent to a lookupLink action module */
+  ChapterList = BookNode.links.HTEST_JavaXML_Chapter.array;
+
+  log("Printing the contents of Chapter[0]");
+  log("ChapterList[0].focus = " + ChapterList[0].focus);
+  Heading = ChapterList[0].links.HTEST_JavaXML_Heading.first;
+
+  log("ChapterList[0] heading is " + Heading.PCDATA);
+
+  Heading2 = ChapterList[1].links.HTEST_JavaXML_Heading.first;
+  log("ChapterList[1] heading is " + Heading2.PCDATA);
+}
+
+xmlHttpTestPolicy(OrgNodes);
+
+
+
+
+
+
+
+
+

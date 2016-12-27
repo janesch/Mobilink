@@ -1,0 +1,74 @@
+###############################################################################
+#
+#	sun-SUNSTORAGEAGENT-NOTIFICATION-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for SUN STORAGEAGENT alarms
+#
+#       V0.1	20110712	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.42.2.95":  ### - storagent (from SUNSTORAGEAGENT-NOTIFICATION-MIB)
+
+	log(DEBUG, "<<<<< Entering... sun-SUNSTORAGEAGENT-NOTIFICATION-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "SUN"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "SUN-STORAGEAGENT-MIB"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_SUN_001"
+
+	switch($specific-trap) {
+		case "6": ### - alertMessage
+			#######################
+			#
+			# An alertMessage trap signifies that an alert was
+			# was generated for a storage device monitored
+			# by the Storage Agent.
+			#
+			# $1 = deviceName
+			#
+			#      The name of the storage device that the alert message
+			#      pertains to.
+			#
+			# $2 = alertLevel
+			#
+			#      The level of importance of the alert related to failure.
+			#
+			# $3 = message
+			#
+			#      The alert message for the storage device.
+			#
+			#######################
+			$deviceName = $1
+			$alertLevel = lookup($2,sun-SUNSTORAGEAGENT-NOTIFICATION-MIB-alertLevel)
+			$message = $3
+
+			@Type = 1
+			@Severity = $alertLevel
+			@ExpireTime = 18000
+			@AlertKey = $deviceName+$alertLevel+$message
+			@Summary = "Storage device: " + $deviceName + " Message: " + $message
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... sun-SUNSTORAGEAGENT-NOTIFICATION-MIB.include.snmptrap.rules >>>>>")

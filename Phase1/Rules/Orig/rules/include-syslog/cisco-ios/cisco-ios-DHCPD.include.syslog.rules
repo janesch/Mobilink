@@ -1,0 +1,182 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-DHCPD.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "DHCPD":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-DHCPD.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "(-1)":
+        
+            ##########
+            # DHCP could not start one of its processes.
+            #
+            # %DHCPD-2-(-1): DHCP could not start its [chars] process.
+            ##########
+            
+            $MOI_Local = extract($Message, "start its (.*) process")
+            
+            @AlertKey = "Process: " + $MOI_Local
+        
+        case "DECLINE_CONFLICT":
+        
+            ##########
+            # The DHCP client has detected an address conflict. Another host is
+            # using the specified IP address.
+            #
+            # %DHCPD-4-DECLINE_CONFLICT: DHCP address conflict: client [chars]
+            # declined [IP_address].
+            ##########
+            
+            $MOI_Remote = extract($Message, "declined ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+        
+        case "MALLOC_ERROR":
+        
+            ##########
+            # The DHCP could not allocate mandatory data structures.
+            #
+            # %DHCPD-2-MALLOC_ERROR: There is inadequate memory for DHCP
+            # services.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "NO_PROCESS":
+        
+            ##########
+            # The DHCP could not start one of its processes.
+            #
+            # %DHCPD-2-NO_PROCESS: DHCP could not start its [chars] process.
+            ##########
+            
+            $MOI_Local = extract($Message, "start its (.*) process")
+            
+            @AlertKey = "Process: " + $MOI_Local
+        
+        case "PING_CONFLICT":
+        
+            ##########
+            # The DHCP server has detected an address conflict. Another host is
+            # using the specified IP address.
+            #
+            # %DHCPD-4-PING_CONFLICT: DHCP address conflict: server pinged
+            # [IP_address].
+            ##########
+            
+            $MOI_Remote = extract($Message, "pinged ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = $MOI_Remote
+        
+        case "READ_DEADLOCK":
+        
+            ##########
+            # The DHCP server could not read the bindings from any database
+            # agent. To prevent a possible deadlock, the server has made all
+            # pool addresses available for assignment.
+            #
+            # %DHCPD-2-READ_DEADLOCK: DHCP has detected a deadlock condition
+            # (excessive read failures).
+            ##########
+            
+            @AlertKey = ""
+        
+        case "READ_ERROR":
+        
+            ##########
+            # The DHCP server could not read bindings from the specified
+            # database agent.
+            #
+            # %DHCPD-3-READ_ERROR: DHCP could not read bindings from [chars].
+            ##########
+            
+            $MOI_Local = extract($Message, "bindings from (.*)\.?")
+            
+            @AlertKey = "Database Agent: " + $MOI_Local
+        
+        case "RECVMSG_ERROR":
+        
+            ##########
+            # The reason for this failure is unknown.
+            #
+            # %DHCPD-2-RECVMSG_ERROR: Recvmsg failed unexpectedly. DHCP
+            # services have been terminated.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "RELAY_ONLY":
+        
+            ##########
+            # The DHCP could not start its database process. The server
+            # component has been disabled. Only the relay agent is active.
+            #
+            # %DHCPD-4-RELAY_ONLY: DHCP will run as a relay agent only.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "SOCKET_ERROR":
+        
+            ##########
+            # The DHCP could not open the UDP port.
+            #
+            # %DHCPD-2-SOCKET_ERROR: DHCP could not open UDP port [int].
+            ##########
+            
+            $MOI_Local = extract($Message, "UDP port ([0-9]+)")
+            $MOIType_Local = "udpport"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "UDP Port: " + $MOI_Local
+        
+        case "WRITE_ERROR":
+        
+            ##########
+            # The DHCP server could not write bindings to the specified
+            # database agent.
+            #
+            # %DHCPD-3-WRITE_ERROR: DHCP could not write bindings to [chars].
+            ##########
+            
+            $MOI_Local = extract($Message, "bindings to (.*)\.?")
+            
+            @AlertKey = "Database Agent: " + $MOI_Local
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-DHCPD.include.syslog.rules >>>>>")

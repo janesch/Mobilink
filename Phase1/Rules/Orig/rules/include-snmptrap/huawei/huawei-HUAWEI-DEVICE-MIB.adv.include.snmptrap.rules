@@ -1,0 +1,86 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    huawei-HUAWEI-DEVICE-MIB.adv.include.snmptrap.rules 1.0
+#    2007/07/30 Sagar Karangle
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  HUAWEI-DEVICE-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... huawei-HUAWEI-DEVICE-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### hwFrameAdminResultTrap
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "hwFrameAdminResultTrap"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "hwFrameEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### hwSlotAdminResultTrap
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "hwSlotAdminResultTrap"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "hwSlotEntry." + $1 + "." + $2
+        $OS_LocalRootObj = "hwFrameEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### hwSubSlotAdminResultTrap
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "hwSubSlotAdminResultTrap"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "hwSubslotEntry." + $1 + "." + $2 + "." + $3
+        $OS_LocalSecObj = "hwSlotEntry." + $1 + "." + $2
+        $OS_LocalRootObj = "hwFrameEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "4": ### hwPortAdminResultTrap
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "hwPortAdminResultTrap"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "hwPortEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+        $OS_LocalSecObj = "hwSlotEntry." + $1 + "." + $2
+        $OS_LocalRootObj = "hwFrameEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-DEVICE-MIB.adv.include.snmptrap.rules >>>>>")

@@ -1,0 +1,129 @@
+# /opt/IBM/tivoli/netcool/omnibus/probes/linux2x86/mobilink.include.rules
+
+
+
+
+if(regmatch(@Summary, "BFD Session Down \( bfdSessEntry.[0-9]* \)"))
+{
+	@EventId = "NET_IP_BLK_001"
+}
+
+else if(regmatch(@Summary, ".* \[Root\]system-critical-[0-9]*: SYSTEM CPU utilization went from high to normal.*"))
+{
+	@EventId = "NET_IP_BLK_002"
+	@Grade = 1
+}
+
+else if(regmatch(@Summary, ".* \[Root\]system-critical-[0-9]*: SYSTEM CPU utilization is high.*"))
+{
+	@EventId = "NET_IP_BLK_002"
+	@Grade = 2
+}
+
+else if(regmatch(@Summary, "BGP-based IP VPN Interface Down.*"))
+{
+	@EventId = "NET_IP_BLK_003"
+	@Grade = 1
+}
+
+else if(regmatch(@Summary, "VPN Pseudo-Wire Down.*"))
+{
+	@EventId = "NET_IP_BLK_003"
+	@Grade = 2
+}
+
+else if(regmatch(@Summary, "Trunk Port Not Trunking.*"))
+{
+	@EventId = "NET_IP_BLK_004"
+}
+
+else if(regmatch(@Summary, "Fan Failure, Not Spinning.*"))
+{
+	@EventId = "NET_IP_BLK_005"
+	@Grade = 1
+}
+
+else if(regmatch(@Summary, "Fan Removed from Slot.*"))
+{
+	@EventId = "NET_IP_BLK_005"
+	@Grade = 2
+}
+
+else if(regmatch(@Summary, "BGP Peer Connection Idle.*"))
+{
+	@EventId = "NET_IP_BLK_006"
+	@Grade = 1
+}
+
+else if(regmatch(@Summary, ".*\[Root\]system-emergency-[0-9]*: Teardrop attack!.*"))
+{
+	@EventId = "NET_IP_BLK_006"
+	@Grade = 2
+}
+
+else if(regmatch(@Summary, ".*system-critical-[0-9]*: Session limit alarm has been cleared for vsys Root.*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 1
+}
+
+else if(regmatch(@Summary, ".*system-critical-[0-9]*: Session utilization has reached.*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 2
+}
+
+else if(regmatch(@Summary, ".*system-critical-00026: Failed to perform decryption with tunnel ID .* 's symmetric key"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 3
+}
+
+else if(regmatch(@Summary, ".*system-critical-00071: The local device [0-9]* in the Virtual Security Device group ([0-9]*).*changed state from primary backup to master, missing master.*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 4
+}
+
+else if(regmatch(@Summary, ".*system-critical-00015: Peer device [0-9]* in the Virtual Security Device group [0-9]* changed state from primary backup to master.*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 5
+}
+
+else if(regmatch(@Summary, ".*system-critical-00072: The local device [0-9]* in the Virtual Security Device group ([0-9]*).*changed state from backup to primary backup, missing primary backup.*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 6
+}
+
+else if(regmatch(@Summary, ".*system-critical-00041: VPN '.*' from .* is down..*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 7
+}
+
+else if(regmatch(@Summary, ".*system-critical-00015: Peer device [0-9]* in the Virtual Security Device group [0-9]* changed state from backup to primary backup.*"))
+{
+	@EventId = "NET_IP_BLK_007"
+	@Grade = 8
+}
+
+else if(regmatch(@Summary, "Interface FastEthernet0/[0-9]*, changed state to down.*"))
+{
+	@EventId = "NET_IP_BLK_008"
+}
+
+else if(regmatch(@Summary, "Flexible PIC Concentrator in Slot [0-9]* Powered Off, FEB was Offlined.*"))
+{
+	@EventId = "NET_IP_BLK_009"
+}
+
+else
+{
+	@EventId = "Not Set"
+}
+
+
+@Identifier = @Identifier + @EventId + @Summary
+

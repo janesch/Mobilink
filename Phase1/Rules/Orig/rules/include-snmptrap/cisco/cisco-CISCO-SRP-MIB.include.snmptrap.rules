@@ -1,0 +1,198 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-SRP-MIB.include.snmptrap.rules 2.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-SRP-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.60.5": ### Cisco Spatial Reuse Protocol (SRP) - Notifications from CISCO-SRP-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-SRP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-SRP"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    ##########
+    # NOTE: All Cisco SRP traps contain the following variable bindings.
+    #
+    # $1 = ifIndex - A unique value for each interface. Its value ranges
+    #        between 1 and the value of ifNumber. The value for each interface
+    #        must remain constant at least from one re-initialization of the
+    #        entity's network management system to the next re-initialization.
+    # $2 = srpIpsState - Each node in the Intelligent Protection Switching
+    #        (IPS) is one of the following states.
+    #        (1)Idle - In this mode the node is ready to perform protection and
+    #             it sends to both neighboring nodes idle IPS messages, which
+    #             include self in the source address field {0, SELF, 0, S}.
+    #        (2)PassThrough - Node participate in a protection switch by
+    #             passing the wrapped traffic and long path signalling through
+    #             itself. This state is entered based on received IPS messages.
+    #        (3)Wrapped - Node participate in a protection switch with a wrap
+    #             present. This state is entered based on protection request
+    #             issued locally or based on received IPS messages. When
+    #             interface is down the value for IPS state is passThrough.
+    # $3 = srpMACIpsAutoDetectMode - The current IPS mode as automatically
+    #        detected by the the local node that can affect the
+    #        srpMACIpsActiveMode state of the SRP node, according to the set
+    #        of rules describing IPS protocol.  This variable value is one from
+    #        the following subset (SignalFail, SignalDegrade, WaitToRestore).
+    # $4 = srpMACIpsRemoteMode - The IPS mode indicated in IPS messages being
+    #        received by the local node from other nodes on the ring, that can
+    #        affect the srpMACIpsActiveMode state of the SRP node, according to
+    #        the set of rules describing IPS protocol.
+    # $5 = srpMACIpsRemoteType - Indicates if srpMACIpsRemoteMode object value
+    #        belongs to the adjacent node in the case of the shortPath or
+    #        belongs to the non-adjacent node in the case of the longPath.
+    # $6 = srpMACIpsActiveMode - The currently active IPS mode for the local
+    #        node, which can be changed based on combined effect of the
+    #        following variables: srpMACIpsMgmtRequestedMode,
+    #        srpMACIpsAutoDetectMode, srpMACIpsRemoteMode, and
+    #        srpMACIpsRemoteType according to the set of rules describing IPS
+    #        protocol.
+    # $7 = srpMACIpsWrapCounter - The number of transition from unwrap to wrap
+    #        state.
+    # $8 = srpMACIpsLastWrapTimeStamp - The value of sysUpTime for the last
+    #        wrap.
+    # $9 = srpMACIpsLastUnWrapTimeStamp - The value of sysUpTime for the last
+    #        unwrap.
+    ##########
+    
+    switch($specific-trap)
+    {
+        case "1": ### srpTrapRingWrapped
+            
+            ##########
+            # An srpTrapRingWrapped notification is sent when the value of an
+            # instance of srpMACIpsWrapCounter increments.
+            ##########
+
+            $ifIndex = $1
+            $srpIpsState = lookup($2, srpIpsState) + " ( " + $2 + " )"
+            $srpMACIpsAutoDetectMode = lookup($3, ciscoSrpIpsMode) + " ( " + $3 + " )"
+            $srpMACIpsRemoteMode = lookup($4, ciscoSrpIpsMode) + " ( " + $4 + " )"
+            $srpMACIpsRemoteType = lookup($5, srpMACIpsRemoteType) + " ( " + $5 + " )"
+            $srpMACIpsActiveMode = lookup($6, ciscoSrpIpsMode) + " ( " + $6 + " )"
+            $srpMACIpsWrapCounter = $7
+            $srpMACIpsLastWrapTimeStamp = $8
+            $srpMACIpsLastUnWrapTimeStamp = $9
+            $srpMACInterfaceSide_Raw = extract($OID3, "\.([0-9]+)$")
+            $srpMACInterfaceSide = lookup($srpMACInterfaceSide_Raw, ciscoSrpInterfaceSide) + " ( " + $srpMACInterfaceSide_Raw + " )"
+            details($ifIndex,$srpIpsState,$srpMACIpsAutoDetectMode,$srpMACIpsRemoteMode,$srpMACIpsRemoteType,$srpMACIpsActiveMode,$srpMACIpsWrapCounter,$srpMACIpsLastWrapTimeStamp,$srpMACIpsLastUnWrapTimeStamp,$srpMACInterfaceSide)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SRP-MIB-srpTrapRingWrapped"
+
+            @AlertGroup = "SRP IPS Wrapping"
+            @AlertKey = "srpMACSideEntry." + $1 + "." + $srpMACInterfaceSide_Raw
+            @Summary = "SRP Interface Wrapped  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+        case "2": ### srpTrapRingRestored
+
+            ##########
+            # An srpTrapRingRestored notification is sent when the value of an
+            # instance of rpMACIpsLastUnWrapTimeStamp is changed.
+            ###########
+
+            $ifIndex = $1
+            $srpIpsState = lookup($2, srpIpsState) + " ( " + $2 + " )"
+            $srpMACIpsAutoDetectMode = lookup($3, ciscoSrpIpsMode) + " ( " + $3 + " )"
+            $srpMACIpsRemoteMode = lookup($4, ciscoSrpIpsMode) + " ( " + $4 + " )"
+            $srpMACIpsRemoteType = lookup($5, srpMACIpsRemoteType) + " ( " + $5 + " )"
+            $srpMACIpsActiveMode = lookup($6, ciscoSrpIpsMode) + " ( " + $6 + " )"
+            $srpMACIpsWrapCounter = $7
+            $srpMACIpsLastWrapTimeStamp = $8
+            $srpMACIpsLastUnWrapTimeStamp = $9
+            $srpMACInterfaceSide_Raw = extract($OID3, "\.([0-9]+)$")
+            $srpMACInterfaceSide = lookup($srpMACInterfaceSide_Raw, ciscoSrpInterfaceSide) + " ( " + $srpMACInterfaceSide_Raw + " )"
+            details($ifIndex,$srpIpsState,$srpMACIpsAutoDetectMode,$srpMACIpsRemoteMode,$srpMACIpsRemoteType,$srpMACIpsActiveMode,$srpMACIpsWrapCounter,$srpMACIpsLastWrapTimeStamp,$srpMACIpsLastUnWrapTimeStamp,$srpMACInterfaceSide)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SRP-MIB-srpTrapRingRestored"
+
+            @AlertGroup = "SRP IPS Wrapping"
+            @AlertKey = "srpMACSideEntry." + $1 + "." + $srpMACInterfaceSide_Raw
+            @Summary = "SRP Interface Restored  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+            
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-SRP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-SRP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SRP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SRP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-SRP-MIB.include.snmptrap.rules >>>>>")

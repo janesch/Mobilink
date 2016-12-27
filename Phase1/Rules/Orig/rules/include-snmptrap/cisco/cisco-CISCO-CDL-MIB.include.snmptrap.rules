@@ -1,0 +1,173 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CDL-MIB.include.snmptrap.rules 1.0
+#    2006/05/16 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CDL-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.88": ### Cisco Management for Converged Data Link (CDL) - Notifications from CISCO-CDL-MIB (20021002)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CDL-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Converged Data Link"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### coCdlRxAggDefectIndChange
+
+            ##########
+            # $1 = coCdlRxAggDefectIndCurrStatus 
+            # $2 = coCdlRxAggDefectIndLastChange 
+            ##########
+
+            $coCdlRxAggDefectIndCurrStatus = lookup($1, CoCdlAggDefectIndStatus) + " ( " + $1 + " )"
+            $coCdlRxAggDefectIndLastChange = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CDL-MIB-coCdlRxAggDefectIndChange"
+
+            @AlertGroup = "CDL Defect Status"
+            @AlertKey = "coCdlIntfEntry." + $ifIndex
+            switch($1)
+            {
+                case "1": ### hopByHopForwardDefect
+                    $SEV_KEY = $OS_EventId + "_hopByHopForwardDefect"
+                    @Summary = "CDL Hop-by-Hop Forward Defect"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### hopByHopBackwardDefect
+                    $SEV_KEY = $OS_EventId + "_hopByHopBackwardDefect"
+                    @Summary = "CDL Hop-by-Hop Backward Defect"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### endToEndAggPathForwardDefect
+                    $SEV_KEY = $OS_EventId + "_endToEndAggPathForwardDefect"
+                    @Summary = "CDL End-to-End Aggregate Path Forward Defect"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "CDL Defect Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($coCdlRxAggDefectIndCurrStatus,$coCdlRxAggDefectIndLastChange,$ifIndex)
+
+        case "2": ### coCdlFromCdlNetFlowDIChange
+
+            ##########
+            # $1 = coCdlFromCdlNetFlowDICurrStatus 
+            # $2 = coCdlFromCdlNetFlowDILastChange 
+            ##########
+
+            $coCdlFromCdlNetFlowDICurrStatus = lookup($1, CoCdlFlowDefectIndStatus) + " ( " + $1 + " )"
+            $coCdlFromCdlNetFlowDILastChange = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CDL-MIB-coCdlFromCdlNetFlowDIChange"
+
+            @AlertGroup = "CDL Flow Defect Status"
+            @AlertKey = "coCdlFlowTermEntry." + $ifIndex
+            switch($1)
+            {
+                case "1": ### endToEndPathImplicitFwdDefect
+                    $SEV_KEY = $OS_EventId + "_endToEndPathImplicitFwdDefect"
+                    @Summary = "CDL Flow End-to-End Path Implicit Forward Defect"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### endToEndPathBackwardDefect
+                    $SEV_KEY = $OS_EventId + "_endToEndPathBackwardDefect"
+                    @Summary = "CDL Flow End-to-End Path Backward Defect"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "CDL Flow Defect Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap +  " " + $1
+
+            details($coCdlFromCdlNetFlowDICurrStatus,$coCdlFromCdlNetFlowDILastChange,$ifIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CDL-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CDL-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CDL-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CDL-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CDL-MIB.include.snmptrap.rules >>>>>")

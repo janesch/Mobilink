@@ -1,0 +1,230 @@
+
+INC-MIB-C DEFINITIONS ::= BEGIN
+
+        IMPORTS
+                MODULE-IDENTITY, OBJECT-IDENTITY, OBJECT-TYPE
+                         FROM SNMPv2-SMI
+
+                TEXTUAL-CONVENTION, DisplayString    
+                         FROM SNMPv2-TC
+
+                enterprises        
+                        FROM RFC1155-SMI;
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- This module defines the Common part of the SNMPv2C MIB 
+    -- definition of the INC as seen by an OS ( Operation System ).
+    --
+
+      -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      -- foreign enterprise definitions in order to support
+      -- the INCommander subsystems :
+      cisco OBJECT IDENTIFIER ::= { enterprises 9 }
+      a3Com OBJECT IDENTIFIER ::= { enterprises 43 }
+      cabletron OBJECT IDENTIFIER ::= { enterprises 52 }
+      ubNode OBJECT IDENTIFIER ::= { enterprises 75 }
+      synernetics OBJECT IDENTIFIER ::= { enterprises 114 }
+      legato OBJECT IDENTIFIER ::= { enterprises 160 }
+      bicc OBJECT IDENTIFIER ::= { enterprises 170 }
+      centrum OBJECT IDENTIFIER ::= { enterprises 327 }
+       
+      siemens OBJECT IDENTIFIER ::= { enterprises 4329 }
+
+      sni OBJECT IDENTIFIER          ::= { enterprises 231 }
+      sniSystems     OBJECT IDENTIFIER ::= { sni 1 }
+      sniProductMibs OBJECT IDENTIFIER ::= { sni 2 }
+
+      -- the Control Center Agent Extension group
+      sniTcc         OBJECT IDENTIFIER ::= { sniProductMibs 14 }
+
+      siemensUnits OBJECT IDENTIFIER ::= { sni 7 }
+        
+      ti OBJECT IDENTIFIER           ::= { siemensUnits 99 }
+      -- The authoritative identity of the Siemens products 
+      -- regarding TMN for IN.
+      --
+      -- Note: 99 is temporary used as authoritative identity; 
+      --       it has to be determined as soon as possible." 
+        
+      inModules OBJECT IDENTIFIER ::= { ti 0 }
+      -- "The authoritative (base) identity of the IN modules."
+
+      in OBJECT IDENTIFIER ::= { ti 47 }
+      --      "The authoritative identity of Siemens AG,
+      --       OeN IN for IN NEs."
+
+      -- scp     OBJECT-IDENTITY ... ::= { in 1 } 
+      -- Refer to module 'SCP-MIB-AL'
+
+      -- smp     OBJECT-IDENTITY ... ::= { in 2 } 
+      -- Refer to module 'SMP-MIB-AL'
+
+      -- smpCM   OBJECT-IDENTITY ... ::= { smp 10 } 
+      -- Refer to module 'SMP-MIB-CM'
+
+      -- smpGDM  OBJECT-IDENTITY ... ::= { smp 11 } 
+      -- Refer to module 'SMP-MIB-GDM'
+
+      -- csc     OBJECT-IDENTITY ... ::= { in 3 } 
+      -- Refer to module 'CSC-MIB-SG'
+
+      -- icp     OBJECT-IDENTITY ... ::= { in 4 } 
+      -- Refer to module 'ICP-MIB-AL'
+
+      -- icp     OBJECT-IDENTITY ... ::= { in 5 } 
+      -- Refer to module 'MGW-MIB-CM'
+
+      -- genericNE OBJECT IDENTIFIER ::= { in 1000 }
+      -- Refer to module 'IN-MIB-AL'
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Module Identity :
+    --
+
+    inIncMibC OBJECT IDENTIFIER ::= { inModules 1 } 
+    -- inIncMibC MODULE-IDENTITY
+    --           LAST-UPDATED "0302171400Z"
+    --           ORGANIZATION "Siemens AG"
+    --           CONTACT-INFO
+    --                       "        TMN/IN-Team
+    --                                K.Schmidtke
+    --                       Postal: Siemens AG
+    --                               Information and Communication Mobile
+    --                               Otto-Hahn-Ring 6
+    --                               D-81739 Muenchen
+    --                               Germany
+    --                       E-mail: Klaus.Schmidtke@icn.siemens.de"
+    --           DESCRIPTION
+    --             "This MIB module describes the base OIDs and the
+    --              common textual conventions of the IN Commander ( INC ).
+    --                       
+    --              Additional modules defines the managed objects 
+    --              and notifications types of the several functional 
+    --              areas of the INC ( e.g. EFD administration, 
+    --              alarm reporting )."
+    -- 
+    --           REVISION    "0302171400Z"
+    --           DESCRIPTION "Added object identifier 'siemens'."
+    --
+    --           REVISION    "0006051600Z"
+    --           DESCRIPTION "Added object identifier sniTcc."
+    --
+    --           REVISION    "9906171600Z"
+    --           DESCRIPTION "Adaptations to TeMIP MIB loader."
+    --
+    --           REVISION "9810011200Z"
+    --           DESCRIPTION
+    --                      "minor changes"
+    -- 
+    --           REVISION "9806181200Z"
+    --           DESCRIPTION
+    --                 "minor changes to meet RFC1902.
+    --                  Replaced object types ti<NE-Type>Hosts with
+    --                  ti<NE-Type>Table."
+    --     ::= { inModules 1 } 
+
+    -- inIncMibAL  MODULE-IDENTITY  ...  ::= { inModules 2 } 
+    -- Refer to module 'INC-MIB-AL'
+
+    -- inIncMibEFD MODULE-IDENTITY  ...  ::= { inModules 3 } 
+    -- Refer to module 'INC-MIB-EFD'
+
+    -- inScpMibAL  MODULE-IDENTITY  ...  ::= { inModules 4 } 
+    -- Refer to module 'SCP-MIB-AL'
+
+    -- inSmpMibAL  MODULE-IDENTITY  ...  ::= { inModules 5 } 
+    -- Refer to module 'SMP-MIB-AL'
+
+    -- inCscMibSG  MODULE-IDENTITY  ...  ::= { inModules 6 } 
+    -- Refer to module 'CSC-MIB-SG'
+
+    -- inScpMibCM  MODULE-IDENTITY  ...  ::= { inModules 7 } 
+    -- Refer to module 'SCP-MIB-CM'; available >= INV6.2
+
+    -- inSmpMibCM  MODULE-IDENTITY  ...  ::= { inModules 8 } 
+    -- Refer to module 'SMP-MIB-CM'
+
+    -- inIcpMibAL  MODULE-IDENTITY  ...  ::= { inModules 9 } 
+    -- Refer to module 'ICP-MIB-AL'
+
+    -- inRpMibAL   MODULE-IDENTITY  ...  ::= { inModules 10 } 
+    -- Refer to module 'RP-MIB-AL'
+
+    -- inBrsMibAL  MODULE-IDENTITY  ...  ::= { inModules 11 } 
+    -- Refer to module 'BRS-MIB-AL'
+
+    -- inCnsHilMib MODULE-IDENTITY  ...  ::= { inModules 12 } 
+    -- Refer to module 'CNS-HIL-MIB'
+
+    -- inSmpMibGD  MODULE-IDENTITY  ...  ::= { inModules 13 } 
+    -- Refer to module 'SMP-MIB-GD'; available >= INV6.2
+
+    -- inMgwMibCM  MODULE-IDENTITY  ...  ::= { inModules 14 } 
+    -- Refer to module 'MGW-MIB-CM'
+
+    -- inInMibAL   MODULE-IDENTITY  ...  ::= { inModules 100 } 
+    -- Refer to module 'IN-MIB-AL'
+
+    -- inIncMibI   MODULE-IDENTITY  ...  ::= { inModules 999 } 
+    -- Refer to module 'INC-MIB-I'
+
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- tiInc tree :
+    --
+        tiInc OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                        "Base OID of all INCommander related objects
+                         and notification types."
+        ::= { ti 4 }
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Textual Conventions :
+    --
+
+        TiBoolean ::= TEXTUAL-CONVENTION
+             STATUS       current
+             DESCRIPTION
+                     "Represents a boolean value in the Siemens MIB's."
+             SYNTAX       INTEGER { false(0), true(1) }
+
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Base Object Identities :
+    --
+
+
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Subtrees of the tiInc tree :
+    --
+
+        tiIncTraps OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                   "Base OID for the notification OIDs sent within or 
+                    sent from the INC to an OS."
+                ::= { tiInc 0 }
+
+        tiIncTrapVars OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                   "Base OID for variable bindings of notifications
+                    sent within or sent from the INC to an OS."
+                ::= { tiInc 1 }
+
+        -- tiIncAlarmReporting OBJECT-IDENTITY  ...  ::= { tiInc 2 } 
+        -- Refer to module 'INC-MIB-AL'
+
+        -- tiIncEfd            OBJECT-IDENTITY  ...  ::= { tiInc 3 } 
+        -- Refer to module 'INC-MIB-EFD'
+   
+END
+-- INC-MIB-C

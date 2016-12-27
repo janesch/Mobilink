@@ -1,0 +1,285 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-OIR.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "OIR": ### Online insertion and removal
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-OIR.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CARD_BADIDPROM":
+        
+            ##########
+            # The line card IDPROM is unprogrammed or has failed.
+            #
+            # %OIR-3-CARD_BADIDPROM: Card in slot [dec]/[dec] has an invalid
+            # card type in IDPROM
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "OIR-CARD_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "CARD_DETECTED":
+        
+            ##########
+            # A card has been detected in the slot specified in the error
+            # message.
+            #
+            # %OIR-5-CARD_DETECTED: Card type [chars] ([hex]) in slot
+            # [dec]/[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "OIR-CARD_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "CARD_UNSUPPORTED":
+        
+            ##########
+            # The line card is not supported by this version of Cisco IOS
+            # software.
+            #
+            # %OIR-3-CARD_UNSUPPORTED: Unsupported card type ([hex]) in slot
+            # [dec]/[dec].
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "OIR-CARD_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "CONSOLE":
+    
+            ##########
+            # The OIR facility has switched the console to the
+            # specified processor.
+            #
+            # %OIR-6-CONSOLE: Changing console ownership to [chars]
+            # processor\n\n\n
+            ##########
+    
+            @AlertKey = extract($Message, "ownership to (.*)$")
+    
+        case "INSCARD":
+        
+            ##########
+            # The specified hot-swappable card was inserted in the system. The
+            # interfaces on the card will remain administratively disabled
+            # until specifically enabled, because they may need to be
+            # configured.
+            #
+            # %OIR-6-INSCARD: Card inserted in slot [dec], subcard [dec],
+            # interfaces administratively shutdown
+            #
+            # %OIR-SP-6-INSCARD: Card inserted in slot [dec], interfaces are
+            # now online
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            if(regmatch($Message, " subcard [0-9]+"))
+            {
+                $MOI_Local = $MOI_Local + "/" + extract($Message, " subcard ([0-9]+)")
+            }
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "OIR-CARD_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            if(regmatch($Message, "administratively shutdown"))
+            {
+                @Severity = 2
+                @Type = 12
+            }
+            else
+            {
+                @Severity = 1
+                @Type = 2
+            }
+    
+        case "MGMT_BC_INIT_FAIL":
+        
+            ##########
+            # An attempt to create a valid management back card driver plug-in
+            # has failed. This condition was most likely caused by a memory
+            # allocation failure.
+            #
+            # %OIR-3-MGMT_BC_INIT_FAIL: Unable to initialize management back
+            # card.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "NOEOIR":
+    
+            ##########
+            # The specified card is capable of OIR hot-swapping but
+            # is not capable of EOIR. Although no damage to the
+            # hardware will occur, insertion or removal of the card
+            # will cause a CBUS complex restart, which would be
+            # disruptive to traffic on other cards in the system.
+            #
+            # %OIR-4-NOEOIR: [chars] [chars] version [int].[int]
+            # not capable of EOIR
+            ##########
+    
+            @AlertKey = extract($Message, ": (.*) version")
+    
+        case "PLUGIN_ATTACH_FAIL":
+        
+            ##########
+            # An attempt for an attach operation for a valid line card driver
+            # has failed.
+            #
+            # %OIR-3-PLUGIN_ATTACH_FAIL: Unable to attach driver plugin in slot
+            # [dec]/[dec].
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "PLUGIN_INIT_FAIL":
+        
+            ##########
+            # An attempt to create a valid line card driver plug-in failed.
+            # This condition was most likely caused by a memory allocation
+            # failure.
+            #
+            # %OIR-3-PLUGIN_INIT_FAIL: Unable to create driver plugin in slot
+            # [dec]/[dec].
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "PWRCYCLE":
+    
+            ##########
+            # The OIR facility has detected that the line card is
+            # unresponsive and has attempted to power-cycle the
+            # card.
+            #
+            # %OIR-3-PWRCYCLE: Card in slot [dec], is not
+            # responding; it is being power-cycled
+            ##########
+    
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+    
+        case "REMCARD":
+        
+            ##########
+            # This message indicates that the specified hot-swappable
+            # card was removed from the system.
+            #
+            # %OIR-3-REMCARD: Card removed from slot [dec], subcard
+            # [dec], interfaces disabled 
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+)")
+            if(regmatch($Message, " subcard [0-9]+"))
+            {
+                $MOI_Local = $MOI_Local + "/" + extract($Message, " subcard ([0-9]+)")
+            }
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "OIR-CARD_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            @Severity = 3
+            @Type = 1
+    
+        case "SEATED":
+    
+            ##########
+            # The OIR facility has detected an incorrectly seated
+            # card, which has caused the insertion or removal of
+            # this card to fail.
+            #
+            # %OIR-3-SEATED: Insert/removal failed for slot [dec],
+            # check card seating
+            ##########
+    
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+    
+        case "STATE_MACHINE_BUG2":
+        
+            ##########
+            # The line card entered into the slot has a different configuration
+            # from the existing slot configuration. The existing slot
+            # configuration will be removed.
+            #
+            # %OIR-3-STATE_MACHINE_BUG2: card_oir_insert_card: already have
+            # [hex], removing.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "UNKNOWN":
+    
+            ##########
+            # The OIR facility has detected a line card, but could
+            # not determine the type.
+            #
+            # %OIR-3-UNKNOWN: Unknown card in slot [dec], card is
+            # being disabled
+            ##########
+    
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-OIR.include.syslog.rules >>>>>")

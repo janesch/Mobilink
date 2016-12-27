@@ -1,0 +1,863 @@
+------------------------------------------------------------------------------
+--
+-- (c) Copyright 2001-2008 mBalance.
+--
+--  This MIB is proprietary to and embodies the confidential technology of
+--  mBalance. Possession, use, duplication or dissemination of this MIB is
+--  authorized only pursuant to a valid written license from mBalance.
+--
+------------------------------------------------------------------------------
+--
+-- File    : textpass-dbg-mib.my
+-- Release : R04.00
+-- $Id: textpass-dbg-mib.my,v 1.50.16.1 2010/09/09 11:42:32 fkok Exp $
+--
+------------------------------------------------------------------------------
+
+
+TEXTPASS-SMS-DBG-MIB DEFINITIONS ::= BEGIN
+
+    ----------------------------------------------------------------------------
+    --                              I M P O R T S                             --
+    ----------------------------------------------------------------------------
+
+    IMPORTS
+        Gauge, Counter
+            FROM RFC1155-SMI         
+        textpass
+            FROM MBALANCE-MIB
+        AdminState, Boolean
+            FROM TEXTPASS-GEN-MIB
+        OBJECT-TYPE
+            FROM RFC-1212;
+
+    ----------------------------------------------------------------------------
+    --                                T Y P E S                               --
+    ----------------------------------------------------------------------------
+
+    DbgMemoryIndexType ::= INTEGER (1..1000)
+
+    ----------------------------------------------------------------------------
+    --
+    --  SccpFlavour: determines the protocol flavour used at the SCCP layer of
+    --  the SS7 library.
+    --
+    ----------------------------------------------------------------------------
+
+    SccpFlavour ::=
+        INTEGER {
+            itu-t(0),
+            ansi(1)
+        }
+
+    ----------------------------------------------------------------------------
+    --                              O B J E C T S                             --
+    ----------------------------------------------------------------------------
+
+    dbg OBJECT IDENTIFIER ::= { textpass 2 }
+
+    dbgProperties OBJECT IDENTIFIER ::= { dbg 1 }
+
+    dbgPropVerifyConsistency OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            ""
+        ::= { dbgProperties 1 }
+
+    dbgPropAssertOnInconcistency OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            ""
+        ::= { dbgProperties 2 }
+
+    dbgPropClearGlobals OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            ""
+        ::= { dbgProperties 3 }
+
+    dbgPropDumpTcapContext OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            ""
+        ::= { dbgProperties 4 }
+
+    dbgPropSccpFlavour OBJECT-TYPE
+        SYNTAX  SccpFlavour
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            ""
+        ::= { dbgProperties 5 }
+
+    dbgPropLogMemEvents OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Flag indicating whether MEM_alloc and MEM_free calls are logged
+             in a cyclic buffer.
+             Default is false."
+        ::= { dbgProperties 11 }
+
+    dbgPropCdrHostSpec OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..21))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address and port number to send a copy of generated CDRs to.
+            This is only done when the object is not set to the empty string
+            (default). The purpose of this mechanism is to speed up regression
+            testing. The UDP protocol is used."
+        ::= { dbgProperties 12 }
+
+    dbgPropLogHostSpec OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..21))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address and port number to send a copy of generated log
+            records to. This is only done when the object is not set to the
+            empty string (default). The purpose of this mechanism is to speed
+            up regression testing. The UDP protocol is used."
+        ::= { dbgProperties 13 }
+
+    dbgPropFlushGsmHlrCache OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "When written to, the GSM HLR Cache (GHQ) is flushed. The value
+            written is don't care."
+        ::= { dbgProperties 14 }
+
+    dbgPropHostId OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "4-byte Host ID of the system running the process."
+        ::= { dbgProperties 15 }
+
+    dbgPropEvtHostSpec OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..21))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address and port number to send a copy of generated event log
+            records to. This is only done when the object is not set to the
+            empty string (default). The purpose of this mechanism is to speed
+            up regression testing. The UDP protocol is used."
+        ::= { dbgProperties 16 }
+
+    dbgPropEciClientIp OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..15))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address to be used for the ECI client monitoring mechanism
+            of the Router. If empty (default), this setting has no effect."
+        ::= { dbgProperties 17 }
+
+    -- dbg Counters
+    dbgCounters OBJECT IDENTIFIER ::= { dbg 2 }
+
+    dbgCntContextActual OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the number of TCAP contexts that the TPR has
+            pending."
+        ::= { dbgCounters 1 }
+
+    dbgCntContextPeak OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the peak in number of TCAP contexts that the
+             TPR had pending since startup."
+        ::= { dbgCounters 2 }
+
+    dbgCntIncorrectContextFree OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the number of TCAP contexts that were
+            incorrectly released."
+        ::= { dbgCounters 3 }
+
+    dbgCntNotificationContextActual OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the number of notification contexts currently
+            allocated in the HUB."
+        ::= { dbgCounters 21 }
+
+    dbgCntNotificationContextPeak OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the peak number of notification contexts in
+            use since startup of the HUB."
+        ::= { dbgCounters 22 }
+
+    dbgCntTotalReceivedMessages OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the total number of messages from Application
+             and/or ServiceCentre in the HUB."
+        ::= { dbgCounters 23 }
+
+    dbgCntRawMessageBuffersActual OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the current number of raw message buffers in
+            use in the HUB."
+        ::= { dbgCounters 24 }
+
+    dbgCntMxpTransactionsPending OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the current number of pending MXP transactions
+             in the HUB."
+        ::= { dbgCounters 25 }
+
+    dbgCntMxpIncorrectTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the number inconsistent MXP timeouts in the
+            HUB."
+        ::= { dbgCounters 26 }
+
+    dbgCntMemorySizeAbsolute OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Net amount of memory currently dynamically allocated."
+        ::= { dbgCounters 27 }
+
+    dbgCntMemorySizeRelative OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Net amount of memory currently dynamically allocated, relative to
+            the last set."
+        ::= { dbgCounters 28 }
+    
+    dbgCntMemoryNumberAbsolute OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Net number of memory allocations."
+        ::= { dbgCounters 29 }
+
+    dbgCntMemoryNumberRelative OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Net number of memory allocations, relative to the last set."
+        ::= { dbgCounters 30 }
+
+    dbgCntQueuedTotal OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the total number of queued for window size
+             in the HUB."
+        ::= { dbgCounters 31 }
+
+    dbgCntQueueRejected OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter specifying the number of messages rejected because of
+            already too many messages queued for a session in the HUB."
+        ::= { dbgCounters 32 }
+
+    dbgCntMsgContexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of message contexts currently allocated."
+        ::= { dbgCounters 41 }
+
+    dbgCntMsgContextsPeak OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum number of message contexts allocated at a certain
+            time during operation so far."
+        ::= { dbgCounters 42 }
+
+    dbgCntRqContexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of recipient query contexts currently allocated."
+        ::= { dbgCounters 43 }
+
+    dbgCntRqContextsPeak OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum number of recipient query contexts allocated at a
+            certain time during operation so far."
+        ::= { dbgCounters 44 }
+
+    dbgCntMasterModuleContexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of master module contexts currently allocated."
+        ::= { dbgCounters 45 }
+
+    dbgCntSlaveModuleContexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of slave module contexts currently allocated."
+        ::= { dbgCounters 46 }
+
+    dbgCntAnsi41Contexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Number of ANSI-41 contexts currently allocated."
+        ::= { dbgCounters 47 }
+    
+    dbgCntAnsi41ContextsPeak OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Maximum number of ANSI-41 contexts allocated at a
+            certain time during operation so far."
+        ::= { dbgCounters 48 }
+
+    dbgCntMipMessageFromHub OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter incrementing whenever a MIP message is received
+            from a HUB node."
+        ::= { dbgCounters 51 }
+        
+    dbgCntMipMessageFromAms OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter incrementing whenever a MIP message is received
+            from a AMS node."
+        ::= { dbgCounters 52 }
+        
+    dbgCntMxpMessageFromHub OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter incrementing whenever a MXP message is received
+            from a HUB node."
+        ::= { dbgCounters 61 }
+        
+    dbgCntMxpMessageFromAms OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter incrementing whenever a MXP message is received
+            from a AMS node."
+        ::= { dbgCounters 62 }
+        
+    
+
+    -- dbgActions
+    dbgActions OBJECT IDENTIFIER ::= { dbg 3 }
+
+    dbgActionStartTest OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Output a start test banner"
+        ::= { dbgActions 1 }
+
+    dbgActionEndTest OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Output an end test banner"
+        ::= { dbgActions 2 }
+
+    dbgActionClearCounters OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Clear all the product's internal counters"
+        ::= { dbgActions 3 }
+
+    dbgActionEndlessLoop OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Force the target in an endless loop"
+        ::= { dbgActions 4 }
+
+    dbgActionDropTnlConnections OBJECT-TYPE
+        SYNTAX  INTEGER (0..255)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Force the target to drop all TNL connections with other nodes.
+             Incoming heartbeats will be ignored for the specified number
+             of heartbeat periods.
+             Heartbeats will continue to be sent."
+        ::= { dbgActions 5 }
+
+    dbgActionStartCongestion OBJECT-TYPE
+        SYNTAX  Gauge (1..255)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Triggers a congestion started, on TNL, in the link referred by
+            the index.
+            The index refers to the index in the networkDiscovery table"
+        ::= { dbgActions 6 }
+
+    dbgActionStopCongestion OBJECT-TYPE
+        SYNTAX  Gauge (1..255)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Triggers a congestion ceased, on TNL, in the link referred by the
+            index.
+            The index refers to the index in the networkDiscovery table."
+        ::= { dbgActions 7 }
+
+    dbgActionToggleCongestion OBJECT-TYPE
+        SYNTAX  Gauge (1..255)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Toggles the congestion state, on TNL, in the link referred by the
+            index.
+            The index refers to the index in the networkDiscovery table."
+        ::= { dbgActions 8 }
+
+    dbgActionSetMsisdnListForSmtModule OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Sets a comma-seperated list of up to three MSISDN-s for SMT
+            module of RTR."
+        ::= { dbgActions 9 }
+
+    dbgActionCommand OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Issues a debugging command."
+        ::= { dbgActions 10 }
+
+    dbgActionSetWatchdogStatus OBJECT-TYPE
+        SYNTAX  Gauge (1..255)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Service to enable(1) or disable(0) watchdog of the application"
+        ::= { dbgActions 11 }
+        
+    -- dbgMemory
+    dbgMemoryTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF DbgMemoryEntry
+        ACCESS      not-accessible
+        STATUS      mandatory
+        DESCRIPTION "Table type"
+        ::= { dbg 4 }
+    
+    dbgMemoryEntry OBJECT-TYPE
+        SYNTAX      DbgMemoryEntry
+        ACCESS      not-accessible
+        STATUS      mandatory
+        DESCRIPTION "Table of memory allocations by position in the source code."
+        INDEX       { dbgMemoryIndex }
+        ::= { dbgMemoryTable 1 }
+
+    DbgMemoryEntry ::=
+        SEQUENCE {
+            dbgMemoryIndex                DbgMemoryIndexType,
+            dbgMemoryAdminState           AdminState,
+            dbgMemoryFileline             OCTET STRING,
+            dbgMemoryCount                INTEGER,
+            dbgMemoryActual               INTEGER
+        }
+
+    dbgMemoryIndex OBJECT-TYPE
+        SYNTAX      DbgMemoryIndexType
+        ACCESS      read-only
+        STATUS      mandatory
+        DESCRIPTION "Table index."
+        ::= { dbgMemoryEntry 1 }
+
+    dbgMemoryAdminState OBJECT-TYPE
+        SYNTAX      AdminState
+        ACCESS      read-write
+        STATUS      mandatory
+        DESCRIPTION "State of this memory allocation counter: on when used."
+        ::= { dbgMemoryEntry 2 }
+
+    dbgMemoryFileline OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        ACCESS      read-only
+        STATUS      mandatory
+        DESCRIPTION "File name and line of the memory allocation."
+        ::= { dbgMemoryEntry 3 }
+        
+    dbgMemoryCount OBJECT-TYPE
+        SYNTAX      INTEGER
+        ACCESS      read-only
+        STATUS      mandatory
+        DESCRIPTION "Number of open memory allocation from this place."
+        ::= { dbgMemoryEntry 4 }
+
+    dbgMemoryActual OBJECT-TYPE
+        SYNTAX      INTEGER
+        ACCESS      read-only
+        STATUS      mandatory
+        DESCRIPTION "Actual chunk size of memory allocation from this place."
+        ::= { dbgMemoryEntry 5 }
+
+
+    -- Debug modules and levels
+    dbgDebugModuleTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF DebugModuleEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing the known debug modules and their output level."
+        ::= { dbg 5 }
+
+    debugModuleEntry OBJECT-TYPE
+        SYNTAX  DebugModuleEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table entry specifying a single debug module"
+        INDEX { debugModuleIndex }
+        ::= { dbgDebugModuleTable 1 }
+
+    DebugModuleEntry ::=
+        SEQUENCE {
+            debugModuleIndex                   Gauge,
+            debugModuleMask                    OCTET STRING,
+            debugModuleName                    OCTET STRING,
+            debugModuleLevel                   OCTET STRING
+        }
+
+    debugModuleIndex OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Index of entry in table containing debug modules."
+        ::= { debugModuleEntry 1 }
+
+    debugModuleMask OBJECT-TYPE
+        SYNTAX OCTET STRING
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Debug module identifier."
+        ::= { debugModuleEntry 2 }
+
+    debugModuleName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Debug module name."
+        ::= { debugModuleEntry 3 }
+
+    debugModuleLevel OBJECT-TYPE
+        SYNTAX OCTET STRING
+        ACCESS read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Debug module level. The level is a bit mask with the following
+            values:
+             0x001 ERROR
+             0x002 WARNING
+             0x004 INFO
+             0x008 ENTRY
+             0x010 EXIT
+             0x020 MESSAGE
+             0x040 STATE
+             0x080 DEBUG
+             0x100 DUMP"
+        ::= { debugModuleEntry 4 }
+
+
+    -- AMS specific debug info
+    dbgAms OBJECT IDENTIFIER ::= { dbg 6 }
+
+    dbgAmsLastDeliveryScheme OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the index of the DeliveryScheme used for the most recent
+            scheduling of a message."
+        ::= { dbgAms 1 }
+
+    dbgAmsLastDeliveryInterval OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the index of the DeliverySchemeInterval used for the
+            most recent scheduling of a message."
+        ::= { dbgAms 2 }
+
+    dbgAmsAttemptsLastSecond OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the number of delivery attempts made during the last
+            second."
+        ::= { dbgAms 3 }
+
+    dbgAmsMaxDeliveryRate OBJECT-TYPE
+        SYNTAX Gauge (1..500)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Controls the maximum number of delivery attempts an AMS starts
+            per second."
+        ::= { dbgAms 4 }
+
+    dbgAmsPauseMrm OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Pauses the fast periodic function of MRM. Used to ease testing.
+            MRM shall be unpaused after synchronisation with other AMS nodes.
+            Default is false."
+        ::= { dbgAms 5 }
+
+    dbgAmsNumMsgData OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the number of message data currently allocated."
+        ::= { dbgAms 6 }
+
+    dbgAmsQueueSyncronisation OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Controls the queue size synhronisation functionality. 
+            Default is true."
+        ::= { dbgAms 7 }
+
+    dbgAmsLogTiming OBJECT-TYPE
+        SYNTAX Gauge (0..100000)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Enables additional checks related to timing in the AMS. The 
+             default is 0 which disables the additonal checks. If set it
+             represents the number of miliseconds a specific routine may take
+             before a LOG_WARNING will be created. Any value below 25 
+             (except 0) will result in the value being set to 25. Advised 
+             values are 100 and higher, the real low values should not be 
+             used in any production system at all. Please note that warnings
+             will be written the first run after it is re-enabled. This is
+             normal and is not a bug!"
+        ::= { dbgAms 8 }
+
+    dbgAmsReevaluationInterval OBJECT-TYPE
+        SYNTAX Gauge (1..3600)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The time, in seconds, between re-evaluations of the active 
+             replica state."
+        ::= { dbgAms 9 }
+
+    dbgAmsIsNotFoundErrorSevere OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "This parameter defines whether the DB_NOTFOUND error is
+             handled as a severe error. As it should not occur at all,
+             default is TRUE, causing the AMS to shutdown on such an
+             error. Setting this to FALSE, using a pre- or postboot
+             script, requires the AMS to be monitored closely."
+        ::= { dbgAms 10 }
+
+     dbgAmsMaxReplicationAttempts OBJECT-TYPE
+        SYNTAX Gauge (1..100)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Maximum number of replicate attempts for a message until the AMS
+             gives up on trying to replicate that message."
+        ::= { dbgAms 11 }
+
+    dbgAmsNumReplicationElements OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the number of replication elements."
+        ::= { dbgAms 12 }
+
+    dbgAmsNumMsgRef OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the number of message references currently allocated."
+        ::= { dbgAms 13 }
+
+    dbgAmsNumBufferedInd OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Reflects the number of buffered indications to be sent."
+        ::= { dbgAms 14 }
+
+    dbgAmsLogBufferedInd OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Indicates if additional log messages related to the buffered
+             indication handling should be logged.
+             Default is false."
+        ::= { dbgAms 15 }
+
+     dbgAmsIcacheRecordValidity OBJECT-TYPE
+        SYNTAX Gauge (0..3600)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "When defined, non-zero, it overrides the default maximum
+             validity period for a icache records.
+             Default is 0. "
+        ::= { dbgAms 16 }
+
+    dbgAmsMasterSyncSleep OBJECT-TYPE
+        SYNTAX Gauge (0..5000)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "When defined, non-zero, it add a sleep time in msec seconds to 
+             each master sync. This option will only work if built with DEBUG.
+             If not built with DEBUG it will just return 0 and stays 0.
+             Default is 0. "
+        ::= { dbgAms 17 }
+        
+    dbgAmsReplicaSyncSleep OBJECT-TYPE
+        SYNTAX Gauge (0..5000)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "When defined, non-zero, it add a sleep time in msec seconds to 
+             each master sync. This option will only work if built with DEBUG.
+             If not built with DEBUG it will just return 0 and stays 0.
+             Default is 0. "
+        ::= { dbgAms 18 }
+
+
+    -- IIW specific debug info
+    dbgIiw OBJECT IDENTIFIER ::= { dbg 7 }
+
+    dbgIiwShortRecipientLifetime OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory 
+        DESCRIPTION
+            "Reflects the resolution of the recipient lifetime timer. If set
+            to true, the lifetime timer works in seconds. If set to false
+            (default), the lifetime timer works in hours."
+        ::= { dbgIiw 1}
+
+
+    -- HUB specific debug info
+    dbgHub OBJECT IDENTIFIER ::= { dbg 8 }
+
+    dbgHubScTpCounterCheck OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory 
+        DESCRIPTION
+            "Controls the ServiceCenterTerminationPoint session counter
+             check via an available RTR. Default is 'true'."
+        ::= { dbgHub 1}
+
+    -- SPF specific debug info
+    dbgSpf OBJECT IDENTIFIER ::= { dbg 9 }
+
+    dbgSpfRoundRobbinScheduling OBJECT-TYPE
+        SYNTAX Boolean
+        ACCESS read-write
+        STATUS mandatory 
+        DESCRIPTION
+            "Controls the way the SPF selects a Thread for the next task.
+             If true then the SPF will select the next available thread, 
+             using them all in a round robbin way. If false then it will 
+             reuse the first created thread first and only uses others if
+             required. Default is 'false'."
+        ::= { dbgSpf 1}
+
+
+END
+

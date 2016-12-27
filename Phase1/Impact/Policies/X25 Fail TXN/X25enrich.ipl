@@ -1,0 +1,41 @@
+    site_name = "";
+
+    AddText = "No Connectivity Data Found";
+    NodeEntriesFilter = "NAME = '"+site_name +"'";
+    NodeEntries = GetByFilter(NodeEntriesDataType, NodeEntriesFilter,False);
+    NumNodeEntries = Length(NodeEntries);
+    log("NumNodeEntries  = " + NumNodeEntries );
+    if (NumNodeEntries > 0)
+    {
+        LookupAddr = NodeEntries[0].X25_ADDR;
+        log("LookupAddr = " + LookupAddr );
+        if( LookupAddr = "NA")
+        {
+            AddText = "No Connectivity Data Found (Data = NA)";
+        }
+        else
+        {
+        LookupDataType = "omc_connectivity";
+        log("LookupDataType = " + LookupDataType );
+
+        LookupFilter = "DTE_ADDRESS = '" + LookupAddr + "'";
+        log("LookupFilter = " + LookupFilter );
+
+        LookupData = GetByFilter(LookupDataType , LookupFilter ,False);
+        NumLookupData  = Length(LookupData );
+        log("NumLookupData  = " + NumLookupData  );
+
+        if( NumLookupData  > 0)
+        {
+            AddText= "Lookup data Found" + LookupData[0].ROUTER  ;
+            Log("AddText + " + AddText);
+        }
+    }
+        
+Log("AddText + " + AddText);
+
+
+"ROUTER : " + LookupData[0].ROUTER + ", " +  "NUC_NAME : " + LookupData[0].NUC_NAME + ", " +  "NE_NAME : " + LookupData[0].NE_NAME + ", " +  "DTE_ADDRESS : " + LookupData[0].DTE_ADDRESS + ", " +  "ROUTER_PORT : " + LookupData[0].ROUTER_PORT + ", " +  "ROUTER_TS : " + LookupData[0].ROUTER_TS + ", " +  "LOCAL_MSC : " + LookupData[0].LOCAL_MSC + ", " +  "ROUTER_DIU : " + LookupData[0].ROUTER_DIU + ", " +  "LL_DIU : " + LookupData[0].LL_DIU + ", " +  "LL_NEAR_END_MSC : " + LookupData[0].LL_NEAR_END_MSC + ", " +  "LL_FAR_END_MSC : " + LookupData[0].LL_FAR_END_MSC + ", " +  "NE_DIU : " + LookupData[0].NE_DIU + ", " +  "NE_MSC : " + LookupData[0].NE_MSC + ", "  
+
+ 
+ 

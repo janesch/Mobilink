@@ -1,0 +1,73 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    AdvCorr36.include.compat.rules 1.1
+#    2005/03/01 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Modified to support AdvCorrCauseType.
+#
+#     - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... AdvCorr36.include.compat.rules >>>>>")
+
+@CorrScore = $OS_CorrScore
+@AdvCorrCauseType = $OS_AdvCorrCauseType
+@CauseType = @AdvCorrCauseType
+
+@LocalObjRelate = $VAR_RelateLRO2LPO
+@LocalObjRelate = int($VAR_RelateLRO2LSO) * 4 + int(@LocalObjRelate)
+@LocalObjRelate = int($VAR_RelateLSO2LPO) * 16 + int(@LocalObjRelate)
+
+@RemoteObjRelate = $VAR_RelateRRO2RPO
+@RemoteObjRelate = int($VAR_RelateRRO2RSO) * 4 + int(@RemoteObjRelate)
+@RemoteObjRelate = int($VAR_RelateRSO2RPO) * 16 + int(@RemoteObjRelate)
+
+if(!match(@LocalPriObj, ""))
+{
+    switch(@Type)
+    {
+        case "1"|"3"|"11"|"12":
+            switch(@AdvCorrCauseType)
+            {
+                case "0":
+                    log(DEBUG, "<<<<< (AdvCorr36.include.compat.rules) Local Parent/Child Root Cause Candidate. >>>>>")
+            
+                    @ProcessReq = 8
+                    if(match($VAR_RelateLRO2LPO, "3")||match($VAR_RelateLSO2LPO, "3"))
+                    {
+                        log(DEBUG, "<<<<< (AdvCorr36.include.compat.rules) Local Parent/Child Symptom Candidate. >>>>>")
+            
+                        @ProcessReq = int(@ProcessReq) + 2
+                    }
+                case "1"|"2":
+                    @ProcessReq = 0
+                    if(match($VAR_RelateLRO2LPO, "3")||match($VAR_RelateLSO2LPO, "3"))
+                    {
+                        log(DEBUG, "<<<<< (AdvCorr36.include.compat.rules) Local Parent/Child Symptom Candidate. >>>>>")
+            
+                        @ProcessReq = int(@ProcessReq) + 2
+                    }
+                default:
+                    @ProcessReq = 0
+            }
+        default:
+            
+            log(DEBUG, "<<<<< (AdvCorr36.include.compat.rules) No AdvCorr automations will run against this event. >>>>>")
+            
+            @ProcessReq = 0
+    }
+    update(@ProcessReq)
+}
+
+log(DEBUG, "<<<<< Leaving... AdvCorr36.include.compat.rules >>>>>")

@@ -1,0 +1,66 @@
+/****************************************************************************
+This policy demonstrates how to use the DiscreteOid type to perform an SNMP
+GET on any OID and then how to update that OIDs value (SNMP SET).
+
+The Discrete Oid type is basically the same as the Packed Oid type except that 
+there is only a single oid allowed to "get" or "set" at a time.  This oid can 
+be specified in the table in the Data Type editor, or passed in as a parameter 
+using syntax similar to:
+
+Oid = '.1.2.3.4.0'.
+
+The GetByFilter action module takes the (optinal) HostId and (optional) UserId 
+(for SNMPv3). If these are provided, they override the settings from the 
+Data Source.
+
+It will then also try to do an SNMP SET on the variable to demonstrate one way 
+of doing SNMP SET. This method (using assignment operator) is no longer 
+supported and shouldn't change the variable. A message should be printed to 
+the log file.
+
+HowToRun this policy
+--------------------
+1) Make sure the Data Source/Data Type are set up with proper authentication
+   settings and SNMP parameters.
+
+2) Make sure an SNMP agent on the proper host and proper portId is running and
+   one which has implemented the RFC1213.
+
+3) The SNMPDiscreteOid datatype used in this policy was already pre-imported 
+   as a part of the installation, so no need to worry about it. If, for some 
+   reason it was not created, use the GUI to create it.  Leave the Field/Oid 
+   table blank.
+
+4) Then send a trigger to execute this policy.
+
+*****************************************************************************/
+
+Type = "SNMPDiscreteOid";
+Filter= "Oid = '.1.3.6.1.2.1.1.4.0'";
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting DiscreteOidTest with Type = " + Type + " and Filter = " + Filter + " at " + StartTime + " ***");
+
+/* To test SNMPv3, uncomment and edit this line.*/
+/* Filter for SNMPv3 related info */
+/*Filter = "HostId = '" + @HostId + "' AND Oid = '.1.3.6.1.2.1.1.4.0' AND UserId = 'netcool'";*/
+
+/* The actual SNMP GET operation is being done here */
+GetByFilter(Type, Filter, CountOnly);
+
+if (OrgNode.ErrorString == "") {
+  /*  Print the valid GET results */
+  log("mibVarOid = " + OrgNode.Oid);
+  log("mibVarValue = " + OrgNode.Value);
+  log("ErrorString = " + OrgNode.ErrorString);
+} else {
+  log("Error doing the SNMP GET is " + OrgNode.ErrorString);
+}
+
+/* Doing an SNMP SET here */
+/* This way of doing the SNMP SET does not work.  You will need to use AddDataItem.  */
+log("Testing SNMP SET of SysContact to NEW SYSCONTACT");
+OrgNode.Value = "NEW SYSCONTACT";
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with DiscreteOidTest at " + EndTime +" ***");

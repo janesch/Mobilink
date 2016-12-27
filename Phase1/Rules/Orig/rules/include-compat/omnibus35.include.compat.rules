@@ -1,0 +1,42 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    omnibus35.include.compat.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... omnibus35.include.compat.rules >>>>>")
+
+if(match($OPTION_TypeFieldUsage, "3.6")) ### Written for 3.6 and later.
+{
+    if(match($OS_ExpireTime, "")) ### Just to be sure someone hasn't set an Expire Time.
+    {
+        @Type = $OS_ExpireTime
+    }
+    else
+    {
+        switch(@Type)
+        {
+            case "1"|"2"|"3"|"4"|"7"|"8":
+                ### Do nothing, leave Type set as it is.
+            case "11"|"12"|"13":
+                @Type = 1
+            default:
+                @Type = 1
+        }
+    }
+}
+
+log(DEBUG, "<<<<< Leaving... omnibus35.include.compat.rules >>>>>")

@@ -1,0 +1,268 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       
+#       
+#        ( C )  Copyright IBM Corp. 2004, 2006. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#
+# Ident: $Id: ericsson_BNSI.rules 1.11 2004/04/19 14:19:14 smilne Development $
+#
+#######################################################################
+#
+# The following example tokens are provided by the probe
+# These are all the defined attributes of BNSI
+#RecordType=1
+#ObjectOfReference=Tjotahejti
+#NetworkOfReference=World
+#EventTime=19980421190430
+#EventType=2
+#PerceivedSeverity=1
+#ProbableCause=1
+#SpecificProblem=2
+#ObjectTimeZone=MET
+#AlarmNumber=1
+#NotificationIdentifier=9
+#StateChange=2
+#ObjectClassOfReference=NE
+#BackupObjectInstance=Langtbortistan
+#BackupStatus=1
+#ProposedRepairAction=1
+#TrendIndication=1
+#Acknowledge=1
+#ThresholdIndication=3
+#ThresholdInfo=ANF greater than 1
+#MonitoredAttribute=A
+#MonitoredAttributeValue=2
+#AdditionalText
+#
+#Additional text is also available in numbered tokens for each row
+#AdditionalTextLine_00
+#AdditionalTextLine_01 etc
+############################################################
+# It is suggested that the full path to the lookup table should be used here, rather
+# than the relative path shown, to ensure that the file is found.
+
+include "$OMNIHOME/probes/includes/BNSI_eventType.lookup"
+include "$OMNIHOME/probes/includes/BNSI_probableCause.lookup"
+include "$OMNIHOME/probes/includes/BNSI_specificProblem.lookup"
+include "$OMNIHOME/probes/includes/BNSI_other.lookup"
+
+
+if (  match (  @Manager, "ProbeWatch"  )   ) 
+{
+        switch ( @Summary ) 
+        {
+        case "Running ...":
+                @Severity = 1
+                @AlertGroup = "probestat"
+                @Type = 2
+		@Class=1250
+
+        case "Going Down ...":
+                @Severity = 5
+                @AlertGroup = "probestat"
+                @Type = 1
+		@Class=1250
+
+        default:
+                @Severity = 1
+		@Class=1250
+        }
+        @AlertKey = @Agent
+        @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+
+	@Class=1250	
+	@Node=$ObjectOfReference
+	#@Manager=%Manager + " probe on " + hostname (  ) 
+	#@Agent="Ericsson - MNOS"
+	@Manager=%Manager
+	@OmcEms = @Manager
+	@Agent =  @Manager + "@" + hostname (  ) 
+
+		
+	#Deal with all the possible comment events recieved
+	# These always start with '#'
+	#Possible message events
+	#Version
+	#Heartbeat
+	#Error
+	#Termination
+
+	
+	# MessageLine00 handling
+	if ( exists ( $MessageLine00 )  ) 
+	{
+	
+		  if ( match ( $MessageLine00, "#HB" )  ) 
+		  {
+		   	@Summary=@Summary + " HeartBeat Message"
+		   	@Severity = 0
+			@Node=%Host
+		  }
+		  else if ( regmatch ( $MessageLine00, "# .*" )  ) 
+		  {
+		   	@Summary=@Summary + " Comment Message: "
+		   	@Summary=@Summary + extract ( $MessageLine00,"#  ( .* ) " )  + extract ( $MessageLine01,"#  ( .* ) " )  + extract ( $MessageLine02,"#  ( .* ) " )  + extract ( $MessageLine03,"#  ( .* ) " ) 
+		   	@Severity = 2
+		  }
+		  else if ( regmatch ( $MessageLine00, "#Version=." )  ) 
+		  {
+		   	discard
+		  }
+		  else if ( regmatch ( $MessageLine00, ".*#Version=." )  ) 
+		  {
+		  	discard
+		  }
+		  else if ( regmatch ( $MessageLine00, "#Error=.*" )  ) 
+		  {
+		   	$ErrorText=extract ( $MessageLine00,"#Error= ( .* ) " ) 
+		   	@Summary=" Error Message: " + $ErrorText
+		   	@Severity = 5	
+		  }
+		  else if ( regmatch ( $MessageLine00, "#Exit=[0-6]" )  ) 
+		  {
+		   	$ExitCode=extract ( $MessageLine00, "#Exit= ( [0-6] ) " ) 
+		   	@Summary=" Exit Message: " + lookup ( $ExitCode, TerminationMessage_t ) 
+		   	@Severity = 5
+		  }
+		  else
+		  {
+		  	@Summary= "Message Unrecognised"		  
+		  }
+		  
+		  @Identifier=@Summary		  
+
+	}
+
+	$PerceivedSeverity_T = lookup ( $PerceivedSeverity, PerceivedSeverity_t ) 
+	
+	#Deal with SYNC START & END messages first
+	if ( match ( $RecordType, "8" )  ) 
+	 {	 
+	 	@Severity=0
+	 }
+	 else	if ( match ( $RecordType, "7" )  ) 
+	 {	 
+	 	@Severity=0
+	 }
+	 else
+	 {
+	 	@Severity=$PerceivedSeverity_T	 
+	 }
+
+
+	if ( regmatch ( $RecordType, "[0-9]" )  ) 
+	{
+		$RecordType_T = lookup ( $RecordType, RecordType_t ) 
+		if ( exists ( $EventType )  ) 
+	  	{	
+      			$EventType_T = lookup ( $EventType, eventType_lookup ) 
+		}
+#################
+		$ProbableCause_T = $ProbableCauseText
+#		if ( exists ( $ProbableCause )  ) 
+#		{
+#	  		$ProbableCause_T = lookup ( $ProbableCause, probableCause_lookup ) 
+#		}
+#################
+	  
+		
+		if ( match ( $ProbableCause_T, "Unknown Probable Cause" )  ) 
+		{
+			$ProbableCause_T = $ProbableCause_T + " Num:" +  $ProbableCause	
+		}
+	
+		if ( match ( $EventType_T, "Unknown Event Type" )  ) 
+		{
+			$EventType_T = $EventType_T + " Num:" + $EventType	
+		}
+	
+		@Summary=$RecordType_T
+		if ( exists ( $EventType )  ) 
+		{
+			@Summary=@Summary + " - " + $EventType_T
+		}
+
+#		$SpecificProblem_T = lookup ( $SpecificProblem,specificProblem_lookup ) 
+		$SpecificProblem_T = $SpecificProblemText
+		if ( exists ( $SpecificProblem_T )  ) 
+		{
+			@Summary=@Summary + " Specific Problem:" + $SpecificProblem_T 
+		}
+	
+	}
+	
+	
+	 # Set events up for Generic Clear
+
+#	 @AlertGroup = lookup ( $ProbableCause, probableCause_lookup ) 
+	 @AlertGroup = $ProbableCauseText
+	 switch ( $PerceivedSeverity ) 
+	 {
+	 	case "0": # Problem events
+		   
+			@AlertKey = $EventType_T + $ObjectReference + $ProbableCause_T 			
+			@Type = 1
+
+		case "5": # Resolution events
+		   
+			@Summary = @Summary + "  ( event cleared ) "
+			@AlertKey = $EventType_T + $ObjectReference + $ProbableCause_T 			
+			@Severity = 1
+			@Type = 2
+
+		default:
+			@AlertKey = $EventType_T + $ObjectReference + $ProbableCause_T		    
+			@Type = 1
+	}
+	   
+	   
+	#Set the node from ObjectOfReference, based on ObjectClassOfReference
+	   
+	#$NE=extract ( $ObjectOfReference, ".*,NE= ( .* ) " ) 
+	if ( regmatch ( $ObjectOfReference, ".*EQ=.*" )  ) 
+	{
+		$EQ=extract ( $ObjectOfReference,".*,EQ= ( .* ) " ) 
+		#$NE=extract ( $ObjectOfReference," ( .* ) ,EQ=" ) 
+		if ( exists ( $NE )  ) 
+		{
+			@Node=$NE+"/"+$EQ 
+		}
+		else
+		{
+			@Node=$EQ
+		}
+	}
+	else
+	{
+	   	@Node=%Host
+	}
+	   
+	@NodeAlias = @Node
+	   
+	if ( exists ( $EventTime )  ) 
+	{
+		@FirstOccurrence=datetotime ( $EventTime, "%Y%m%d%H%M%S" ) 
+		@LastOccurrence=datetotime ( $EventTime, "%Y%m%d%H%M%S" ) 
+	}
+	else
+	{
+		@Summary="Unknown Event Type"
+		@FirstOccurrence = getdate
+	}
+
+	@Identifier =  @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $AdditionalTextLine00 
+	#@Location = Requires to be set by user to be set
+
+
+}
+details ( $* ) 

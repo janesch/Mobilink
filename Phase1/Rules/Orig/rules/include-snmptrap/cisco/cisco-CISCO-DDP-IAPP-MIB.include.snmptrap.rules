@@ -1,0 +1,97 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-DDP-IAPP-MIB.include.snmptrap.rules 1.0
+#    2006/04/28 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DDP-IAPP-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.277": ### Cisco Management Support for Inter-Access Point Protocol (IAPP) - Notifications from CISCO-DDP-IAPP-MIB (20020717)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-DDP-IAPP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-DDP IAPP"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cDdpIappLastRogueApNotif
+
+            ##########
+            # $1 = cDdpIappLastRogueApMacAddr 
+            ##########
+
+            $cDdpIappLastRogueApMacAddr = $1
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DDP-IAPP-MIB-cDdpIappLastRogueApNotif"
+
+            @AlertGroup = "DDP IAPP Rogue Access Point Status"
+            @AlertKey = "Access Point: " + $1
+            @Summary = "DDP IAPP Rogue Access Point Detected  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cDdpIappLastRogueApMacAddr)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-DDP-IAPP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-DDP-IAPP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DDP-IAPP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DDP-IAPP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DDP-IAPP-MIB.include.snmptrap.rules >>>>>")

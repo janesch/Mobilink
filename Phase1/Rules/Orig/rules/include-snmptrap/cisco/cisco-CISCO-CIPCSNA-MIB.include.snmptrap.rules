@@ -1,0 +1,137 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CIPCSNA-MIB.include.snmptrap.rules 1.0
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CIPCSNA-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.33.2": ### CIP Channel SNA - Notifications from CISCO-CIPCSNA-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CIPCSNA-MIB.include.snmptrap.rules >>>>>")
+    
+    @Agent = "Cisco-CIP Channel SNA"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch ($specific-trap)
+    {
+        case "1": ### cipCsnaOpenDuplicateSapFailure
+
+            ##########
+            # $1 = cipCardCsnaSlot
+            # $2 = cipCardCsnaPort 
+            # $3 = cipCardCsnaConnPath
+            # $4 = cipCardCsnaConnDevice
+            ##########
+            
+            $cipCardCsnaSlot = $1
+            $cipCardCsnaPort = $2
+            $cipCardCsnaConnPath = $3 
+            $cipCardCsnaConnDevice = $4
+ 
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CIPCSNA-MIB-cipCsnaOpenDuplicateSapFailure"
+               
+            @AlertGroup = "SAP Open"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $llcPortVirtualIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $llcSapNumber = extract($OID1, "\.([0-9]+)$")
+
+            @AlertKey = "cipCardCsnaConnEntry." + $ifIndex + "." + $llcPortVirtualIndex + "." + $llcSapNumber
+            @Summary = "VTAM Attempted to Open SAP, Already Open by Path/Device on this CMCC card  ( Slot.Port.ConnPath.ConnDevice = " + @AlertKey + " )"
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cipCardCsnaSlot,$cipCardCsnaPort,$cipCardCsnaConnPath,$cipCardCsnaConnDevice)
+   
+        case "2": ### cipCsnaLlc2ConnectionLimitExceeded
+
+            ##########
+            # $1 = cipCardAdminMaxLlc2Sessions 
+            # $2 = cipCardOperMaxLlc2Sessions 
+            # $3 = cipCardStatsHiWaterLlc2Sessions
+            # $4 = cipCardStatsLlc2SessionAllocationErrs
+            ##########
+            
+            $cipCardAdminMaxLlc2Sessions = $1
+            $cipCardOperMaxLlc2Sessions = $2
+            $cipCardStatsHiWaterLlc2Sessions = $3
+            $cipCardStatsLlc2SessionAllocationErrs = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CIPCSNA-MIB-cipCsnaLlc2ConnectionLimitExceeded"            
+ 
+            @AlertGroup = "LLC2 Connection"
+            $cipCardEntryIndex = extract($OID1, "\.([0-9]+)$") 
+            @AlertKey = "cipCardEntry." + $cipCardEntryIndex
+            
+            @Summary = "LLC2 Connection Limit ( AdminMax = " + $1 + ", OperMax = " + $2 + " ) Exceeded:  Llc2SessionAllocationErrs = " + $4 + "  ( Card = " + @AlertKey + " )"
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+        
+            details($cipCardAdminMaxLlc2Sessions,$cipCardOperMaxLlc2Sessions,$cipCardStatsHiWaterLlc2Sessions,$cipCardStatsLlc2SessionAllocationErrs)
+     
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CIPCSNA-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CIPCSNA-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CIPCSNA-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CIPCSNA-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CIPCSNA-MIB.include.snmptrap.rules >>>>>")
+

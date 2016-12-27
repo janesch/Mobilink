@@ -1,0 +1,56 @@
+#############################################################################
+#
+#		cmg_smsc.include.rules
+#
+#		Netcool Mttrapd Rules Include File for CMG SMSC.
+#		This is based upon CMG SMSC Agent MIB
+#
+#	V0.0	20100401	Original						Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case "cmg_smsc":	#
+    log(DEBUG, "<<<<< Entering... cmg_smsc..include.rules >>>>>")
+    @Agent = "CMG-SMSC-MIB"
+#    @Class = ""
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+
+        case "10": ### smscInternalTrap
+						$trapNotificationId = $1
+						$trapSeverity = $2
+						$trapData = $3 
+						$trapTimeStamp = $4
+##		        DESCRIPTION 		            "Internal status information of the agent
+
+
+		case "100": ###smscSmhTrap TRAP-TYPE
+					$trapNotificationId = $1					#	NOTIFICATIONID-VARIABLE: trapNotificationId
+					$trapSeverity = $2								# SEVERITY-VARIABLE: trapSeverity
+					$trapData = $3									# ADDITIONAL-TEXT-VARIABLES: {trapData}
+					$smscSmhName  = $4					# 
+					$trapTimeStamp  = $5						#	
+					$trapNodeName = $6						# 
+					
+					@Summary = "This is the trap definition to handle an SMSC entity events. This trap belongs to a specific entity class indicated in the following TeMIP specific clauses."
+					@AlertGroup="SMSC entity"
+					@AlertKey=$specific-trap
+					@Identifier = @Node + @AlertGroup + @AlertKey
+details($*)
+		
+					#		MANAGEDOBJECT-TABLE: smscSmh
+					#		MANAGEDOBJECT-DEFAULT: smscAgent"
+
+		default:
+			@Severity = 1
+			@Type =0
+			@AlertGroup="CMG-SMSC-MIB"
+			@AlertKey=$specific-trap
+			@Identifier = @Node + @AlertGroup + @AlertKey
+			@Summary = "Unknown Event from CMG-SMSC-MIB, Specific Trap " + @AlertKey
+			details($*)
+			
+}

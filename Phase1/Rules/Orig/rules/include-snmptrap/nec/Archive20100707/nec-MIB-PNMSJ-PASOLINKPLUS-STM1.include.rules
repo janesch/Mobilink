@@ -1,0 +1,2138 @@
+#############################################################################
+#
+#		nec-MIB-PNMSJ-PASOLINKPLUS-STM1.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Siemens @vantage Commander traps.
+#		This is based upon INC-MIB-C 
+#
+#	V0.0	20100412	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.119.2.3.69.201.105":	# NEC PASOLINKPLUS-STM1 Traps
+    @Agent = "NEC PASOLINKPLUS-STM1"
+    @Class = "100001"
+    $OS_ExpireTime = 600
+    log(DEBUG, "<<<<< Entering... nec-MIB-PNMSJ-PASOLINKPLUS-STM1 >>>>>")
+    $OPTION_TypeFieldUsage = "3.6"
+    $enterpriseName = "pasolinkPlusSTM1"
+
+   
+		@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+	    switch($specific-trap)
+	    {
+      case"400":      ### configTrapPpStm1Sys2AuxInItemName
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInItemName = $5          ### Aux Input Item Name"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInItemName"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input Item Name"  + $configItemPpStm1Sys2AuxInItemName
+
+
+      case"401":      ### configTrapPpStm1Sys2AuxInItemType
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInItemType = $5          ### Aux Input Item Type  (INTEGER (0..3))
+            $configItemPpStm1Sys2AuxInItemTypeValue = lookup($configItemPpStm1Sys2AuxInItemType, configItemPpStm1Sys2AuxInItemTypeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInItemType"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input Item Type " + $configItemPpStm1Sys2AuxInItemTypeValue
+
+
+      case"402":      ### configTrapPpStm1Sys2AuxInOpenState
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInOpenState = $5         ### Aux Input OpenState"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInOpenState"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input OpenState " + $configItemPpStm1Sys2AuxInOpenState
+
+
+      case"403":      ### configTrapPpStm1Sys2AuxInCloseState
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInCloseState = $5        ### Aux Input CloseState"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInCloseState"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input CloseState " + $configItemPpStm1Sys2AuxInCloseState
+
+
+      case"404":      ### configTrapPpStm1Sys2AuxInSeverity
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInSeverity = $5          ### Aux Input Severity  (PpStm1SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($configItemPpStm1Sys2AuxInSeverity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($configItemPpStm1Sys2AuxInSeverity, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInSeverity"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input Severity " + $SeverityText
+
+
+      case"405":      ### configTrapPpStm1Sys2AuxInAlarmType
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInAlarmType = $5         ### Aux Input AlarmType  (PpStm1AlarmTypeValue)
+            $configItemPpStm1Sys2AuxInAlarmTypeValue = lookup($configItemPpStm1Sys2AuxInAlarmType, PpStm1AlarmTypeValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInAlarmType"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input AlarmType " + $configItemPpStm1Sys2AuxInAlarmTypeValue
+
+
+      case"406":      ### configTrapPpStm1Sys2AuxInProbableCause
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxInProbableCause = $5     ### Aux Input ProbableCause  (PpStm1ProbableCauseValue)
+            $configItemPpStm1Sys2AuxInProbableCauseValue = lookup($configItemPpStm1Sys2AuxInProbableCause, PpStm1ProbableCauseValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxInProbableCause"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Input ProbableCause " + $configItemPpStm1Sys2AuxInProbableCauseValue
+
+
+      case"407":      ### configTrapPpStm1Sys2AuxOutItemName
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxOutItemName = $5         ### Aux Out Item Name"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxOutItemName"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Out Item Name " + $configItemPpStm1Sys2AuxOutItemName
+
+
+      case"408":      ### configTrapPpStm1Sys2AuxOutOpenState
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxOutOpenState = $5        ### Aux Output OpenState"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxOutOpenState"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Output OpenState " + $configItemPpStm1Sys2AuxOutOpenState
+
+
+      case"409":      ### configTrapPpStm1Sys2AuxOutCloseState
+            $sys2ppStm1TrapSequenceNumber = $1               ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $sys2ppStm1TrapDate = $2                         ### TrapDate (YYYY/MM/DD)"  (DisplayString)
+            $sys2ppStm1TrapTime = $3                         ### TrapTime (HH:MM:SS)"  (DisplayString)
+            $sys2ppStm1TrapSource = $4                       ### TrapSource"  (OBJECT IDENTIFIER)
+            $configItemPpStm1Sys2AuxOutCloseState = $5       ### Aux Outout CloseState"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPpStm1Sys2AuxOutCloseState"
+            @AlertKey = $sys2ppStm1TrapSource
+            @Summary = "Aux Outout CloseState " + $configItemPpStm1Sys2AuxOutCloseState
+
+
+      case"10":      ### ppStm1PartialSummaryTrapOdu
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $ppStm1PartialSummaryItemOdu = $8                ### Stm1 ODU Summary  (PpStm1SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($ppStm1PartialSummaryItemOdu, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "ppStm1PartialSummaryTrapOdu"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Stm1 ODU Summary " + $SeverityText
+
+
+      case"11":      ### ppStm1PartialSummaryTrapIdu
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $ppStm1PartialSummaryItemIdu = $8                ### Stm1 IDU Summary  (PpStm1SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($ppStm1PartialSummaryItemIdu, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "ppStm1PartialSummaryTrapIdu"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Stm1 IDU Summary " + $SeverityText
+
+
+      case"12":      ### ppStm1PartialSummaryTrapPmc
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $ppStm1PartialSummaryItemPmc = $8                ### Stm1 PMC Summary  (PpStm1SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($ppStm1PartialSummaryItemPmc, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "ppStm1PartialSummaryTrapPmc"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Stm1 PMC Summary " + $SeverityText
+
+
+      case"13":      ### ppStm1PartialSummaryTrapAux
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $ppStm1PartialSummaryItemAux = $8                ### Stm1 AUX Summary  (PpStm1SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($ppStm1PartialSummaryItemAux, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "ppStm1PartialSummaryTrapAux"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Stm1 AUX Summary " + $SeverityText
+
+
+      case"14":      ### ppStm1PartialSummaryTrapLpm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $ppStm1PartialSummaryItemLpm = $8                ### Stm1 LPM Summary  (PpStm1SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($ppStm1PartialSummaryItemLpm, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "ppStm1PartialSummaryTrapLpm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Stm1 LPM Summary " + $SeverityText
+
+
+      case"101":      ### alarmTrapPPStm1OduIfInput
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1OduIfInput = $8                  ### ODU IF INPUT  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1OduIfInputValue = lookup($alarmItemPPStm1OduIfInput, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1OduIfInput"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ODU IF INPUT STATUS IS " + $alarmItemPPStm1OduIfInputValue
+
+
+      case"102":      ### alarmTrapPPStm1OduTxPower
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1OduTxPower = $8                  ### ODU TX POWER  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1OduTxPowerValue = lookup($alarmItemPPStm1OduTxPower, PpStm1NormalAlarmValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1OduTxPower"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ODU TX POWER STATUS IS " + $alarmItemPPStm1OduTxPowerValue
+
+
+      case"103":      ### alarmTrapPPStm1OduRxLev
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1OduRxLev = $8                    ### ODU RX LEVEL  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1OduRxLevValue = lookup($alarmItemPPStm1OduRxLev, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1OduRxLev"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ODU RX LEVEL STATUS IS " + $alarmItemPPStm1OduRxLevValue
+
+
+      case"104":      ### alarmTrapPPStm1OduApc
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1OduApc = $8                      ### ODU APC  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1OduApcValue = lookup($alarmItemPPStm1OduApc, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1OduApc"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ODU APC STATUS IS " + $alarmItemPPStm1OduApcValue
+
+
+      case"105":      ### alarmTrapPPStm1OduCbl
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1OduCbl = $8                      ### ODU CBL  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1OduCblValue = lookup($alarmItemPPStm1OduCbl, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1OduCbl"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ODU CBL STATUS IS " + $alarmItemPPStm1OduCblValue
+
+
+      case"106":      ### alarmTrapPPStm1IduMainIFAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduMainIFAlm = $8                ### IDU MAIN IF ALM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduMainIFAlmValue = lookup($alarmItemPPStm1IduMainIFAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduMainIFAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU MAIN IF ALARM STATUS IS " + $alarmItemPPStm1IduMainIFAlmValue
+
+
+      case"107":      ### alarmTrapPPStm1IduSubIFAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduSubIFAlm = $8                 ### IDU SUB IF ALM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduSubIFAlmValue = lookup($alarmItemPPStm1IduSubIFAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduSubIFAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU SUB IF ALARM STATUS IS " + $alarmItemPPStm1IduSubIFAlmValue
+
+
+      case"108":      ### alarmTrapPPStm1IduModAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduModAlm = $8                   ### IDU MOD ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduModAlmValue = lookup($alarmItemPPStm1IduModAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduModAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU MOD ALARM STATUS IS " + $alarmItemPPStm1IduModAlmValue
+
+
+      case"109":      ### alarmTrapPPStm1IduEBerMux
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduEBerMux = $8                  ### IDU EBER MUX  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduEBerMuxValue = lookup($alarmItemPPStm1IduEBerMux, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduEBerMux"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU EBER MUX STATUS IS " + $alarmItemPPStm1IduEBerMuxValue
+
+
+      case"110":      ### alarmTrapPPStm1IduSdMux
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduSdMux = $8                    ### IDU SD MUX  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduSdMuxValue = lookup($alarmItemPPStm1IduSdMux, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduSdMux"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU SD MUX STATUS IS " + $alarmItemPPStm1IduSdMuxValue
+
+
+      case"111":      ### alarmTrapPPStm1IduDemAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduDemAlm = $8                   ### IDU DEM ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduDemAlmValue = lookup($alarmItemPPStm1IduDemAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduDemAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU DEM ALARM STATUS IS " + $alarmItemPPStm1IduDemAlmValue
+
+
+      case"112":      ### alarmTrapPPStm1IduLofDmr
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduLofDmr = $8                   ### IDU LOF DMR  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduLofDmrValue = lookup($alarmItemPPStm1IduLofDmr, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduLofDmr"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU LOF DMR STATUS IS " + $alarmItemPPStm1IduLofDmrValue
+
+
+      case"113":      ### alarmTrapPPStm1IduEBerDmr
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduEBerDmr = $8                  ### IDU E-BER DMR  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduEBerDmrValue = lookup($alarmItemPPStm1IduEBerDmr, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduEBerDmr"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU E-BER DMR STATUS IS " + $alarmItemPPStm1IduEBerDmrValue
+
+
+      case"114":      ### alarmTrapPPStm1IduSdDmr
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduSdDmr = $8                    ### IDU SD DMR  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduSdDmrValue = lookup($alarmItemPPStm1IduSdDmr, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduSdDmr"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU SD DMR STATUS IS " + $alarmItemPPStm1IduSdDmrValue
+
+
+      case"115":      ### alarmTrapPPStm1IduMainIfLos
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduMainIfLos = $8                ### IDU MAIN IF LOS  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduMainIfLosValue = lookup($alarmItemPPStm1IduMainIfLos, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduMainIfLos"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU MAIN IF LOS STATUS IS " + $alarmItemPPStm1IduMainIfLosValue
+
+
+      case"116":      ### alarmTrapPPStm1IduLofMux
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduLofMux = $8                   ### IDU LOF MUX  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduLofMuxValue = lookup($alarmItemPPStm1IduLofMux, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduLofMux"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU LOF MUX STATUS IS " + $alarmItemPPStm1IduLofMuxValue
+
+
+      case"117":      ### alarmTrapPPStm1IduSubIfLos
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduSubIfLos = $8                 ### IDU SUB IF LOS  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduSubIfLosValue = lookup($alarmItemPPStm1IduSubIfLos, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduSubIfLos"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU SUB IF LOS STATUS IS " + $alarmItemPPStm1IduSubIfLosValue
+
+
+      case"118":      ### alarmTrapPPStm1IduMdCpuAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduMdCpuAlm = $8                 ### IDU MD CPU ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduMdCpuAlmValue = lookup($alarmItemPPStm1IduMdCpuAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduMdCpuAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU MD CPU ALARM STATUS IS " + $alarmItemPPStm1IduMdCpuAlmValue
+
+
+      case"119":      ### alarmTrapPPStm1IduHiBerAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduHiBerAlm = $8                 ### IDU HI BER ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduHiBerAlmValue = lookup($alarmItemPPStm1IduHiBerAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduHiBerAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU HI BER ALARM STATUS IS " + $alarmItemPPStm1IduHiBerAlmValue
+
+
+      case"120":      ### alarmTrapPPStm1IduModemAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduModemAlm = $8                 ### IDU MODEM ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduModemAlmValue = lookup($alarmItemPPStm1IduModemAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduModemAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU MODEM ALARM STATUS IS " + $alarmItemPPStm1IduModemAlmValue
+
+
+      case"121":      ### alarmTrapPPStm1IduPsAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduPsAlm = $8                    ### IDU PS ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduPsAlmValue = lookup($alarmItemPPStm1IduPsAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduPsAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU PS ALARM STATUS IS " + $alarmItemPPStm1IduPsAlmValue
+
+
+      case"122":      ### alarmTrapPPStm1TcnDaily
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1TcnDaily = $8                    ### TCN DAILY  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1TcnDailyValue = lookup($alarmItemPPStm1TcnDaily, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1TcnDaily"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "TCN DAILY STATUS IS " + $alarmItemPPStm1TcnDailyValue
+
+
+      case"123":      ### alarmTrapPPStm1TcnWeekly
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1TcnWeekly = $8                   ### TCN WEEKLY  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1TcnWeeklyValue = lookup($alarmItemPPStm1TcnWeekly, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1TcnWeekly"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "TCN WEEKLY STATUS IS " + $alarmItemPPStm1TcnWeeklyValue
+
+
+      case"124":      ### alarmTrapPPStm1Calendar
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1Calendar = $8                    ### CALENDAR ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1CalendarValue = lookup($alarmItemPPStm1Calendar, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1Calendar"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "CALENDAR ALARM STATUS IS " + $alarmItemPPStm1CalendarValue
+
+
+      case"125":      ### alarmTrapPPStm1IduAtpcXCtrl
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduAtpcXCtrl = $8                ### IDU ATPC XCTRL  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduAtpcXCtrlValue = lookup($alarmItemPPStm1IduAtpcXCtrl, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduAtpcXCtrl"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU ATPC XCTRL STATUS IS " + $alarmItemPPStm1IduAtpcXCtrlValue
+
+
+      case"126":      ### alarmTrapPPStm1IduXIfLevel
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduXIfLevel = $8                 ### IDU XIF LEVEL  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduXIfLevelValue = lookup($alarmItemPPStm1IduXIfLevel, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduXIfLevel"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU XIF LEVEL STATUS IS " + $alarmItemPPStm1IduXIfLevelValue
+
+
+      case"127":      ### alarmTrapPPStm1IduLanLink
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduLanLink = $8                  ### IDU LAN LINK  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduLanLinkValue = lookup($alarmItemPPStm1IduLanLink, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduLanLink"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU LAN LINK STATUS IS " + $alarmItemPPStm1IduLanLinkValue
+
+
+      case"128":      ### alarmTrapPPStm1IduLowBerAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduLowBerAlm = $8                ### IDU LOW BER ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduLowBerAlmValue = lookup($alarmItemPPStm1IduLowBerAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduLowBerAlm"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IDU LOW BER ALARM STATUS IS " + $alarmItemPPStm1IduLowBerAlmValue
+
+
+      case"129":      ### alarmTrapPPStm1IduAccessCodeAlm
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1Severity = $4                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $5                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $6                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $ppStm1TrapSource = $7                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $alarmItemPPStm1IduAccessCodeAlm = $8            ### IDU LOW BER ALARM  (PpStm1NormalAlarmValue)
+            $alarmItemPPStm1IduAccessCodeAlmValue = lookup($alarmItemPPStm1IduAccessCodeAlm, PpStm1NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapPPStm1IduAccessCodeAlm"
+            @AlertKey = $ppStm1TrapSource
+             @Summary = "IDU ACCESS CODE ALARM STATUS IS  " + $alarmItemPPStm1IduAccessCodeAlmValue
+
+
+      case"201":      ### eventTrapPPStm1AisSend
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AisSend = $5                     ### AIS Send  (PpStm1NormalSendValue)
+            $eventItemPPStm1AisSendValue = lookup($eventItemPPStm1AisSend, PpStm1NormalSendValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AisSend"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "AIS Send " + $eventItemPPStm1AisSendValue
+
+
+      case"202":      ### eventTrapPPStm1AisRcvd
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AisRcvd = $5                     ### AIS Rcvd  (PpStm1NormalRcvdValue)
+            $eventItemPPStm1AisRcvdValue = lookup($eventItemPPStm1AisRcvd, PpStm1NormalRcvdValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AisRcvd"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "AIS Rcvd STATUS IS " + $eventItemPPStm1AisRcvdValue
+
+
+      case"203":      ### eventTrapPPStm1MainIFAls
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1MainIFAls = $5                   ### Main IF Als  (INTEGER (0..2))
+            $eventItemPPStm1MainIFAlsValue = lookup($eventItemPPStm1MainIFAls, eventItemPPStm1MainIFAlsTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1MainIFAls"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Main IF Als STATUS IS " + $eventItemPPStm1MainIFAlsValue
+
+
+      case"204":      ### eventTrapPPStm1AddAttvalue
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AddAttvalue = $5                 ### ATT value"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AddAttvalue"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATT value " + $eventItemPPStm1AddAttvalue
+
+
+      case"205":      ### eventTrapPPStm1AtpcMaximum
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AtpcMaximum = $5                 ### ATPC Maximum"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AtpcMaximum"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATPC Maximum " + $eventItemPPStm1AtpcMaximum
+
+
+      case"206":      ### eventTrapPPStm1AtpcMinimum
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AtpcMinimum = $5                 ### ATPC Minimum"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AtpcMinimum"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATPC Minimum " + $eventItemPPStm1AtpcMinimum
+
+
+      case"207":      ### eventTrapPPStm1AtpcRxThresholdLevel
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AtpcRxThresholdLevel = $5        ### ATPC RX Threshold Level"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AtpcRxThresholdLevel"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATPC RX Threshold Level " + $eventItemPPStm1AtpcRxThresholdLevel
+
+
+      case"208":      ### eventTrapPPStm1AtpcHystValue
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AtpcHystValue = $5               ### ATPC Hyst value"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AtpcHystValue"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATPC Hyst value " + $eventItemPPStm1AtpcHystValue
+
+
+      case"209":      ### eventTrapPPStm1OduAlarmMode
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OduAlarmMode = $5                ### ODU Alarm mode  (INTEGER (0..4))
+            $eventItemPPStm1OduAlarmModeValue = lookup($eventItemPPStm1OduAlarmMode, eventItemPPStm1OduAlarmModeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OduAlarmMode"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ODU Alarm mode " + $eventItemPPStm1OduAlarmModeValue
+
+
+      case"210":      ### eventTrapPPStm1MtpcCtrlvalue
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1MtpcCtrlvalue = $5               ### MTPC Control value"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1MtpcCtrlvalue"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "MTPC Control value " + $eventItemPPStm1MtpcCtrlvalue
+
+
+      case"211":      ### eventTrapPPStm1BerThreshold
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1BerThreshold = $5                ### Ber Threshold"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1BerThreshold"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Ber Threshold " + $eventItemPPStm1BerThreshold
+
+
+      case"212":      ### eventTrapPPStm1TcnDailyOccur
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TcnDailyOccur = $5               ### Performance Monitor Threshold  value (15-min., Alarm Occur )"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TcnDailyOccur"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Performance Monitor Threshold  value (15-min., Alarm Occur ) " + $eventItemPPStm1TcnDailyOccur
+
+
+      case"213":      ### eventTrapPPStm1TcnDailyRecover
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TcnDailyRecover = $5             ### Performance Monitor Threshold  value (15-min., Alarm Recover)"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TcnDailyRecover"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Performance Monitor Threshold  value (15-min., Alarm Recover) " + $eventItemPPStm1TcnDailyRecover
+
+
+      case"214":      ### eventTrapPPStm1TcnWeeklyOccur
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TcnWeeklyOccur = $5              ### Performance Monitor Threshold  value (1-day, Alarm Occur)"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TcnWeeklyOccur"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Performance Monitor Threshold  value (1-day, Alarm Occur)"  + $eventItemPPStm1TcnWeeklyOccur
+
+
+      case"215":      ### eventTrapPPStm1TcnWeeklyRecover
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TcnWeeklyRecover = $5            ### Performance Monitor Threshold  value (1-day, Alarm Recover)"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TcnWeeklyRecover"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Performance Monitor Threshold  value (1-day, Alarm Recover) " + $eventItemPPStm1TcnWeeklyRecover
+
+
+      case"216":      ### eventTrapPPStm1EquipmentMaint
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1EquipmentMaint = $5              ### Equipment Maint  (PpStm1OffOnValue)
+            $eventItemPPStm1EquipmentMaintValue = lookup($eventItemPPStm1EquipmentMaint, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1EquipmentMaint"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Equipment Maint STATUS IS " + $eventItemPPStm1EquipmentMaintValue
+
+
+      case"217":      ### eventTrapPPStm1OhAssignAssignment
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignAssignment = $5          ### OH Assign  (INTEGER (0..2))
+            $eventItemPPStm1OhAssignAssignmentValue = lookup($eventItemPPStm1OhAssignAssignment, eventItemPPStm1OhAssignAssignmentTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignAssignment"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign  STATUS IS  " + $eventItemPPStm1OhAssignAssignmentValue
+
+
+      case"218":      ### eventTrapPPStm1OhAssignVf1Setting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignVf1Setting = $5          ### OH Assign VF1 Setting  (INTEGER (0..10))
+            $eventItemPPStm1OhAssignVf1SettingValue = lookup($eventItemPPStm1OhAssignVf1Setting, eventItemPPStm1OhAssignVf1SettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignVf1Setting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign VF1 Setting " + $eventItemPPStm1OhAssignVf1SettingValue
+
+
+      case"219":      ### eventTrapPPStm1OhAssignVf2Setting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignVf2Setting = $5          ### OH Assign VF2 Setting  (INTEGER (0..10))
+            $eventItemPPStm1OhAssignVf2SettingValue = lookup($eventItemPPStm1OhAssignVf2Setting, eventItemPPStm1OhAssignVf2SettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignVf2Setting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign VF2 Setting " + $eventItemPPStm1OhAssignVf2SettingValue
+
+
+      case"220":      ### eventTrapPPStm1OhAssignV111Setting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignV111Setting = $5         ### OH Assign V111 Seting  (INTEGER (0..10))
+            $eventItemPPStm1OhAssignV111SettingValue = lookup($eventItemPPStm1OhAssignV111Setting, eventItemPPStm1OhAssignV111SettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignV111Setting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign V111 Seting " + $eventItemPPStm1OhAssignV111SettingValue
+
+
+      case"221":      ### eventTrapPPStm1OhAssignV111DirectionSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignV111DirectionSetting = $5 ### OH Assign V111 Direction Setting  (INTEGER (0..10))
+            $eventItemPPStm1OhAssignV111DirectionSettingValue = lookup($eventItemPPStm1OhAssignV111DirectionSetting, eventItemPPStm1OhAssignV111DirectionSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignV111DirectionSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign V111 Direction Setting " + $eventItemPPStm1OhAssignV111DirectionSettingValue
+
+
+      case"222":      ### eventTrapPPStm1OhAssignV112Setting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignV112Setting = $5         ### OH Assign V112 Setting  (INTEGER (0..10))
+            $eventItemPPStm1OhAssignV112SettingValue = lookup($eventItemPPStm1OhAssignV112Setting, eventItemPPStm1OhAssignV112SettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignV112Setting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign V112 Setting " + $eventItemPPStm1OhAssignV112SettingValue
+
+
+      case"223":      ### eventTrapPPStm1OhAssignV112DirectionSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignV112DirectionSetting = $5 ### OH Assogn V112 Direction Setting  (INTEGER (0..2))
+            $eventItemPPStm1OhAssignV112DirectionSettingValue = lookup($eventItemPPStm1OhAssignV112DirectionSetting, eventItemPPStm1OhAssignV112DirectionSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignV112DirectionSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assogn V112 Direction Setting   " + $eventItemPPStm1OhAssignV112DirectionSettingValue
+
+
+      case"224":      ### eventTrapPPStm1OhAssignLanCardSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1OhAssignLanCardSetting = $5      ### OH Assign LAN Card Setting  (INTEGER (0..10))
+            $eventItemPPStm1OhAssignLanCardSettingValue = lookup($eventItemPPStm1OhAssignLanCardSetting, eventItemPPStm1OhAssignLanCardSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1OhAssignLanCardSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "OH Assign LAN Card Setting " + $eventItemPPStm1OhAssignLanCardSettingValue
+
+
+      case"225":      ### eventTrapPPStm1SubIFSubBasebandIF
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1SubIFSubBasebandIF = $5          ### Sub IF SubBandIF  (INTEGER (0..5))
+            $eventItemPPStm1SubIFSubBasebandIFValue = lookup($eventItemPPStm1SubIFSubBasebandIF, eventItemPPStm1SubIFSubBasebandIFTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1SubIFSubBasebandIF"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Sub IF SubBandIF " + $eventItemPPStm1SubIFSubBasebandIFValue
+
+
+      case"226":      ### eventTrapPPStm1SubWsIntfcType
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1SubWsIntfcType = $5              ### Sub WS Intfc Type  (INTEGER (0..4))
+            $eventItemPPStm1SubWsIntfcTypeValue = lookup($eventItemPPStm1SubWsIntfcType, eventItemPPStm1SubWsIntfcTypeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1SubWsIntfcType"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Sub WS Intfc Type " + $eventItemPPStm1SubWsIntfcTypeValue
+
+
+      case"227":      ### eventTrapPPStm1SubWsIntfcLineLength
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1SubWsIntfcLineLength = $5        ### Sub WS Intfc Line Length  (INTEGER (0..5))
+            $eventItemPPStm1SubWsIntfcLineLengthValue = lookup($eventItemPPStm1SubWsIntfcLineLength, eventItemPPStm1SubWsIntfcLineLengthTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1SubWsIntfcLineLength"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Sub WS Intfc Line Length " + $eventItemPPStm1SubWsIntfcLineLengthValue
+
+
+      case"228":      ### eventTrapPPStm1Relay
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1Relay = $5_hex                       ### Relay"  (OCTET STRING (SIZE (8)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1Relay"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Relay " + $eventItemPPStm1Relay
+
+
+      case"229":      ### eventTrapPPStm1TxMute
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TxMute = $5                      ### TX MUTE  (PpStm1OffOnValue)
+            $eventItemPPStm1TxMuteValue = lookup($eventItemPPStm1TxMute, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TxMute"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "TX MUTE STATUS IS " + $eventItemPPStm1TxMuteValue
+
+
+      case"230":      ### eventTrapPPStm1AtpcManual
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AtpcManual = $5                  ### ATPC Manual  (PpStm1OffOnValue)
+            $eventItemPPStm1AtpcManualValue = lookup($eventItemPPStm1AtpcManual, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AtpcManual"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATPC Manual STATUS IS " + $eventItemPPStm1AtpcManualValue
+
+
+      case"231":      ### eventTrapPPStm1AtpcManualValue
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AtpcManualValue = $5             ### ATPC Manual value  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AtpcManualValue"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ATPC Manual value STATUS IS " + $eventItemPPStm1AtpcManualValue
+
+
+      case"232":      ### eventTrapPPStm1MainIFAlsDelayTime
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1MainIFAlsDelayTime = $5          ### Main Als Delay Time  (INTEGER (0..3))
+            $eventItemPPStm1MainIFAlsDelayTimeValue = lookup($eventItemPPStm1MainIFAlsDelayTime, eventItemPPStm1MainIFAlsDelayTimeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1MainIFAlsDelayTime"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Main Als Delay Time " + $eventItemPPStm1MainIFAlsDelayTimeValue
+
+
+      case"233":      ### eventTrapPPStm1SelectedRx
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1SelectedRx = $5                  ### Selected RX  (INTEGER (0..2))
+            $eventItemPPStm1SelectedRxValue = lookup($eventItemPPStm1SelectedRx, eventItemPPStm1SelectedRxTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1SelectedRx"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Selected RX " + $eventItemPPStm1SelectedRxValue
+
+
+      case"234":      ### eventTrapPPStm1RxSwitchMode
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1RxSwitchMode = $5                ### Rx Switch Mode  (INTEGER (0..2))
+            $eventItemPPStm1RxSwitchModeValue = lookup($eventItemPPStm1RxSwitchMode, eventItemPPStm1RxSwitchModeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1RxSwitchMode"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Rx Switch Mode " + $eventItemPPStm1RxSwitchModeValue
+
+
+      case"235":      ### eventTrapPPStm1TxSwitchMode
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TxSwitchMode = $5                ### Tx Switch Mode  (INTEGER (0..2))
+            $eventItemPPStm1TxSwitchModeValue = lookup($eventItemPPStm1TxSwitchMode, eventItemPPStm1TxSwitchModeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TxSwitchMode"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Tx Switch Mode " + $eventItemPPStm1TxSwitchModeValue
+
+
+      case"236":      ### eventTrapPPStm1Cw
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1Cw = $5                          ### Carrier Wave  (PpStm1OffOnValue)
+            $eventItemPPStm1CwValue = lookup($eventItemPPStm1Cw, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1Cw"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Carrier Wave IS " + $eventItemPPStm1CwValue
+
+
+      case"237":      ### eventTrapPPStm1ManualRestart
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1ManualRestart = $5               ### Manual Restart  (PpStm1OffOnValue)
+            $eventItemPPStm1ManualRestartValue = lookup($eventItemPPStm1ManualRestart, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1ManualRestart"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Manual Restart STATUS IS " + $eventItemPPStm1ManualRestartValue
+
+
+      case"238":      ### eventTrapPPStm1IfLBAns
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IfLBAns = $5                     ### IF LB Ans  (PpStm1OffOnValue)
+            $eventItemPPStm1IfLBAnsValue = lookup($eventItemPPStm1IfLBAns, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IfLBAns"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "IF LB Ans " + $eventItemPPStm1IfLBAnsValue
+
+
+      case"239":      ### eventTrapPPStm1LB1
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LB1 = $5                         ### LB1  (PpStm1OffOnValue)
+            $eventItemPPStm1LB1Value = lookup($eventItemPPStm1LB1, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LB1"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LB1 STATUS IS " + $eventItemPPStm1LB1Value
+
+
+      case"240":      ### eventTrapPPStm1LB2
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LB2 = $5                         ### LB2  (PpStm1OffOnValue)
+            $eventItemPPStm1LB2Value = lookup($eventItemPPStm1LB2, PpStm1OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LB2"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LB2 STATUS IS " + $eventItemPPStm1LB2Value
+
+
+      case"241":      ### eventTrapPPStm1TxFreq
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1TxFreq = $5                      ### TX Frequency[MHz]"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1TxFreq"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "TX Frequency[MHz] " + $eventItemPPStm1TxFreq
+
+
+      case"242":      ### eventTrapPPStm1RxFreq
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1RxFreq = $5                      ### RX Frequency[MHz]"  (DisplayString)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1RxFreq"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "RX Frequency[MHz] " + $eventItemPPStm1RxFreq
+
+
+      case"243":      ### eventTrapPPStm1FS
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1FS = $5                          ### FS  (INTEGER (0..6))
+            $eventItemPPStm1FSValue = lookup($eventItemPPStm1FS, eventItemPPStm1FSTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1FS"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "FS STATUS IS " + $eventItemPPStm1FSValue
+
+
+      case"244":      ### eventTrapPPStm1AuxOutput
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AuxOutput = $5                   ### AUX Output  (INTEGER (0..2))
+            $eventItemPPStm1AuxOutputValue = lookup($eventItemPPStm1AuxOutput, eventItemPPStm1AuxOutputTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AuxOutput"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "AUX Output " + $eventItemPPStm1AuxOutputValue
+
+
+      case"245":      ### eventTrapPPStm1XpicForcedReset
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1XpicForcedReset = $5             ### XPIC FORCED RESET  (INTEGER (0..2))
+            $eventItemPPStm1XpicForcedResetValue = lookup($eventItemPPStm1XpicForcedReset, eventItemPPStm1XpicForcedResetTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1XpicForcedReset"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "XPIC FORCED RESET " + $eventItemPPStm1XpicForcedResetValue
+
+
+      case"246":      ### eventTrapPPStm1IduXpicReset
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IduXpicReset = $5                ### XPIC RESET  (INTEGER (0..2))
+            $eventItemPPStm1IduXpicResetValue = lookup($eventItemPPStm1IduXpicReset, eventItemPPStm1IduXpicResetTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IduXpicReset"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "XPIC RESET " + $eventItemPPStm1IduXpicResetValue
+
+
+      case"247":      ### eventTrapPPStm1IduStm1OutputControl
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IduStm1OutputControl = $5        ### STM-1 OUTPUT CONTROL  (INTEGER (0..2))
+            $eventItemPPStm1IduStm1OutputControlValue = lookup($eventItemPPStm1IduStm1OutputControl, eventItemPPStm1IduStm1OutputControlTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IduStm1OutputControl"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "STM-1 OUTPUT CONTROL " + $eventItemPPStm1IduStm1OutputControlValue
+
+
+      case"248":      ### eventTrapPPStm1MainIFMsAisGeneration
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1MainIFMsAisGeneration = $5       ### MS-AIS GENERATION  (INTEGER (1..2))
+            $eventItemPPStm1MainIFMsAisGenerationValue = lookup($eventItemPPStm1MainIFMsAisGeneration, eventItemPPStm1MainIFMsAisGenerationTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1MainIFMsAisGeneration"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "MS-AIS GENERATION " + $eventItemPPStm1MainIFMsAisGenerationValue
+
+
+      case"249":      ### eventTrapPPStm1MainIFTxPriority
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1MainIFTxPriority = $5            ### TX PRIORITY  (INTEGER (0..2))
+            $eventItemPPStm1MainIFTxPriorityValue = lookup($eventItemPPStm1MainIFTxPriority, eventItemPPStm1MainIFTxPriorityTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1MainIFTxPriority"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "TX PRIORITY " + $eventItemPPStm1MainIFTxPriorityValue
+
+
+      case"250":      ### eventTrapPPStm1MainIFRxPriority
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1MainIFRxPriority = $5            ### RX PRIORITY  (INTEGER (0..2))
+            $eventItemPPStm1MainIFRxPriorityValue = lookup($eventItemPPStm1MainIFRxPriority, eventItemPPStm1MainIFRxPriorityTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1MainIFRxPriority"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "RX PRIORITY " + $eventItemPPStm1MainIFRxPriorityValue
+
+
+      case"251":      ### eventTrapPPStm1IduLanMode
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IduLanMode = $5                  ### LAN MODE  (INTEGER (0..2))
+            $eventItemPPStm1IduLanModeValue = lookup($eventItemPPStm1IduLanMode, eventItemPPStm1IduLanModeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IduLanMode"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN MODE " + $eventItemPPStm1IduLanModeValue
+
+
+      case"252":      ### eventTrapPPStm1IduLanDuplex
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IduLanDuplex = $5                ### LAN DUPLEX  (INTEGER (0..2))
+            $eventItemPPStm1IduLanDuplexValue = lookup($eventItemPPStm1IduLanDuplex, eventItemPPStm1IduLanDuplexTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IduLanDuplex"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN DUPLEX " + $eventItemPPStm1IduLanDuplexValue
+
+
+      case"253":      ### eventTrapPPStm1IduLanLinkDownCtrl
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IduLanLinkDownCtrl = $5          ### LAN LINK DOWNCTRL  (INTEGER (0..2))
+            $eventItemPPStm1IduLanLinkDownCtrlValue = lookup($eventItemPPStm1IduLanLinkDownCtrl, eventItemPPStm1IduLanLinkDownCtrlTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IduLanLinkDownCtrl"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN LINK DOWNCTRL " + $eventItemPPStm1IduLanLinkDownCtrlValue
+
+
+      case"254":      ### eventTrapPPStm1LanPortSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanPortSetting = $5              ### LAN PORT SETTING  (INTEGER (1..5))
+            $eventItemPPStm1LanPortSettingValue = lookup($eventItemPPStm1LanPortSetting, eventItemPPStm1LanPortSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanPortSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN PORT SETTING " + $eventItemPPStm1LanPortSettingValue
+
+
+      case"255":      ### eventTrapPPStm1LanPortUsage
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanPortUsage = $5                ### PORT USAGE  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanPortUsage"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN PORT USAGE " + $eventItemPPStm1LanPortUsage
+
+
+      case"256":      ### eventTrapPPStm1LanLinkDown
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanLinkDown = $5                 ### LAN LINKDOWN  (INTEGER (1..2))
+            $eventItemPPStm1LanLinkDownValue = lookup($eventItemPPStm1LanLinkDown, eventItemPPStm1LanLinkDownTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanLinkDown"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN LINKDOWN " + $eventItemPPStm1LanLinkDownValue
+
+
+      case"257":      ### eventTrapPPStm1LanClockSourceSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanClockSourceSetting = $5       ### CLOCK SOURCE SETTING  (INTEGER (1..2))
+            $eventItemPPStm1LanClockSourceSettingValue = lookup($eventItemPPStm1LanClockSourceSetting, eventItemPPStm1LanClockSourceSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanClockSourceSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "CLOCK SOURCE SETTING " + $eventItemPPStm1LanClockSourceSettingValue
+
+
+      case"258":      ### eventTrapPPStm1IduLanCollision
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1IduLanCollision = $5             ### LAN COLLISION  (INTEGER (0..2))
+            $eventItemPPStm1IduLanCollisionValue = lookup($eventItemPPStm1IduLanCollision, eventItemPPStm1IduLanCollisionTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1IduLanCollision"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN COLLISION   " + $eventItemPPStm1IduLanCollisionValue
+
+
+      case"259":      ### eventTrapPpStm1LinearizerControl
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPpStm1LinearizerControl = $5           ### LINEARIZER CONTROL  (INTEGER (0..2))
+            $eventItemPpStm1LinearizerControlValue = lookup($eventItemPpStm1LinearizerControl, eventItemPpStm1LinearizerControlTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPpStm1LinearizerControl"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LINEARIZER CONTROL " + $eventItemPpStm1LinearizerControlValue
+
+
+      case"260":      ### eventTrapPpStm1LinearizerStatus
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPpStm1LinearizerStatus = $5            ### LINEARIZER  (INTEGER (0..2))
+            $eventItemPpStm1LinearizerStatusValue = lookup($eventItemPpStm1LinearizerStatus, eventItemPpStm1LinearizerStatusTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPpStm1LinearizerStatus"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LINEARIZER IS " + $eventItemPpStm1LinearizerStatusValue
+
+
+      case"261":      ### eventTrapPPStm1LanCollisionReportSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanCollisionReportSetting = $5   ### COLLISION REPORT SETTING  (INTEGER (0..2))
+            $eventItemPPStm1LanCollisionReportSettingValue = lookup($eventItemPPStm1LanCollisionReportSetting, eventItemPPStm1LanCollisionReportSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanCollisionReportSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "COLLISION REPORT SETTING IS " + $eventItemPPStm1LanCollisionReportSettingValue
+
+
+      case"262":      ### eventTrapPPStm1LanFlowControlSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanFlowControlSetting = $5       ### FLOW CONTROL SETTING  (INTEGER (0..2))
+            $eventItemPPStm1LanFlowControlSettingValue = lookup($eventItemPPStm1LanFlowControlSetting, eventItemPPStm1LanFlowControlSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanFlowControlSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "FLOW CONTROL SETTING IS" + $eventItemPPStm1LanFlowControlSettingValue
+
+
+      case"263":      ### eventTrapPPStm1AccessCodeSetting
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1AccessCodeSetting = $5           ### ACCESS CODE SETTING  (INTEGER (0..2))
+            $eventItemPPStm1AccessCodeSettingValue = lookup($eventItemPPStm1AccessCodeSetting, eventItemPPStm1AccessCodeSettingTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1AccessCodeSetting"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "ACCESS CODE SETTING IS " + $eventItemPPStm1AccessCodeSettingValue
+
+
+      case"264":      ### eventTrapPPStm1LanDeviceReset
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1LanDeviceReset = $5              ### LAN DEVICE RESET  (INTEGER (1..3))
+            $eventItemPPStm1LanDeviceResetValue = lookup($eventItemPPStm1LanDeviceReset, eventItemPPStm1LanDeviceResetTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1LanDeviceReset"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LAN DEVICE RESET IS " + $eventItemPPStm1LanDeviceResetValue
+
+
+      case"265":      ### eventTrapPPStm1SelectedTx
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemPPStm1SelectedTx = $5                  ### Selected TX  (INTEGER (0..2))
+            $eventItemPPStm1SelectedTxValue = lookup($eventItemPPStm1SelectedTx, eventItemPPStm1SelectedTxTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPPStm1SelectedTx"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Selected TX IS " + $eventItemPPStm1SelectedTxValue
+
+
+      case"500":      ### statusTrapPPStm1AuxInput
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $ppStm1Severity = $5                             ### Severity (CCITT Rec. X.733)  (PpStm1SeverityValue)
+            $ppStm1AlarmType = $6                            ### Alarm Type (CCITT Rec. X.733)  (PpStm1AlarmTypeValue)
+            $ppStm1AlarmTypeValue = lookup($ppStm1AlarmType, PpStm1AlarmTypeValue)
+            $ppStm1ProbableCause = $7                        ### Probable Cause (CCITT Rec. X.733)  (PpStm1ProbableCauseValue)
+            $ppStm1ProbableCauseValue = lookup($ppStm1ProbableCause, PpStm1ProbableCauseValue)
+            $statusItemPPStm1TypeAux = $8                    ### Aux Input Item Type  (INTEGER (0..3))
+            $statusItemPPStm1TypeAuxValue = lookup($statusItemPPStm1TypeAux, statusItemPPStm1TypeAuxTable )  ## Check Table Exists
+            $statusItemPPStm1AuxInput = $9                   ### Aux Input  (INTEGER (0..2))
+            $statusItemPPStm1AuxInputValue = lookup($statusItemPPStm1AuxInput, statusItemPPStm1AuxInputTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($ppStm1Severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "statusTrapPPStm1AuxInput"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Aux Input IS " + $statusItemPPStm1AuxInputValue
+
+
+      case"601":      ### systemTrapPPStm1LocalUpdate
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $ppStm1TrapSource = $4                           ### Trap Source"  (OBJECT IDENTIFIER)
+            $systemItemPPStm1LocalUpdate = $5                ### LocalUpdate  (INTEGER (0..1))
+            $systemItemPPStm1LocalUpdateValue = lookup($systemItemPPStm1LocalUpdate, systemItemPPStm1LocalUpdateTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "systemTrapPPStm1LocalUpdate"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "LocalUpdate " + $systemItemPPStm1LocalUpdateValue
+
+
+      case"602":      ### systemTrapPPStm1GetResult
+            $ppStm1TrapSequenceNumber = $1                   ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $ppStm1TrapDate = $2                             ### Trap Date ( YYYY/MM/DD )"  (DisplayString)
+            $ppStm1TrapTime = $3                             ### Trap Time ( HH:MM:SS )"  (DisplayString)
+            $systemItemPPStm1GetMeteringRequestID = $4       ### Request ID"  (INTEGER)
+            $systemItemPPStm1GetMeteringTargetIpAddress = $5 ### Pasolink NE IpAddress"  (IpAddress)
+            $systemItemPPStm1GetMeteringResult = $6          ### Request Result  (INTEGER (0..3))
+            $systemItemPPStm1GetMeteringResultValue = lookup($systemItemPPStm1GetMeteringResult, systemItemPPStm1GetMeteringResultTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "systemTrapPPStm1GetResult"
+            @AlertKey = $ppStm1TrapSource
+            @Summary = "Metering Request Result" + $systemItemPPStm1GetMeteringResultValue
+
+					  
+					  
+					  
+			default:
+
+					$OS_Severity = 1
+					$OS_Type = 1
+					@Summary  =  "NEC PASOLINKPLUS-STM1 - Unknown Specific Trap " + $specific-trap
+					@AlertGroup = "NEC PASOLINKPLUS-STM1"
+					@AlertKey = $specific-trap
+					details($*)
+		}
+		@Severity = $OS_Severity
+		@Type = $OS_Type
+		@Grade = $specific-trap
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + $OS_Type
+		$OS_X733ProbableCause = $pnProbableCause
+		$OS_X733EventType = $pnAlarmType
+		update(@Summary)
+		details($*)

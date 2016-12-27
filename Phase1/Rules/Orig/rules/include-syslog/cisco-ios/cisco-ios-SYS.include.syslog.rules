@@ -1,0 +1,1660 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SYS.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SYS": ### Operating system
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SYS.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ALREADYFREE":
+    
+            ##########
+            # A block of memory at the specified location is
+            # corrupt.
+            #
+            # %SYS-2-ALREADYFREE: Buffer [hex] already in free pool
+            # [chars]
+            ##########
+    
+            @AlertKey = "Buffer: " + extract($Message, "Buffer (.*) already")
+    
+        case "BADBLOCK":
+    
+            ##########
+            # A block of memory at the indicated location is
+            # corrupt.
+            #
+            # %SYS-3-BADBLOCK: Bad block pointer [hex]
+            ##########
+    
+            @AlertKey = "Pointer: " + extract($Message, "pointer (.*)$")
+    
+        case "BADBUFFER":
+    
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %SYS-2-BADBUFFER: Attempt to use [chars] buffer as
+            # [chars], ptr= [hex], pool= [hex]
+            ##########
+    
+            @AlertKey = "Buffer: " + extract($Message, "use (.*) buffer")
+    
+        case "BADDISP":
+    
+            ##########
+            # A buffer deletion routine has received an invalid
+            # status code. The buffer memory will be correctly
+            # returned to the free pool, but it will not be
+            # correctly counted in the per-protocol statistics.
+            #
+            # %SYS-3-BADDISP: Bad disposal code [hex] in [chars]
+            ##########
+    
+            @AlertKey = extract($Message, "in (.*)$")
+
+        case "BADFREEMAGIC":
+    
+            ##########
+            # A block of memory at the indicated location is
+            # corrupt.
+            #
+            # %SYS-3-BADFREEMAGIC: Corrupt free block at [hex]
+            # (magic [hex])
+            ##########
+    
+            @AlertKey = extract($Message, "block at (.*)$")
+    
+        case "BADFREEPTRS":
+    
+            ##########
+            # There is a corrupt pointer in the block header at the
+            # indicated location.
+            #
+            # %SYS-3-BADFREEPTRS: Bad [chars] pointer [hex] at
+            # [hex] ([chars] = [hex])
+            ##########
+    
+            @AlertKey = extract($Message, " at (.*)$")
+    
+        case "BADLINKTYPE":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-3-BADLINKTYPE: Unexpected linktype [dec]
+            ##########
+    
+            @AlertKey = "Link Type: " + extract($Message, " linktype (.*)$")
+    
+        case "BADLIST":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-BADLIST: Regular expression access check with
+            # bad list [dec]
+            ##########
+    
+            @AlertKey = extract($Message, "bad list (.*)$")
+    
+        case "BADMAGIC":
+    
+            ##########
+            # The free memory pool is corrupted.
+            #
+            # %SYS-3-BADMAGIC: Corrupt block at [hex] (magic [hex])
+            ##########
+    
+            @AlertKey = extract($Message, " at (.*)$")
+    
+        case "BADPARAM":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-3-BADPARAM: Function [chars]: value [hex] passed
+            # in parameter [chars]
+            ##########
+    
+            @AlertKey = "Parameter: " + extract($Message, "parameter (.*)$")
+    
+        case "BADPID":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-BADPID: Bad pid [dec] for tty [t-line]
+            ##########
+    
+            @AlertKey = "TTY: " + extract($Message, "for (tty .*)$") + ", PID: " + extract($Message, "Bad (pid [0-9]+) for")
+    
+        case "BADPOOL":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-BADPOOL: Attempt to use buffer with corrupt
+            # pool pointer, ptr= [hex], pool= [hex]
+            ##########
+    
+            @AlertKey = "Pool: " + extract($Message, "pool= (.*)$")
+    
+        case "BADPOOLMAGIC":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-BADPOOLMAGIC: Attempt to use pool pointer with
+            # corrupt header, pool= [hex]
+            ##########
+    
+            @AlertKey = "Pool: " + extract($Message, "pool= (.*)$")
+    
+        case "BADPRINT":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-BADPRINT: Process has no associated tty (in
+            # [chars]).
+            ##########
+    
+            @AlertKey = extract($Message, "tty \(in (.*)\)")
+
+        case "BADPROCESS":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-BADPROCESS: Bad process ID ([dec]) when
+            # [chars] process table
+            ##########
+    
+            @AlertKey = "PID: " + extract($Message, "process ID \(([0-9]+)\) when")
+    
+        case "BADREFCOUNT":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-BADREFCOUNT: Bad reference count at [hex]
+            # (refcount [hex])
+            ##########
+    
+            @AlertKey = extract($Message, "count at (.*) \(")
+    
+        case "BAD_RESET":
+    
+            ##########
+            # A process has been reset before the process was
+            # complete.
+            #
+            # %SYS-3-BAD_RESET: Questionable reset of process [dec]
+            # on tty[t-line]
+            ##########
+    
+            @AlertKey = "TTY: " + extract($Message, " on (tty.*)$") + ", PID: " + extract($Message, "process (.*) on ")
+    
+        case "BADRESID":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-3-BADRESID: Clock hardware returned bad residual
+            # [dec].
+            ##########
+    
+            @AlertKey = ""
+    
+        case "BADSHARE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-BADSHARE: Bad refcount in [chars], ptr=[hex],
+            # count=[hex]
+            ##########
+    
+            @AlertKey = extract($Message, "in (.*),? ptr")
+    
+        case "BADSTACK":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-BADSTACK: Process [chars] has trashed stack,
+            # old size [dec]
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "Process (.*) has")
+    
+        case "BLKINFO":
+    
+            ##########
+            # This is an auxiliary message that is generated by one
+            # of several memory-related messages. This message
+            # provides a formatted display of some of the
+            # information in the header of a corrupted data block.
+            # This message provides additional information only.
+            #
+            # %SYS-6-BLKINFO: [chars]blk [hex], words [int], alloc
+            # [hex], [chars], dealloc [hex], rfcnt [hex]
+            ##########
+    
+            discard
+    
+        case "BLOCKHUNG":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-BLOCKHUNG: Task hung with blocking disabled,
+            # value = [hex].
+            ##########
+    
+            @AlertKey = ""
+    
+        case "BOOT_MESSAGES":
+    
+            ##########
+            # At least one informational or error message has been
+            # printed by the boot loader.
+            #
+            # %SYS-6-BOOT_MESSAGES: Messages above this line are
+            # from the boot loader.
+            ##########
+    
+            discard
+    
+        case "BOOTTIME":
+    
+            ##########
+            # This is an informational message for the user. This
+            # message provides information about the time taken for
+            # the router to come up after a reload or a crash.
+            #
+            # %SYS-6-BOOTTIME: Time taken to reboot after reload =
+            # [dec] seconds
+            ##########
+    
+            @AlertKey = ""
+            @Type = 600
+    
+        case "CFORKBADFUNCT":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-CFORKBADFUNCT: Can't create process with start
+            # address = [hex]
+            ##########
+    
+            @AlertKey = extract($Message, "address = (.*)$")
+    
+        case "CFORKLEV":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-CFORKLEV: Process creation of [chars] failed
+            # (at level [dec]).
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "of (.*) failed")
+    
+        case "CFORKMEM":
+    
+            ##########
+            # No memory was available to create a process.
+            #
+            # %SYS-2-CFORKMEM: Process creation of [chars] failed
+            # (no memory).
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "of (.*) failed")
+    
+        case "CHUNKBADELESIZE":
+    
+            ##########
+            # The chunk manager cannot function properly with big
+            # chunk elements.
+            #
+            # %SYS-2-CHUNKBADELESIZE: Chunk element size is more
+            # than 64k for [chars]
+            ##########
+    
+            @AlertKey = extract($Message, " for (.*)$")
+    
+        case "CHUNKBADFREEMAGIC":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKBADFREEMAGIC: Bad free magic number in
+            # chunk header, chunk [hex] data [hex] chunk_freemagic
+            # [hex]
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*) data")
+    
+        case "CHUNKBADMAGIC":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKBADMAGIC: Bad magic number in chunk
+            # header, chunk [hex] data [hex] chunkmagic [hex]
+            # chunk_freemagic [hex]
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*) data")
+    
+        case "CHUNKBADPOOLSIZE":
+    
+            ##########
+            # The system has returned an inappropriate pool size.
+            #
+            # %SYS-2-CHUNKBADPOOLSIZE: Bad poolsize returned by the
+            # system : [int]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CHUNKBADREFCOUNT":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKBADREFCOUNT: Bad chunk reference count,
+            # chunk [hex] data [hex].
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*) data")
+    
+        case "CHUNKBOUNDS":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKBOUNDS: Could not find the sibling to
+            # allocate memory from. Chunk [chars], total free [dec]
+            # inuse [dec].
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "Chunk (.*),? total")
+    
+        case "CHUNKBOUNDSIB":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKBOUNDSIB: Error noticed in the sibling of
+            # the chunk [chars], Chunk index : [dec], Chunk real
+            # max : [dec]
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*),? Chunk")
+    
+        case "CHUNKEXPANDFAIL":
+    
+            ##########
+            # There is not enough processor memory left to expand
+            # this chunk pool.
+            #
+            # %SYS-2-CHUNKEXPANDFAIL: Could not expand chunk pool
+            # for [chars]. No memory available
+            ##########
+    
+            @AlertKey = extract($Message, "for (.*)\. No")
+    
+        case "CHUNKFREE":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKFREE: Attempted to free nonchunk memory,
+            # chunk [hex], data [hex].
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*),? data")
+    
+        case "CHUNKINCONSIS":
+    
+            ##########
+            # The system has returned an inappropriate pool size.
+            #
+            # %SYS-2-CHUNKINCONSIS: Inconsistant counters for
+            # chunk : [chars]total free [dec]/[dec], total sibs
+            # [dec]/[dec], total alloc [dec]/[dec]
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk : (.*)total")
+    
+        case "CHUNKINVALIDHDR":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKINVALIDHDR: Invalid chunk header type
+            # [dec] for chunk [hex], data [hex]
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*),? data")
+    
+        case "CHUNKNOMEMORY":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKNOMEMORY: Could not allocate chunks for
+            # [chars]. No memory
+            ##########
+    
+            @AlertKey = extract($Message, "for (.*)\. No")
+    
+        case "CHUNKNOROOT":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKNOROOT: Root chunk need to be specified
+            # for [hex]
+            ##########
+    
+            @AlertKey = extract($Message, " for (.*)$")
+    
+        case "CHUNKPARTIAL":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKPARTIAL: Attempted to destroy partially
+            # full chunk, chunk [hex].
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*)$")
+    
+        case "CHUNKSIBLINGS":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-CHUNKSIBLINGS: Attempted to destroy chunk with
+            # siblings, chunk [hex].
+            ##########
+    
+            @AlertKey = "Chunk: " + extract($Message, "chunk (.*)$")
+    
+        case "CONFIG":
+    
+            ##########
+            # The router configuration has been changed.
+            #
+            # %SYS-5-CONFIG: Configured from [chars]
+            ##########
+    
+            @AlertKey = "From: " + extract($Message, " from (.*)")
+    
+        case "CONFIG_DOWNFAIL":
+    
+            ##########
+            # The router has been configured to generate
+            # nonvolatile memory using the commands of an older
+            # software version. The current configuration of the
+            # router contains a command that cannot be saved using
+            # only the older command set.
+            #
+            # %SYS-2-CONFIG_DOWNFAIL: Generated configuration not
+            # backward compatible
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONFIG_I":
+    
+            ##########
+            # The router configuration has been changed.
+            #
+            # %SYS-5-CONFIG_I: Configured from [chars] by [chars]
+            ##########
+    
+            @AlertKey = "From: " + rtrim(extract($Message, " by (.*)"))
+    
+        case "CONFIG_NEWER":
+    
+            ##########
+            # The software has detected that the configuration
+            # saved in memory was written by a newer version of
+            # software. There might be commands saved in memory
+            # that are not implemented by the older software
+            # version.
+            #
+            # %SYS-4-CONFIG_NEWER: Configuration from version
+            # [dec].[dec] may not be correctly understood
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONFIG_NOLOCK":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-4-CONFIG_NOLOCK: The configuration could not be
+            # locked
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONFIG_NO_PRIVATE":
+    
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %SYS-3-CONFIG_NO_PRIVATE: No space remaining to save
+            # private config
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONFIG_NV":
+    
+            ##########
+            # The configuration was written successfully.
+            #
+            # %SYS-5-CONFIG_NV: Nonvolatile storage configured from
+            # [chars]
+            ##########
+    
+            @AlertKey = "From: " + extract($Message, " from (.*)$")
+    
+        case "CONFIG_NV_DATA":
+    
+            ##########
+            # A write error has occurred to a nonvolatile
+            # configuration because an internal variable was not
+            # set properly.
+            #
+            # %SYS-3-CONFIG_NV_DATA: Variable [chars] not set
+            # properly in the routine [chars].
+            ##########
+    
+            @AlertKey = "Routine: " + extract($Message, " routine (.*)\.") + ", Variable: " + extract($Message, ": (Variable .*) not")
+    
+        case "CONFIG_NV_ERR":
+    
+            ##########
+            # A write error has occurred for a nonvolatile
+            # configuration.
+            #
+            # %SYS-3-CONFIG_NV_ERR: Nonvolatile storage write
+            # error; configuration failed
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONFIG_NV_I":
+    
+            ##########
+            # The configuration has been written successfully.
+            #
+            # %SYS-5-CONFIG_NV_I: Nonvolatile storage configured
+            # from [chars] by [chars]
+            ##########
+    
+            @AlertKey = "From: " + extract($Message, "configured (.*) by ") + ", User: " + extract($Message, " by (.*)$")
+    
+        case "CONFIG_NV_OVERRUN":
+    
+            ##########
+            # The software has detected that the configuration
+            # saved into NVRAM has overlaid a part of the NVRAM
+            # that had been occupied by nonconfiguration data
+            # files. These files are typically used by SNMP to
+            # store and retrieve nonconfiguration persistent data
+            # across a system reload.
+            #
+            # %SYS-4-CONFIG_NV_OVERRUN: Non config data present at
+            # the end of nvram is corrupted
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONFIG_SYS_ERR":
+    
+            ##########
+            # The write of the running configuration of the system
+            # has failed.
+            #
+            # %SYS-3-CONFIG_SYS_ERR: System running-config write
+            # error; configuration failed
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CPUHOG":
+    
+            ##########
+            # The indicated process has run too long without
+            # relinquishing the processor.
+            #
+            # %SYS-3-CPUHOG: Task ran for [dec] msec ([dec]/[dec]),
+            # process = [chars], PC = [hex].
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, ",? process (.*),? PC")
+    
+        case "CRASHINFOINITFAIL":
+    
+            ##########
+            # The crashinfo subsystem does not have the correct
+            # registry.
+            #
+            # %SYS-3-CRASHINFOINITFAIL: Crashinfo subsys
+            # initialization did not add registry
+            # crashinfo_get_default_file_name.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "DMPMEM":
+    
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %SYS-3-DMPMEM: [hex]: [hex] [hex] [hex] [hex] [hex]
+            # [hex]
+            ##########
+    
+            discard
+    
+        case "DTP_MODDOWN":
+    
+            ##########
+            # This message indicates that the port trunk hardware failed to set
+            # because the module is not online. [dec]/[dec] is the module
+            # number/port number.
+            #
+            # SYS-2-DTP_MODDOWN: Module Down: cfg port trunk-hw failed
+            # [dec]/[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "failed ([0-9]+/[0-9]+)")
+            $MOIType_Local = "port"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SYS-DTP_MOD_Status"
+            @AlertKey = "Port: " + $MOI_Local
+
+        case "DTP_MODEMPTY":
+    
+            ##########
+            # This message indicates that the port trunk hardware failed to set
+            # because the module is empty. [dec]/[dec] is the module
+            # number/port number.
+            #
+            # SYS-2-DTP_MODEMPTY: Module Empty: cfg port trunk-hw failed
+            # [dec]/[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "failed ([0-9]+/[0-9]+)")
+            $MOIType_Local = "port"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SYS-DTP_MOD_Status"
+            @AlertKey = "Port: " + $MOI_Local
+
+        case "DTP_MODSTDBY":
+    
+            ##########
+            # This message indicates that trunk hardware on the port failed to
+            # set because the module is in standby. [dec]/[dec] is the module
+            # number/port number.
+            #
+            # SYS-2-DTP_MODSTDBY: Module standby: cfg port trunk-hw failed
+            # [dec]/[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "failed ([0-9]+/[0-9]+)")
+            $MOIType_Local = "port"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SYS-DTP_MOD_Status"
+            @AlertKey = "Port: " + $MOI_Local
+
+        case "DTP_SCPFAIL":
+    
+            ##########
+            # This message indicates that the port trunk hardware failed to set
+            # because the SCP message was not sent successfully. [dec]/[dec] is
+            # the module number/port number.
+            #
+            # SYS-2-DTP_SCPFAIL: SCP failure: cfg port trunk-hw failed
+            # [dec]/[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "failed ([0-9]+/[0-9]+)")
+            $MOIType_Local = "port"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SYS-DTP_MOD_Status"
+            @AlertKey = "Port: " + $MOI_Local
+        
+        case "DUAL_MESSAGE":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-4-DUAL_MESSAGE: SNMP system message request
+            # [dec] denied because of pending job
+            ##########
+    
+            @AlertKey = "Request: " + extract($Message, "request (.*) denied")
+    
+        case "DUP_TIMER":
+    
+            ##########
+            # A tty has appeared twice in a timer list in which it
+            # should have appeared only once.
+            #
+            # %SYS-3-DUP_TIMER: Same tty[t-line] in
+            # linewatch_timers, type [dec]
+            ##########
+    
+            @AlertKey = extract($Message, "Same (tty.*) in")
+    
+        case "EXCEPTIONDUMP":
+    
+            ##########
+            # The system has crashed because of an exception. A core dump is
+            # being generated.
+            #
+            # %SYS-2-EXCEPTIONDUMP: System Crashed, Writing Core....
+            ##########
+    
+            @AlertKey = ""
+    
+        case "FREEBAD":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-FREEBAD: Attempted to free memory at [hex], not part of
+            # buffer pool
+            ##########
+    
+            @AlertKey = extract($Message, "at (.*),? not")
+    
+        case "FREEFREE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-FREEFREE: Attempted to free unassigned memory at [hex],
+            # alloc [hex], dealloc [hex]
+            ##########
+    
+            @AlertKey = extract($Message, "at (.*),? alloc")
+    
+        case "GETBUF":
+    
+            ##########
+            # The software has requested a buffer that is larger in size than
+            # the largest configured buffer size, or the software has requested
+            # a negative-sized buffer.
+            #
+            # %SYS-2-GETBUF: Bad getbuffer, bytes= [dec]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "GETBUFFFAIL":
+    
+            ##########
+            # An operation could not be accomplished because of a low memory
+            # condition. The current system configuration, network environment,
+            # or possibly a software error might have exhausted or fragmented
+            # the router memory.
+            #
+            # %SYS-2-GETBUFFFAIL: [chars] buffer allocation ([dec] bytes)
+            # failed from [hex]
+            ##########
+    
+            @AlertKey = "Buffer: " + extract($Message, ": (.*) buffer allocation")
+    
+        case "HARIKARI":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-HARIKARI: Process [chars] top-level routine exited
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "Process (.*) top")
+    
+        case "INBAND_NORESOURCE":
+        
+            @AlertKey = ""
+        
+        case "INLIST":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-INLIST: Buffer in list, ptr= [hex]
+            ##########
+    
+            @AlertKey = "Pointer: " + extract($Message, " ptr= (.*)$")
+    
+        case "INLIST1":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-INLIST1: Buffer in list, ptr= [hex], caller= [hex]
+            ##########
+    
+            @AlertKey = "Pointer: " + extract($Message, " ptr= (.*),? caller")
+    
+        case "INPUTQ":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-INPUTQ: INPUTQ set, but no IDB, ptr=[hex]
+            ##########
+    
+            @AlertKey = "Pointer: " + extract($Message, " ptr= (.*)$")
+    
+        case "INSCHED":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-INSCHED: [chars] within scheduler
+            ##########
+    
+            @AlertKey = ""
+    
+        case "INTPRINT":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-INTPRINT: Illegal printing attempt from
+            # interrupt level.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "INTSCHED":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-INTSCHED: '[chars]' at level [dec]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "INUSEFREE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-INUSEFREE: Block [hex] on free list [dec] in
+            # use
+            ##########
+    
+            @AlertKey = "List: " + extract($Message, "free list ([0-9]+) in")
+    
+        case "INVALID_IMAGE":
+    
+            ##########
+            # The software image that is being run is intended for
+            # a different hardware architecture. This problem can
+            # occur on a Cisco 1003, Cisco 1004, or Cisco 1005
+            # router. The Cisco 1003 and Cisco 1004 routers use a
+            # different image from the Cisco 1005 router.
+            #
+            # %SYS-4-INVALID_IMAGE: Running invalid image for
+            # platform!
+            ##########
+    
+            @AlertKey = ""
+    
+        case "INVMEMINT":
+    
+            ##########
+            # An interrupt handler has attempted to allocate or
+            # deallocate memory.
+            #
+            # %SYS-3-INVMEMINT: Invalid memory action ([chars]) at
+            # interrupt level
+            ##########
+    
+            @AlertKey = "Action: " + extract($Message, "action \((.*)\) at")
+    
+        case "LINKED":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-LINKED: Bad [chars] of [hex] in queue [hex]
+            ##########
+    
+            @AlertKey = "Queue: " + extract($Message, "in queue (.*)$")
+    
+        case "LOGGER_DROPPED":
+    
+            ##########
+            # Debugging or informational messages are being
+            # generated faster than they can be displayed on the
+            # console. This message replaces the lost messages.
+            #
+            # %SYS-3-LOGGER_DROPPED: System dropped [dec] console
+            # debug messages.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "LOGGER_FLUSHED":
+    
+            ##########
+            # Debugging or informational messages are being
+            # generated faster than they can be displayed on the
+            # console. To ensure that the messages could be seen,
+            # the rest of the system has been paused until the
+            # console output could catch up. This condition might
+            # cause an interruption in time-critical operations
+            # (for example, maintaining an ISDN link).
+            #
+            # %SYS-3-LOGGER_FLUSHED: System was paused for
+            # [time-stamp] to ensure console debugging output.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "LOGGER_FLUSHING":
+    
+            ##########
+            # Debugging or informational messages are being
+            # generated faster than they can be displayed on the
+            # console. To ensure that the messages could be seen,
+            # the rest of the system has been paused until the
+            # console output catches up. This condition might cause
+            # an interruption in time-critical operations (for
+            # example, maintaining an ISDN link).
+            #
+            # %SYS-3-LOGGER_FLUSHING: System pausing to ensure
+            # console debugging output.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "LOWMEM":
+    
+            ##########
+            # The router is configured to crash when total
+            # available memory drops below a specified threshold.
+            # The specified threshold has been reached.
+            #
+            # %SYS-2-LOWMEM: Low-memory debug exception
+            # (limit=[int] free=[int])
+            ##########
+    
+            @AlertKey = ""
+    
+        case "MALLOCFAIL":
+    
+            ##########
+            # The requested memory allocation is not available from
+            # the specified memory pool. The current system
+            # configuration, network environment, or possibly a
+            # software error might have exhausted or fragmented the
+            # router memory.
+            #
+            # %SYS-2-MALLOCFAIL: Memory allocation of [dec] bytes
+            # failed from [hex], pool [chars], alignment [dec]
+            ##########
+    
+            @AlertKey = "Pool: " + extract($Message, ", pool (.*),? alignment")
+    
+        case "MEMDUMP":
+    
+            ##########
+            # This is an auxiliary message that is generated by one
+            # of several memory-related messages. This message
+            # provides a formatted display of some of the
+            # information in the header of a corrupted data block.
+            # This message provides additional information only.
+            #
+            # %SYS-6-MEMDUMP: [hex]: [hex] [hex] [hex] [hex] 
+            ##########
+    
+            discard
+    
+        case "MGDTIMER":
+    
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %SYS-3-MGDTIMER: [chars][chars], timer = [hex].
+            ##########
+    
+            @AlertKey = ""
+    
+        case "MGDTMRRUN":
+    
+            ##########
+            # One or more managed timers for a tty that had been
+            # deleted are still running.
+            #
+            # %SYS-3-MGDTMRRUN: TTY[t-line]: Managed Timer(s) [chars] still running
+            ##########
+    
+            @AlertKey = extract($Message, ": (TTY.*): Managed")
+    
+        case "MSGLOST":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-3-MSGLOST: [dec] messages lost because of queue
+            # overflow
+            ##########
+    
+            @AlertKey = ""
+    
+        case "MTRACE":
+    
+            ##########
+            # This is an auxiliary message that is generated by one
+            # of several memory-related messages. This message
+            # provides the address of the memory block and the
+            # calling program counter for the last eight blocks
+            # allocated and for the last eight blocks freed. This
+            # message provides additional information only.
+            #
+            # %SYS-6-MTRACE: [chars]: addr, pc [hex],[hex] [hex],
+            # [hex] [hex],[hex] [hex],[hex] [hex],[hex] [hex],[hex]
+            # [hex],[hex] [hex],[hex]
+            ##########
+    
+            discard
+    
+        case "NOBLOCK":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-NOBLOCK: [chars] with blocking disabled.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOBRIDGE":
+    
+            ##########
+            # An attempt has been made to use bridging software
+            # when the system is not configured to be used as a
+            # bridge.
+            #
+            # %SYS-6-NOBRIDGE: Bridging software not present
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOELEMENT":
+    
+            ##########
+            # The process has run out of buffer elements and is
+            # unable to enqueue data.
+            #
+            # %SYS-3-NOELEMENT: [chars]:Ran out of buffer elements
+            # for enqueue
+            ##########
+    
+            @AlertKey = extract($Message, ": (.*):Ran")
+    
+        case "NOMEMFRG":
+    
+            ##########
+            # The router is configured to crash when the largest
+            # available contiguous memory block drops below a
+            # specified threshold. The specified threshold has been
+            # reached.
+            #
+            # %SYS-2-NOMEMFRG: Memory fragmentation check debug
+            # exception (fragment size [int])
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOMEMORY":
+    
+            ##########
+            # An operation could not be accomplished because of a
+            # low memory condition. The current system
+            # configuration, network environment, or possibly a
+            # software error might have exhausted or fragmented the
+            # router memory.
+            #
+            # %SYS-2-NOMEMORY: No memory available for [chars]
+            # [dec]
+            ##########
+    
+            @AlertKey = extract($Message, " for (.*)$")
+    
+        case "NOPROCESS":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-NOPROCESS: No such process [dec]
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "such process (.*)$")
+    
+        case "NOTDEAD":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-NOTDEAD: Killing process [chars], pid [dec]
+            # again
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "process (.*),? pid") + "PID: " + extract($Message, " pid ([0-9]+) again")
+    
+        case "NOTQ":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-NOTQ: [chars] didn't find [hex] in queue [hex]
+            ##########
+    
+            @AlertKey = "Queue: " + extract($Message, "in queue (.*)$")
+    
+        case "NULLCHUNK":
+    
+            ##########
+            # The chunk manager cannot allocate memory from null
+            # chunks
+            #
+            # %SYS-2-NULLCHUNK: Memory requested from Null Chunk
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NULLIDB":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-NULLIDB: Null IDB in [chars]
+            ##########
+    
+            @AlertKey = extract($Message, "IDB in (.*)$")
+    
+        case "NV_BLOCK_INIT":
+    
+            ##########
+            # The software has initialized the NVRAM block
+            # geometry, which is a part of the NVRAM that hosts
+            # nonconfiguration data files. These nonconfiguration
+            # data files are used by SNMP to store and retrieve
+            # nonconfiguration persistent data across a system
+            # reload.
+            #
+            # %SYS-7-NV_BLOCK_INIT: Initalized the geometry of nvram
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NV_BLOCK_INITFAIL":
+    
+            ##########
+            # The software has detected that it had failed to
+            # initialize the NVRAM block geometry, which is a part
+            # of the NRAM that hosts nonconfiguration data files.
+            # These nonconfiguration data files are used by SNMP
+            # to store and retrieve nonconfiguration persistent
+            # data across a system reload. This reload may happen
+            # when the entire NRAM is occupied with the
+            # configuration data and the newer version of software
+            # that supports this feature cannot find the minimum
+            # room required in the NVRAM to initialize the block
+            # file system.
+            #
+            # %SYS-4-NV_BLOCK_INITFAIL: Unable to initalize the
+            # geometry of nvram
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NV_CHKSUM":
+    
+            ##########
+            # The user has attempted to perform multiple NVRAM operations at
+            # the same time. If the interrupt is not set, the system will
+            # attempt the NVRAM operation again.
+            #
+            # %SYS-4-NV_CHKSUM: An nvram checksum is already in progress
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NV_CHKSUM_INTR":
+    
+            ##########
+            # An interrupt service routine has attempted to perform
+            # a checksum on the NVRAM contents. The interrupt
+            # service found that the resource was in use.
+            #
+            # %SYS-4-NV_CHKSUM_INTR: An nvram checksum is already
+            # in progress; the interrupt cannot be serviced
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NV_NOLOCK":
+    
+            ##########
+            # An interrupt service routine has attempted to acquire
+            # a semaphore lock. The attempt has failed.
+            #
+            # %SYS-4-NV_NOLOCK: Failed to acquire an nvram lock
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NZREFCNT":
+    
+            ##########
+            # A block of memory that is in the free pool is in use
+            # by a process. The message will indicate the number of
+            # processes using the memory block.
+            #
+            # %SYS-3-NZREFCNT: Block [hex] on free list [dec] with
+            # refcount [dec]
+            ##########
+    
+            @AlertKey = "List: " + extract($Message, "list (.*) with")
+    
+        case "OUTSETUP":
+    
+            ##########
+            # The system has accepted a configuration over the
+            # network. The setup session will be aborted. This is
+            # an informational message only.
+            #
+            # %SYS-5-OUTSETUP: Configuration file [chars] accepted,
+            # aborting setup
+            ##########
+    
+            @AlertKey = "File: " + extract($Message, "file (.*) accepted")
+    
+        case "OVERRUN":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-OVERRUN: Block overrun at [hex] (red zone
+            # [hex])
+            ##########
+    
+            @AlertKey = extract($Message, "at (.*) \(")
+    
+        case "OVERTEMP":
+    
+            ##########
+            # The environmental monitor has detected a
+            # high-temperature condition.
+            #
+            # %SYS-1-OVERTEMP: System detected OVERTEMPERATURE
+            # condition. Please resolve cooling problem
+            # immediately!
+            ##########
+    
+            @AlertKey = ""
+    
+        case "OVFPRINT":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-3-OVFPRINT: Overflow in [chars], chars [dec],
+            # buffer size [dec]
+            ##########
+    
+            @AlertKey = extract($Message, "in (.*),? chars")
+    
+        case "PROCINFO":
+    
+            ##########
+            # This message is an auxiliary to the SYS-3-OVERRUN and
+            # SYS-3-BADMAGIC error messages. This message
+            # identifies the process or process fragment that was
+            # executing when the error occurred.
+            #
+            # %SYS-6-PROCINFO: Process [chars] just finished
+            # executing
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "Process (.*) just")
+    
+        case "QCOUNT":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-QCOUNT: Bad [chars] [hex] count [dec]
+            ##########
+    
+            @AlertKey = extract($Message, "Bad (.*) count")
+    
+        case "READ_BOOTFILE_FAIL":
+    
+            ##########
+            # A configured boot system command has failed.
+            #
+            # %SYS-6-READ_BOOTFILE_FAIL: [chars] [chars].
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "REGEXP":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-4-REGEXP: [chars].
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "RELOAD":
+    
+            ##########
+            # A reload or restart has been requested.
+            #
+            # %SYS-5-RELOAD: Reload requested
+            ##########
+    
+            @AlertKey = ""
+    
+        case "RELOAD_ATTEMPT":
+    
+            ##########
+            # An attempt to reload the router has failed because
+            # SNMP reloads are not currently configured on the
+            # router. SNMP cannot be used to reload the router
+            # unless this functionality has been previously
+            # configured.
+            #
+            # %SYS-4-RELOAD_ATTEMPT: Attempt via SNMP failed,
+            # system shutdown not configured
+            ##########
+    
+            @AlertKey = ""
+    
+        case "RESTART":
+    
+            ##########
+            # A request to reload or restart the system has been
+            # made.
+            #
+            # %SYS-5-RESTART: System restarted -- [chars]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "restarted -- (.*)")
+    
+        case "SELFLINKED":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-SELFLINKED: Buffer [hex] linked to itself in
+            # free pool [chars]
+            ##########
+    
+            @AlertKey = "Buffer: " + extract($Message, "Buffer (.*) linked")
+    
+        case "SHARED":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-SHARED: Attempt to return buffer with
+            # sharecount [dec], ptr= [hex]
+            ##########
+    
+            @AlertKey = "Pointer: " + extract($Message, " ptr= (.*)$")
+    
+        case "SHARED1":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-SHARED1: Attempt to return buffer with
+            # sharecount [dec], ptr= [hex], caller= [hex]
+            ##########
+    
+            @AlertKey = "Pointer: " + extract($Message, " ptr= (.*),? caller$")
+    
+        case "SIGNUM":
+    
+            ##########
+            # An attempt has been made to send an invalid signal to
+            # another process.
+            #
+            # %SYS-2-SIGNUM: Process aborted on invalid signal,
+            # signum = [dec].
+            ##########
+    
+            @AlertKey = ""
+    
+        case "SNMP0IDX":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-SNMP0IDX: Attempt to [chars] snmpidb with
+            # if_index of 0
+            ##########
+    
+            @AlertKey = ""
+    
+        case "SNMP_HOSTCONFIGSET":
+    
+            ##########
+            # SNMP is reading the host configuration from a network
+            # host.
+            #
+            # %SYS-4-SNMP_HOSTCONFIGSET: SNMP hostConfigSet
+            # request. Loading configuration from [IP_address]
+            ##########
+    
+            @AlertKey = "From: " + extract($Message, " from (.*)$")
+    
+        case "SNMP_NETCONFIGSET":
+    
+            ##########
+            # SNMP is reading the network configuration from a
+            # network host.
+            #
+            # %SYS-4-SNMP_NETCONFIGSET: SNMP netConfigSet request.
+            # Loading configuration from [IP_address].
+            ##########
+    
+            @AlertKey = "From: " + extract($Message, "from (.*)\.?$")
+    
+        case "SNMP_WRITENET":
+    
+            ##########
+            # SNMP is writing the current configuration to a
+            # network host.
+            #
+            # %SYS-4-SNMP_WRITENET: SNMP WriteNet request. Writing
+            # current configuration to [IP_address]
+            ##########
+    
+            @AlertKey = "To: " + extract($Message, " to (.*)$")
+    
+        case "SOCKUNKN":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-SOCKUNKN: Unknown socket protocol [dec]
+            ##########
+    
+            @AlertKey = "Protocol: " + extract($Message, "protocol (.*)$")
+    
+        case "SPEC":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-2-SPEC: Trying to set unknown special character
+            # [dec] to [dec]
+            ##########
+    
+            @AlertKey = "Character: " + extract($Message, " character (.*)$")
+    
+        case "STACKLOW":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-6-STACKLOW: Stack for [chars] [chars] running
+            # low, [dec]/[dec]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "for (.*) running")
+    
+        case "TABLEERR":
+    
+            ##########
+            # An internal table entry has become corrupt.
+            #
+            # %SYS-5-TABLEERR: [chars] table [chars] damaged:
+            # [chars].
+            ##########
+    
+            @AlertKey = extract($Message, ": (.*) damaged")
+            
+            $CLARIFIER = extract($Message, "damaged: (.*)")
+    
+        case "TESTINFO":
+    
+            ##########
+            # This is an auxiliary message to the SYS-3-OVERRUN and
+            # SYS-3-BADMAGIC error messages. This message
+            # identifies the process or process fragment that was
+            # executing when the error occurred.
+            #
+            # %SYS-6-TESTINFO: Scheduler test [hex] (for [chars])
+            # just executed
+            ##########
+    
+            @AlertKey = "Test: " + extract($Message, "Scheduler test (.*) just")
+    
+        case "TIMERHOG":
+    
+            ##########
+            # The indicated callback routine has run for too long a
+            # period of time without relinquishing the processor
+            #
+            # %SYS-3-TIMERHOG: Timer callback ran long, PC = [hex].
+            ##########
+    
+            @AlertKey = ""
+    
+        case "TIMERNEG":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %SYS-3-TIMERNEG: Cannot start timer ([hex]) with
+            # negative offset ([dec]).
+            ##########
+    
+            @AlertKey = "Timer: " + extract($Message, "timer \((.*)\) with")
+    
+        case "WATCHDOG":
+    
+            ##########
+            # The indicated process has run for too long a period
+            # of time without relinquishing the processor. The
+            # system has shut down the indicated process.
+            #
+            # %SYS-2-WATCHDOG: Process aborted on watchdog timeout,
+            # process = [chars].
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "timeout,? process = (.*).?$")
+    
+        case "WRONGFREELIST":
+    
+            ##########
+            # A free buffer has been placed in a list of free
+            # buffers that was not the correct list for the
+            # indicated buffer.
+            #
+            # %SYS-3-WRONGFREELIST: Block [hex], size [dec], on
+            # wrong free list ([dec], [dec])
+            ##########
+    
+            @AlertKey = "Block: " + extract($Message, ": Block (.*),? size")
+    
+        case "WRONGPOOL":
+    
+            ##########
+            # A software error has occurred.
+            #
+            # %SYS-2-WRONGPOOL: Buffer [hex] found in pool [hex],
+            # should be in pool [hex]
+            ##########
+    
+            @AlertKey = "Buffer: " + extract($Message, " Buffer (.*) found")
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SYS.include.syslog.rules >>>>>")

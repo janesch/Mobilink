@@ -1,0 +1,146 @@
+////////////////////////////////////////////////
+//
+//	MicrowaveEquipPowerSupply.ipl
+//
+//	Impact policy for Mobilink - Microwave Equipment Power Supply Alarm handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100524	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+
+
+//Set Default Values
+Default_SleepTime = 180;
+Default_SitePriority = 4;
+
+// Note there is a requirement for Enrichment - General Enrichment is being handled by Policy StdEnrich
+//	However in this case there is a need for additional enrichment
+//		Site
+//		Site Priority
+
+
+DataType = "CMDB_ENRICH";
+Filter = "Node = '" + EventContainer.Node + "'";
+CountOnly = False;
+
+EnrichData = GetByFilter(DataType, Filter, CountOnly);
+Num_CMDB_ENRICH = Num;
+Log("Num = " + Num);
+Log("EnrichData  = " + EnrichData );
+Log("EnrichData[0]  = " + EnrichData[0] );
+
+if (Num_CMDB_ENRICH == 0)
+{
+	SiteName = "Unknown";
+	SitePriority = Default_SitePriority;
+}
+else
+{
+	SiteName = EnrichData[0].SiteName;
+	SitePriority = EnrichData[0].SitePriority ;
+}
+
+Log ("SiteName = " + SiteName );
+Log ("SitePriority = " + SitePriority );
+
+ReturnEvent(EventContainer);
+
+// is there an exosting Synthetic Event/Ticket
+
+
+//log("EventContainer.MaximoInfo = " + EventContainer.MaximoInfo);
+if(EventContainer.MaximoInfo <>"")
+{
+	//log("MaximoInfo is not null");
+	// Update Existing Ticket
+	log("TT Exists");
+}
+else
+{
+	// Get Sleep Time
+	DataType = "CMDB_SleepTime";		// this needs to be setup
+	Filter = "Node = '" + @Node + "'";		// this needs to be setup
+	CountOnly = False;
+	CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+	Num_CMDB__SleepTime = Num;
+	if(Num_CMDB_SleepTime == 0)
+	{
+		//No record for this so set default Time 
+		SleepTime = Default_SleepTime ;
+	}
+	else
+	{
+		SleepTime = CMDB_SleepTime[0].SleepTime;
+		if (SleepTime == 0)
+		{
+			SleepTime = Default_SleepTime ;
+		}
+	}
+//	Log("SleepTime = " + SleepTime );
+	Log("Going To Sleep "  + @ServerSerial);
+//	Log("ServerSerial = " + EventContainer.ServerSerial);
+	EventContainer.ImpactFlag = 1;
+	ReturnEvent(EventContainer);
+
+//	Hibernate(@ServerSerial, wait, SleepTime);
+
+	EventContainer.ImpactFlag = 2;
+	ReturnEvent(EventContainer);
+	Log ("Wake Up " + @ServerSerial);
+	// Does the event still exist?
+	DataType = "Status";		// this needs to be setup
+	Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+	CountOnly = False;
+	Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+	Num_Existing_Event = Num;
+	if (Num_Existing_Events = 0)
+	{
+		// Event nolonger existd
+		Log("Event No Longer Exists");
+	}
+	else
+	{
+		//Does the Synthetic Event Exist?
+//		Log("Event DOES Exists");
+		DataType = "Status";		// this needs to be setup
+		Filter = "Class = 200004 and AlertGroup = '" + SiteName + "'";		// this needs to be setup
+		NowTime = GetDate();
+		CountOnly = False;
+		Existing_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+		if(Num == 0)
+		{
+			// Create New Synthetic Event
+			Log("Create New Event");
+			NewEvent = NewEvent(DefaultEventReader);
+			NewEvent.EventReaderName = "DefaultEventReader";
+			NewEvent.Domain=EventContainer.Domain;
+			NewEvent.Region=EventContainer.Region;
+			NewEvent.ManCity=EventContainer.ManCity;
+			NewEvent.CovCity=EventContainer.CovCity;
+			NewEvent.Agent = "Impact";
+			NewEvent.MaximoStatus= 1;
+			NewEvent.AlertGroup = "Microwave Equip Power";
+			NewEvent.AlertKey = SiteName;
+			NewEvent.Identifier= "MicrowaveEquipPowerSupply20100527" + SiteName;
+			NewEvent.Summary= "Microwave Equipment Power Supply Alarm Handling for " + SiteName ;
+			NewEvent.Severity= SitePriority;
+			NewEvent.Type= 1;
+			NewEvent.Tally= 1;
+			NewEvent.Node= "Impact";
+			NewEvent.FirstOccurrence = NowTime ;
+			NewEvent.LastOccurrence = NowTime ;
+			NewEvent.Class = 200004;
+			ReturnEvent(NewEvent);
+
+		}
+		else
+		{
+			//UPdatre TT
+			Existing_Synthetic_Event.Tally = Existing_Synthetic_Event.Tally + 1;
+			Existing_Synthetic_Event.LastOccurrence = NowTime ;
+			ReturnEvent(Existing_Synthetic_Event);
+		}
+	}
+}

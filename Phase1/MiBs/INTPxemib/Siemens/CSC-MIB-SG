@@ -1,0 +1,256 @@
+
+
+CSC-MIB-SG DEFINITIONS ::= BEGIN
+
+        IMPORTS
+                MODULE-IDENTITY, OBJECT-TYPE,
+                NOTIFICATION-TYPE, Counter32       FROM SNMPv2-SMI
+ 
+                TEXTUAL-CONVENTION, DisplayString  FROM SNMPv2-TC
+ 
+                enterprises                        FROM RFC1155-SMI
+
+                in, TiBoolean, inModules           FROM INC-MIB-C 
+
+                openViewSourceName                 FROM INC-MIB-AL;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        --
+        -- Module Identity :
+        --
+        inCscMibSG MODULE-IDENTITY
+                LAST-UPDATED        "0206251200Z"
+                ORGANIZATION        "Siemens AG"
+                CONTACT-INFO        "Lutz Schneider
+                                 Email:        lutz.schneider@sietec.de
+                                 Postal:        Siemens AG
+                                         Siemensdamm 60
+                                         13629 Berlin, Germany"
+                DESCRIPTION        
+                   "This module describes the managed object types of
+                    WebCSC server (ISS and SAFEGUARD) and WebCSC client."
+         
+                REVISION    "0206251200Z"
+                DESCRIPTION "renamed eventType to sgEventType and
+			     eventTable to sgEventTable"
+
+                REVISION    "0012181400Z"
+                DESCRIPTION "Reduced size of freeText and sgEtParameters."
+
+                REVISION    "9907271600Z"
+                DESCRIPTION "Further adaptations to TeMIP MIB loader."
+
+                REVISION    "9906171600Z"
+                DESCRIPTION "Adaptations to TeMIP MIB loader."
+
+                REVISION    "9812141600Z"
+                DESCRIPTION "added sgEtParameters"
+
+                REVISION    "9810011200Z"
+                DESCRIPTION "added APSVersion"
+
+                REVISION    "9806181200Z"
+                DESCRIPTION "minor changes to meet RFC1902."
+
+                REVISION    "9712161200Z"
+                DESCRIPTION "cscSafeguard introduced."
+
+        ::= { inModules 6 } 
+
+        csc OBJECT IDENTIFIER ::= { in 3 }
+
+--        
+--  This MIB represents the version 0.9, which contains only features for fault
+--  management (FM). later versions may contain features for configuration
+--  management (CM), account management (AM), performance management(PM) and
+--  security management (SM).
+--
+
+
+        --
+        --  textual conventions
+        --
+
+        --  sequence number represents an event sequence number data type.
+        SequenceNumber ::= INTEGER(1..2147483647)
+                
+
+        -- base oid for the trap types / notifications of the 
+        -- IN V5.x Web CSC server network element
+        cscTraps        OBJECT IDENTIFIER ::= { csc 0 }
+
+        cscSafeguard    OBJECT IDENTIFIER ::= { csc 1 }
+
+        safeguardPresent OBJECT-TYPE
+                SYNTAX TiBoolean
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the safeguard NT service activitiy flag. false
+                   indicates, that the service is not running"
+                ::= { cscSafeguard 1 }
+
+        safeguardVersion OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..10 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION "contains the safeguard (mib) version number"
+                ::= { cscSafeguard 2 }
+
+        configurationFile OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..256 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the location of the safeguard.ini file. this is
+                   read at safeguard startup time."
+                ::= { cscSafeguard 3 }
+
+        loggingFile OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..256 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                   "contains the location of the safeguard.log file. this is
+                    written at safeguard run time."
+                ::= { cscSafeguard 4 }        
+
+        serviceCount OBJECT-TYPE
+                SYNTAX INTEGER(0..65535)
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the number of entries in the service table. each
+                   entry of the service table stores information related to
+                   one service observed by safeguard.zero (0) indicates that
+                   there is no service to observe."
+                ::= { cscSafeguard 5 }
+
+        serviceTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF ServiceEntry
+                MAX-ACCESS  not-accessible
+                STATUS current
+                DESCRIPTION 
+                  "contains an list of services observed by safeguard."
+                ::= { cscSafeguard 6 }        
+
+        serviceEntry OBJECT-TYPE
+                SYNTAX ServiceEntry
+                MAX-ACCESS  not-accessible
+                STATUS current
+                DESCRIPTION "refers to an entry in the service table."
+                INDEX {        serviceIndex }
+                ::= { serviceTable 1 }
+
+        ServiceEntry ::= 
+                SEQUENCE {        serviceIndex INTEGER,
+                                        serviceName DisplayString,
+                                        serviceFile DisplayString,
+                                        serviceStatus INTEGER,
+                                        serviceRestart INTEGER,
+                                        restartTrigger TiBoolean,
+                                        restartSuccess DisplayString,
+                                        restartsMax INTEGER,
+                                        restartsDone Counter32,
+                                        restartsGood Counter32
+                                 }        
+
+        serviceIndex OBJECT-TYPE
+                SYNTAX INTEGER(0..65535)
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the SNMP table index used to access the service
+                   table entries. zero (0) indicates that there is no service
+                   in the service table."
+                ::= { serviceEntry 1 }        
+
+        serviceName OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..20 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the name of the service read from the
+                   safeguard.ini file. used as search criteria in NT service
+                   table. also used as a part of trap informations."
+                ::= { serviceEntry 2 }        
+
+        serviceFile OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..256 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the command name (full path and arguments) of the
+                   service read from the safeguard.ini file. used for restart
+                   of service."
+                ::= { serviceEntry 3 }        
+
+        serviceStatus OBJECT-TYPE
+                SYNTAX INTEGER { notstarted(0), started(1), running(2), stoped(3), 
+                                                unknown(4) }
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the service state. default is unknown(4). also
+                   used as a part of trap informations."
+                ::= { serviceEntry 4 }        
+
+        serviceRestart OBJECT-TYPE
+                SYNTAX INTEGER { diabled(0), automatic(1), manual(2) }
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the restart mode. default is automatic(1). in
+                   v1.0 only automatic(1) is implemented."
+                ::= { serviceEntry 5 }        
+
+        restartTrigger OBJECT-TYPE
+                SYNTAX TiBoolean
+                MAX-ACCESS  read-write
+                STATUS current
+                DESCRIPTION 
+                  "contains an trigger to stop and restart services on agent
+                   side. true will stop and restart the service and resets
+                   this value to false. default is false. in v1.0 not 
+                   implemented."
+                ::= { serviceEntry 6 }        
+
+        restartSuccess OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..19 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains an string representation of the last successful
+                   restart time."
+                ::= { serviceEntry 7}        
+
+        restartsMax OBJECT-TYPE
+                SYNTAX INTEGER(0..65535)
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the (max.) number of retries for restart before
+                   safeguard emits an trap. default is 1."
+                ::= { serviceEntry 8 }        
+
+        restartsDone OBJECT-TYPE
+                SYNTAX Counter32
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the total number of restart operations. used for
+                   statistics."
+                ::= { serviceEntry 9 }        
+
+        restartsGood OBJECT-TYPE
+                SYNTAX Counter32
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the number of successful restart operations."
+                ::= { serviceEntry 10 }        
+
+
+END
+-- CSC-MIB-SG
+

@@ -1,0 +1,240 @@
+/*    SITE DOWN Policy
+
+    Author: Alex Silva, Innovise AUG 2010
+    Description:
+    This policy is for Huawei and Motorola site down events:  AlertGroup = "LAPD OML Fault" and AlertGroup = "Last RSL Link Failure".
+
+
+    EventReader Filter:
+        ((AlertGroup = "Last RSL Link Failure" OR AlertGroup = "LAPD OML Fault")  AND MaintFlag = 1 AND Severity > 3 AND Type = 1 AND ImpactFlag =  )
+        OR
+        ((AlertGroup = "Last RSL Link Failure" OR AlertGroup = "LAPD OML Fault") and Severity = 0) 
+
+    Algorithm:
+        0 - Is it a Clear Event? If Yes: Clear the synthetic events and EXIT. If No: Continue
+        1 - Enrich with site priority and sleep time from CCMDB
+        2 - Is there an existing TT
+            2.1 - If yes: Update the TT by inserting the current event's details in the journal and EXIT
+        3 - If No: Sleep using specific sleep time.
+            3.1 - Has the event cleared?
+            3.2 - If yes: Exit
+        4 - If No: Has a synthetic been created?
+            4.1 - If Yes: Update the TT by inserting the current event's details in the journal and EXIT
+        5 - If No: Create synthetic event
+            5.1 - Add details of all associated environmental events and clear them.
+*/
+
+Log("************ ML_Site_Down Start NEW***********");
+
+log("Return ImpactFlag = 3 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 3; 
+ReturnEvent(EventContainer); 
+
+// getting the site name
+site_name = Substring(@Node, 0, 7);
+log(" Site Name : " + site_name);
+
+// 0 - Is it a Clear Event? If Yes: Clear the synthetic events and EXIT. If No: Continue
+if (@Severity == 0)
+{
+    ExistingSiteDownDataType = "OS_Status";
+    ExistingSiteDownFilter = "Node = '"+site_name+"' And Summary = 'Site Down' And Severity = 5";
+    ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+    NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+    
+    if (NumExistingSiteDownOutput > 0)
+    {
+        ExistingSiteDownOutput[0].Severity = 0;
+    }
+    exit();
+}
+// 1 - Enrich with site priority from CCMDB
+
+
+
+sleep_time = 60;
+
+// getting the site level
+SiteLevelDataType = "site_id";
+SiteLevelFilter = "SITE_ID = '"+site_name+"'";
+SitePriorityOutput = GetByFilter(SiteLevelDataType, SiteLevelFilter,False);
+NumSiteLevelOutput = Length(SitePriorityOutput);
+
+if (NumSiteLevelOutput > 0)
+{
+    site_level = SitePriorityOutput[0].SITE_LEVEL;
+    
+    SleepTimeDataType = "SleepTime"; 
+    SleepTimeFilter = "SITE_LEVEL = '"+site_level+"'";
+    SleepTimeOutput = GetByFilter(SleepTimeDataType, SleepTimeFilter,False);
+    NumSleepTimeOutput = Length(SleepTimeOutput);
+    
+    if (NumSleepTimeOutput > 0)
+    {
+        Log("************ Getting Sleep Time ***********");
+        // checking whether it's day or night time
+        current_time = getdate();
+        current_date = LocalTime(current_time, "MM/dd/yyyy");
+        start_day_time = "08:00:00 " + current_date;
+        end_day_time = "18:00:00 " + current_date;
+        start_day_time_seconds = ParseDate(start_day_time, "HH:mm:ss MM/dd/yyyy");
+        end_day_time_seconds = ParseDate(end_day_time, "HH:mm:ss MM/dd/yyyy");    
+    
+    
+        if ( (current_time > start_day_time_seconds) and (current_time < end_day_time_seconds))
+        {
+            log ("It's Day Time");
+            sleep_time = SleepTimeOutput[0].TIME_DAY;
+        }
+        else
+        {
+            log ("It's Night Time");
+            sleep_time = SleepTimeOutput[0].TIME_NIGHT;
+        }
+    }
+    log (" Sleep Time :" + sleep_time);
+}
+
+// 2 - Is there an existing TT for this Site Down?
+
+ExistingSiteDownDataType = "OS_Status";
+ExistingSiteDownFilter = "Node = '"+site_name+"' And Summary = 'Site Down' And Severity = 5";
+ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+
+
+if (NumExistingSiteDownOutput > 0)
+{
+// 2.1 If yes: Update the TT by inserting the current event's details in the journal and EXIT
+    log ("************ TT has already created, updating the TT and EXIT ***********");
+    JournalMessage = "Node: " + @Node + " EventType: " + @AlertGroup+ " Event Text: " + @AddText + " :: " + @AlertKey;
+    MobiLib.SiteDownInsertJournal (ExistingSiteDownOutput[0].ServerSerial, JournalMessage, @ServerSerial);
+        
+    // ####### update LastOccurrence and Tally ??
+    
+    exit();
+    
+}
+else
+{
+// 3 - If No: Sleep using specific sleep time.
+
+    log ("************ TT has not created yet: Hibernate for: " +  sleep_time + " seconds ***********");
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    // @HibernateFlag = 1;        
+    // ReturnEvent(EventContainer);
+    
+    //side_down_action_key = @ServerSerial + @ServerName;
+    //Hibernate(side_down_action_key, "Sleeping", sleep_time);
+    
+    // Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    //@HibernateFlag = 2;        
+    //ReturnEvent(EventContainer);
+    
+// 3.1    Has the event cleared or is not in the O.S. anymore?
+
+    CurrentEventDataType = "OS_Status";
+    CurrentEventFilter = "ServerSerial = "+@ServerSerial+"";
+    CurrentEventOut = GetByFilter(CurrentEventDataType, CurrentEventFilter,False);
+    NumCurrentEventOut = Length(CurrentEventOut);
+
+    if (NumCurrentEventOut == 0 OR CurrentEventOut[0].Severity == 0 )
+    {
+// 3.2 If yes: Exit
+    
+        log ("************ The event has been cleared or  is not in the OS anymore: exiting ***********");
+        exit();
+    }
+    else
+    {
+
+// 4 - If No: Has a synthetic been created?
+    
+        ExistingSiteDownDataType = "OS_Status";
+        ExistingSiteDownFilter = "Node = '"+site_name+"' And Summary = 'Site Down' And Severity = 5";
+        ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+        NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+    
+        if (NumExistingSiteDownOutput > 0)
+        {
+// 4.1    If Yes: Update the TT by inserting the current event's details in the journal and EXIT
+            log ("************ TT has already created, updating the TT and EXIT ***********");
+            JournalMessage = "Node: " + @Node + " EventType: " + @AlertGroup+ " Event Text: " + @AddText;
+            MobiLib.SiteDownInsertJournal (ExistingSiteDownOutput[0].ServerSerial, JournalMessage, @ServerSerial);
+
+    
+        // ####### update LastOccurrence and Tally ??
+    
+            exit();
+        }
+        else
+        {
+// 5 - If No: Create synthetic event
+            log ("************ Create Synthetic Event: Site Down ***********");
+            
+            SiteDown = NewObject();
+    
+            SiteDown.Node = site_name;
+            SiteDown.Summary = "Site Down";
+            SiteDown.AlertGroup = @AlertGroup;
+            SiteDown.AlertKey = "Site Down";
+            SiteDown.Severity = 5;
+            SiteDown.Type = 1;
+            SiteDown.Agent = "Netcool Impact";
+            SiteDown.Manager = "Netcool Impact";
+            SiteDown.FirstOccurrence = getdate();
+            SiteDown.LastOccurrence = getdate();
+            SiteDown.LogTicket = 1;
+            SiteDown.Identifier = SiteDown.Node + SiteDown.Summary + SiteDown.Type;
+            SiteDown.Class = 200013; // Must be set properly
+            SiteDown.Domain = @Domain;
+            SiteDown.Region = @Region;
+            SiteDown.ManCity = @ManCity;
+
+            AddDataItem('OS_Status', SiteDown);
+            Log("New Synthetic Site Down Event Created ");
+            
+// 5.1    Add details of all associated environmental events and clear them.
+            
+            // Searching for Environmental Alarms
+        
+            ExistingEnvDataType = "OS_Status";
+            ExistingEnvFilter = "Node like '"+site_name+"' And (EventType = 'environmentalAlarm' OR EventType = 'Environmental Alarm') And Severity > 1";
+            ExistingEnvOutput = GetByFilter(ExistingEnvDataType, ExistingEnvFilter ,False);
+            NumExistingEnvOutput = Length(ExistingEnvOutput);
+            log(" NumExistingEnvOutput = " + NumExistingEnvOutput);
+        
+            if (NumExistingEnvOutput > 0)
+            {
+            
+                counter = 0;
+                log("counter = " + counter);
+                
+                // Get the ServerSerial and ServerName of the Site Down event just created
+                ExistingSiteDownDataType = "OS_Status";
+                ExistingSiteDownFilter = "Node = '"+site_name+"' And Summary = 'Site Down' And Severity = 5";
+                ExistingSiteDownOutput = GetByFilter(ExistingSiteDownDataType, ExistingSiteDownFilter,False);
+                NumExistingSiteDownOutput = Length(ExistingSiteDownOutput);
+                
+                while (counter < NumExistingEnvOutput)
+                {
+                    // Clear the Environmental events and add their details in the synthetic event.
+                    log("counter = " + counter);
+                    ExistingEnvOutput[counter].Severity = 0;
+                    // Insert Env events details in the "Site Down" event.
+                    journal_node = ExistingEnvOutput[counter].Node;
+                    journal_event_type = ExistingEnvOutput[counter].EventType;
+                    // journal_add_tex = ExistingEnvOutput[counter].AddText;
+                    site_down_serial = ExistingSiteDownOutput[0].ServerSerial;
+                    // site_down_server = ExistingSiteDownOutput[0].ServerName;
+                    JournalMessage = "Node: " + journal_node  + " EventType: " + journal_event_type + " Event AlertKey: " + @AlertKey;
+                    log("JournalInsert = " + JournalMessage);
+                    MobiLib.SiteDownInsertJournal (site_down_serial, JournalMessage, ExistingEnvOutput[counter].ServerSerial);
+
+                    counter = counter + 1;
+                }
+            }
+        }
+    }
+}

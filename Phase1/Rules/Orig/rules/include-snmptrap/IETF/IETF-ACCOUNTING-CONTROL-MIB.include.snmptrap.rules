@@ -1,0 +1,127 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-ACCOUNTING-CONTROL-MIB.include.snmptrap.rules 3.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-ACCOUNTING-CONTROL-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.60.2": ### Accounting Control - Notifications from ACCOUNTING-CONTROL-MIB (RFC2513)
+
+    log(DEBUG, "<<<<< Entering... IETF-ACCOUNTING-CONTROL-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-ACCOUNTING-CONTROL-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### acctngFileNearlyFull
+
+            ##########
+            # $1 = acctngFileName
+            # $2 = acctngFileMaximumSize
+            # $3 = acctngControlTrapThreshold
+            # $4 = acctngFileNameSuffix
+            ##########
+
+            $acctngFileName = $1
+            $acctngFileMaximumSize = $2 + " bytes"
+            $acctngControlTrapThreshold = $3 + "%"
+            $acctngFileNameSuffix = $4
+            details($acctngFileName,$acctngFileMaximumSize,$acctngControlTrapThreshold,$acctngFileNameSuffix)
+            
+            $OS_EventId = "SNMPTRAP-IETF-ACCOUNTING-CONTROL-MIB-acctngFileNearlyFull"
+            
+            @AlertGroup = "Accounting File Status"
+            @AlertKey = "acctngFileEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "Accounting File Over " + $3 + "% Full  ( " + $1 + $4 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### acctngFileFull
+
+            ##########
+            # $1 = acctngFileName
+            # $2 = acctngFileMaximumSize
+            # $3 = acctngFileNameSuffix
+            ##########
+
+            $acctngFileName = $1
+            $acctngFileMaximumSize = $2 + " bytes"
+            $acctngFileNameSuffix = $3
+            details($acctngFileName,$acctngFileMaximumSize,$acctngControlTrapThreshold,$acctngFileNameSuffix)
+            
+            $OS_EventId = "SNMPTRAP-IETF-ACCOUNTING-CONTROL-MIB-acctngFileFull"
+            
+            @AlertGroup = "Accounting File Status"
+            @AlertKey = "acctngFileEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "Accounting File Full  ( " + $1 + $3 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ACCOUNTING-CONTROL-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ACCOUNTING-CONTROL-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ACCOUNTING-CONTROL-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ACCOUNTING-CONTROL-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-ACCOUNTING-CONTROL-MIB.include.snmptrap.rules >>>>>")

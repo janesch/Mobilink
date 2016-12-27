@@ -1,0 +1,68 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-UPS-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-UPS-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-UPS-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### upsTrapOnBattery
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100040
+        $OS_X733SpecificProb = "upsTrapOnBattery"
+        $OS_OsiLayer = 0
+        
+    case "2": ### upsTrapTestCompleted
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 0
+        $OS_X733SpecificProb = "upsTrapTestCompleted"
+        $OS_OsiLayer = 0
+        
+    case "3": ### upsTrapAlarmEntryAdded
+
+        $OS_EventId = "SNMPTRAP-IETF-UPS-MIB-upsTrapAlarmEntryAdded"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "upsAlarmEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "4": ### upsTrapAlarmEntryRemoved
+
+        $OS_EventId = "SNMPTRAP-IETF-UPS-MIB-upsTrapAlarmEntryRemoved"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "upsAlarmEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-UPS-MIB.adv.include.snmptrap.rules >>>>>")

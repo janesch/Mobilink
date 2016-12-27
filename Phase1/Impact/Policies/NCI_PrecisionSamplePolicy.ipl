@@ -1,0 +1,35 @@
+USE_SHARED_SCOPE;
+
+function ActionNode_PrecisionSamplePolicy(OrgNodes) {
+  log("*** PrecisionSamplePolicy starting at " + localtime(getdate(), "yyyy/MM/dd HH:mm:ss") + "***");
+  Type = "Precision";
+  Filter = "Subject = '" + "RIVERSOFT.3.0.MODEL.QUERY" + "' AND  Query='" + 'select * from master.entityByName;' + "'";
+  Filter = Filter + " AND Timeout='100000'";
+  log("Filter is " + Filter);
+
+  out = GetByFilter(Type, Filter, CountOnly);
+  if (Num > 0) {
+    runFunction0 = true;
+  }
+  // Num > 0
+  if (runFunction0 = true) {
+    // display all the rows
+    ActionNode_DisplayQueryResults(OrgNodes);
+    i = 0;
+    while (i < Num) {
+      log("out["+i+"]= "+out[i].EntityName);
+      i = i + 1;
+    }
+    log("Num is " + Num);
+  }
+  log("*** Done with PrecisionSamplePolicy at " + localtime(getdate(), "yyyy/MM/dd HH:mm:ss") + "***");
+}
+
+function ActionNode_DisplayQueryResults(OrgNodes) {
+  log("** DisplayQueryResults **");
+  log("ErrorString is " + OrgNode.ErrorString);
+  log("FieldNames is " + OrgNode.FieldNames);
+  log("EntityName is " + OrgNode.EntityName);
+}
+
+ActionNode_PrecisionSamplePolicy(OrgNodes);

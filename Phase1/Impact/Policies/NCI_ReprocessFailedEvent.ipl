@@ -1,0 +1,18 @@
+Handle com.micromuse.response.event.ObjectServerDriverException {
+log(" Could not re-create the EventContainer for " + OrgNodes[i].KEY + " , the OrgNode is in corrupted State");
+DeleteDataItem(OrgNodes[i]);
+}
+
+Type="FailedEvent";
+Filter="";
+OrgNodes = GetByFilter(Type, Filter, false);
+total = Num;
+i = 0;
+while (i < int(total)) {
+EventContainer = recreateEvent(OrgNodes[i].EventContainerString, OrgNodes[i].EventReaderName);
+if (EventContainer != NULL) {
+Activate(EventContainer, OrgNodes[i].PolicyName);
+}
+DeleteDataItem(OrgNodes[i]);
+i = i + 1;
+}

@@ -1,0 +1,114 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-MODEM.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "MODEM": ### Router shelf modem management
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-MODEM.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADEVENT":
+            
+            ##########
+            # The modem management facility has received an
+            # unrecognized event.
+            #
+            # %MODEM-1-BADEVENT : Invalid modem management [chars]
+            # event [hex] for modem([chars])
+            ##########
+            
+            @AlertKey = "Modem: " + extract($Message, " modem\((.*)\)")
+            if(match(@AlertKey, "Modem: "))
+            {
+                @AlertKey = "Modem: NULL"
+            }
+        
+        case "DL_FAIL":
+            
+            ##########
+            # The modem modules did not send back an "initialized"
+            # message after the download.
+            #
+            # %MODEM-1-DL_FAIL : Firmware download failed for slot
+            # [dec] module_mask [hex]   
+            ##########
+            
+            @AlertKey = "Slot: " + extract($Message, "slot ([0-9]+)")
+            update(@Summary)
+        
+        case "DL_FAIL_FILE_XFER":
+            
+            ##########
+            # The download of a portware file to the modem card over
+            # DSIP as part of a modem firmware upgrade attempt has
+            # timed out and has failed to complete successfully.
+            #
+            # %MODEM-1-DL_FAIL_FILE_XFER : Firmware download failed for
+            # slot [dec] module_mask [hex] due to file transfer error  
+            ##########
+            
+            @AlertKey = "Slot: " + extract($Message, "slot ([0-9]+)")
+            update(@Summary)
+        
+        case "MODEM_RECOVERY":
+            
+            ##########
+            # This message provides modem recovery information.
+            #
+            # %MODEM-5-MODEM_RECOVERY : Modem ([chars]) [chars]
+            ##########
+            
+            @AlertKey = "Modem: " + extract($Message, "RECOVERY: Modem \((.*)\) will")
+            if(match(@AlertKey, "Modem: "))
+            {
+                @AlertKey = "Modem: NULL"
+            }
+        
+        case "MODEM_RECOVERY_DL":
+            
+            ##########
+            # This message provides module download information.
+            #
+            # %MODEM-5-MODEM_RECOVERY_DL : Slot [dec], Module [dec]:
+            # [chars]
+            ##########
+            
+            @AlertKey = "Slot: " + extract($Message, "Slot ([0-9]+)") + ", Module: " + extract($Message, "Module ([0-9]+)")
+        
+        case "MODEM_RECOVERY_PROCESS":
+            
+            ##########
+            # This message provides modem recovery process information.
+            #
+            # %MODEM-5-MODEM_RECOVERY_PROCESS : [chars]
+            ##########
+            
+            @AlertKey = ""
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-MODEM.include.syslog.rules >>>>>")

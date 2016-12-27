@@ -1,0 +1,238 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-BRIDGE-MIB.include.snmptrap.rules 3.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-BRIDGE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.17": ### 802.1d Bridge - Traps from BRIDGE-MIB and RFC1286-MIB
+
+    log(DEBUG, "<<<<< Entering... IETF-BRIDGE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-BRIDGE-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### newRoot
+
+            $OS_EventId = "SNMPTRAP-IETF-BRIDGE-MIB-newRoot"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @AlertGroup = "Spanning Tree Root"
+            if(exists($OID1))
+            {
+                if(nmatch($OID1, "1.3.6.1.4.1.9.9.46.1.3.1.1.1")) ### from Cisco, CISCO-VTP-MIB
+                {
+                    ##########
+                    # $1 = vtpVlanIndex - The VLAN-id of this VLAN on ISL
+                    #        trunks.
+                    ##########
+                    
+                    @Agent = @Agent + "-Cisco"
+                    @Class = "40057"
+                    
+                    $managementDomainIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+                    $vtpVlanIndex = $1
+                    details($managementDomainIndex,$vtpVlanIndex)
+                    
+                    @AlertKey = "vtpVlanEntry." + $managementDomainIndex + "." + $vtpVlanIndex
+                    @Summary = "VLAN is New Root of Spanning Tree  ( Domain: " + $managementDomainIndex + ", VLAN: " + $vtpVlanIndex + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else if(nmatch($OID1, "1.3.6.1.4.1.114.1.4.10.2.1.1")) ### from Synernetics, SWITCHING-SYSTEMS-MIB
+                {
+                    ##########
+                    # $1 = swSysBridgeIndex
+                    ##########
+                    
+                    @Agent = @Agent + "-Synernetics"
+                    
+                    $swSysBridgeIndex = $1
+                    details($swSysBridgeIndex)
+                    
+                    @AlertKey = "swSysBridgeEntry." + $1
+                    @Summary = "Bridge is New Root of Spanning Tree  ( " + @AlertKey + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else if(nmatch($OID1, "1.3.6.1.4.1.335.1.4.1.1.5.2.0")) ### from MICOM Communication, MICOM-SYS-MIB
+                {
+                    ##########
+                    # $1 = mcmSysAsciiTimeOfDay
+                    ##########
+                    
+                    @Agent = @Agent + "-MICOM"
+                    
+                    $mcmSysAsciiTimeOfDay = $1
+                    details($mcmSysAsciiTimeOfDay)
+                    
+                    @AlertKey = ""
+                    @Summary = @Node + " is New Root of Spanning Tree"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else
+                {
+                    @AlertKey = ""
+                    @Summary = @Node + " is New Root of Spanning Tree  ( OID1: " + $OID1 + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                    details($*)
+                }
+            }
+            else
+            {
+                @AlertKey = ""
+                @Summary = @Node + " is New Root of Spanning Tree"
+                @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            }
+
+        case "2": ### topologyChange
+            
+            $OS_EventId = "SNMPTRAP-IETF-BRIDGE-MIB-topologyChange"
+            
+            @AlertGroup = "Bridge Topology Change"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            if(exists($OID1))
+            {
+                if(nmatch($OID1, "1.3.6.1.2.1.17.1.4.1.1"))
+                {
+                    ##########
+                    # $1 = dot1dBasePort
+                    ##########
+                    
+                    $dot1dBasePort = $1
+                    details($dot1dBasePort)
+                    
+                    @AlertKey = "dot1dBasePortEntry." + $1
+                    @Summary = "802.1d Bridge Port Transitioned <Learn to Forward> or <Forward to Block>  ( " + @AlertKey + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else if(nmatch($OID1, "1.3.6.1.4.1.9.9.46.1.3.1.1.1")) ### from Cisco, CISCO-VTP-MIB
+                {
+                    ##########
+                    # $1 = vtpVlanIndex
+                    # $2 = ifName
+                    ##########
+                    
+                    @Agent = @Agent + "-Cisco"
+                    
+                    $managementDomainIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+                    $vtpVlanIndex = $1
+                    $ifName = $2
+                    $ifIndex = extract($OID2, "\.([0-9]+)$")
+                    details($managementDomainIndex,$vtpVlanIndex,$ifName,$ifIndex)
+                    
+                    @AlertKey = "ifEntry." + $ifIndex
+                    @Summary = "VLAN Port Transitioned <Learn to Forward> or <Forward to Block>  ( Port: " + $2 + ", Domain: " + $managementDomainIndex + ", VLAN: " + $vtpVlanIndex + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else if(nmatch($OID1, "1.3.6.1.4.1.114.1.4.10.2.1.1")) ### from Synernetics, SWITCHING-SYSTEMS-MIB
+                {
+                    ##########
+                    # $1 = swSysBridgeIndex
+                    ##########
+                    
+                    @Agent = @Agent + "-Synernetics"
+                    
+                    $swSysBridgeIndex = $1
+                    details($swSysBridgeIndex)
+                    
+                    @AlertKey = "swSysBridgeEntry." + $1
+                    @Summary = "Bridge Port Transitioned <Learn to Forward> or <Forward to Block>  ( " + @AlertKey + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else if(nmatch($OID1, "1.3.6.1.4.1.335.1.4.1.1.5.2.0")) ### from MICOM Communication, MICOM-SYS-MIB
+                {
+                    ##########
+                    # $1 = mcmSysAsciiTimeOfDay
+                    ##########
+                    
+                    @Agent = @Agent + "-MICOM"
+                    
+                    $mcmSysAsciiTimeOfDay = $1
+                    details($mcmSysAsciiTimeOfDay)
+                    
+                    @AlertKey = ""
+                    @Summary = "Port Transitioned <Learn to Forward> or <Forward to Block>"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                }
+                else
+                {
+                    @AlertKey = ""
+                    @Summary = "Port Transitioned <Learn to Forward> or <Forward to Block>  ( OID1: " + $OID1 + " )"
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+                    details($*)
+                }
+            }
+            else
+            {
+                @AlertKey = ""
+                @Summary = "Port Transitioned <Learn to Forward> or <Forward to Block>"
+                @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            }
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-BRIDGE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-BRIDGE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-BRIDGE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-BRIDGE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-BRIDGE-MIB.include.snmptrap.rules >>>>>")

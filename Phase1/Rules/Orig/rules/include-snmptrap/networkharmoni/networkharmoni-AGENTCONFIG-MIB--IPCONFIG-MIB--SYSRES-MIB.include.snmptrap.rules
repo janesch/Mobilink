@@ -1,0 +1,403 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB.include.snmptrap.rules 1.0
+#    2007/06/13 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  AGENTCONFIG-MIB
+#	   -  IPCONFIG-MIB
+#          -  SYSRES-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.1977": ### Network Harmoni Agent Software - Notifications from AGENTCONFIG-MIB(030804)
+                          ### Network Harmoni Network Interface - Notifications from IPCONFIG-MIB(030515)
+                          ### Network Harmoni System Resources - Notifications from SYSRES-MIB(030821)
+
+    log(DEBUG, "<<<<< Entering... networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Network Harmoni"
+    @Class = "40042"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+       
+        ### Network Harmoni Agent Software - Notifications from AGENTCONFIG-MIB
+        
+        case "12": ### eventPulsed
+
+            ##########
+            # $1 = agentControlPulseEvent 
+            ##########
+
+            $agentControlPulseEvent = $1
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-eventPulsed"
+
+            @AlertGroup = "Event Status"
+            @AlertKey = ""
+            @Summary = "AgentControlPulseEvent Object Sets to a Non-Zero Value"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentControlPulseEvent)
+
+        ### Network Harmoni System Resources - Notifications from SYSRES-MIB
+
+        case "13": ### logFileMatch
+
+            ##########
+            # $1 = srLogMonControlLogFile 
+            # $2 = srLogMonLine 
+            # $3 = srLogMonLevel 
+            # $4 = srLogMonControlDescription 
+            ##########
+
+            $srLogMonControlLogFile = $1
+            $srLogMonLine = $2
+            $srLogMonLevel = lookup($3, SrLogMonLevel) + " ( " + $3 + " )"
+            $srLogMonControlDescription = $4
+            $srLogMonControlIndex = extract($OID2, "\.([0-9]+)\.[0-9]+$")
+            $srLogMonIndex = extract($OID2, "\.([0-9]+)$")         
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-SYSRES-MIB-logFileMatch"
+
+            @AlertGroup = "System Log File Status"
+            @AlertKey = "srLogMonEntry." + $srLogMonControlIndex + "." + $srLogMonIndex
+            @Summary = "Line in Log File Matches the Regular Expression"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($srLogMonControlLogFile,$srLogMonLine,$srLogMonLevel,$srLogMonControlDescription,$srLogMonControlIndex,$srLogMonIndex)
+
+        case "14": ### logFileError
+
+            ##########
+            # $1 = srLogMonStatsLastError 
+            # $2 = srLogMonControlDescription 
+            ##########
+
+            $srLogMonStatsLastError = $1
+            $srLogMonControlDescription = $2
+            $srLogMonControlIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-SYSRES-MIB-logFileError"
+
+            @AlertGroup = "System Log File Status"
+            @AlertKey = "srLogMonStatsEntry." + $srLogMonControlIndex
+            @Summary = "File Error While Reading Log File"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($srLogMonStatsLastError,$srLogMonControlDescription,$srLogMonControlIndex)
+
+        case "18": ### logFileCreated
+
+            ##########
+            # $1 = srLogMonControlLogFile 
+            # $2 = srLogMonControlDescription 
+            ##########
+
+            $srLogMonControlLogFile = $1
+            $srLogMonControlDescription = $2
+            $srLogMonControlIndex = extract($OID1, "\.([0-9]+)$")        
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-SYSRES-MIB-logFileCreated"
+
+            @AlertGroup = "System Log File Status"
+            @AlertKey = "srLogMonControlEntry." + $srLogMonControlIndex 
+            @Summary = "Monitored Log File Comes Into Existence"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($srLogMonControlLogFile,$srLogMonControlDescription,$srLogMonControlIndex)
+
+        case "19": ### logFileRemoved
+
+            ##########
+            # $1 = srLogMonControlLogFile 
+            # $2 = srLogMonControlDescription 
+            ##########
+
+            $srLogMonControlLogFile = $1
+            $srLogMonControlDescription = $2
+            $srLogMonControlIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-SYSRES-MIB-logFileRemoved"
+
+            @AlertGroup = "System Log File Status"
+            @AlertKey = "srLogMonControlEntry." + $srLogMonControlIndex
+            @Summary = "Log File Can not be Opened"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($srLogMonControlLogFile,$srLogMonControlDescription,$srLogMonControlIndex)
+
+        ### Network Harmoni Agent Software - Notifications from AGENTCONFIG-MIB
+
+        case "22": ### agentHeartBeat
+
+            ##########
+            # $1 = agentIdUniqueId 
+            # $2 = agentIdAddress 
+            # $3 = agentIdName 
+            # $4 = ifPhysAddress 
+            ##########
+
+            $agentIdUniqueId = $1
+            $agentIdAddress = $2
+            $agentIdName = $3
+            $ifPhysAddress = $4
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-agentHeartBeat"
+
+            @AlertGroup = "Agent Configuration Status"
+            @AlertKey = $1
+            @Summary = "AgentConfig Notifications Recorded in agentConfigNotificationCommunity"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentIdUniqueId,$agentIdAddress,$agentIdName,$ifPhysAddress)
+
+        case "31": ### agentLicenseCorrupt
+
+            ##########
+            # $1 = agentIdUniqueId 
+            # $2 = agentIdAddress 
+            # $3 = agentIdName 
+            # $4 = ifPhysAddress 
+            ##########
+
+            $agentIdUniqueId = $1
+            $agentIdAddress = $2
+            $agentIdName = $3
+            $ifPhysAddress = $4
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-agentLicenseCorrupt"
+
+            @AlertGroup = "Agent Status"
+            @AlertKey = $1
+            @Summary = "Agent's License File Corrupted,and is terminating"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentIdUniqueId,$agentIdAddress,$agentIdName,$ifPhysAddress)
+
+        case "32": ### agentLicenseInvalid
+
+            ##########
+            # $1 = agentIdUniqueId 
+            # $2 = agentIdAddress 
+            # $3 = agentIdName 
+            # $4 = ifPhysAddress 
+            # $5 = agentLicenseControlKey 
+            ##########
+
+            $agentIdUniqueId = $1
+            $agentIdAddress = $2
+            $agentIdName = $3
+            $ifPhysAddress = $4
+            $agentLicenseControlKey = $5
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-agentLicenseInvalid"
+
+            @AlertGroup = "Agent Status"
+            @AlertKey = $1
+            @Summary = "Attempt to Activate an Invalid License Key Made"
+
+            $DEFAULT_Severity = 3 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentIdUniqueId,$agentIdAddress,$agentIdName,$ifPhysAddress,$agentLicenseControlKey)
+
+        case "33": ### agentLicenseExpiry
+
+            ##########
+            # $1 = agentIdUniqueId 
+            # $2 = agentIdAddress 
+            # $3 = agentIdName 
+            # $4 = ifPhysAddress 
+            # $5 = agentLicenseControlKey 
+            ##########
+
+            $agentIdUniqueId = $1
+            $agentIdAddress = $2
+            $agentIdName = $3
+            $ifPhysAddress = $4
+            $agentLicenseControlKey = $5
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-agentLicenseExpiry"
+
+            @AlertGroup = "Agent Status"
+            @AlertKey = $1
+            @Summary = "Agent's Trial License Expires"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentIdUniqueId,$agentIdAddress,$agentIdName,$ifPhysAddress,$agentLicenseControlKey)
+
+        case "34": ### agentAuthenticationFailure
+
+            ##########
+            # $1 = agentAuthLastBadIPAddress 
+            ##########
+
+            $agentAuthLastBadIPAddress = $1
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-agentAuthenticationFailure"
+
+            @AlertGroup = "Agent Status"
+            @AlertKey = ""
+            @Summary = "Unknown Community String Attempted to Access Agent"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentAuthLastBadIPAddress)
+
+        case "38": ### agentTermination
+
+            ##########
+            # $1 = agentIdUniqueId 
+            # $2 = agentIdAddress 
+            # $3 = agentIdName 
+            # $4 = ifPhysAddress 
+            ##########
+
+            $agentIdUniqueId = $1
+            $agentIdAddress = $2
+            $agentIdName = $3
+            $ifPhysAddress = $4
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-agentTermination"
+
+            @AlertGroup = "Agent Status"
+            @AlertKey = $1
+            @Summary = "Agent Process About to Terminate"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentIdUniqueId,$agentIdAddress,$agentIdName,$ifPhysAddress)
+
+        ### Network Harmoni Network Interface - Notifications from IPCONFIG-MIB
+
+        case "43": ### srIpConfigIpChanged
+
+            ##########
+            # $1 = agentIdUniqueId 
+            ##########
+
+            $agentIdUniqueId = $1
+
+            $OS_EventId = "SNMPTRAP-networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB-srIpConfigIpChanged"
+
+            @AlertGroup = "Interface Status"
+            @AlertKey = $1
+            @Summary = "IP Address for an Interface Changes"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($agentIdUniqueId)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/networkharmoni/networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/networkharmoni/networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... networkharmoni-AGENTCONFIG-MIB--IPCONFIG-MIB--SYSRES-MIB.include.snmptrap.rules >>>>>")

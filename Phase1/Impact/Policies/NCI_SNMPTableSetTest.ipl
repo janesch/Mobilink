@@ -1,0 +1,44 @@
+/*****************************************************************************
+This policy demonstrates how to update a particular row of a table (SNMP SET).
+The update operations could be, changing the values of certain columns of the
+table, or it could be creating a new row in the table or it could be deleting
+a row in the table. The row however has to be identified by its index value 
+in the form of the "TableKey" variable.
+
+HowToRun this policy:
+---------------------
+1) Make sure the agent is running on the proper portId and with proper
+   authentication parameters(community strings, userId etc). Change the
+   values in the Data Source or Action Module to match the one in the agent.
+
+2) Make sure an SNMP agent on the proper host and proper portId is
+   running and one which has implemented the RFC1213.
+
+3) Define and import the etherStatsTable TableType. This type was choosen 
+   because this table has a column with valid RowStatus value needed for row 
+   creation.
+
+4) Then send a trigger to execute this policy.
+
+********************************************************************/
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting SNMPTableSetTest at " + StartTime + " ***");
+
+Type = "etherStatsTable";
+ObjectToCopy = NewObject();
+
+ObjectToCopy.HostId = @HostId; /* Mandatory field */  
+ObjectToCopy.TableKey = 6;     /* Mandatory field, to identify the row */
+/*ObjectToCopy.UserId = "netcool";   A valid userId needed for SNMPv3  */
+
+/* The following columns are being SET with the end result of */
+/* Creating a new row in the table                            */
+ObjectToCopy.etherStatsDataSource = ".1.2.3.4";
+ObjectToCopy.etherStatsOwner = "John Smith";
+ObjectToCopy.etherStatsStatus = 2;
+
+AddDataItem(Type, ObjectToCopy);
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with SNMPTableSetTest at " + EndTime + " ***");

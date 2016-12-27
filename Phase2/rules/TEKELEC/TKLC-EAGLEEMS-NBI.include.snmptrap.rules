@@ -1,0 +1,252 @@
+###############################################################################
+#
+#	TKLC-EAGLEEMS-NBI.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for Tekelec STP alarms
+#
+#       V0.1	20110506	Mihai Strava of Innovise
+###############################################################################
+
+
+
+case ".1.3.6.1.4.1.323.5.3.24.2.2":         ### - emsNBITraps (from TKLC-EAGLEEMS-NBI)
+
+	log(DEBUG, "<<<<< Entering... TKLC-EAGLEEMS-NBI.include.snmptrap.rules >>>>>")
+
+    	@OmcEms = "NETBOSS1"
+    	@Domain = "STP TEST"
+    	@Vendor = "Tekelec"
+	@Manager = "MTTrapd-STP"
+
+	@Class = "302010"
+
+	@Grade = $specific-trap
+
+	switch($specific-trap) {
+		case "1": ### - alertTrap
+
+			#######################
+			#
+			# The trap is sent by the EAGLE EMS to NMS when an alert is received on the Netboss system.
+			#
+			# $1 = alertTime
+			#
+			#      Timestamp when EMS system received the nbiAlert from the managed sub-domain.
+			#
+			# $2 = alertResourceName
+			#
+			#      Unique name or identifier to identify the NE on the domain.
+			#
+			# $3 = alertSubResourceName
+			#
+			#      Unique name or identifier to identify an alarmable object within the NE.
+			#
+			# $4 = alertSeverity
+			#
+			#      The severity of an nbiAlert in a raise state (INFORMATIONAL|CLEAR|WARNING|MINOR|MAJOR|CRITICAL) .
+			#
+			# $5 = alertAcknowledgeMode
+			#
+			#      The current state of the nbiAlert (UNACKNOWLEDGE|ACKNOWLEDGE).
+			#
+			# $6 = alertTextMessage
+			#
+			#      Original information describing alarm or nbiAlert.
+			#
+			# $7 = alertSequenceNumber
+			#
+			#      Incrementing sequence number allowing NMS to determine if an alarm has been missed.
+			#
+			#######################
+
+			$alertTime = $1
+			$alertResourceName = $3
+			$alertSubResourceName = $4
+			$alertSeverity = $2
+			$alertAcknowledgeMode = lookup($5,tekelecCorp-TKLC-EAGLEEMS-COMMONOBJECTS-alertAcknowledgeMode)
+			$alertTextMessage = $6
+			$alertSequenceNumber = $7
+
+			@FirstOccurrence = DateToTime($1, "%m-%d-%Y%n%H:%M:%S")
+			@LastOccurrence = DateToTime($1, "%m-%d-%Y%n%H:%M:%S")
+
+			@Agent = "TKLC-EAGLEEMS-NBI"
+			@AlertGroup = "NBITrap"
+			@AlertKey = $alertResourceName + $alertSubResourceName
+
+			[@Severity, @Type] =  lookup($alertSeverity, tekelecCorp-TKLC-EAGLEEMS-COMMONOBJECTS-Severity-Type)
+
+			@AddText = $alertTextMessage
+			$var1 = extract(@AddText,".*\.([0-9]+) .*$")			
+			$var1 = ltrim($var1)
+			$var1 = rtrim($var1)	
+
+			[@Summary] =  lookup($var1, tekelecCorp-TKLC-EAGLEEMS-COMMONOBJECTS-Summary)
+
+			if(match(@Summary,"NONE"))
+			{
+				@Summary = $alertTextMessage
+				@TTHibernate = 1
+			}
+
+			if((regmatch(@Summary, "IP Connection Unavailable")) || (regmatch(@Summary, "IP Connection Restricted")) || (regmatch(@Summary, "Ethernet Interface Down")) || (regmatch(@Summary, "Terminal failed")) || (regmatch(@Summary, "Sentinel socket is inactive")) || (regmatch(@Summary, "Timestamp Invalid")))
+			{
+				discard
+			}
+
+			if (match($var1,"0452") || match($var1,"0454") || match($var1,"0250") || match($var1,"0374") || match($var1,"0375"))
+			{
+				@Severity = 1
+				@Type = 2
+			}
+
+
+# STP link down alarms
+if((regmatch(@AddText, ".* REPT-LKF: .*")) || (regmatch(@AddText, ".* RCVRY-LKF: link available .*")))
+	{
+		$OS_EventId = "NET_STP_LNK_001"
+		$num_elements = split($alertResourceName,node_arr,"_")
+		@Node = node_arr[1]
+		@NodeAlias = node_arr[1]
+
+		if(int(@Type) == 1)
+		{	
+			$num_elements = split($alertSubResourceName,linkset_arr,"_")
+			@Location = linkset_arr[$num_elements]
+		}
+	}
+
+# STP linkset down alarms
+else if((regmatch(@AddText, ".* REPT-LKSTO: link set .*")) || (regmatch(@AddText, ".* RCVRY-LKSTO: link set allowed .*")))
+	{
+			$OS_EventId = "NET_STP_LKS_001"
+			$num_elements = split($alertResourceName,node_arr,"_")
+			@Node = node_arr[1]
+			@NodeAlias = node_arr[1]
+
+		if(int(@Type) == 1)
+		{
+			$num_elements = split($alertSubResourceName,linkset_arr,"_")
+			@Location = linkset_arr[$num_elements]
+		}
+	}
+
+# STP DPC down alarms
+else if((regmatch(upper(@AddText), ".* DPC IS .*")) or (regmatch(upper(@AddText), ".* DPC SUBSYSTEM IS .*")) or (regmatch(@AddText, ".* Route is .*")))
+	{
+			$OS_EventId = "NET_STP_DPC_001"
+			@Node = $alertResourceName
+			@NodeAlias = $alertResourceName
+
+		if(int(@Type) == 1)
+		{
+			$num_elements = split($alertSubResourceName,node_arr,"_")
+			@Location = node_arr[$num_elements]
+		}
+	}		
+
+# STP Hardware alarms
+else
+	{
+			if(regmatch($alertSubResourceName, ".*sgaPort.*"))
+			{
+				$OS_EventId = "NET_STP_HW_002"
+				$OS_ExpireTime = 2400
+				$num_elements = split($alertSubResourceName,node_arr,":")
+				@Information = node_arr[2] + "-" + @AddText
+			}
+			else
+			{
+				$OS_EventId = "NET_STP_HW_001"
+				if(regmatch(@AddText, ".* Card is isolated from the system .*"))
+				{
+					$var1 = extract(@AddText,"[0-9,.,*]*CARD ([0-9]+) .*")
+					$var1 = ltrim($var1)
+					$var1 = rtrim($var1)	
+					@Location = $var1
+				}
+			}
+
+			$num_elements = split($alertResourceName,node_arr,"_")
+			@Node = node_arr[1]
+			@NodeAlias = node_arr[1]
+
+# sgaPort alarms
+			if(regmatch(@AddText, "Resync Failed"))
+			{
+            			@Summary = "Resync Failed"
+			}
+			else if(regmatch(@AddText, "Detected TCP closed message, must reconnect, Connection Settings .* Terminal .* Hostname .*"))
+			{
+            			@Summary = "Detected TCP closed message, must reconnect"
+			}
+	}
+			@AlertKey = $4 + " " + $OS_EventId
+
+# Update added on 12 Jul 2011 to deal with generic STP resolution alarm
+			if (regmatch(@AddText, "Alarm cleared during resync"))
+			{
+				@Severity = 1
+				@Type = 2
+				$num_elements = split($alertResourceName,node_arr,"_")
+				@Node = node_arr[1]
+				@NodeAlias = node_arr[1]
+				@TTHibernate = 0
+				
+				if (regmatch($alertSubResourceName, "SLK.*"))
+				{
+					$OS_EventId = "NET_STP_LNK_001"
+					@AlertKey = $4 + " " + $OS_EventId
+				}
+				else if (regmatch($alertSubResourceName, "LSN.*"))
+				{
+					$OS_EventId = "NET_STP_LKS_001"
+					@AlertKey = $4 + " " + $OS_EventId
+				}
+				else if (regmatch($alertSubResourceName, "DPC.*"))
+				{
+					$OS_EventId = "NET_STP_DPC_001"
+					@AlertKey = $4 + " " + $OS_EventId
+				}
+				else if(regmatch($alertSubResourceName, ".*sgaPort.*"))
+				{
+					$OS_EventId = "NET_STP_HW_002"
+					@AlertKey = $4 + " " + $OS_EventId
+				}
+				else
+				{
+					$OS_EventId = "NET_STP_HW_001"
+					@AlertKey = $4 + " " + $OS_EventId
+				}
+			}
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+
+			details($*)
+
+		case "2": ### - resyncStartTrap
+
+			discard
+
+
+		case "3": ### - resyncStopTrap
+
+			discard
+
+
+		case "4": ### - resyncRejectTrap
+			
+			discard
+
+
+		case "5": ### - heartbeatTrap
+
+			discard
+
+		default:
+
+			discard
+
+	}
+
+log(DEBUG, "<<<<< Leaving... TKLC-EAGLEEMS-NBI.include.snmptrap.rules >>>>>")

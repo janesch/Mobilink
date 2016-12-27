@@ -1,0 +1,513 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-GGSN-MIB.include.snmptrap.rules 1.0
+#    2006/03/31 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-GGSN-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.240.2": ### Cisco Gateway GPRS Support Node - Notifications from CISCO-GGSN-MIB (20050104)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-GGSN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Gateway GRPS Support Node"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cGgsnNotification
+
+            ##########
+            # $1 = cGgsnHistNotifType 
+            # $2 = cGgsnHistNotifSeverity 
+            # $3 = cGgsnHistNotifTimestamp 
+            # $4 = cGgsnHistNotifGgsnIpAddrType 
+            # $5 = cGgsnHistNotifGgsnIpAddr 
+            # $6 = cGgsnHistNotifInfo 
+            ##########
+
+            $cGgsnHistNotifType = lookup($1, cGgsnHistNotifType) + " ( " + $1 + " )" 
+            $cGgsnHistNotifSeverity = lookup($2, CiscoAlarmSeverity) + " ( " + $2 + " )"
+            $cGgsnHistNotifTimestamp = $3
+            $cGgsnHistNotifGgsnIpAddrType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $cGgsnHistNotifGgsnIpAddr = $5
+            $cGgsnHistNotifInfo = $6
+            $cGgsnHistNotifIndex = extract($OID1, "\.([0-9]+)$")              
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnNotification"
+
+            @AlertKey = "cGgsnHistNotifEntry." + $cGgsnHistNotifIndex
+            switch($1)
+            { 
+                case "1": ### ggsnServiceUp
+                    $SEV_KEY = $OS_EventId + "_ggsnServiceUp" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ggsnServiceDown
+                    $SEV_KEY = $OS_EventId + "_ggsnServiceDown" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Shutdown"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### mapSgsnUp
+                    $SEV_KEY = $OS_EventId + "_mapSgsnUp" 
+                    @AlertGroup = "MAP-SGSN Status"
+                    @Summary = "MAP-SGSN Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### mapSgsnDown
+                    $SEV_KEY = $OS_EventId + "_mapSgsnDown" 
+                    @AlertGroup = "MAP-SGSN Status"
+                    @Summary = "MAP-SGSN Down"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### noResource
+                    $SEV_KEY = $OS_EventId + "_noResource" 
+                    @AlertGroup = "GGSN Resource Status"
+                    @Summary = "GGSN No Resource"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+               case "6": ### noRADIUS
+                    $SEV_KEY = $OS_EventId + "_noRADIUS" 
+                    @AlertGroup = "GGSN RADIUS Server Status"
+                    @Summary = "GGSN RADIUS Server Not Configured"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### noDHCPServer
+                    $SEV_KEY = $OS_EventId + "_noDHCPServer" 
+                    @AlertGroup = "GGSN DHCP Server Status"
+                    @Summary = "GGSN DHCP Server Not Configured"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### ipAllocationFail
+                    $SEV_KEY = $OS_EventId + "_ipAllocationFail" 
+                    @AlertGroup = "GGSN IP Allocation Status"
+                    @Summary = "GGSN IP Allocation Failed"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "9": ### authenticiationFail
+                    $SEV_KEY = $OS_EventId + "_authenticationFail" 
+                    @AlertGroup = "GGSN Authentication Status"
+                    @Summary = "GGSN Authentication Failed"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "10": ### apnUnreachable
+                    $SEV_KEY = $OS_EventId + "_apnUnreachable" 
+                    @AlertGroup = "GGSN Access Point Status"
+                    @Summary = "GGSN Access Point Not Reachable"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Status Unknown"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+            } 
+            if(!match($6,""))
+            {
+              @Summary = @Summary + ", " + $6
+            }
+            @Summary = @Summary + "  ( GGSN: " + $5 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cGgsnHistNotifType,$cGgsnHistNotifSeverity,$cGgsnHistNotifTimestamp,$cGgsnHistNotifGgsnIpAddrType,$cGgsnHistNotifGgsnIpAddr,$cGgsnHistNotifInfo,$cGgsnHistNotifIndex)
+
+        case "2": ### cGgsnInServiceNotif
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnInServiceNotif"
+
+            @AlertGroup = "GGSN Status"
+            @AlertKey = ""
+            @Summary = "GGSN In Service"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+         
+        case "3": ### cGgsnMaintenanceNotif
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnMaintenanceNotif"
+
+            @AlertGroup = "GGSN Status"
+            @AlertKey = ""
+            @Summary = "GGSN In Maintenance"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+         
+        case "4": ### cGgsnMemThresholdReachedNotif
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnMemThresholdReachedNotif"
+
+            @AlertGroup = "GGSN Memory Threshold"
+            @AlertKey = ""
+            @Summary = "GGSN Memory Reached Threshold"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+        case "5": ### cGgsnMemThresholdClearedNotif
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnMemThresholdClearedNotif"
+
+            @AlertGroup = "GGSN Memory Threshold"
+            @AlertKey = ""
+            @Summary = "GGSN Memory Below Threshold"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+        case "6": ### cGgsnPdfStateUpNotif
+
+            ##########
+            # $1 = cGgsnPdfServerAddrType 
+            # $2 = cGgsnPdfServerAddr 
+            ##########
+
+            $cGgsnPdfServerAddrType = lookup($1, InetAddressType) + " ( " + $1 + " )"    
+            $cGgsnPdfServerAddr = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnPdfStateUpNotif"
+
+            @AlertGroup = "GGSN PDF Server Status"
+            @AlertKey = "Server: " + $2
+            @Summary = "GGSN PDF Server Up  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+            details($cGgsnPdfServerAddrType,$cGgsnPdfServerAddr)
+
+        case "7": ### cGgsnPdfStateDownNotif
+
+            ##########
+            # $1 = cGgsnPdfServerAddrType 
+            # $2 = cGgsnPdfServerAddr 
+            ##########
+
+            $cGgsnPdfServerAddrType = lookup($1, InetAddressType) + " ( " + $1 + " )"    
+            $cGgsnPdfServerAddr = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnPdfStateDownNotif"
+
+            @AlertGroup = "GGSN PDF Server Status"
+            @AlertKey = "Server: " + $2
+            @Summary = "GGSN PDF Server Down  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+	         details($cGgsnPdfServerAddrType,$cGgsnPdfServerAddr)
+
+        case "8": ### cGgsnGlobalErrorNotif
+
+            ##########
+            # $1 = cGgsnGlobalErrorTypes 
+            # $2 = cGgsnHistNotifSeverity 
+            # $3 = cGgsnHistNotifTimestamp 
+            # $4 = cGgsnHistNotifGgsnIpAddrType 
+            # $5 = cGgsnHistNotifGgsnIpAddr 
+            # $6 = cGgsnHistNotifInfo 
+            ##########
+
+            $cGgsnGlobalErrorTypes = lookup($1, cGgsnGlobalErrorTypes) + " ( " + $1 + " ) "
+            $cGgsnHistNotifSeverity = lookup($2, CiscoAlarmSeverity) + " ( " + $2 + " )" 
+            $cGgsnHistNotifTimestamp = $3
+            $cGgsnHistNotifGgsnIpAddrType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $cGgsnHistNotifGgsnIpAddr = $5
+            $cGgsnHistNotifInfo = $6
+            $cGgsnHistNotifIndex = extract($OID2, "\.([0-9]+)$")              
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnNotification"
+
+            @AlertKey = "cGgsnHistNotifEntry." + $cGgsnHistNotifIndex
+            switch($1)
+            { 
+                case "1": ### ggsnServiceUp
+                    $SEV_KEY = $OS_EventId + "_ggsnServiceUp" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ggsnServiceDown
+                    $SEV_KEY = $OS_EventId + "_ggsnServiceDown" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Shutdown"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### mapSgsnUp
+                    $SEV_KEY = $OS_EventId + "_mapSgsnUp" 
+                    @AlertGroup = "MAP-SGSN Status"
+                    @Summary = "MAP-SGSN Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### mapSgsnDown
+                    $SEV_KEY = $OS_EventId + "_mapSgsnDown" 
+                    @AlertGroup = "MAP-SGSN Status"
+                    @Summary = "MAP-SGSN Down"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### noDHCPServer 
+                    $SEV_KEY = $OS_EventId + "_noDHCPServer" 
+                    @AlertGroup = "GGSN DHCP Server Status"
+                    @Summary = "GGSN DHCP Server Not Configured"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Status Unknown"
+                     
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($6,""))
+            {
+              @Summary = @Summary + ", " + $6
+            }
+            @Summary = @Summary + "  ( GGSN: " + $5 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cGgsnGlobalErrorTypes,$cGgsnHistNotifSeverity,$cGgsnHistNotifTimestamp,$cGgsnHistNotifGgsnIpAddrType,$cGgsnHistNotifGgsnIpAddr,$cGgsnHistNotifInfo,$cGgsnHistNotifIndex)
+
+        case "9": ### cGgsnAccessPointNameNotif
+
+            ##########
+            # $1 = cGgsnAccessPointErrorTypes 
+            # $2 = cGgsnHistNotifSeverity 
+            # $3 = cGgsnHistNotifTimestamp 
+            # $4 = cGgsnHistNotifGgsnIpAddrType 
+            # $5 = cGgsnHistNotifGgsnIpAddr 
+            # $6 = cGgsnHistNotifInfo 
+            # $7 = cGgsnNotifAccessPointName 
+            ##########
+
+            $cGgsnAccessPointErrorTypes = lookup($1, cGgsnAccessPointErrorTypes) + " ( " + $1 + " ) "
+            $cGgsnHistNotifSeverity = lookup($2, CiscoAlarmSeverity)
+            $cGgsnHistNotifTimestamp = $3
+            $cGgsnHistNotifGgsnIpAddrType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $cGgsnHistNotifGgsnIpAddr = $5
+            $cGgsnHistNotifInfo = $6
+            $cGgsnHistNotifIndex = extract($OID2, "\.([0-9]+)$")              
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnAccessPointNameNotif"
+
+            @AlertKey = "cGgsnHistNotifEntry." + $cGgsnHistNotifIndex
+            switch($1)
+            {
+                case "1": ### noRADIUS
+                    $SEV_KEY = $OS_EventId + "_noRADIUS" 
+                    @AlertGroup = "GGSN RADIUS Server Status"
+                    @Summary = "GGSN RADIUS Server Not Configured"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ipAllocationFail
+                    $SEV_KEY = $OS_EventId + "_ipAllocationFail" 
+                    @AlertGroup = "GGSN IP Allocation Status"
+                    @Summary = "GGSN IP Allocation Failed"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### apnUnreachable
+                    $SEV_KEY = $OS_EventId + "_apnUnreachable" 
+                    @AlertGroup = "GGSN Access Point Status"
+                    @Summary = "GGSN Access Point Not Reachable"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($6,""))
+            {
+              @Summary = @Summary + ", " + $6
+            }
+            @Summary = @Summary + "  ( GGSN: " + $5 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cGgsnAccessPointErrorTypes,$cGgsnHistNotifSeverity,$cGgsnHistNotifTimestamp,$cGgsnHistNotifGgsnIpAddrType,$cGgsnHistNotifGgsnIpAddr,$cGgsnHistNotifInfo,$cGgsnHistNotifIndex)
+
+        case "10": ### cGgsnPacketDataProtocolNotif
+
+            ##########
+            # $1 = cGgsnPacketDataProtoErrorTypes 
+            # $2 = cGgsnHistNotifSeverity 
+            # $3 = cGgsnHistNotifTimestamp 
+            # $4 = cGgsnHistNotifGgsnIpAddrType 
+            # $5 = cGgsnHistNotifGgsnIpAddr 
+            # $6 = cGgsnHistNotifInfo 
+            # $7 = cGgsnNotifPdpImsi 
+            ##########
+
+            $cGgsnPacketDataProtoErrorTypes = lookup($1, cGgsnPacketDataProtoErrorTypes) + " ( " + $1 + " ) "
+            $cGgsnHistNotifSeverity = lookup($2, CiscoAlarmSeverity) + " ( " + $2 + " )"
+            $cGgsnHistNotifTimestamp = $3
+            $cGgsnHistNotifGgsnIpAddrType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $cGgsnHistNotifGgsnIpAddr = $5
+            $cGgsnHistNotifInfo = $6
+            $cGgsnHistNotifIndex = extract($OID2, "\.([0-9]+)$")              
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GGSN-MIB-cGgsnPacketDataProtocolNotif"
+
+            @AlertKey = "cGgsnHistNotifEntry." + $cGgsnHistNotifIndex
+            switch($1)
+            {
+                case "1": ### noResource
+                    $SEV_KEY = $OS_EventId + "_noResource" 
+                    @AlertGroup = "GGSN Resource Status"
+                    @Summary = "GGSN No Resource"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### authenticationFail
+                    $SEV_KEY = $OS_EventId + "_authenticationFail" 
+                    @AlertGroup = "GGSN Authentication Status"
+                    @Summary = "GGSN Authentication Failed"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown" 
+                    @AlertGroup = "GGSN Status"
+                    @Summary = "GGSN Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1 
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($6,""))
+            {
+              @Summary = @Summary + ", " + $6
+            }
+            @Summary = @Summary + "  ( GGSN: " + $5 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cGgsnPacketDataProtoErrorTypes,$cGgsnHistNotifSeverity,$cGgsnHistNotifTimestamp,$cGgsnHistNotifGgsnIpAddrType,$cGgsnHistNotifGgsnIpAddr,$cGgsnHistNotifInfo,$cGgsnHistNotifIndex)
+
+      default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-GGSN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-GGSN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-GGSN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-GGSN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-GGSN-MIB.include.snmptrap.rules >>>>>")

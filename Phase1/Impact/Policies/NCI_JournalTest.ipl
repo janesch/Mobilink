@@ -1,0 +1,29 @@
+//Journal Test Policy
+
+NewJournal = newObject();
+NewJournal.Chrono = getdate();
+NewJournal.Serial = @Serial;
+log("Serial = " + @Serial);
+log("Manager = " + @Manager );
+
+User = GetByFilter("Master.Names", "Name like 'Impact'", False);
+NumUser = Num;
+
+if (NumUser == 0)
+{
+	NewJournal.UID = @OwnerUID;
+}
+else
+{
+	NewJournal.UID = User[0].UID;
+}
+
+KeyField = @Serial + ":" + NewJournal.UID + ":" + getdate();
+log("KeyField = " + KeyField  );
+NewJournal.KeyField = KeyField;
+NewJournal.Text1 = "Journal added by Impact Policy";
+
+
+DataType = Journal;
+
+AddDataItem('Journal', NewJournal);

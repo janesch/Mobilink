@@ -1,0 +1,124 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-TCP-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  HUAWEI-TCP-MIB release V1.0
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  HUAWEI-TCP-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.5.25.34.2": ### Huawei Technologies - Notifications from HUAWEI-TCP-MIB 
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-TCP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwTCPMD5AuthenFail
+
+            ##########
+            # $1 = tcpConnLocalAddress 
+            # $2 = tcpConnLocalPort
+            # $3 = tcpConnRemAddress
+            # $4 = tcpConnRemPort 
+            # $5 = hwTCPProtocol
+            # $6 = hwTCPVrfName
+            ##########
+
+            $tcpConnLocalAddress = $1
+            $tcpConnLocalPort = $2
+            $tcpConnRemAddress = $3
+            $tcpConnRemPort = $4
+            $hwTCPProtocol = $5
+            $hwTCPVrfName = $6
+            details($tcpConnLocalAddress,$tcpConnLocalPort,
+                    $tcpConnRemAddress,$tcpConnRemPort,
+                    $hwTCPProtocol,$hwTCPVrfName)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-TCP-MIB-hwTCPMD5AuthenFail"
+
+            @AlertGroup = "TCP MD5 Authentication Failure"
+            @AlertKey = "Local: " + $1 + "/" + $2 + ", Remote: " + $3 + "/" + $4 + ", Protocol: " + $5 + ", VRF Name: " + $6
+            @Summary = "TCP MD5 Authentication Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-TCP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-TCP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-TCP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-TCP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-TCP-MIB.include.snmptrap.rules >>>>>")

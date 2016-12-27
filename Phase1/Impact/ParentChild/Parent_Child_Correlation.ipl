@@ -1,0 +1,972 @@
+/* ***************************************************************************
+*
+*  ParentChildCorrelation.ipl
+*
+*  Innovise ESM Impact policy  Parent Child Correlation
+*  Chris Janes of Innovise ESM
+*
+*  V0.0    Before time began   GilesBlake Original
+*  V1.0    20100705        Chris Janes (with Giles' help)
+*
+*************************************************************************** */
+
+
+/* *************************************************
+*
+* Here we set up static data to be used in the Policy
+*
+************************************************* */
+
+
+/* *************************************************
+*
+*  Parent / Child Indicator Field Values
+*
+*      0 - Event not involved in Parent/Child Relationship
+*      1 - Potential Child Event
+*      2 - Potential Parent Event
+*      3 - Potential Child and Parent Event
+*      4 - Established Child Event
+*      5 - Established Parent Event
+*      6 - Child Event but no Parent Found
+*      7 - Parent Event but no Child Found
+*      8 - Relationship not found in table
+************************************************* */
+
+/* *************************************************
+*
+* Datatypes required for this Policy
+*
+*   Status - alerts.status
+*   OS_Parent_Child  
+*   OS_Parent_Child_Filters
+*
+*
+************************************************* */
+
+
+/* *************************************************
+*
+* Here the code starts for real
+*
+************************************************* */
+
+Log("Parent_Child: Starting...");
+
+// DB - LOGGING ADDED 
+Log ("**** Parent_Child_Correlation: Start:  Serial=" + @Serial + " TTFlag=" + @TTFlag + " Service_Impact: service affecting  set to " + @ServiceAffecting +   " equipment type set to " + @EquipmentType + " Node is " + @Node + " ParentChildFlag is " +  @ParentChildFlag);  
+
+
+// Set the parent Child Flag of the event in the ObjectServer to prevent re-processing by Impact
+pcVar=8;    // Relationship not found in table
+
+//  20100714    Change by Chris Janes of Abilitec
+//DataType = "ha_ncoms_impact_events";
+//Filter = "ServerSerial = " +  @ServerSerial;
+DataType = "Status";
+Filter = "ServerName = " +  @ServerName + "ServerSerial = " +  @ServerSerial;
+//  20100714    End of Change
+
+UpdateExpression = "ParentChildFlag = 8";
+BatchUpdate(DataType, Filter, UpdateExpression);
+
+// Set default variable values
+pcVar = 0;  /// Event not involved in Parent/Child Relationship
+parentServerSerial = @ParentServerSerial;
+parentID = @ParentID;
+parentServerName = @ParentServerName;
+parentIdentifier = @ParentIdentifier;
+childID = @ChildID;
+myParentChildFlag = 0;
+mySuppressEscl = @SuppressEscl;
+mySuppressCause = @SuppressCause;
+
+// Lookup event relationships
+relatedEvents=GetByFilter('OS_Parent_Child', "(Source_Event_ID='" + @EventId + "')", false);
+
+// Count the number of returned relationship matches - should only be one.
+relatedEventsCount=Length(relatedEvents);
+
+// As long as we found an entry in the event relationship table start processing the event 
+if(relatedEventsCount > 0)
+{
+    Log("Parent_Child: Source Event ID  = " + @EventId);
+    Log("Parent_Child: Parent Event IDs = " + relatedEvents[0].Parent_Event_IDs);
+    Log("Parent_Child: Parent Event Filters = " + relatedEvents[0].Parent_Filters);
+    Log("Parent_Child: Child Event IDs  = " + relatedEvents[0].Child_Event_IDs);
+    Log("Parent_Child: Child Event Filters  = " + relatedEvents[0].Child_Filters);
+
+    // Split the returned parent and child event variables into relevant arrays
+    parentEventIDs=Split(relatedEvents[0].Parent_Event_IDs, ",");
+    parentEventFilters=Split(relatedEvents[0].Parent_Filters, ",");
+    childEventIDs=Split(relatedEvents[0].Child_Event_IDs, ",");
+    childEventFilters=Split(relatedEvents[0].Child_Filters, ",");
+
+    Log("Parent_Child: Parent Event ID Array = " + parentEventIDs);
+    Log("Parent_Child: Parent Filter Array = " + parentEventFilters);
+    Log("Parent_Child: Child Event ID Array  = " + childEventIDs);
+    Log("Parent_Child: Child Filter Array  = " + childEventFilters);
+
+    // Count the number in the parent and child arrays
+    numParents=Length(parentEventIDs);
+    numChildren=Length(childEventIDs);
+    numParentFilters=Length(parentEventFilters);
+    numChildrenFilters=Length(childEventFilters);
+
+    Log("Parent_Child: Parent Event ID Array Count = " + numParents);
+    Log("Parent_Child: Child Event ID Array  Count = " + numChildren);
+    Log("Parent_Child: Parent Event Filter Array Count = " + numParentFilters);
+    Log("Parent_Child: Child Event Filter Array  Count = " + numChildrenFilters);
+    
+    // Check if we have enough filters for the number of events ids listed
+    if(numParents > numParentFilters)
+    {
+        numParents = numParentFilters;
+    }
+
+    if(numChildren > numChildrenFilters)
+    {
+        numChildren = numChildrenFilters;
+    }
+
+    // Determine if the event is a potential child, parent or both
+    if(numParents > 0)
+    {
+        // The event has potential parent events and so is a potential child
+        myParentChildFlag = 1;
+        // Check to see if the event also has potential child events
+        if(numChildren > 0)
+        {
+            // The event has potential child events as well so the event is potentially a parent and a child
+            myParentChildFlag = 3;
+        }
+    }
+    else
+    {
+        // Check to see if the event has potential child events
+        if(numChildren > 0)
+        {
+            // The event has potential child events but no parents, and so the event is potentially a parent
+            myParentChildFlag = 2;
+        }
+    }
+
+    Log("Parent_Child: My Parent Child Flag = " + myParentChildFlag);
+    
+    if(myParentChildFlag=0)// Event not involved in Parent/Child Relationship
+    {
+        //  20100714    Change by Chris Janes of Abilitec
+        //DataType = "ha_ncoms_impact_events";
+        //Filter = "ServerSerial = " +  @ServerSerial;
+        DataType = "Status";
+        Filter = "ServerName = " +  @ServerName + "ServerSerial = " +  @ServerSerial;
+        //  20100714    End of Change
+
+        UpdateExpression = "ParentChildTime = getdate, ParentChildFlag = 8";
+        BatchUpdate(DataType, Filter, UpdateExpression);
+    }
+    else
+    {
+        if(myParentChildFlag=1) // Potential Child Event
+        {
+            // The event is a child event, but we have not found any parents yet, so set pcVar = 6
+            pcVar=6;    //Child Event but no Parent Found
+            // Start counter i
+            i=0;
+            while(i<numParents)
+            {
+                myFilter = "";
+                parentEventFilterList=Split(parentEventFilters[i],":");
+                numParentEventFilterList = Length(parentEventFilterList);
+                y = 0;
+                while (y < numParentEventFilterList)
+                {
+                    /* ************************************************************************
+                    *
+                    *   This is where non-standard filters go for Parent Events
+                    *
+                    ************************************************************************ */
+                    if ( parentEventFilterList[y] == "NodeLike" ) 
+                    {
+                        if ( @Node like "^..RCC.*$" ) 
+                        {
+                            myFilterMatch = RExtract(@Node,"^(..RCC).*$");
+                            myFilter = myFilter + " and ( Node like '^" + myFilterMatch + ".*' )";
+                        }
+                    }
+                    else
+                    {
+                    osFilters=GetByFilter('OS_Parent_Child_Filters', "FilterName = '" +  parentEventFilterList[y] + "'",false);
+                    numOsFilters=Length(osFilters);
+                    if(numOsFilters>0)
+                    {
+                        if(osFilters[0].Definition like '.*@.*')
+                        {
+                            myFilterStart =  RExtract(osFilters[0].Definition,"(.*)@[a-zA-Z0-9]+.*");
+                            myFilterEnd =  RExtract(osFilters[0].Definition,".*@[a-zA-Z0-9]+(.*)");
+                            myFilterMatch =  RExtract(osFilters[0].Definition,".*(@[a-zA-Z0-9]+).*");
+                            Log("Parent_Child: Filter start is " + myFilterStart);
+                            Log("Parent_Child: Filter end is " + myFilterEnd);
+                            Log("Parent_Child: Filter match is " + myFilterMatch);
+                            myFilterField = Eval(myFilterMatch, EventContainer);
+                            Log("Parent_Child: Filter field value is " + myFilterField);
+                            myFilter = myFilter + " and (" + myFilterStart + myFilterField +  myFilterEnd + ")";
+                            } 
+                            else 
+                            {
+                                myFilter = myFilter + " and (" + osFilters[0].Definition + ")";
+                            }
+                        }
+                    }
+                    y = y + 1;
+                }
+                if(myFilter == "")
+                {
+                    // The filter is blank and should not be processed
+                    Log("Parent_Child: Filter is blank. Not processing this event id");
+                    numOSEvents=0;
+                }
+                else
+                {
+                    Log("Parent_Child: Parent event filter " + i + " = ((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+parentEventIDs[i]+"')"+myFilter+"");
+                    //  20100714    Change by Chris Janes of Abilitec
+                    //DataType = "ha_ncoms_impact_events";
+                    //Filter = "ServerSerial = " +  @ServerSerial;
+                    DataType = "Status";
+                    Filter = "ServerName = " +  @ServerName + "ServerSerial = " +  @ServerSerial;
+                    //  20100714    End of Change
+                    numOSEvents=Length(osEvents);
+                    Log("Parent_Child: Number of Potential Parent events = " + numOSEvents);
+                }
+                if(numOSEvents>0)
+                {
+                    // We have found parent events so set pcVar = 4                 
+                    pcVar=4;    // Established Child Event
+                    //Suppress event as we have a parent event, if not already suppressed
+                    if(mySuppressEscl = 0)
+                    {
+                        mySuppressEscl=4;
+                        mySuppressCause="Child event";
+                    }
+                    //Start counter x
+                    x=0;
+                    while(x<numOSEvents)
+                    {
+                        // Add the serial number of the child event to the ChildID field of the parent event
+                        childIDArray=Split(osEvents[x].ChildID, ",");
+                        numChildIDs=Length(childIDArray);
+                        if(numChildIDs=0)
+                        {
+                            Log("Parent_Child: Contents already in ChildID: " + osEvents[x].ChildID);
+                            Log("Parent_Child: Child ID to be set in Parent event: " + @ServerSerial);
+                            osEvents[x].ChildID="" + @ServerSerial;
+                        }
+                        else
+                        {
+                            Log("Parent_Child: Contents already in ChildID: " + osEvents[x].ChildID);
+                            Log("Parent_Child: Child ID to be set in Parent event: " + @ServerSerial);
+                            y = 0;
+                            z = 0;
+                            while(y < numChildIDs)
+                            {
+                                if(int(childIDArray[y]) = @ServerSerial)
+                                {
+                                    z = z + 1;
+                                }
+                                y = y + 1;
+                            }
+                            if(z = 0)
+                            {
+                                osEvents[x].ChildID = osEvents[x].ChildID + "," + @ServerSerial;
+                            }
+                        }                                               
+                        // Check the status of the parent child flag on the parent event
+                        if(osEvents[x].ParentChildFlag=4)
+                        {
+                            // Do nothing as the parent is not set as an established child event
+                        }
+                        else
+                        {
+                            // The parent event needs to be escalated to an established parent event
+                            osEvents[x].ParentChildFlag=5;
+                            osEvents[x].ParentChildTime=getdate();
+                        }
+                        // Store parent event data in child event
+                        parentIDArray=Split(parentID, ",");
+                        parentServerNameArray=Split(parentServerName, ",");
+                        parentServerSerialArray=Split(parentServerSerial, ",");
+                        parentIdentifierArray=Split(parentIdentifier, ",");
+                        //parentTTIDArray=Split(parentTTID, ",");
+
+                        numParentIDs=Length(parentIDArray);
+                        numParentServerNames=Length(parentServerNameArray);
+                        numParentServerSerials=Length(parentServerSerialArray);
+                        numParentIdentifiers=Length(parentIdentifierArray);
+
+
+                        if(numParentIDs = 0)
+                        {
+                                parentID="" + osEvents[x].EventId;
+                        }
+                        else
+                        {
+                                parentID=parentID+","+osEvents[x].EventId;
+                        }
+                        // Store data for Parent Server Name if there are no current entries
+                        if(numParentServerNames = 0)
+                        {
+                                parentServerName="" + osEvents[x].ServerName;
+                        }
+                        else
+                        {
+                                 parentServerName=parentServerName+","+osEvents[x].ServerName;
+                        }
+                            // Store data for Parent Server Serial if there are no current  entries
+                        if(numParentServerSerials = 0)
+                        {
+                                parentServerSerial="" + osEvents[x].ServerSerial;
+                        }
+                        else
+                        {
+                                 parentServerSerial=parentServerSerial+","+osEvents[x].ServerSerial;
+                        }
+                            // Store data for Parent Identifier if there are no current entries
+                        if(numParentIdentifiers = 0)
+                        {
+                                parentIdentifier="" + osEvents[x].Identifier;
+                        }
+                        else
+                        {
+                                 parentIdentifier=parentIdentifier+","+osEvents[x].Identifier;
+                        }
+                        x = x + 1;
+                    }   
+                }
+                // Increment counter i
+                i = i + 1;
+            }
+            EventContainer.ParentServerName = parentServerName;
+            EventContainer.ParentServerSerial = parentServerSerial;
+            EventContainer.ParentIdentifier = parentIdentifier;
+            EventContainer.ParentID = parentID;
+            //EventContainer.ParentTTID = parentTTID;
+            EventContainer.ParentChildFlag = pcVar;
+            EventContainer.ParentChildTime = getdate();
+            EventContainer.SuppressEscl = mySuppressEscl;
+            EventContainer.SuppressCause = mySuppressCause;
+            ReturnEvent(EventContainer);    
+        }
+        else
+        {
+            if(myParentChildFlag=2) // Potential Parent Event
+            {
+                pcVar=7;    // Parent Event but no Child Found
+                i=0;
+                while(i<numChildren)
+                {
+                    myFilter = "";
+                    childEventFilterList=Split(childEventFilters[i],":");
+                    numChildEventFilterList = Length(childEventFilterList);
+                    y = 0;
+                    while (y < numChildEventFilterList)
+                    {
+                        if ( childEventFilterList[y] == "NodeLike" ) 
+                        /* ***************************************************************
+                        *
+                        *   This is where non-standard filters go for Child Events
+                        *
+                        **************************************************************** */
+                        {
+                            if ( @Node like "^..RCC.*$" ) 
+                            {
+                                myFilterMatch = RExtract(@Node,"^(..RCC).*$");
+                                myFilter = myFilter + " and ( Node like '^" + myFilterMatch + ".*'  )";
+                            }
+                            elseif ( @Node like "^......*$" ) 
+                            {
+                                myFilterMatch = RExtract(@Node,"^(....).*$");
+                                myFilter = myFilter + " and ( Node like '^" + myFilterMatch + ".*'  )";
+                            }
+                            else
+                            {
+                                myFilter = myFilter + " and ( Node like '^" + @Node + ".*' )";
+                            }
+                        }
+                        else
+                        {
+                            osFilters=GetByFilter('OS_Parent_Child_Filters', "FilterName = '" +  childEventFilterList[y] + "'",false);
+                            numOsFilters=Length(osFilters);
+                            if(numOsFilters>0)
+                            {
+                                if(osFilters[0].Definition like '.*@.*')
+                                {
+                                    myFilterStart =  RExtract(osFilters[0].Definition,"(.*)@[a-zA-Z0-9]+.*");
+                                    myFilterEnd =  RExtract(osFilters[0].Definition,".*@[a-zA-Z0-9]+(.*)");
+                                    myFilterMatch =  RExtract(osFilters[0].Definition,".*(@[a-zA-Z0-9]+).*");
+                                    Log("Parent_Child: Filter start is " + myFilterStart);
+                                    Log("Parent_Child: Filter end is " + myFilterEnd);
+                                    Log("Parent_Child: Filter match is " + myFilterMatch);
+                                    myFilterField = Eval(myFilterMatch, EventContainer);
+                                    Log("Parent_Child: Filter field value is " + myFilterField);
+                                    myFilter = myFilter + " and (" + myFilterStart +  myFilterField + myFilterEnd + ")";
+                                } 
+                                else 
+                                {
+                                    myFilter = myFilter + " and (" + osFilters[0].Definition +  ")";
+                                }
+                            }
+                        }
+                        y = y + 1;
+                    }
+                    if(myFilter == "")
+                    {
+                        // The filter is blank and should not be processed
+                        Log("Parent_Child: Filter is blank. Not processing this event id");
+                        numOSEvents=0;
+                    }
+                    else
+                    {
+                        Log("Parent_Child: Child event filter " + i + " = ((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+childEventIDs[i]+"')"+myFilter+"");
+                        //  20100714    Change by Chris Janes of Abilitec
+                        //                  osEvents=GetByFilter('ha_ncoms_impact_events', "((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+childEventIDs[i]+"')"+myFilter+"", false);
+                        osEvents=GetByFilter('Status', "((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+childEventIDs[i]+"')"+myFilter+"", false);
+                        //  20100714    End of Change
+                        numOSEvents=Length(osEvents);
+                        Log("Parent_Child: Number of Potential Child events = " + numOSEvents);
+                    }
+                    if(numOSEvents>0)
+                    {
+                        pcVar=5;    // Established Parent Event
+                        x=0;
+                        while(x<numOSEvents)
+                        {
+                            Log("Parent_Child: Pre event processing setting for childID variable is " +  childID);
+                            // Add the serial number of the child event to the ChildID field of the  parent event
+                            childIDArray=Split(childID, ",");
+                            numChildIDs=Length(childIDArray);
+                            if(numChildIDs=0)
+                            {
+                                Log("Parent_Child: Contents already in ChildID: " + childID);
+                                Log("Parent_Child: Child ID to be set in Parent event: " +  osEvents[x].ServerSerial);
+                                childID = "" + osEvents[x].ServerSerial;
+                            } 
+                            else
+                            {
+                                Log("Parent_Child: Contents already in ChildID: " + childID);
+                                Log("Parent_Child: Child ID to be set in Parent event: " +  osEvents[x].ServerSerial);
+                                y = 0;
+                                z = 0;
+                                while(y < numChildIDs)
+                                {
+                                    if(int(childIDArray[y]) = osEvents[x].ServerSerial)
+                                    {
+                                        z = z + 1;          
+                                    }
+                                    y = y + 1;
+                                }
+                                if(z = 0)
+                                {
+                                    childID = childID + "," + osEvents[x].ServerSerial;
+                                }
+                            } 
+
+                            Log("Parent_Child: Child event " + x + " being processed");
+                            Log("Parent_Child: Current setting for childID variable is " + childID);
+                            // Check the status of the parent child flag on the child event
+                            if(osEvents[x].ParentChildFlag=4)
+                            {
+                                // Do nothing as the event is already set as an established child  event
+                            }
+                            else
+                            {
+                                // The child event needs to be marked to an established child event
+                                osEvents[x].ParentChildFlag=4;
+                                osEvents[x].ParentChildTime=getdate();
+                                // The child event also needs to be suppressed, it it is not already
+                                if(osEvents[x].SuppressEscl = 0)
+                                {
+                                    osEvents[x].SuppressEscl=4;
+                                    osEvents[x].SuppressCause="Child event";
+                                }
+                            }
+                            // Store parent event data in child event
+                            parentIDArray=Split(osEvents[x].ParentID, ",");
+                            parentServerNameArray=Split(osEvents[x].ParentServerName, ",");
+                            parentServerSerialArray=Split(osEvents[x].ParentServerSerial, ",");
+                            parentIdentifierArray=Split(osEvents[x].ParentIdentifier, ",");
+                            //parentTTIDArray=Split(osEvents[x].ParentTTID, ",");
+
+                            numParentIDs=Length(parentIDArray);
+                            numParentServerNames=Length(parentServerNameArray);
+                            numParentServerSerials=Length(parentServerSerialArray);
+                            numParentIdentifiers=Length(parentIdentifierArray);
+                            //numParentTTIDs=Length(parentTTIDArray);
+
+                            // Store data for Parent ID if there are no current entries
+                            if(numParentIDs = 0)
+                            {
+                                osEvents[x].ParentID="" + @EventId;
+                            }
+                            else
+                            {
+                                osEvents[x].ParentID=osEvents[x].ParentID+","+@EventId;
+                            }
+                            // Store data for Parent Server Name if there are no current entries
+                            if(numParentServerNames = 0)
+                            {
+                                osEvents[x].ParentServerName="" + @ServerName;
+                            }
+                            else
+                            {
+                                 osEvents[x].ParentServerName=osEvents[x].ParentServerName+","+@ServerName;
+                            }
+                            // Store data for Parent Server Serial if there are no current entries
+                            if(numParentServerSerials = 0)
+                            {
+                                osEvents[x].ParentServerSerial="" + @ServerSerial;
+                            }
+                            else
+                            {
+                                 osEvents[x].ParentServerSerial=osEvents[x].ParentServerSerial+","+@ServerSerial;
+                            }
+                            // Store data for Parent Identifier if there are no current entries
+                            if(numParentIdentifiers = 0)
+                            {
+                                osEvents[x].ParentIdentifier="" + @Identifier;
+                            }
+                            else
+                            {
+                                 osEvents[x].ParentIdentifier=osEvents[x].ParentIdentifier+","+@Identifier;
+                            }
+
+                            // Increment counter
+                            x=x+1;
+                        }   
+                    }
+                    i = i + 1;
+                }
+                EventContainer.ChildID = childID;
+                EventContainer.ParentChildFlag = pcVar;
+                EventContainer.ParentChildTime = getdate();
+                ReturnEvent(EventContainer);    
+            }
+            else
+            {
+                if(myParentChildFlag=3) //Potential Child and Parent Event
+                {
+                    pcVar=7;    // Parent Event but no Child Found
+                    // Start counter i
+                    i=0;
+                    while(i<numParents)
+                    {
+                        myFilter = "";
+                        //Log("parentEventFilters[i] " + i + " " + parentEventFilters[i]);
+                        parentEventFilterList=Split(parentEventFilters[i],":");
+                        numParentEventFilterList = Length(parentEventFilterList);
+                        y = 0;
+                        while (y < numParentEventFilterList)
+                        {
+                            Log("parentEventFilterList[y] " + y + " " + parentEventFilterList[y]);
+                            /* ***************************************************************
+                            *
+                            *   This is where non-standard filters go for Parent Events
+                            *
+                            **************************************************************** */
+                            if ( parentEventFilterList[y] == "NodeLike" ) 
+                            {
+                                if ( @Node like "^..RCC.*$" ) 
+                                {
+                                    myFilterMatch = RExtract(@Node,"^(..RCC).*$");
+                                    myFilter = myFilter + " and ( Node like '^" + myFilterMatch  + ".*' )";
+                                }
+                                elseif ( @Node like "^......*$" ) 
+                                {
+                                    myFilterMatch = RExtract(@Node,"^(....).*$");
+                                    myFilter = myFilter + " and ( Node like '^" + myFilterMatch  + ".*' )";
+                                }
+                                else
+                                {
+                                    myFilter = myFilter + " and ( Node like '^" + @Node + ".*'  )";
+                                }
+                            }
+
+                            else
+                            {
+                                osFilters=GetByFilter('OS_Parent_Child_Filters', "FilterName = '" +  parentEventFilterList[y] +   "'",false);
+                                numOsFilters=Length(osFilters);
+                                if(numOsFilters>0)
+                                {
+                                    if(osFilters[0].Definition like '.*@.*')
+                                    {
+                                        myFilterStart =  RExtract(osFilters[0].Definition,"(.*)@[a-zA-Z0-9]+.*");
+                                        myFilterEnd =  RExtract(osFilters[0].Definition,".*@[a-zA-Z0-9]+(.*)");
+                                        myFilterMatch =  RExtract(osFilters[0].Definition,".*(@[a-zA-Z0-9]+).*");
+                                        Log("Parent_Child: Filter start is " +  myFilterStart);
+                                        Log("Parent_Child: Filter end is " + myFilterEnd);
+                                        Log("Parent_Child: Filter match is " +  myFilterMatch);
+                                        myFilterField = Eval(myFilterMatch, EventContainer);
+                                        Log("Parent_Child: Filter field value is " +  myFilterField);
+                                        myFilter = myFilter + " and (" + myFilterStart +  myFilterField + myFilterEnd + ")";
+                                    } 
+                                    else 
+                                    {
+                                        myFilter = myFilter + " and (" +  osFilters[0].Definition + ")";
+                                    }
+                                }
+                            }
+                        }
+                        y = y + 1;
+                    }
+                    if(myFilter == "")
+                    {
+                        // The filter is blank and should not be processed
+                        Log("Parent_Child: Filter is blank. Not processing this event id");
+                        numOSEvents=0;
+                    }
+                    else
+                    {
+                        Log("Parent_Child: Parent event filter " + i + " = ((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+parentEventIDs[i]+"')"+myFilter+"");
+                        //  20100714    Change by Chris Janes of Abilitec
+                        //                          osEvents=GetByFilter('ha_ncoms_impact_events', "((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+parentEventIDs[i]+"')"+myFilter+"", false);
+                        osEvents=GetByFilter('Status', "((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+parentEventIDs[i]+"')"+myFilter+"", false);
+                        //  20100714    End of Change 
+                        numOSEvents=Length(osEvents);
+                        Log("Parent_Child: Number of Potential Parent events = " + numOSEvents);
+                    }
+                    if(numOSEvents>0)
+                    {
+                        // We have found parent events so set pcVar = 4                 
+                        pcVar=4;    //Established Child Event
+                        //Suppress event as we have a parent event, if not already suppressed
+                        if(mySuppressEscl = 0)
+                        {
+                            mySuppressEscl=4;
+                            mySuppressCause="Child event";
+                        }
+                        //Start counter x
+                        x=0;
+                        while(x<numOSEvents)
+                        {
+                            // Add the serial number of the child event to the ChildID field of  the parent event
+                            childIDArray=Split(osEvents[x].ChildID, ",");
+                            numChildIDs=Length(childIDArray);
+                            if(numChildIDs=0)
+                            {
+                                Log("Parent_Child: Contents already in ChildID: " +  osEvents[x].ChildID);
+                                Log("Parent_Child: Child ID to be set in Parent event: " +  @ServerSerial);
+                                osEvents[x].ChildID = "" + @ServerSerial;
+                            }
+                            else
+                            {
+                                Log("Parent_Child: Contents already in ChildID: " +  osEvents[x].ChildID);
+                                Log("Parent_Child: Child ID to be set in Parent event: " +  @ServerSerial);
+                                y = 0;
+                                z = 0;
+                                while(y < numChildIDs)
+                                {
+                                    if(int(childIDArray[y]) = @ServerSerial)
+                                    {
+                                        z = z + 1;          
+                                    }
+                                    y = y + 1;
+                                }
+                                if(z = 0)
+                                {
+                                    osEvents[x].ChildID = osEvents[x].ChildID + "," +  @ServerSerial;
+                                }
+                            }
+                            if(osEvents[x].ParentChildFlag=4)
+                            {
+                                // Do nothing as the parent is not set as an established  child event
+                            }
+                            else
+                            {
+                                // The parent event needs to be escalated to an established  parent event
+                                osEvents[x].ParentChildFlag=5;
+                                osEvents[x].ParentChildTime=getdate();
+                            }
+                            // Store parent event data in child event
+                            parentIDArray=Split(parentID, ",");
+                            parentServerNameArray=Split(parentServerName, ",");
+                            parentServerSerialArray=Split(parentServerSerial, ",");
+                            parentIdentifierArray=Split(parentIdentifier, ",");
+                            //parentTTIDArray=Split(parentTTID, ",");
+
+                            numParentIDs=Length(parentIDArray);
+                            numParentServerNames=Length(parentServerNameArray);
+                            numParentServerSerials=Length(parentServerSerialArray);
+                            numParentIdentifiers=Length(parentIdentifierArray);
+                            //numParentTTIDs=Length(parentTTIDArray);
+
+                            // Store data for Parent ID if there are no current entries
+                            if(numParentIDs = 0)
+                            {
+                                parentID="" + osEvents[x].EventId;
+                            }
+                            else
+                            {
+                                parentID=parentID+","+osEvents[x].EventId;
+                            }
+                            // Store data for Parent Server Name if there are no current entries
+                            if(numParentServerNames = 0)
+                            {
+                                parentServerName="" + osEvents[x].ServerName;
+                            }
+                            else
+                            {
+                                 parentServerName=parentServerName+","+osEvents[x].ServerName;
+                            }
+                            // Store data for Parent Server Serial if there are no current  entries
+                            if(numParentServerSerials = 0)
+                            {
+                                parentServerSerial="" + osEvents[x].ServerSerial;
+                            }
+                            else
+                            {
+                                 parentServerSerial=parentServerSerial+","+osEvents[x].ServerSerial;
+                            }
+                            // Store data for Parent Identifier if there are no current entries
+                            if(numParentIdentifiers = 0)
+                            {
+                                parentIdentifier="" + osEvents[x].Identifier;
+                            }
+                            else
+                            {
+                                 parentIdentifier=parentIdentifier+","+osEvents[x].Identifier;
+                            }
+                            x = x + 1;
+                        }   
+                    }
+                    // Increment counter i
+                    i = i + 1;
+                }
+                i=0;
+                while(i<numChildren)
+                {
+                    myFilter = "";
+                    Log("childEventFilters[i] " + i + " " + childEventFilters[i]);
+                    childEventFilterList=Split(childEventFilters[i],":");
+                    numChildEventFilterList = Length(childEventFilterList);
+                    Log("numChildEventFilterList =" + numChildEventFilterList);
+                    y = 0;
+                    while (y < numChildEventFilterList)
+                    {
+                        Log("childEventFilterList[y] " + y + " " + childEventFilterList[y]);
+                        /* ***************************************************************
+                        *
+                        *   This is where non-standard filters go for Child Events
+                        *
+                        **************************************************************** */
+                        if ( childEventFilterList[y] == "NodeLike" ) 
+                        {
+                            if ( @Node like "^..RCC.*$" ) 
+                            {
+                                myFilterMatch = RExtract(@Node,"^(..RCC).*$");
+                                myFilter = myFilter + " and ( Node like '^" + myFilterMatch  + ".*' )";
+                            }
+                            elseif ( @Node like "^......*$" ) 
+                            {
+                                myFilterMatch = RExtract(@Node,"^(....).*$");
+                                myFilter = myFilter + " and ( Node like '^" + myFilterMatch  + ".*' )";
+                            }
+                            else
+                            {
+                                myFilter = myFilter + " and ( Node like '^" + @Node + ".*'  )";
+                            }
+                        }
+
+
+                        else
+                        {
+                            osFilters=GetByFilter('OS_Parent_Child_Filters', "FilterName = '" +  childEventFilterList[y] +   "'",false);
+                            numOsFilters=Length(osFilters);
+                            if(numOsFilters>0)
+                            {
+                                if(osFilters[0].Definition like '.*@.*')
+                                {
+                                    myFilterStart =  RExtract(osFilters[0].Definition,"(.*)@[a-zA-Z0-9]+.*");
+                                    myFilterEnd =  RExtract(osFilters[0].Definition,".*@[a-zA-Z0-9]+(.*)");
+                                    myFilterMatch =  RExtract(osFilters[0].Definition,".*(@[a-zA-Z0-9]+).*");
+                                    Log("Parent_Child: Filter start is " +  myFilterStart);
+                                    Log("Parent_Child: Filter end is " + myFilterEnd);
+                                    Log("Parent_Child: Filter match is " +  myFilterMatch);
+                                    myFilterField = Eval(myFilterMatch, EventContainer);
+                                    Log("Parent_Child: Filter field value is " +  myFilterField);
+                                    myFilter = myFilter + " and (" + myFilterStart +  myFilterField + myFilterEnd + ")";
+                                } 
+                                else 
+                                {
+                                    myFilter = myFilter + " and (" +  osFilters[0].Definition + ")";
+                                }
+                            }
+                        }
+                        y = y + 1;
+                    }
+                    if(myFilter == "")
+                    {
+                    // The filter is blank and should not be processed
+                    Log("Parent_Child: Filter is blank. Not processing this event id");
+                    numOSEvents=0;
+                    }
+                    else
+                    {
+                        Log("Parent_Child: Child event filter " + i + " = ((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+childEventIDs[i]+"')"+myFilter+"");
+                        //  20100714    Change by Chris Janes of Abilitec
+                        //                      osEvents=GetByFilter('ha_ncoms_impact_events', "((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+childEventIDs[i]+"')"+myFilter+"", false);
+                        osEvents=GetByFilter('Status', "((Type = 1) or (Type = 13)) and (Severity > 0) and  (ParentChildFlag <> 9) and   (EventId='"+childEventIDs[i]+"')"+myFilter+"", false);
+                        //  20100714    End of Change
+                        numOSEvents=Length(osEvents);
+                        Log("Parent_Child: Number of Potential Child events = " + numOSEvents);
+                    }
+                    if(numOSEvents>0)
+                    {
+                        if(pcVar=4) //Established Child Event
+                        {
+                            // Event already and established child event, so do nothing
+                        }
+                        else
+                        {
+                            // Event is not a child event so set as an established parent event
+                            pcVar=5;    // Established Parent Event
+                        }
+                        x=0;
+                        while(x<numOSEvents)
+                        {
+                            // Add the serial number of the child event to the ChildID field of  the parent event
+                            childIDArray=Split(childID, ",");
+                            numChildIDs=Length(childIDArray);
+                            Log("Parent_Child: Number of entries in ChildID array is " +  numChildIDs);
+                            if(numChildIDs=0)
+                            {
+                                Log("Parent_Child: Contents already in ChildID: " +  childID);
+                                Log("Parent_Child: Child ID to be set in Parent event: " +  osEvents[x].ServerSerial);
+                                childID = "" + osEvents[x].ServerSerial;
+                            }
+                            else
+                            {
+                                Log("Parent_Child: Contents already in ChildID: " +  childID);
+                                Log("Parent_Child: Child ID to be set in Parent event: " +  osEvents[x].ServerSerial);
+                                y = 0;
+                                z = 0;
+                                while(y < numChildIDs)
+                                {
+                                    if((childIDArray[y]) = osEvents[x].ServerSerial)
+                                    {
+                                        z = z + 1;
+                                    }
+                                    y = y + 1;
+                                }
+                                if(z = 0)
+                                {
+                                    childID = childID + "," +  osEvents[x].ServerSerial;
+                                }
+                            }
+                            Log("Parent_Child: Child event " + x + " being processed");
+                            Log("Parent_Child: Current setting for childID variable is " +  childID);
+                            // Check the status of the parent child flag on the child event
+                            if(osEvents[x].ParentChildFlag=4)
+                            {
+                                // Do nothing as the event is already set as an established  child event
+                            }
+                            else
+                            {
+                                // The child event needs to be marked to an established  child event
+                                osEvents[x].ParentChildFlag=4;
+                                osEvents[x].ParentChildTime=getdate();
+                                // The child event also needs to be suppressed, it it is not  already
+                                if(osEvents[x].SuppressEscl = 0)
+                                {
+                                    osEvents[x].SuppressEscl=4;
+                                    osEvents[x].SuppressCause="Child event";
+                                }
+                            }
+                            // Store parent event data in child event
+                            parentIDArray=Split(osEvents[x].ParentID, ",");
+                            parentServerNameArray=Split(osEvents[x].ParentServerName, ",");
+                            parentServerSerialArray=Split(osEvents[x].ParentServerSerial, ",");
+                            parentIdentifierArray=Split(osEvents[x].ParentIdentifier, ",");
+                            //parentTTIDArray=Split(osEvents[x].ParentTTID, ",");
+
+                            numParentIDs=Length(parentIDArray);
+                            numParentServerNames=Length(parentServerNameArray);
+                            numParentServerSerials=Length(parentServerSerialArray);
+                            numParentIdentifiers=Length(parentIdentifierArray);
+                            //numParentTTIDs=Length(parentTTIDArray);
+
+                            // Store data for Parent ID if there are no current entries
+                            if(numParentIDs = 0)
+                            {
+                                osEvents[x].ParentID="" + @EventId;
+                            }
+                            // Store data for Parent Server Name if there are no current entries
+                            if(numParentServerNames = 0)
+                            {
+                                osEvents[x].ParentServerName="" + @ServerName;
+                            }
+                            // Store data for Parent Server Serial if there are no current  entries
+                            if(numParentServerSerials = 0)
+                            {
+                                osEvents[x].ParentServerSerial="" + @ServerSerial;
+                            }
+                            // Store data for Parent Identifier if there are no current entries
+                            if(numParentIdentifiers = 0)
+                            {
+                                osEvents[x].ParentIdentifier="" + @Identifier;
+                            }
+                            // Store data for Parent TT ID if there are no current entries
+                            y = 0;
+                            while(y < numParentServerNames)
+                            {
+                            if((@EventId <> parentIDArray[y]) and (@ServerName <>  parentServerNameArray[y]) and   (@ServerSerial <> parentServerSerialArray[y]) and (@Identifier <> parentIdentifierArray[y]))
+                            {
+                                // Store data for Parent ID
+                                 osEvents[x].ParentID=osEvents[x].ParentID+","+@EventId;;
+                                // Store data for Parent Server Name
+                                 osEvents[x].ParentServerName=osEvents[x].ParentServerName+","+@ServerName;
+                                // Store data for Parent Server Serial
+                                 osEvents[x].ParentServerSerial=osEvents[x].ParentServerSerial+","+@ServerSerial;
+                                // Store data for Parent Identifier
+                                 osEvents[x].ParentIdentifier=osEvents[x].ParentIdentifier+","+@Identifier;
+                                // Store data for Parent TT ID
+                                 //osEvents[x].ParentTTID=osEvents[x].ParentTTID+","+@TTID;                                 
+                            }
+                            y = y + 1;
+                        }
+                        // Increment counter
+                        x=x+1;
+                    }   
+                }
+                // Increment counter i
+                i = i + 1;
+            }
+        }
+        EventContainer.ChildID = childID;
+        EventContainer.ParentServerName = parentServerName;
+        EventContainer.ParentServerSerial = parentServerSerial;
+        EventContainer.ParentID = parentID;
+        //EventContainer.ParentTTID = parentTTID;
+        Log("pcVar1 " + pcVar);
+        EventContainer.ParentChildFlag = pcVar;
+        EventContainer.ParentChildTime = getdate();
+        EventContainer.SuppressEscl = mySuppressEscl;
+        EventContainer.SuppressCause = mySuppressCause;
+        ReturnEvent(EventContainer);
+        }
+    }
+}
+else
+{
+    pcVar=8;    // Relationship not found in table
+    EventContainer.ParentChildFlag = pcVar;
+    EventContainer.ParentChildTime = getdate();
+    ReturnEvent(EventContainer);
+}
+
+Log(0,"Parent_Child: End");
+
+// DB - LOGGING ADDED 
+Log ("**** Parent_Child_Correlation: End:  Serial=" + @Serial + " TTFlag=" + @TTFlag + " Service_Impact: service affecting  set to " + @ServiceAffecting + "   equipment type set to " + @EquipmentType + " Node is " + @Node + " ParentChildFlag is " +  @ParentChildFlag);  
+
+
+
+

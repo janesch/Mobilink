@@ -1,0 +1,934 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-OSPFV3-MIB.include.snmptrap.rules 6.0
+#    2008/02/25 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-OSPFV3-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.5.4.1": ### Juniper OSPF Version-3  - Notification from JUNIPER-OSPFV3-MIB(20060809)
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-OSPFV3-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-OSPFv3"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxOspfv3VirtIfStateChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3VirtIfState 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3VirtIfState = lookup($2, jnxOspfv3VirtIfState) + " ( " + $2 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3VirtIfStateChange"
+
+            @AlertGroup = "OSPFv3 Virtual Interface Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"          
+                   @Summary = "OSPFv3 Virtual Interface Down"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### pointToPoint
+                   $SEV_KEY = $OS_EventId + "_pointToPoint"          
+                   @Summary = "OSPFv3 Virtual Interface Point to Point"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"   
+                   @Summary = "OSPFv3 Virtual Interface unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3VirtIfState)
+
+        case "2": ### jnxOspfv3NbrStateChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3NbrState 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3NbrState = lookup($2, jnxOspfv3NbrState) + " ( " + $2 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3NbrStateChange"
+
+            @AlertGroup = "Non-Virtual OSPFv3 Neighbor Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Down"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "2": ### attempt
+                   $SEV_KEY = $OS_EventId + "_attempt"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Attempt"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "3": ### init
+                   $SEV_KEY = $OS_EventId + "_init"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Initialized"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### twoWay
+                   $SEV_KEY = $OS_EventId + "_twoWay"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Twoway"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "5": ### exchangeStart
+                   $SEV_KEY = $OS_EventId + "_exchangeStart"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Exchange Start"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "6": ### exchange
+                   $SEV_KEY = $OS_EventId + "_exchange"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Exchanging"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "7": ### loading
+                   $SEV_KEY = $OS_EventId + "_loading"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Loading"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "8": ### full
+                   $SEV_KEY = $OS_EventId + "_full"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor Full"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"   
+                   @Summary = "Non-Virtual OSPFv3 Neighbor unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3NbrState)
+
+        case "3": ### jnxOspfv3VirtNbrStateChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3VirtNbrState 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3VirtNbrState = lookup($2, jnxOspfv3NbrState) + " ( " + $2 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3VirtNbrStateChange"
+
+            @AlertGroup = "Virtual OSPFv3 Neighbor Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"   
+                   @Summary = "Virtual OSPFv3 Neighbor Down"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "2": ### attempt
+                   $SEV_KEY = $OS_EventId + "_attempt"   
+                   @Summary = "Virtual OSPFv3 Neighbor Attempt"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "3": ### init
+                   $SEV_KEY = $OS_EventId + "_init"   
+                   @Summary = "Virtual OSPFv3 Neighbor Initialized"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### twoWay
+                   $SEV_KEY = $OS_EventId + "_twoWay"   
+                   @Summary = "Virtual OSPFv3 Neighbor Twoway"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "5": ### exchangeStart
+                   $SEV_KEY = $OS_EventId + "_exchangeStart"   
+                   @Summary = "Virtual OSPFv3 Neighbor Exchange Start"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "6": ### exchange
+                   $SEV_KEY = $OS_EventId + "_exchange"   
+                   @Summary = "Virtual OSPFv3 Neighbor Exchanging"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "7": ### loading
+                   $SEV_KEY = $OS_EventId + "_loading"   
+                   @Summary = "Virtual OSPFv3 Neighbor Loading"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "8": ### full
+                   $SEV_KEY = $OS_EventId + "_full"   
+                   @Summary = "Virtual OSPFv3 Neighbor Full"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"   
+                   @Summary = "Virtual OSPFv3 Neighbor unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3VirtNbrState)
+
+        case "4": ### jnxOspfv3IfConfigError
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3IfState 
+            # $3 = jnxOspfv3PacketSrc 
+            # $4 = jnxOspfv3ConfigErrorType 
+            # $5 = jnxOspfv3PacketType 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3IfState = lookup($2, jnxOspfv3IfState) + " ( " + $2 + " )"
+            $jnxOspfv3PacketSrc = $3
+            $jnxOspfv3ConfigErrorType = lookup($4, jnxOspfv3ConfigErrorType) + " ( " + $4 + " )"
+            $jnxOspfv3PacketType = lookup($5, jnxOspfv3PacketType) + " ( " + $5 + " )" 
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3IfConfigError"
+
+            @AlertGroup = "Interface Configuration Mismatch"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"
+           	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Down"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "2": ### loopback
+                   $SEV_KEY = $OS_EventId + "_loopback"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Loopback"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "3": ### waiting
+                   $SEV_KEY = $OS_EventId + "_waiting"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Waiting"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### pointToPoint
+                   $SEV_KEY = $OS_EventId + "_pointToPoint"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Point to Point"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "5": ### designatedRouter
+                   $SEV_KEY = $OS_EventId + "_designatedRouter"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Designated Router"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "6": ### backupDesignatedRouter
+                   $SEV_KEY = $OS_EventId + "_backupDesignatedRouter"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Back Up Designated Router"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "7": ### otherDesignatedRouter
+                   $SEV_KEY = $OS_EventId + "_otherDesignatedRouter"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Other Designated Router"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"
+            	   @Summary = "Configuration Conflicts between Non-Virtual and Source Routers State Unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3IfState,$jnxOspfv3PacketSrc,$jnxOspfv3ConfigErrorType,$jnxOspfv3PacketType)
+
+        case "5": ### jnxOspfv3VirtIfConfigError
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3VirtIfState 
+            # $3 = jnxOspfv3ConfigErrorType 
+            # $4 = jnxOspfv3PacketType 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3VirtIfState = lookup($2, jnxOspfv3VirtIfState) + " ( " + $2 + " )"
+            $jnxOspfv3ConfigErrorType = lookup($3, jnxOspfv3ConfigErrorType) + " ( " + $3 + " )"
+            $jnxOspfv3PacketType = lookup($4, jnxOspfv3PacketType) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3VirtIfConfigError"
+
+            @AlertGroup = "Virtual Interface Configuration Mismatch"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"
+                   @Summary = "Configuration Conflicts between Virtual and Source Routers State Down"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### pointToPoint
+                   $SEV_KEY = $OS_EventId + "_pointToPoint"
+                   @Summary = "Configuration Conflicts between Virtual and Source Routers State Point to Point"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"
+            	   @Summary = "Configuration Conflicts between Virtual and Source Routers State Unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3VirtIfState,$jnxOspfv3ConfigErrorType,$jnxOspfv3PacketType)
+
+        case "6": ### jnxOspfv3IfRxBadPacket
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3IfState 
+            # $3 = jnxOspfv3PacketSrc 
+            # $4 = jnxOspfv3PacketType 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3IfState = lookup($2, jnxOspfv3IfState) + " ( " + $2 + " )"
+            $jnxOspfv3PacketSrc = $3
+            $jnxOspfv3PacketType = lookup($4, jnxOspfv3PacketType) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3IfRxBadPacket"
+
+            @AlertGroup = "OSPFv3 Packet Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"
+            	   @Summary = "Received Bad Packet at Non-Virtual Down Interface"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "2": ### loopback
+                   $SEV_KEY = $OS_EventId + "_loopback"
+            	   @Summary = "Received Bad Packet at Non-Virtual Loopback Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "3": ### waiting
+                   $SEV_KEY = $OS_EventId + "_waiting"
+            	   @Summary = "Received Bad Packet at Non-Virtual Waiting Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### pointToPoint
+                   $SEV_KEY = $OS_EventId + "_pointToPoint"
+            	   @Summary = "Received Bad Packet at Non-Virtual Point to Point Interface"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "5": ### designatedRouter
+                   $SEV_KEY = $OS_EventId + "_designatedRouter"
+            	   @Summary = "Received Bad Packet at Non-Virtual Designated Router Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "6": ### backupDesignatedRouter
+                   $SEV_KEY = $OS_EventId + "_backupDesignatedRouter"
+            	   @Summary = "Received Bad Packet at Non-Virtual Back Up Designated Router Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "7": ### otherDesignatedRouter
+                   $SEV_KEY = $OS_EventId + "_otherDesignatedRouter"
+            	   @Summary = "Received Bad Packet at Non-Virtual Other Designated Router Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"
+           	   @Summary = "Received Bad Packet at Non-Virtual Unknown Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3IfState,$jnxOspfv3PacketSrc,$jnxOspfv3PacketType)
+
+        case "7": ### jnxOspfv3VirtIfRxBadPacket
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3VirtIfState 
+            # $3 = jnxOspfv3PacketType 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3VirtIfState = lookup($2, jnxOspfv3VirtIfState) + " ( " + $2 + " )"
+            $jnxOspfv3PacketType = lookup($3, jnxOspfv3PacketType) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3VirtIfRxBadPacket"
+
+            @AlertGroup = "OSPFv3 Packet Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"
+                   @Summary = "Received Bad Packet at Virtual Down Interface"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### pointToPoint
+                   $SEV_KEY = $OS_EventId + "_pointToPoint"
+                   @Summary = "Received Bad Packet at Virtual Point to Point Interface"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"
+            	   @Summary = "Received Bad Packet at Virtual Unknown Interface"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3VirtIfState,$jnxOspfv3PacketType)
+
+        case "8": ### jnxOspfv3LsdbOverflow
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3ExtAreaLsdbLimit 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3ExtAreaLsdbLimit = $2
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3LsdbOverflow"
+
+            @AlertGroup = "Link State Database Threshold"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            @Summary = "Link State Advertisements Exceeded Threshold"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3ExtAreaLsdbLimit)
+
+        case "9": ### jnxOspfv3LsdbApproachingOverflow
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3ExtAreaLsdbLimit 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3ExtAreaLsdbLimit = $2
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3LsdbApproachingOverflow"
+
+            @AlertGroup = "Link State Database Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            @Summary = "Link State Advertisements Approaching its Threshold"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3ExtAreaLsdbLimit)
+
+        case "10": ### jnxOspfv3IfStateChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3IfState 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3IfState = lookup($2, jnxOspfv3IfState) + " ( " + $2 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3IfStateChange"
+
+            @AlertGroup = "Non-Virtual OSPFv3 Interface Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### down
+                   $SEV_KEY = $OS_EventId + "_down"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Down"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "2": ### loopback
+                   $SEV_KEY = $OS_EventId + "_loopback"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Loopback"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "3": ### waiting
+                   $SEV_KEY = $OS_EventId + "_waiting"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Waiting"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### pointToPoint
+                   $SEV_KEY = $OS_EventId + "_pointToPoint"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Point to Point"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "5": ### designatedRouter
+                   $SEV_KEY = $OS_EventId + "_designatedRouter"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Designated Router"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "6": ### backupDesignatedRouter
+                   $SEV_KEY = $OS_EventId + "_backupDesignatedRouter"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Back Up Designated Router"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "7": ### otherDesignatedRouter
+                   $SEV_KEY = $OS_EventId + "_otherDesignatedRouter"
+            	   @Summary = "Non-Virtual OSPFv3 Interfaced State: Other Designated Router"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown"
+            	   @Summary = "Non-Virtual OSPFv3 Interface State: Unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3IfState)
+
+        case "11": ### jnxOspfv3NssaTranslatorStatusChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3AreaNssaTranslatorState 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3AreaNssaTranslatorState = lookup($2, jnxOspfv3AreaNssaTranslatorState) + " ( " + $2 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3NssaTranslatorStatusChange"
+
+            @AlertGroup = "Router NSSA Translater Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($2)
+            {
+               case "1": ### enabled
+                   $SEV_KEY = $OS_EventId + "_enabled" 
+                   @Summary = "Translates OSPFv3 NSSA LSAs State to OSPFv3 External LSAs Enabled State"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "2": ### elected
+                   $SEV_KEY = $OS_EventId + "_elected" 
+                   @Summary = "Translates OSPFv3 NSSA LSAs State to OSPFv3 External LSAs Elected State"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "3": ### disabled
+                   $SEV_KEY = $OS_EventId + "_disabled" 
+                   @Summary = "Translates OSPFv3 NSSA LSAs State to OSPFv3 External LSAs Disabled State"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown" 
+                   @Summary = "Translate OSPFv3 NSSA LSAs State to OSPFv3 External LSAs Unknown State"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3AreaNssaTranslatorState)
+
+        case "12": ### jnxOspfv3RestartStatusChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3RestartStatus 
+            # $3 = jnxOspfv3RestartInterval 
+            # $4 = jnxOspfv3RestartExitRc 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3RestartStatus = lookup($2, jnxOspfv3RestartStatus) + " ( " + $2 + " )"
+            $jnxOspfv3RestartInterval = $3
+            $jnxOspfv3RestartExitRc = lookup($4, jnxOspfv3RestartExitRc) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3RestartStatusChange"
+
+            @AlertGroup = "Restart Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($4)
+            {
+               case "1": ### none
+                   $SEV_KEY = $OS_EventId + "_none" 
+                   @Summary = "No Restart has Yet been Attempted"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "2": ### inProgress
+                   $SEV_KEY = $OS_EventId + "_inProgress" 
+                   @Summary = "A Restart Attempt is Currently Underway"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "3": ### completed
+                   $SEV_KEY = $OS_EventId + "_completed" 
+                   @Summary = "The Last Restart Completed Successfully"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### timedOut
+                   $SEV_KEY = $OS_EventId + "_timedOut" 
+                   @Summary = "The Last Restart Timed Out"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "5": ### topologyChanged
+                   $SEV_KEY = $OS_EventId + "_topologyChanged" 
+                   @Summary = "The Last Restart was Aborted Due to Topology Change"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown" 
+                   @Summary = "Restart Status is Unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3RestartStatus,$jnxOspfv3RestartInterval,$jnxOspfv3RestartExitRc)
+
+        case "13": ### jnxOspfv3NbrRestartHelperStatusChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3NbrRestartHelperStatus 
+            # $3 = jnxOspfv3NbrRestartHelperAge 
+            # $4 = jnxOspfv3NbrRestartHelperExitRc 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3NbrRestartHelperStatus = lookup($2, jnxOspfv3NbrRestartHelperStatus) + " ( " + $2 + " )"
+            $jnxOspfv3NbrRestartHelperAge = $3
+            $jnxOspfv3NbrRestartHelperExitRc = lookup($4, jnxOspfv3RestartExitRc) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3NbrRestartHelperStatusChange"
+
+            @AlertGroup = "Neighbor Helper Restart Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($4)
+            {
+               case "1": ### none
+                   $SEV_KEY = $OS_EventId + "_none" 
+                   @Summary = "Neighbor Helper No Restart has Yet been Attempted"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "2": ### inProgress
+                   $SEV_KEY = $OS_EventId + "_inProgress" 
+                   @Summary = "Neighbor Helper Restart Attempt is Currently Underway"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "3": ### completed
+                   $SEV_KEY = $OS_EventId + "_completed" 
+                   @Summary = "Neighbor Helper Last Restart Completed Successfully"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### timedOut
+                   $SEV_KEY = $OS_EventId + "_timedOut" 
+                   @Summary = "Neighbor Helper Last Restart Timed Out"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "5": ### topologyChanged
+                   $SEV_KEY = $OS_EventId + "_topologyChanged" 
+                   @Summary = "Neighbor Helper Last Restart was Aborted Due to Topology Change"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown" 
+                   @Summary = "Neighbor Helper Restart Status is Unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3NbrRestartHelperStatus,$jnxOspfv3NbrRestartHelperAge,$jnxOspfv3NbrRestartHelperExitRc)
+
+        case "14": ### jnxOspfv3VirtNbrRestartHelperStatusChange
+
+            ##########
+            # $1 = jnxOspfv3RouterId 
+            # $2 = jnxOspfv3VirtNbrRestartHelperStatus 
+            # $3 = jnxOspfv3VirtNbrRestartHelperAge 
+            # $4 = jnxOspfv3VirtNbrRestartHelperExitRc 
+            ##########
+
+            $jnxOspfv3RouterId = $1
+            $jnxOspfv3VirtNbrRestartHelperStatus = lookup($2, jnxOspfv3NbrRestartHelperStatus) + " ( " + $2 + " )"
+            $jnxOspfv3VirtNbrRestartHelperAge = $3
+            $jnxOspfv3VirtNbrRestartHelperExitRc = lookup($4, jnxOspfv3RestartExitRc) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-OSPFV3-MIB-jnxOspfv3VirtNbrRestartHelperStatusChange"
+
+            @AlertGroup = "Virtual Neighbor Helper Restart Status"
+            @AlertKey = "jnxOspfv3RouterId." + $1
+            switch($4)
+            {
+               case "1": ### none
+                   $SEV_KEY = $OS_EventId + "_none" 
+                   @Summary = "Virtual Neighbor Helper No Restart has Yet been Attempted"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 13
+                   $DEFAULT_ExpireTime = 1800
+               case "2": ### inProgress
+                   $SEV_KEY = $OS_EventId + "_inProgress" 
+                   @Summary = "Virtual Neighbor Helper Restart Attempt is Currently Underway"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "3": ### completed
+                   $SEV_KEY = $OS_EventId + "_completed" 
+                   @Summary = "Virtual Neighbor Helper Last Restart Completed Successfully"
+
+                   $DEFAULT_Severity = 1
+                   $DEFAULT_Type = 2
+                   $DEFAULT_ExpireTime = 0
+               case "4": ### timedOut
+                   $SEV_KEY = $OS_EventId + "_timedOut" 
+                   @Summary = "Virtual Neighbor Helper Last Restart Timed Out"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               case "5": ### topologyChanged
+                   $SEV_KEY = $OS_EventId + "_topologyChanged" 
+                   @Summary = "Virtual Neighbor Helper Last Restart was Aborted Due to Topology Change"
+
+                   $DEFAULT_Severity = 3
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                   $SEV_KEY = $OS_EventId + "_unknown" 
+                   @Summary = "Virtual Neighbor Helper Restart Status is Unknown"
+
+                   $DEFAULT_Severity = 2
+                   $DEFAULT_Type = 1
+                   $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxOspfv3RouterId,$jnxOspfv3VirtNbrRestartHelperStatus,$jnxOspfv3VirtNbrRestartHelperAge,$jnxOspfv3VirtNbrRestartHelperExitRc)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-OSPFV3-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-OSPFV3-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-OSPFV3-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-OSPFV3-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-OSPFV3-MIB.include.snmptrap.rules >>>>>")

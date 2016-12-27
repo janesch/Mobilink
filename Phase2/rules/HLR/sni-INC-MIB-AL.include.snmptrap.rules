@@ -1,0 +1,1055 @@
+###############################################################################
+#
+#	sni-INC-MIB-AL.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for SNI INC alarms
+#
+#       V0.1	20110715	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.231.7.99.4":  ### - tiInc (from INC-MIB-AL)
+
+	log(DEBUG, "<<<<< Entering... sni-INC-MIB-AL.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "HLR"
+    @Domain = "CORE"
+    @Vendor = "FujitsuSiemens"
+	@Manager = "MTTrapd-HLR"
+
+	@Class = "302040"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Node = $IPaddress
+	@NodeAlias = $IPaddress
+	@Agent = "SNI-INC-MIB-AL"
+	@AlertGroup = "HLRTrap"
+
+	@EventId = "NET_HLR_SNI_001"
+
+	switch($specific-trap) {
+		case "2301": ### - tiIncTrapCritical
+			#######################
+			#
+			# Trap issued by the INC to an OS with a severity 
+			# value of 'critical'.
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			# 
+			# SEVERITY-DEFAULT: Critical 
+			# NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+			# EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+			# ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+			#
+			# $1 = tiAlarmDateTime
+			#
+			#      Represents the occurrence date and time of an alarm as 
+			#      display string in the format as defined by the 
+			#      ASN.1 standard data type GeneralizedTime 
+			#      ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+			#      e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+			#      respectively ITU-T Recommendation X.208
+			#
+			# $2 = tiAlarmReportingObject
+			#
+			#      Object Id of the alarm reporting object according 
+			#      to the SNMP object model defined for the NE.
+			#
+			# $3 = tiAlarmFaultyObject
+			#
+			#      Object Id of the faulty object according to the SNMP
+			#      object model defined for the NE. Could be identical 
+			#      with the Object Id of the alarm reporting object.
+			#
+			# $4 = tiAlarmEventTypeId
+			#
+			#      Event Type Id as integer. This field specifies the 
+			#      type of the alarm being reported. 
+			#      The value range conforms to the ITU-T Recommendation 
+			#      X.733.
+			#
+			# $5 = tiAlarmSeverity
+			#
+			#      The perceived severity of an alarm as integer 
+			#      conforming to the ITU-T Recommendation X.721.
+			#      Alarm cleared messages are sent with the value 
+			#      cleared.
+			#
+			# $6 = tiAlarmErrorID
+			#
+			#      Error Id as integer. This Error Id is specific to 
+			#      the general alarm source type (e.g. SCP, INC).
+			#
+			# $7 = tiAlarmEndKey
+			#
+			#      End Key of an alarm as integer. It indicates whether 
+			#      an alarm cleared message is expected ( value label 
+			#      true ) or not ( value label false ).
+			#
+			# $8 = tiAlarmDescription
+			#
+			#      Represents the description of an alarm.
+			#      Additional free form text as octett string
+			#      in ISO Latin-1 format.
+			#
+			# $9 = tiAlarmSequenceNumber
+			#
+			#      The unique event sequence number.
+			#      Will be incremented by one for each new event.
+			#      Could wrap from 2147483647 to 1.
+			#      In case of INCommander internal alarms always 1.
+			#      
+			#      This field is provided for compatibility with 
+			#      earlier versions of the INCommander.
+			#      Obsoleted by tiAlarmTransferID.
+			#
+			# $10 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $11 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $12 = tiAlarmNotificationID
+			#
+			#      The notification id unique for a whole INCommander
+			#      management area and is common for all configured OS's.
+			#      
+			#      It will be incremented by one for each new event
+			#      received from any configured network element ( 
+			#      including the INCommander itself ) and could wrap 
+			#      from 2147483647 to 1.
+			#      
+			#      Gaps in the notification identifier of consecutive
+			#      alarm SNMP traps received at the OS site are normal
+			#      because of the separate EFD processing for each OS.
+			#
+			# $13 = tiAlarmTransferID
+			#
+			#      The OS specific unique transfer identifier.
+			#      Will be incremented by one for each new event
+			#      sent to an OS.
+			#      Could wrap from 2147483647 to 1.
+			#      
+			#      Gaps in the transfer identifier of consecutive
+			#      alarm SNMP traps received at the OS site indicates 
+			#      the lost of SNMP traps sent from the INCommander to 
+			#      the OS.
+			#
+			# $14 = tiAlarmRepairText
+			#
+			#      Represents the repair text description of an alarm.
+			#
+			# $15 = tiAlarmLongText
+			#
+			#      Represents the long text description of an alarm.
+			#
+			#######################
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = lookup($4,sni-INC-MIB-AL-tiAlarmEventTypeId)
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = lookup($7,sni-INC-MIB-AL-tiAlarmEndKey)
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+			$tiAlarmRepairText = $14
+			$tiAlarmLongText = $15
+
+			[@Type,@Severity,@ExpireTime] = lookup($5,sni-INC-MIB-AL-tiAlarmSeverity)
+			
+			@AlertKey = "tiIncTrap-" + $tiAlarmReportingObject + "-" + $tiAlarmFaultyObject + "-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "tiIncTrapCritical # " + $tiAlarmDescription + " # Faulty object info: " + $tiAlarmFaultyObject + " " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " " + $tiAlarmReportingObject
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			#details($*)	
+details($4,$5)
+
+		case "2302": ### - tiIncTrapMajor
+			#######################
+			#
+			# Trap issued by the INC to an OS with a severity 
+			# value of 'major'.
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			# 
+			# SEVERITY-DEFAULT: Major
+			# NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+			# EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+			# ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+			#
+			# $1 = tiAlarmDateTime
+			#
+			#      Represents the occurrence date and time of an alarm as 
+			#      display string in the format as defined by the 
+			#      ASN.1 standard data type GeneralizedTime 
+			#      ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+			#      e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+			#      respectively ITU-T Recommendation X.208
+			#
+			# $2 = tiAlarmReportingObject
+			#
+			#      Object Id of the alarm reporting object according 
+			#      to the SNMP object model defined for the NE.
+			#
+			# $3 = tiAlarmFaultyObject
+			#
+			#      Object Id of the faulty object according to the SNMP
+			#      object model defined for the NE. Could be identical 
+			#      with the Object Id of the alarm reporting object.
+			#
+			# $4 = tiAlarmEventTypeId
+			#
+			#      Event Type Id as integer. This field specifies the 
+			#      type of the alarm being reported. 
+			#      The value range conforms to the ITU-T Recommendation 
+			#      X.733.
+			#
+			# $5 = tiAlarmSeverity
+			#
+			#      The perceived severity of an alarm as integer 
+			#      conforming to the ITU-T Recommendation X.721.
+			#      Alarm cleared messages are sent with the value 
+			#      cleared.
+			#
+			# $6 = tiAlarmErrorID
+			#
+			#      Error Id as integer. This Error Id is specific to 
+			#      the general alarm source type (e.g. SCP, INC).
+			#
+			# $7 = tiAlarmEndKey
+			#
+			#      End Key of an alarm as integer. It indicates whether 
+			#      an alarm cleared message is expected ( value label 
+			#      true ) or not ( value label false ).
+			#
+			# $8 = tiAlarmDescription
+			#
+			#      Represents the description of an alarm.
+			#      Additional free form text as octett string
+			#      in ISO Latin-1 format.
+			#
+			# $9 = tiAlarmSequenceNumber
+			#
+			#      The unique event sequence number.
+			#      Will be incremented by one for each new event.
+			#      Could wrap from 2147483647 to 1.
+			#      In case of INCommander internal alarms always 1.
+			#      
+			#      This field is provided for compatibility with 
+			#      earlier versions of the INCommander.
+			#      Obsoleted by tiAlarmTransferID.
+			#
+			# $10 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $11 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $12 = tiAlarmNotificationID
+			#
+			#      The notification id unique for a whole INCommander
+			#      management area and is common for all configured OS's.
+			#      
+			#      It will be incremented by one for each new event
+			#      received from any configured network element ( 
+			#      including the INCommander itself ) and could wrap 
+			#      from 2147483647 to 1.
+			#      
+			#      Gaps in the notification identifier of consecutive
+			#      alarm SNMP traps received at the OS site are normal
+			#      because of the separate EFD processing for each OS.
+			#
+			# $13 = tiAlarmTransferID
+			#
+			#      The OS specific unique transfer identifier.
+			#      Will be incremented by one for each new event
+			#      sent to an OS.
+			#      Could wrap from 2147483647 to 1.
+			#      
+			#      Gaps in the transfer identifier of consecutive
+			#      alarm SNMP traps received at the OS site indicates 
+			#      the lost of SNMP traps sent from the INCommander to 
+			#      the OS.
+			#
+			# $14 = tiAlarmRepairText
+			#
+			#      Represents the repair text description of an alarm.
+			#
+			# $15 = tiAlarmLongText
+			#
+			#      Represents the long text description of an alarm.
+			#
+			#######################
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = lookup($4,sni-INC-MIB-AL-tiAlarmEventTypeId)
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = lookup($7,sni-INC-MIB-AL-tiAlarmEndKey)
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+			$tiAlarmRepairText = $14
+			$tiAlarmLongText = $15
+
+			[@Type,@Severity,@ExpireTime] = lookup($5,sni-INC-MIB-AL-tiAlarmSeverity)
+			
+			@AlertKey = "tiIncTrap-" + $tiAlarmReportingObject + "-" + $tiAlarmFaultyObject + "-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "tiIncTrapMajor # " + $tiAlarmDescription + " # Faulty object info: " + $tiAlarmFaultyObject + " " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " " + $tiAlarmReportingObject
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			#details($*)
+details($4,$5)
+
+		case "2303": ### - tiIncTrapMinor
+			#######################
+			#
+			# Trap issued by the INC to an OS with a severity 
+			# value of 'minor'.
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			# 
+			# SEVERITY-DEFAULT: Minor
+			# NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+			# EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+			# ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+			#
+			# $1 = tiAlarmDateTime
+			#
+			#      Represents the occurrence date and time of an alarm as 
+			#      display string in the format as defined by the 
+			#      ASN.1 standard data type GeneralizedTime 
+			#      ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+			#      e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+			#      respectively ITU-T Recommendation X.208
+			#
+			# $2 = tiAlarmReportingObject
+			#
+			#      Object Id of the alarm reporting object according 
+			#      to the SNMP object model defined for the NE.
+			#
+			# $3 = tiAlarmFaultyObject
+			#
+			#      Object Id of the faulty object according to the SNMP
+			#      object model defined for the NE. Could be identical 
+			#      with the Object Id of the alarm reporting object.
+			#
+			# $4 = tiAlarmEventTypeId
+			#
+			#      Event Type Id as integer. This field specifies the 
+			#      type of the alarm being reported. 
+			#      The value range conforms to the ITU-T Recommendation 
+			#      X.733.
+			#
+			# $5 = tiAlarmSeverity
+			#
+			#      The perceived severity of an alarm as integer 
+			#      conforming to the ITU-T Recommendation X.721.
+			#      Alarm cleared messages are sent with the value 
+			#      cleared.
+			#
+			# $6 = tiAlarmErrorID
+			#
+			#      Error Id as integer. This Error Id is specific to 
+			#      the general alarm source type (e.g. SCP, INC).
+			#
+			# $7 = tiAlarmEndKey
+			#
+			#      End Key of an alarm as integer. It indicates whether 
+			#      an alarm cleared message is expected ( value label 
+			#      true ) or not ( value label false ).
+			#
+			# $8 = tiAlarmDescription
+			#
+			#      Represents the description of an alarm.
+			#      Additional free form text as octett string
+			#      in ISO Latin-1 format.
+			#
+			# $9 = tiAlarmSequenceNumber
+			#
+			#      The unique event sequence number.
+			#      Will be incremented by one for each new event.
+			#      Could wrap from 2147483647 to 1.
+			#      In case of INCommander internal alarms always 1.
+			#      
+			#      This field is provided for compatibility with 
+			#      earlier versions of the INCommander.
+			#      Obsoleted by tiAlarmTransferID.
+			#
+			# $10 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $11 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $12 = tiAlarmNotificationID
+			#
+			#      The notification id unique for a whole INCommander
+			#      management area and is common for all configured OS's.
+			#      
+			#      It will be incremented by one for each new event
+			#      received from any configured network element ( 
+			#      including the INCommander itself ) and could wrap 
+			#      from 2147483647 to 1.
+			#      
+			#      Gaps in the notification identifier of consecutive
+			#      alarm SNMP traps received at the OS site are normal
+			#      because of the separate EFD processing for each OS.
+			#
+			# $13 = tiAlarmTransferID
+			#
+			#      The OS specific unique transfer identifier.
+			#      Will be incremented by one for each new event
+			#      sent to an OS.
+			#      Could wrap from 2147483647 to 1.
+			#      
+			#      Gaps in the transfer identifier of consecutive
+			#      alarm SNMP traps received at the OS site indicates 
+			#      the lost of SNMP traps sent from the INCommander to 
+			#      the OS.
+			#
+			# $14 = tiAlarmRepairText
+			#
+			#      Represents the repair text description of an alarm.
+			#
+			# $15 = tiAlarmLongText
+			#
+			#      Represents the long text description of an alarm.
+			#
+			#######################
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = lookup($4,sni-INC-MIB-AL-tiAlarmEventTypeId)
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = lookup($7,sni-INC-MIB-AL-tiAlarmEndKey)
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+			$tiAlarmRepairText = $14
+			$tiAlarmLongText = $15
+
+			[@Type,@Severity,@ExpireTime] = lookup($5,sni-INC-MIB-AL-tiAlarmSeverity)
+			
+			@AlertKey = "tiIncTrap-" + $tiAlarmReportingObject + "-" + $tiAlarmFaultyObject + "-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "tiIncTrapMinor # " + $tiAlarmDescription + " # Faulty object info: " + $tiAlarmFaultyObject + " " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " " + $tiAlarmReportingObject
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			#details($*)
+details($4,$5)
+	
+		case "2304": ### - tiIncTrapWarning
+			#######################
+			#
+			# Trap issued by the INC to an OS with a 
+			# severity value of 'warning'.
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			# 
+			# SEVERITY-DEFAULT: Warning
+			# NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+			# EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+			# ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+			#
+			# $1 = tiAlarmDateTime
+			#
+			#      Represents the occurrence date and time of an alarm as 
+			#      display string in the format as defined by the 
+			#      ASN.1 standard data type GeneralizedTime 
+			#      ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+			#      e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+			#      respectively ITU-T Recommendation X.208
+			#
+			# $2 = tiAlarmReportingObject
+			#
+			#      Object Id of the alarm reporting object according 
+			#      to the SNMP object model defined for the NE.
+			#
+			# $3 = tiAlarmFaultyObject
+			#
+			#      Object Id of the faulty object according to the SNMP
+			#      object model defined for the NE. Could be identical 
+			#      with the Object Id of the alarm reporting object.
+			#
+			# $4 = tiAlarmEventTypeId
+			#
+			#      Event Type Id as integer. This field specifies the 
+			#      type of the alarm being reported. 
+			#      The value range conforms to the ITU-T Recommendation 
+			#      X.733.
+			#
+			# $5 = tiAlarmSeverity
+			#
+			#      The perceived severity of an alarm as integer 
+			#      conforming to the ITU-T Recommendation X.721.
+			#      Alarm cleared messages are sent with the value 
+			#      cleared.
+			#
+			# $6 = tiAlarmErrorID
+			#
+			#      Error Id as integer. This Error Id is specific to 
+			#      the general alarm source type (e.g. SCP, INC).
+			#
+			# $7 = tiAlarmEndKey
+			#
+			#      End Key of an alarm as integer. It indicates whether 
+			#      an alarm cleared message is expected ( value label 
+			#      true ) or not ( value label false ).
+			#
+			# $8 = tiAlarmDescription
+			#
+			#      Represents the description of an alarm.
+			#      Additional free form text as octett string
+			#      in ISO Latin-1 format.
+			#
+			# $9 = tiAlarmSequenceNumber
+			#
+			#      The unique event sequence number.
+			#      Will be incremented by one for each new event.
+			#      Could wrap from 2147483647 to 1.
+			#      In case of INCommander internal alarms always 1.
+			#      
+			#      This field is provided for compatibility with 
+			#      earlier versions of the INCommander.
+			#      Obsoleted by tiAlarmTransferID.
+			#
+			# $10 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $11 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $12 = tiAlarmNotificationID
+			#
+			#      The notification id unique for a whole INCommander
+			#      management area and is common for all configured OS's.
+			#      
+			#      It will be incremented by one for each new event
+			#      received from any configured network element ( 
+			#      including the INCommander itself ) and could wrap 
+			#      from 2147483647 to 1.
+			#      
+			#      Gaps in the notification identifier of consecutive
+			#      alarm SNMP traps received at the OS site are normal
+			#      because of the separate EFD processing for each OS.
+			#
+			# $13 = tiAlarmTransferID
+			#
+			#      The OS specific unique transfer identifier.
+			#      Will be incremented by one for each new event
+			#      sent to an OS.
+			#      Could wrap from 2147483647 to 1.
+			#      
+			#      Gaps in the transfer identifier of consecutive
+			#      alarm SNMP traps received at the OS site indicates 
+			#      the lost of SNMP traps sent from the INCommander to 
+			#      the OS.
+			#
+			# $14 = tiAlarmRepairText
+			#
+			#      Represents the repair text description of an alarm.
+			#
+			# $15 = tiAlarmLongText
+			#
+			#      Represents the long text description of an alarm.
+			#
+			#######################
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = lookup($4,sni-INC-MIB-AL-tiAlarmEventTypeId)
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = lookup($7,sni-INC-MIB-AL-tiAlarmEndKey)
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+			$tiAlarmRepairText = $14
+			$tiAlarmLongText = $15
+
+			[@Type,@Severity,@ExpireTime] = lookup($5,sni-INC-MIB-AL-tiAlarmSeverity)
+			
+			@AlertKey = "tiIncTrap-" + $tiAlarmReportingObject + "-" + $tiAlarmFaultyObject + "-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "tiIncTrapWarning # " + $tiAlarmDescription + " # Faulty object info: " + $tiAlarmFaultyObject + " " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " " + $tiAlarmReportingObject
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "2305": ### - tiIncTrapNormal
+			#######################
+			#
+			# Trap issued by the INC to an OS with a 
+			# severity value of 'indeterminate'.
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			# 
+			# SEVERITY-DEFAULT: Indeterminate
+			# NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+			# EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+			# ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+			#
+			# $1 = tiAlarmDateTime
+			#
+			#      Represents the occurrence date and time of an alarm as 
+			#      display string in the format as defined by the 
+			#      ASN.1 standard data type GeneralizedTime 
+			#      ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+			#      e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+			#      respectively ITU-T Recommendation X.208
+			#
+			# $2 = tiAlarmReportingObject
+			#
+			#      Object Id of the alarm reporting object according 
+			#      to the SNMP object model defined for the NE.
+			#
+			# $3 = tiAlarmFaultyObject
+			#
+			#      Object Id of the faulty object according to the SNMP
+			#      object model defined for the NE. Could be identical 
+			#      with the Object Id of the alarm reporting object.
+			#
+			# $4 = tiAlarmEventTypeId
+			#
+			#      Event Type Id as integer. This field specifies the 
+			#      type of the alarm being reported. 
+			#      The value range conforms to the ITU-T Recommendation 
+			#      X.733.
+			#
+			# $5 = tiAlarmSeverity
+			#
+			#      The perceived severity of an alarm as integer 
+			#      conforming to the ITU-T Recommendation X.721.
+			#      Alarm cleared messages are sent with the value 
+			#      cleared.
+			#
+			# $6 = tiAlarmErrorID
+			#
+			#      Error Id as integer. This Error Id is specific to 
+			#      the general alarm source type (e.g. SCP, INC).
+			#
+			# $7 = tiAlarmEndKey
+			#
+			#      End Key of an alarm as integer. It indicates whether 
+			#      an alarm cleared message is expected ( value label 
+			#      true ) or not ( value label false ).
+			#
+			# $8 = tiAlarmDescription
+			#
+			#      Represents the description of an alarm.
+			#      Additional free form text as octett string
+			#      in ISO Latin-1 format.
+			#
+			# $9 = tiAlarmSequenceNumber
+			#
+			#      The unique event sequence number.
+			#      Will be incremented by one for each new event.
+			#      Could wrap from 2147483647 to 1.
+			#      In case of INCommander internal alarms always 1.
+			#      
+			#      This field is provided for compatibility with 
+			#      earlier versions of the INCommander.
+			#      Obsoleted by tiAlarmTransferID.
+			#
+			# $10 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $11 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $12 = tiAlarmNotificationID
+			#
+			#      The notification id unique for a whole INCommander
+			#      management area and is common for all configured OS's.
+			#      
+			#      It will be incremented by one for each new event
+			#      received from any configured network element ( 
+			#      including the INCommander itself ) and could wrap 
+			#      from 2147483647 to 1.
+			#      
+			#      Gaps in the notification identifier of consecutive
+			#      alarm SNMP traps received at the OS site are normal
+			#      because of the separate EFD processing for each OS.
+			#
+			# $13 = tiAlarmTransferID
+			#
+			#      The OS specific unique transfer identifier.
+			#      Will be incremented by one for each new event
+			#      sent to an OS.
+			#      Could wrap from 2147483647 to 1.
+			#      
+			#      Gaps in the transfer identifier of consecutive
+			#      alarm SNMP traps received at the OS site indicates 
+			#      the lost of SNMP traps sent from the INCommander to 
+			#      the OS.
+			#
+			# $14 = tiAlarmRepairText
+			#
+			#      Represents the repair text description of an alarm.
+			#
+			# $15 = tiAlarmLongText
+			#
+			#      Represents the long text description of an alarm.
+			#
+			#######################
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = lookup($4,sni-INC-MIB-AL-tiAlarmEventTypeId)
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = lookup($7,sni-INC-MIB-AL-tiAlarmEndKey)
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+			$tiAlarmRepairText = $14
+			$tiAlarmLongText = $15
+
+			[@Type,@Severity,@ExpireTime] = lookup($5,sni-INC-MIB-AL-tiAlarmSeverity)
+			
+			@AlertKey = "tiIncTrap-" + $tiAlarmReportingObject + "-" + $tiAlarmFaultyObject + "-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "tiIncTrapNormal # " + $tiAlarmDescription + " # Faulty object info: " + $tiAlarmFaultyObject + " " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " " + $tiAlarmReportingObject
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "2306": ### - tiIncTrapCleared
+			#######################
+			#
+			# Trap issued by the INC to an OS with a 
+			# severity value of 'cleared'.
+			# The objects contained in the variable binding list
+			# are scalar objects ( with index 0 ).
+			# 
+			# SEVERITY-DEFAULT: Clear
+			# NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+			# EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+			# ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+			#
+			# $1 = tiAlarmDateTime
+			#
+			#      Represents the occurrence date and time of an alarm as 
+			#      display string in the format as defined by the 
+			#      ASN.1 standard data type GeneralizedTime 
+			#      ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+			#      e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+			#      respectively ITU-T Recommendation X.208
+			#
+			# $2 = tiAlarmReportingObject
+			#
+			#      Object Id of the alarm reporting object according 
+			#      to the SNMP object model defined for the NE.
+			#
+			# $3 = tiAlarmFaultyObject
+			#
+			#      Object Id of the faulty object according to the SNMP
+			#      object model defined for the NE. Could be identical 
+			#      with the Object Id of the alarm reporting object.
+			#
+			# $4 = tiAlarmEventTypeId
+			#
+			#      Event Type Id as integer. This field specifies the 
+			#      type of the alarm being reported. 
+			#      The value range conforms to the ITU-T Recommendation 
+			#      X.733.
+			#
+			# $5 = tiAlarmSeverity
+			#
+			#      The perceived severity of an alarm as integer 
+			#      conforming to the ITU-T Recommendation X.721.
+			#      Alarm cleared messages are sent with the value 
+			#      cleared.
+			#
+			# $6 = tiAlarmErrorID
+			#
+			#      Error Id as integer. This Error Id is specific to 
+			#      the general alarm source type (e.g. SCP, INC).
+			#
+			# $7 = tiAlarmEndKey
+			#
+			#      End Key of an alarm as integer. It indicates whether 
+			#      an alarm cleared message is expected ( value label 
+			#      true ) or not ( value label false ).
+			#
+			# $8 = tiAlarmDescription
+			#
+			#      Represents the description of an alarm.
+			#      Additional free form text as octett string
+			#      in ISO Latin-1 format.
+			#
+			# $9 = tiAlarmSequenceNumber
+			#
+			#      The unique event sequence number.
+			#      Will be incremented by one for each new event.
+			#      Could wrap from 2147483647 to 1.
+			#      In case of INCommander internal alarms always 1.
+			#      
+			#      This field is provided for compatibility with 
+			#      earlier versions of the INCommander.
+			#      Obsoleted by tiAlarmTransferID.
+			#
+			# $10 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $11 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $12 = tiAlarmNotificationID
+			#
+			#      The notification id unique for a whole INCommander
+			#      management area and is common for all configured OS's.
+			#      
+			#      It will be incremented by one for each new event
+			#      received from any configured network element ( 
+			#      including the INCommander itself ) and could wrap 
+			#      from 2147483647 to 1.
+			#      
+			#      Gaps in the notification identifier of consecutive
+			#      alarm SNMP traps received at the OS site are normal
+			#      because of the separate EFD processing for each OS.
+			#
+			# $13 = tiAlarmTransferID
+			#
+			#      The OS specific unique transfer identifier.
+			#      Will be incremented by one for each new event
+			#      sent to an OS.
+			#      Could wrap from 2147483647 to 1.
+			#      
+			#      Gaps in the transfer identifier of consecutive
+			#      alarm SNMP traps received at the OS site indicates 
+			#      the lost of SNMP traps sent from the INCommander to 
+			#      the OS.
+			#
+			# $14 = tiAlarmRepairText
+			#
+			#      Represents the repair text description of an alarm.
+			#
+			# $15 = tiAlarmLongText
+			#
+			#      Represents the long text description of an alarm.
+			#
+			#######################
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = lookup($4,sni-INC-MIB-AL-tiAlarmEventTypeId)
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = lookup($7,sni-INC-MIB-AL-tiAlarmEndKey)
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+			$tiAlarmRepairText = $14
+			$tiAlarmLongText = $15
+
+			[@Type,@Severity,@ExpireTime] = lookup($5,sni-INC-MIB-AL-tiAlarmSeverity)
+			
+			@AlertKey = "tiIncTrap-" + $tiAlarmReportingObject + "-" + $tiAlarmFaultyObject + "-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "tiIncTrapCleared # " + $tiAlarmDescription + " # Faulty object info: " + $tiAlarmFaultyObject + " " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " " + $tiAlarmReportingObject
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "2310": ### - tiIncPeriodicalSumRep
+			#######################
+			#
+			# Periodical Alarm Summary Report for 
+			# a single host.
+			#
+			# $1 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $2 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $3 = tiIsConnectionReliable
+			#
+			#      Alarm Summary Report:
+			#      Is the host responding to requests ?
+			#
+			# $4 = tiMaxSeverity
+			#
+			#      Alarm Summary Report:
+			#      Highest alarm severity of the host specified
+			#      with the trap object tiAlarmSourceName.0
+			#
+			# $5 = tiNumCriticalAlarms
+			#
+			#      Alarm Summary Report:
+			#      Number of open critical alarms.
+			#
+			# $6 = tiNumMajorAlarms
+			#
+			#      Alarm Summary Report:
+			#      Number of open major alarms.
+			#
+			# $7 = tiNumMinorAlarms
+			#
+			#      Alarm Summary Report:
+			#      Number of open minor alarms.
+			#
+			# $8 = tiNumWarnings
+			#
+			#      Alarm Summary Report:
+			#      Number of open warnings.
+			#
+			# $9 = tiNumNormalEvents
+			#
+			#      Alarm Summary Report:
+			#      Number of open events with severity normal.
+			#
+			# $10 = tiNumUnknownEvents
+			#
+			#      Alarm Summary Report:
+			#      Number of open events with unknown severity.
+			#
+			#######################
+			$tiAlarmSourceName = $1
+			$tiAlarmSymbNEname = $2
+			$tiIsConnectionReliable = lookup($3,sni-INC-MIB-AL-tiIsConnectionReliable)
+			$tiNumCriticalAlarms = $5
+			$tiNumMajorAlarms = $6
+			$tiNumMinorAlarms = $7
+			$tiNumWarnings = $8
+			$tiNumNormalEvents = $9
+			$tiNumUnknownEvents = $10
+
+			[@Type,@Severity,@ExpireTime] = lookup($4,sni-INC-MIB-AL-tiMaxSeverity)
+			
+			@AlertKey = "tiIncPeriodicalSumRep-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "Source: " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " # Connection reliable: " + $tiIsConnectionReliable + " # Alarms Periodical Report (Critical-Major-Minor-Warning-Normal-Unknown events): " + $tiNumCriticalAlarms + "-" + $tiNumMajorAlarms + "-" + $tiNumMinorAlarms + "-" + $tiNumWarnings + "-" + $tiNumNormalEvents + "-" + $tiNumUnknownEvents
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "2311": ### - tiIncSpontaneousSumRep
+			#######################
+			#
+			# Spontaneous Alarm Summary Report for 
+			# a single host.
+			# Will be issued if the value of the object
+			# tiMaxSeverity has changed.
+			#
+			# $1 = tiAlarmSourceName
+			#
+			#      The source of the event (may not be the machine upon
+			#      which the event was generated).
+			#
+			# $2 = tiAlarmSymbNEname
+			#
+			#      The symbolic Network Element ( NE ) name.
+			#      Normally it is different from the source name.
+			#
+			# $3 = tiIsConnectionReliable
+			#
+			#      Alarm Summary Report:
+			#      Is the host responding to requests ?
+			#
+			# $4 = tiMaxSeverity
+			#
+			#      Alarm Summary Report:
+			#      Highest alarm severity of the host specified
+			#      with the trap object tiAlarmSourceName.0
+			#
+			# $5 = tiNumCriticalAlarms
+			#
+			#      Alarm Summary Report:
+			#      Number of open critical alarms.
+			#
+			# $6 = tiNumMajorAlarms
+			#
+			#      Alarm Summary Report:
+			#      Number of open major alarms.
+			#
+			# $7 = tiNumMinorAlarms
+			#
+			#      Alarm Summary Report:
+			#      Number of open minor alarms.
+			#
+			# $8 = tiNumWarnings
+			#
+			#      Alarm Summary Report:
+			#      Number of open warnings.
+			#
+			# $9 = tiNumNormalEvents
+			#
+			#      Alarm Summary Report:
+			#      Number of open events with severity normal.
+			#
+			# $10 = tiNumUnknownEvents
+			#
+			#      Alarm Summary Report:
+			#      Number of open events with unknown severity.
+			#
+			#######################
+			$tiAlarmSourceName = $1
+			$tiAlarmSymbNEname = $2
+			$tiIsConnectionReliable = lookup($3,sni-INC-MIB-AL-tiIsConnectionReliable)
+			$tiNumCriticalAlarms = $5
+			$tiNumMajorAlarms = $6
+			$tiNumMinorAlarms = $7
+			$tiNumWarnings = $8
+			$tiNumNormalEvents = $9
+			$tiNumUnknownEvents = $10
+
+			[@Type,@Severity,@ExpireTime] = lookup($4,sni-INC-MIB-AL-tiMaxSeverity)
+			
+			@AlertKey = "tiIncSpontaneousSumRep-" + $tiAlarmSourceName + "-" + $tiAlarmSymbNEname
+			@Summary = "Source: " + $tiAlarmSourceName + " " + $tiAlarmSymbNEname + " # Connection reliable: " + $tiIsConnectionReliable + " # Alarms Spontaneous Report (Critical-Major-Minor-Warning-Normal-Unknown events): " + $tiNumCriticalAlarms + "-" + $tiNumMajorAlarms + "-" + $tiNumMinorAlarms + "-" + $tiNumWarnings + "-" + $tiNumNormalEvents + "-" + $tiNumUnknownEvents
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@ExpireTime = 3600
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... sni-INC-MIB-AL.include.snmptrap.rules >>>>>")

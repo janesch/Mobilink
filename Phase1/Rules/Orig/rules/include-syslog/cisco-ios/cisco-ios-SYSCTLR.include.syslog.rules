@@ -1,0 +1,72 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SYSCTLR.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SYSCTLR": ### System controller subsystem
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SYSCTLR.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "SHELF_ADD":
+            
+            ##########
+            # SDP on a system controller has detected a particular
+            # shelf.
+            #
+            # %SYSCTLR-6-SHELF_ADD : Shelf [dec] discovered located at
+            # address [IP_address]
+            ##########
+    
+            @AlertKey = "Shelf: " + extract($Message, "helf ([0-9]+)") + ", IP Address: " + extract($Message, " ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+        
+        case "SHELF_CONF_CHANGED":
+            
+            ##########
+            # SDP on a system controller has detected that a particular
+            # shelf configuration has changed.
+            #
+            # %SYSCTLR-4-SHELF_CONF_CHANGED : Configuration for the
+            # shelf [dec] located [IP_address] changed
+            ##########
+    
+            @AlertKey = "Shelf: " + extract($Message, "helf ([0-9]+)") + ", IP Address: " + extract($Message, " ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+        
+        case "SNMP_NOT_RESPONDING":
+            
+            ##########
+            # The shelf that is specified in this error message is not
+            # responding to SNMP requests.
+            #
+            # %SYSCTLR-4-SNMP_NOT_RESPONDING : Shelf [dec] not
+            # reachable via SNMP
+            ##########
+    
+            @AlertKey = "Shelf: " + extract($Message, "helf ([0-9]+)")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SYSCTLR.include.syslog.rules >>>>>")

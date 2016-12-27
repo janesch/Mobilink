@@ -1,0 +1,76 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SUNI_DUAL.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SUNI_DUAL":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SUNI_DUAL.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "LOS":
+            
+            $OS_EventId = "SYSLOG-cisco-ios-SUNI_DUAL-LOS"
+            
+            $MOI_Local = rtrim(extract($Message, "[A-Z]+ [A-Z]+ (.*) Loss"))
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            switch(extract($Message, ": ([A-Z]+) [A-Z]+ "))
+            {
+                case "ASSERT":
+                    switch(extract($Message, "[A-Z]+ ([A-Z]+) "))
+                    {
+                        case "CRITICAL":
+                            @Severity = 5
+                            @Type = 1
+                        case "MAJOR":
+                            @Severity = 4
+                            @Type = 1
+                        case "MINOR":
+                            @Severity = 3
+                            @Type = 1
+                        case "WARNING":
+                            @Severity = 2
+                            @Type = 1
+                        case "INFO":
+                            @Severity = 2
+                            @Type = 1
+                        default:
+                    }
+                case "CLEAR":
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            @Summary = extract($Message, "[A-Z]+ [A-Z]+ (.*)")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SUNI_DUAL.include.syslog.rules >>>>>")

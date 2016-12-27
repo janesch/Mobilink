@@ -1,0 +1,3041 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB.include.snmptrap.rules 1.0
+#    2006/09/22 Mylene Stolpe-Evras
+#
+###############################################################################
+#
+# 1.0 - Initial Release.  
+#
+#        Compatible with: 
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  Foundry Networks  NetIron XMR/MLX 3.1.00
+#          -  Foundry Networks  NetIron IMR 3.0.00
+#          -  Foundry Networks  BigIron RX 2.2.01
+#          -  Foundry Networks  FastIron SuperX, FESX, FWSX 2.5.00
+#          -  Foundry Networks  FastIron GS 2.4.00
+#          -  Foundry Networks  ServerIron 450/850 9.5.00
+#          -  Foundry Networks  ServerIron 100/400/800/GTE 9.4.00
+#          -  Foundry Networks  IronPoint 1.4.01
+#          -  FOUNDRY-SN-TRAP-MIB, Router Switch Trap MIB Release 1.0.0, Rev. 06/02/97  
+#          -  Foundry-MPLS-MIB, Foundry SnSwitch Group MIB Release 2.0.0, Rev. 1: 04/13/05 - 200504140000Z
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.1991": ###  - Foundry Networks Router Switch Notifications from FOUNDRY-SN-TRAP-MIB
+                          ###  - Foundry Networks SnSwitch Group MPLS Notifications from FOUNDRY-MPLS-MIB
+
+    log(DEBUG, "<<<<< Entering... foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Foundry Networks"
+    @Class = "40660"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "19": ### snTrapL4MaxSessionLimitReached
+
+            ##########
+            # $1 = snL4MaxSessionLimit 
+            ##########
+
+            $snL4MaxSessionLimit = $1
+            details($snL4MaxSessionLimit)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4MaxSessionLimitReached"
+
+            @AlertGroup = "L4 - Session number"
+            @AlertKey = ""
+            @Summary = "SLB maximum number of connections " + $snL4MaxSessionLimit + " has been reached"
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "20": ### snTrapL4TcpSynLimitReached
+
+            ##########
+            # $1 = snL4TcpSynLimit 
+            ##########
+
+            $snL4TcpSynLimit = $1
+            details($snL4TcpSynLimit)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4TcpSynLimitReached"
+
+            @AlertGroup = "L4 - TCP SYN number"
+            @AlertKey = ""
+            @Summary = "SLB TCP Syn limits " + $snL4TcpSynLimit + " have been reached"
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "21": ### snTrapL4RealServerUp
+
+            ##########
+            # $1 = snL4TrapRealServerIP 
+            # $2 = snL4TrapRealServerName 
+            ##########
+
+            $snL4TrapRealServerIP = $1
+            $snL4TrapRealServerName = $2
+            details($snL4TrapRealServerIP,$snL4TrapRealServerName)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerUp"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Status"
+            @AlertKey = "Server IP: " + $snL4TrapRealServerIP + ", Name: " + $snL4TrapRealServerName
+            @Summary = "SLB real server " + $snL4TrapRealServerIP + " " + $snL4TrapRealServerName + " is up"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "22": ### snTrapL4RealServerDown
+
+            ##########
+            # $1 = snL4TrapRealServerIP 
+            # $2 = snL4TrapRealServerName 
+            ##########
+
+            $snL4TrapRealServerIP = $1
+            $snL4TrapRealServerName = $2
+            details($snL4TrapRealServerIP,$snL4TrapRealServerName)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerDown"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Status"
+            @AlertKey = "Server IP: " + $snL4TrapRealServerIP + ", Name: " + $snL4TrapRealServerName
+            @Summary = "SLB real server " + $snL4TrapRealServerIP + " " + $snL4TrapRealServerName + " is down"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "23": ### snTrapL4RealServerPortUp
+
+            ##########
+            # $1 = snL4TrapRealServerIP 
+            # $2 = snL4TrapRealServerName 
+            # $3 = snL4TrapRealServerPort 
+            ##########
+
+            $snL4TrapRealServerIP = $1
+            $snL4TrapRealServerName = $2
+            $snL4TrapRealServerPort = $3
+            details($snL4TrapRealServerIP,$snL4TrapRealServerName,$snL4TrapRealServerPort)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerPortUp"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Port Status"
+            @AlertKey = "Server IP: " + $snL4TrapRealServerIP + ", Name: " + $snL4TrapRealServerName + ", Port: " + $snL4TrapRealServerPort
+            @Summary = "SLB real server port " + $snL4TrapRealServerIP + " " + $snL4TrapRealServerName + " " + $snL4TrapRealServerPort + " is up"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "24": ### snTrapL4RealServerPortDown
+
+            ##########
+            # $1 = snL4TrapRealServerIP 
+            # $2 = snL4TrapRealServerName 
+            # $3 = snL4TrapRealServerPort 
+            ##########
+
+            $snL4TrapRealServerIP = $1
+            $snL4TrapRealServerName = $2
+            $snL4TrapRealServerPort = $3
+            details($snL4TrapRealServerIP,$snL4TrapRealServerName,$snL4TrapRealServerPort)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerPortDown"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Port Status"
+            @AlertKey = "Server IP: " + $snL4TrapRealServerIP + ", Name: " + $snL4TrapRealServerName + ", Port: " + $snL4TrapRealServerPort
+            @Summary = "SLB real server port " + $snL4TrapRealServerIP + " " + $snL4TrapRealServerName + " " + $snL4TrapRealServerPort + " is down"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "25": ### snTrapL4RealServerMaxConnectionLimitReached
+
+            ##########
+            # $1 = snL4TrapRealServerIP 
+            # $2 = snL4TrapRealServerName 
+            # $3 = snL4TrapRealServerCurConnections 
+            ##########
+
+            $snL4TrapRealServerIP = $1
+            $snL4TrapRealServerName = $2
+            $snL4TrapRealServerCurConnections = $3
+            details($snL4TrapRealServerIP,$snL4TrapRealServerName,$snL4TrapRealServerCurConnections)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerMaxConnectionLimitReached"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Connection number"
+            @AlertKey = "Server IP: " + $snL4TrapRealServerIP + ", Name: " + $snL4TrapRealServerName
+            @Summary = "SLB real server " + $snL4TrapRealServerIP + " " + $snL4TrapRealServerName + " maximum connection " + $snL4TrapRealServerCurConnections + " has been reached"
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "26": ### snTrapL4BecomeStandby
+
+            ##########
+            ##########
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4BecomeStandby"
+
+            @AlertGroup = "L4 - Server Load Balancing Status"
+            @AlertKey = ""
+            @Summary = "SLB changes state from active to standby"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "27": ### snTrapL4BecomeActive
+
+            ##########
+            ##########
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4BecomeActive"
+
+            @AlertGroup = "L4 - Server Load Balancing Status"
+            @AlertKey = ""
+            @Summary = "SLB changes state from standby to active"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "28": ### snTrapModuleInserted
+
+            ##########
+            # $1 = snAgentBrdIndex 
+            ##########
+
+            $snAgentBrdIndex = $1
+            details($snAgentBrdIndex)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapModuleInserted"
+
+            @AlertGroup = "Chassis - Module [insertion|removal]"
+            @AlertKey = "snAgentBrdEntry." + $1
+            @Summary = "Module " + $snAgentBrdIndex + " was inserted to the chassis during system running"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "29": ### snTrapModuleRemoved
+
+            ##########
+            # $1 = snAgentBrdIndex 
+            ##########
+
+            $snAgentBrdIndex = $1
+            details($snAgentBrdIndex)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapModuleRemoved"
+
+            @AlertGroup = "Chassis - Module [insertion|removal]"
+            @AlertKey = "snAgentBrdEntry." + $1
+            @Summary = "Module " + $snAgentBrdIndex + " was removed from the chassis during system running"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "30": ### snTrapChasPwrSupplyFailed
+
+            ##########
+            # $1 = snChasPwrSupplyIndex 
+            # $2 = snChasPwrSupplyDescription 
+            ##########
+
+            $snChasPwrSupplyIndex = $1
+            $snChasPwrSupplyDescription = $2
+            details($snChasPwrSupplyIndex,$snChasPwrSupplyDescription)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapChasPwrSupplyFailed"
+
+            @AlertGroup = "Chassis - Power Supply Status"
+            @AlertKey = "snChasPwrSupplyEntry." + $1
+            @Summary = "Power supply " + $snChasPwrSupplyIndex + " (" + $snChasPwrSupplyDescription + ") failed"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "31": ### snTrapChasFanFailed
+
+            ##########
+            # $1 = snChasFanIndex 
+            # $2 = snChasFanDescription 
+            ##########
+
+            $snChasFanIndex = $1
+            $snChasFanDescription = $2
+            details($snChasFanIndex,$snChasFanDescription)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapChasFanFailed"
+
+            @AlertGroup = "Chassis - Fan Status"
+            @AlertKey = "snChasFanEntry." + $1
+            @Summary = "Fan " + $snChasFanIndex + " (" + $snChasFanDescription + ") failed"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "32": ### snTrapLockedAddressViolation2
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interfacePort = extract ($1,"Ethernet (.*), address")
+            $macAddress = extract ($1,"address (.*)")
+            details($snAgGblTrapMessage,$interfacePort,$macAddress)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapLockedAddressViolation2"
+
+            @AlertGroup = "Address violation"
+            @AlertKey = "Port: " + $interfacePort + ", Mac: " + $macAddress
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "33": ### snTrapFsrpIfStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"intf state changed, intf (.*), addr")
+            $ip = extract ($1,"addr (.*) state")
+            $fsrpState = rtrim(extract ($1,"state (.*)"))
+            if (regmatch($fsrpState,"\."))
+            {
+              $newState = rtrim(extract($fsrpState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$interface,$ip,$fsrpState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapFsrpIfStateChange"
+
+            @AlertGroup = "VRPP - FSRP Interface Status"
+            @AlertKey = "Interface: " + $interface + ", IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            switch($fsrpState)
+            {
+                case "init": ### init
+                    $SEV_KEY = $OS_EventId + "_init"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "negociating": ### negociating
+                    $SEV_KEY = $OS_EventId + "_negociating"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "standby": ### standby
+                    $SEV_KEY = $OS_EventId + "_standby"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "active": ### active
+                    $SEV_KEY = $OS_EventId + "_active"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "unknown": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $fsrpState
+
+        case "34": ### snTrapVrrpIfStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interfacePort = extract ($1,"changed.*intf (.*), vrid")
+            $vrid = extract ($1,"vrid (.*), state")
+            $newState = rtrim(extract ($1,"changed.*state (.*)"))
+            if (regmatch($newState,"\."))
+            {
+              $newState = rtrim(extract($newState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$interfacePort,$vrid,$newState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapVrrpIfStateChange"
+
+            @AlertGroup = "VRPP - VRRP Interface Status"
+            @AlertKey = "Port: " + $interfacePort + ", VrId: " + $vrid
+            @Summary = $snAgGblTrapMessage
+
+            switch($newState)
+            {
+                case "UNUSED": ### unused
+                    $SEV_KEY = $OS_EventId + "_unused"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "INITIALIZE"|"initalized": ### initalized
+                    $SEV_KEY = $OS_EventId + "_initalized"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "MASTER"|"master": ### master
+                    $SEV_KEY = $OS_EventId + "_master"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "BACKUP"|"backup": ### backup
+                    $SEV_KEY = $OS_EventId + "_backup"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "BROKEN": ### broken
+                    $SEV_KEY = $OS_EventId + "_broken"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "unknown": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $newState
+
+        case "35": ### snTrapMgmtModuleRedunStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $slot = extract ($1,"slot (.*) state")
+            $oldState = extract ($1,"from ([^ ]+) to")
+            $newState = rtrim(extract ($1,"to (.*)"))
+            if (regmatch($newState,"\."))
+            {
+              $newState = rtrim(extract($newState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$slot,$oldState,$newState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMgmtModuleRedunStateChange"
+
+            @AlertGroup = "Management Module Redundancy Status"
+            @AlertKey = "Slot: " + $slot
+            @Summary = $snAgGblTrapMessage
+
+            switch($newState)
+            {
+                case "active": ### active
+                    $SEV_KEY = $OS_EventId + "_active"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "standby": ### standby
+                    $SEV_KEY = $OS_EventId + "_standby"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "crashed": ### crashed
+                    $SEV_KEY = $OS_EventId + "_crashed"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "coming-up": ### coming-up
+                    $SEV_KEY = $OS_EventId + "_coming-up"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "unknown": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $oldState + " " + $newState
+
+        case "36": ### snTrapTemperatureWarning
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            if (regmatch($1,"System: Switch Fabric [^ ]+ temperature"))
+            {
+              $switchFabric = extract($1,"Switch Fabric ([^ ]+) temperature")
+              @AlertKey = "Switch Fabric: " + $switchFabric
+              @AlertGroup = "Switch Fabric "
+              details($snAgGblTrapMessage,$switchFabric)
+            }
+            else
+            { 
+              @AlertKey = ""
+              details($snAgGblTrapMessage)  
+            }
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapTemperatureWarning"
+
+            @AlertGroup = @AlertGroup + "Temperature Status"
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "37": ### snTrapAccessListDeny
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $listId = extract ($1,"list (.*) in rip")
+            $ip = extract ($1,"denied ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            details($snAgGblTrapMessage,$listId,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapAccessListDeny"
+
+            @AlertGroup = "Access List Denial"
+            @AlertKey = "List ID: " + $listId + ", IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "38": ### snTrapMacFilterDeny
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = extract ($1,"port (.*) src")
+            $srcMacAddress = extract ($1,"src macaddr ([^ ]+)")
+            details($snAgGblTrapMessage,$port,$srcMacAddress)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacFilterDeny"
+
+            @AlertGroup = "MAC address filter denial"
+            @AlertKey = "Port: " + $port + ", Src Mac: " +$srcMacAddress
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "39": ### snTrapL4GslbRemoteUp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $siteName = extract ($1,"site (.*) SI")
+            $agentIp = extract ($1,"SI ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $SIname = extract ($1,"SI [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ (.*) is up")
+            details($snAgGblTrapMessage,$siteName,$agentIp,$SIname)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbRemoteUp"
+
+            @AlertGroup = "L4 - GSLB Remote Connection Status"
+            @AlertKey = "Site: " + $siteName + ", IP: " + $agentIp + ", SI: " + $SIname 
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "40": ### snTrapL4GslbRemoteDown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $siteName = extract ($1,"site (.*) SI")
+            $agentIp = extract ($1,"SI ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $SIname = extract ($1,"SI [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ (.*) is down")
+            details($snAgGblTrapMessage,$siteName,$agentIp,$SIname)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbRemoteDown"
+
+            @AlertGroup = "L4 - GSLB Remote Connection Status"
+            @AlertKey = "Site: " + $siteName + ", IP: " + $agentIp + ", SI: " + $SIname 
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "41": ### snTrapL4GslbRemoteControllerUp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"SI ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) is")
+            details($snAgGblTrapMessage,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbRemoteControllerUp"
+
+            @AlertGroup = "L4 - GSLB Remote Controller Connection Status"
+            @AlertKey = "SI IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "42": ### snTrapL4GslbRemoteControllerDown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"SI ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) is")
+            details($snAgGblTrapMessage,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbRemoteControllerDown"
+
+            @AlertGroup = "L4 - GSLB Remote Controller Connection Status"
+            @AlertKey = "SI IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "43": ### snTrapL4GslbHealthCheckIpUp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"check ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) of")
+            $subZoneNames = extract ($1,"of ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) status")
+            details($snAgGblTrapMessage,$ip,$subZoneNames)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbHealthCheckIpUp"
+
+            @AlertGroup = "L4 - GSLB Health Check IP Status"
+            @AlertKey = "IP: " + $ip + ", Name: " + $subZoneNames
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "44": ### snTrapL4GslbHealthCheckIpDown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"check ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) of")
+            $subZoneNames = extract ($1,"of ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) status")
+            details($snAgGblTrapMessage,$ip,$subZoneNames)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbHealthCheckIpDown"
+
+            @AlertGroup = "L4 - GSLB Health Check IP Status"
+            @AlertKey = "IP: " + $ip + ", Name: " + $subZoneNames
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "45": ### snTrapL4GslbHealthCheckIpPortUp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"check ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) of")
+            $subZoneNames = extract ($1,"of ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) port")
+            $port = extract ($1,"port (.*) is")
+            details($snAgGblTrapMessage,$ip,$subZoneNames,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbHealthCheckIpPortUp"
+
+            @AlertGroup = "L4 - GSLB Health Check IP Port Status"
+            @AlertKey = "IP: " + $ip + ", Name: " + $subZoneNames + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "46": ### snTrapL4GslbHealthCheckIpPortDown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"check ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) of")
+            $subZoneNames = extract ($1,"of ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) port")
+            $port = extract ($1,"port (.*) is")
+            details($snAgGblTrapMessage,$ip,$subZoneNames,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4GslbHealthCheckIpPortDown"
+
+            @AlertGroup = "L4 - GSLB Health Check IP Port Status"
+            @AlertKey = "IP: " + $ip + ", Name: " + $subZoneNames + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "47": ### snTrapL4FirewallBecomeStandby
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $group = extract ($1,"group (.*) become")
+            details($snAgGblTrapMessage,$group)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4FirewallBecomeStandby"
+
+            @AlertGroup = "L4 - Server Load Balancing Firewall Status"
+            @AlertKey = "Group: " + $group
+            @Summary = "Server Load Balancing Switch Firewall changed state from Active to Standby"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "48": ### snTrapL4FirewallBecomeActive
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $group = extract ($1,"group (.*) become")
+            details($snAgGblTrapMessage,$group)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4FirewallBecomeActive"
+
+            @AlertGroup = "L4 - Server Load Balancing Firewall Status"
+            @AlertKey = "Group: " + $group
+            @Summary = "Server Load Balancing Switch Firewall changed state from Standby to Active"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "49": ### snTrapL4FirewallPathUp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $targetIp = extract ($1,"target (.*) nexthop")
+            $nexthopIp = extract ($1,"nexthop (.*) path")
+            $path = extract ($1,"path (.*) port")
+            $port = extract ($1,"port (.*)")
+            details($snAgGblTrapMessage,$targetIp,$nexthopIp,$path,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4FirewallPathUp"
+
+            @AlertGroup = "L4 - Server Load Balancing Firewall Path Status"
+            @AlertKey = "IP: " + $targetIp + "nexthop: " + $nexthopIp + ", Path: " + $path + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "50": ### snTrapL4FirewallPathDown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $targetIp = extract ($1,"target (.*) nexthop")
+            $nexthopIp = extract ($1,"nexthop (.*) path")
+            $path = extract ($1,"path (.*) port")
+            $port = extract ($1,"port (.*)")
+            details($snAgGblTrapMessage,$targetIp,$nexthopIp,$path,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4FirewallPathDown"
+
+            @AlertGroup = "L4 - Server Load Balancing Firewall Path Status"
+            @AlertKey = "IP: " + $targetIp + "nexthop: " + $nexthopIp + ", Path: " + $path + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "51": ### snTrapIcmpLocalExceedBurst
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapIcmpLocalExceedBurst"
+
+            @AlertGroup = "ICMP - Local Burst"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "52": ### snTrapIcmpTransitExceedBurst
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = extract ($1,"interface (.*) exceeds")
+            details($snAgGblTrapMessage,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapIcmpTransitExceedBurst"
+
+            @AlertGroup = "ICMP - Transit Burst"
+            @AlertKey = "Port: " + $port
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "53": ### snTrapTcpLocalExceedBurst
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapTcpLocalExceedBurst"
+
+            @AlertGroup = "TCP - SYN Local Burst"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "54": ### snTrapTcpTransitExceedBurst
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = extract ($1,"interface (.*) exceeds")
+            details($snAgGblTrapMessage,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapTcpTransitExceedBurst"
+
+            @AlertGroup = "TCP - SYN Transit Burst"
+            @AlertKey = "Port: " + $port
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "55": ### snTrapL4ContentVerification
+
+            ##########
+            ##########
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4ContentVerification"
+
+            @AlertGroup = "L4 - HTTP Content Verification"
+            @AlertKey = ""
+            @Summary = "HTTP Content Verification, HTTP match-list pattern is found"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "56": ### snTrapDuplicateIp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"IP address (.*) detected")
+            $macAddress = extract ($1,"MAC address (.*) interface")
+            $interface = extract ($1,"interface (.*) [0-9]+")
+            $packetsNum = extract ($1,"interface .* ([0-9]+) packets")
+            details($snAgGblTrapMessage,$ip,$macAddress,$interface,$packetsNum)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDuplicateIp"
+
+            @AlertGroup = "Duplicate IP"
+            @AlertKey = "IP: " + $ip + ", Mac: " + $mac + ", Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "57": ### snTrapMplsProblem
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMplsProblem"
+
+            @AlertGroup = "MPLS - Problem Detection"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "58": ### snTrapMplsException
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMplsException"
+
+            @AlertGroup = "MPLS - Exception Detection"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "59": ### snTrapMplsAudit
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMplsAudit"
+
+            @AlertGroup = "MPLS - Audit"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "60": ### snTrapMplsDeveloper
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMplsDeveloper"
+
+            @AlertGroup = "MPLS - Developer Test"
+            @AlertKey = ""
+            @Summary = "MPLS Developer test trap"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "61": ### snTrapNoBmFreeQueue
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $slot = extract ($1,"Slot ([0-9]+)")
+            if (regmatch($1,"Slot [0-9]+ M.* Free Queue"))
+            {
+              $module = extract ($1,"Slot [0-9]+ (M.*) Free Queue")
+            }
+            details($snAgGblTrapMessage,$slot,$module)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapNoBmFreeQueue"
+
+            @AlertGroup = "Buffer Manager - Free Queue Status"
+            @AlertKey = "Slot: " + $slot
+            if (exists($module))
+            {
+              @AlertKey = @AlertKey + " , Module: " + $module
+            }
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "62": ### snTrapSmcDmaDrop
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $slot = extract ($1,"Slot (.*) SMC")
+            $dmaId = extract ($1,"SMC (.*) DMA")
+            $count = extract ($1,"Counter is ([0-9]+)")
+            details($snAgGblTrapMessage,$slot,$dmaId,$count)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapSmcDmaDrop"
+
+            @AlertGroup = "SMC DMA Packets Status"
+            @AlertKey = "Slot: " + $slot + ", DMA ID: " + $dmaId
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "63": ### snTrapSmcBpDrop
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $slot = extract ($1,"Slot (.*) BP")
+            $dmaId = extract ($1,"BP (.*) Drop")
+            $count = extract ($1,"Counter is ([0-9]+)")
+            details($snAgGblTrapMessage,$slot,$dmaId,$count)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapSmcBpDrop"
+
+            @AlertGroup = "SMC BackPlane Packets Status"
+            @AlertKey = "Slot: " + $slot + ", DMA ID: " + $dmaId
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "64": ### snTrapBmWriteSeqDrop
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $slot = extract ($1,"Slot (.*) Write")
+            $count = extract ($1,"Drop (.*) within")
+            details($snAgGblTrapMessage,$slot,$count)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapBmWriteSeqDrop"
+
+            @AlertGroup = "BM Write Sequence Status"
+            @AlertKey = "Slot: " + $slot
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "65": ### snTrapBgpPeerUp
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"Peer (.*) UP")
+            details($snAgGblTrapMessage,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapBgpPeerUp"
+
+            @AlertGroup = "BGP - Peer Status"
+            @AlertKey = "IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "66": ### snTrapBgpPeerDown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"Peer (.*) DOWN")
+            $reason = extract ($1,"DOWN \((.*)\)")
+            details($snAgGblTrapMessage,$ip,$reason)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapBgpPeerDown"
+
+            @AlertGroup = "BGP - Peer Status"
+            @AlertKey = "IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $reason
+
+        case "67": ### snTrapL4RealServerResponseTimeLowerLimit
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = extract ($1,"Port (.*) on server")
+            $server = extract ($1,"on server (.*):")
+            $ip = rtrim(ltrim(extract ($1,":(.*): Avg")))
+            details($snAgGblTrapMessage,$port,$server,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerResponseTimeLowerLimit"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Response Low"
+            @AlertKey = "Server: " + $server + ", IP: " + $ip + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "68": ### snTrapL4RealServerResponseTimeUpperLimit
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = extract ($1,"Port (.*) on server")
+            $server = extract ($1,"on server (.*):")
+            $ip = rtrim(ltrim(extract ($1,":(.*): Avg")))
+            details($snAgGblTrapMessage,$port,$server,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerResponseTimeUpperLimit"
+
+            @AlertGroup = "L4 - Load Balancing Real Server Response High"
+            @AlertKey = "Server: " + $server + ", IP: " + $ip + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "69": ### snTrapL4TcpAttackRateExceedMax
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4TcpAttackRateExceedMax"
+
+            @AlertGroup = "L4 - TCP Attack Rate"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 5
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "70": ### snTrapL4TcpAttackRateExceedThreshold
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4TcpAttackRateExceedThreshold"
+
+            @AlertGroup = "L4 - TCP Attack Rate"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "71": ### snTrapL4ConnectionRateExceedMax
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4ConnectionRateExceedMax"
+
+            @AlertGroup = "L4 - Connection Rate"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 5
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "72": ### snTrapL4ConnectionRateExceedThreshold
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4ConnectionRateExceedThreshold"
+
+            @AlertGroup = "L4 - Connection Rate"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "73": ### snTrapRunningConfigChanged
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            
+            @AlertKey = ""
+
+            if (regmatch($1,"from.*client"))
+            {
+              if (regmatch($1,"by.*from"))
+              {
+                $user = extract ($1,"changed by (.*) from")
+                @AlertKey = "User: " + $user
+              }
+              $userType = extract ($1,"from (.*) client")
+		  $userIp = extract ($1,"client ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+              details($snAgGblTrapMessage,$user,$userType,$userIp)
+              @AlertGroup = "Running Configuration Change (" + $userType + " user)"
+            }
+            else
+            {
+              details($snAgGblTrapMessage)
+              @AlertGroup = "Running Configuration Change"
+            }
+            
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapRunningConfigChanged"
+
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $userIp
+
+        case "74": ### snTrapStartupConfigChanged
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            if (regmatch($1,"from (.*) client"))
+            {
+              $userType = extract ($1,"from (.*) client")
+		  $ip = extract ($1,"client ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+              details($snAgGblTrapMessage,$userType,$ip) 
+              @AlertGroup = "Startup Configuration Change (" + $userType + " user)"
+            }
+            else
+            { 
+              details($snAgGblTrapMessage)
+              @AlertGroup = "Startup Configuration Change"
+            }
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapStartupConfigChanged"
+
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $ip
+
+        case "75": ### snTrapUserLogin
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $userType = extract ($1,"Security: (.*) login")
+            if (regmatch($1,"login by"))
+            {
+              $user = extract ($1,"login by (.*) from src")
+            }
+            if (regmatch($1,"IPv6"))
+            {
+              $srcIp = extract ($1,"src IPv6 ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            else
+            {
+              $srcIp = extract ($1,"src IP ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            if (regmatch($1,"src MAC"))
+            {
+              $srcMacAddress = extract ($1,"src MAC ([^ ]+)")
+            }
+            if (regmatch($1,"mode"))
+            {
+              $mode = extract ($1,"to (.*) mode")
+            }
+            details($snAgGblTrapMessage,$userType,$user,$srcIp,$srcMacAddress,$mode)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapUserLogin"
+
+            @AlertGroup = "Log Status (" + $userType + " user)" 
+            if (exists($mode))
+            {
+              @AlertGroup = @AlertGroup + " - " + $mode
+            }
+            @AlertKey = "IP: " + $srcIp
+            if (exists($srcMacAddress))
+            {
+              @AlertKey = @AlertKey + ", Mac: " + $srcMacAddress
+            }
+            if (exists($user))
+            {
+              @AlertKey = @AlertKey + ", User: " + $user
+            }
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "76": ### snTrapUserLogout
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $userType = extract ($1,"Security: (.*) logout")
+            if (regmatch($1,"logout by"))
+            {
+              $user = extract ($1,"logout by (.*) from src")
+            }
+            if (regmatch($1,"IPv6"))
+            {
+              $srcIp = extract ($1,"src IPv6 ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            else
+            {
+              $srcIp = extract ($1,"src IP ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            }
+            if (regmatch($1,"src MAC"))
+            {
+              $srcMacAddress = extract ($1,"src MAC ([^ ]+)")
+            }
+            if (regmatch($1,"mode"))
+            {
+              $mode = extract ($1,"from ([^ ]+ EXEC) mode")
+            }
+            details($snAgGblTrapMessage,$userType,$user,$srcIp,$srcMacAddress,$mode)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapUserLogout"
+
+            @AlertGroup = "Log Status (" + $userType + " user)" 
+            if (exists($mode))
+            {
+              @AlertGroup = @AlertGroup + " - " + $mode
+            }
+            @AlertKey = "IP: " + $srcIp
+            if (exists($srcMacAddress))
+            {
+              @AlertKey = @AlertKey + ", Mac: " + $srcMacAddress
+            }
+            if (exists($user))
+            {
+              @AlertKey = @AlertKey + ", User: " + $user
+            }
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "77": ### snTrapPortSecurityViolation
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"Ethernet (.*) address")
+            $macAddress = extract ($1,"address (.*) vlan")
+            $vlanId = extract ($1,"vlan ([0-9]+)")
+            details($snAgGblTrapMessage,$interface,$macAddress,$vlanId)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapPortSecurityViolation"
+
+            @AlertGroup = "PortSecurity - Status"
+            @AlertKey = "Interface: " + $interface + ", Mac: " + $macAddress + " , VLAN ID: " + $vlanId
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "78": ### snTrapPortSecurityShutdown
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"Ethernet (.*) shutdown")
+            details($snAgGblTrapMessage,$interface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapPortSecurityShutdown"
+
+            @AlertGroup = "PortSecurity - Status"
+            @AlertKey = "Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 5
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "79": ### snTrapMrpStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMrpStateChange"
+
+            @AlertGroup = "MRP - Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "80": ### snTrapMrpCamError
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMrpCamError"
+
+            @AlertGroup = "MRP - CAM Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "81": ### snTrapChasPwrSupplyOK
+
+            ##########
+            # $1 = snChasPwrSupplyIndex 
+            # $2 = snChasPwrSupplyDescription 
+            ##########
+
+            $snChasPwrSupplyIndex = $1
+            $snChasPwrSupplyDescription = $2
+            details($snChasPwrSupplyIndex,$snChasPwrSupplyDescription)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapChasPwrSupplyOK"
+
+            @AlertGroup = "Chassis - Power Supply Status"
+            @AlertKey = "snChasPwrSupplyEntry." + $1
+            @Summary = "Power supply " + $snChasPwrSupplyIndex + " (" + $snChasPwrSupplyDescription + ") OK"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "82": ### snTrapVrrpeIfStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"intf (.*) vrid")
+            $vrId = extract ($1,"vrid (.*) state")
+            $newState = rtrim(extract ($1,"state (.*)"))
+            if (regmatch($newState,"\."))
+            {
+              $newState = rtrim(extract($newState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$interface,$vrId,$newState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapVrrpeIfStateChange"
+
+            @AlertGroup = "VRPP - VRPPE Interface Status"
+            @AlertKey = "Interface: " + $interface + ", VRID: " + $vrId
+            @Summary = $snAgGblTrapMessage
+
+            switch($newState)
+            {
+                case "initialized": ### initialized
+                    $SEV_KEY = $OS_EventId + "_initialized"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "master": ### master
+                    $SEV_KEY = $OS_EventId + "_master"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "backup": ### backup
+                    $SEV_KEY = $OS_EventId + "_backup"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "unknown": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $newState
+
+        case "83": ### snTrapVsrpIfStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            if (nmatch($1,"VSRP: VLAN"))
+            {
+              $vlan = extract ($1,"VLAN (.*) VRID")
+              $vrId = extract ($1,"VRID (.*) - transition")
+              $newState = rtrim(extract ($1,"transition to (.*)"))
+            }
+            if (nmatch($1,"VSRP: Intf state"))
+            {
+              $vlan = extract ($1,"vlan (.*) vrid")
+              $vrId = extract ($1,"vrid (.*) state")
+              $newState = rtrim(extract ($1,"state(.*)"))
+            }
+            if (regmatch($newState,"\."))
+            {
+              $newState = rtrim(extract($newState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$vlan,$vrId,$newState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapVsrpIfStateChange"
+
+            @AlertGroup = "VSRP Interface Status"
+            @AlertKey = "VLAN: " + $vlan + ", VRID: " + $vrId
+            @Summary = $snAgGblTrapMessage
+
+            switch($newState)
+            {
+                case "Initialize"|"initialized": ### initialized
+                    $SEV_KEY = $OS_EventId + "_initialized"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "Master"|"master": ### Master
+                    $SEV_KEY = $OS_EventId + "_master"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "Master-Confirm": ### Master Confirm
+                    $SEV_KEY = $OS_EventId + "_masterConfirm"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "Backup"|"backup": ### backup
+                    $SEV_KEY = $OS_EventId + "_backup"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "Broken": ### broken
+                    $SEV_KEY = $OS_EventId + "_broken"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "unknown": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $newState
+
+        case "84": ### snTrapSrcIpAddressViolation
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapSrcIpAddressViolation"
+
+            @AlertGroup = "Denial of Service - IP Address Violation"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "85": ### snTrapMacAuthEnable
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = rtrim(extract ($1,"port (.*)"))
+            if (regmatch($interface,"\."))
+            {
+              $interface = rtrim(extract($interface,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$interface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacAuthEnable"
+
+            @AlertGroup = "MAC-Authentication Config Status"
+            @AlertKey = "Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "86": ### snTrapMacAuthDisable
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = rtrim(extract ($1,"port (.*)"))
+            if (regmatch($interface,"\."))
+            {
+              $interface = rtrim(extract($interface,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$interface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacAuthDisable"
+
+            @AlertGroup = "MAC-Authentication Config Status"
+            @AlertKey = "Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "87": ### snTrapMacAuthMACAccepted
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $mac = extract ($1,"for (.*)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ on port")
+            $ip = extract ($1,"for .*\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) on port")
+            $interface = rtrim(extract ($1,"port (.*)"))
+            if (regmatch($interface,"\."))
+            {
+              $interface = rtrim(extract($interface,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$mac,$ip,$interface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacAuthMACAccepted"
+
+            @AlertGroup = "MAC-Authentication Status"
+            @AlertKey = "MAC: " + $mac + ", IP: " + $ip + ", Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "88": ### snTrapMacAuthMACRejected
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $mac = extract ($1,"for (.*)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ on port")
+            $ip = extract ($1,"for .*\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) on port")
+            $interface = rtrim(extract ($1,"port (.*)"))
+            if (regmatch($interface,"\."))
+            {
+              $interface = rtrim(extract($interface,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$mac,$ip,$interface)
+
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacAuthMACRejected"
+
+            @AlertGroup = "MAC-Authentication Status"
+            @AlertKey = "MAC: " + $mac + ", IP: " + $ip + ", Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "89": ### snTrapMacAuthPortDisabled
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"port (.*) due")
+            details($snAgGblTrapMessage,$interface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacAuthPortDisabled"
+
+            @AlertGroup = "MAC-Authentication Port Status"
+            @AlertKey = "Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 5
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        ## case 90 through 103 are OSPFv3 traps
+
+        case "110": ### snTrapClientLoginReject
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $userType = extract ($1,"([^ ]+) access")
+            $srcIp = extract ($1,"src IP ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapClientLoginReject"
+
+            @AlertGroup = $userType + "Client Log Status"
+            @AlertKey = "IP: " + $srcIp
+            if (regmatch($1,"src MAC"))
+            {
+              $srcMac = extract ($1,"src MAC (.*) rejected")
+              @AlertKey = @AlertKey + ", MAC: " + $srcMac
+            }
+            if (regmatch($1,"by"))
+            {
+              $user = extract ($1,"by user (.*) from")
+              @AlertKey = @AlertKey + ", User: " + $user
+            }
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            details($snAgGblTrapMessage,$user,$userType,$srcIp,$srcMac)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "111": ### snTrapLocalUserConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $user = extract ($1,"user (.*) [adm][deo]")
+            $action = extract ($1,"([^ ]+) [fb][ry][o ]")
+            $access = extract ($1,"from ([^ ]+)")
+            details($snAgGblTrapMessage,$user,$access,$action)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapLocalUserConfigChange"
+
+            @AlertGroup = "Local User Config Status"
+            @AlertKey = "User: " + $user
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access
+
+        case "112": ### snTrapVlanConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $vlanId = extract ($1,"Id (.*) [adm][deo]")
+            $action = extract ($1,"([^ ]+) [fb][ry][o ]")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $access = extract ($1,"from ([^ ]+) session")
+            details($snAgGblTrapMessage,$vlanId,$action,$access,$user)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapVlanConfigChange"
+
+            @AlertGroup = "VLAN Configuration Status"
+            @AlertKey = "VLAN ID: " + $vlanId
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access + " " + $user
+
+        case "113": ### snTrapAclConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $aclId = extract ($1,"ACL: (.*) [adm][deo]")
+            $action = extract ($1,"([^ ]+) [fb][ru][o ]")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $access = extract ($1,"from ([^ ]+) session")
+            details($snAgGblTrapMessage,$aclId,$action,$access,$user)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapAclConfigChange"
+
+            @AlertGroup = "ACL Configuration Status"
+            @AlertKey = "ACL ID: " + $aclId
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap  + " " + $action + " " + $access + " " + $user
+
+        case "114": ### snTrapMacFilterConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $filterId = extract ($1,"ilter id=(.*) src")
+            $srcMac = extract ($1,"src mac=(.*) dst")
+            $dstMac = extract ($1,"dst mac=(.*)")
+            $action = extract ($1,"ilter ([^ ]+) [fb][ry][o ]")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $access = extract ($1,"from ([^ ]+) session")
+
+            details($snAgGblTrapMessage,$filterId,$srcMac,$dstMac,$action,$access,$user)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacFilterConfigChange"
+
+            @AlertGroup = "MAC Filter Configuration Status"
+            @AlertKey = "Filter ID: " + $filterId + ", Src Mac: " + $srcMac + ", Dst Mac: " + $dstMac 
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access+ " " + $user
+
+        case "115": ### snTrapSNMPConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $parameter = extract ($1,"SNMP: (.*) '.*' [dam][edo]")
+            $parameterValue = extract ($1,"'(.*)' [dam][edo]")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $action = extract ($1,"([^ ]+) [fb][ry][o ]")
+            $access = extract ($1,"from ([^ ]+) session")
+
+            details($snAgGblTrapMessage,$parameter,$parameterValue,$action,$access,$user)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapSNMPConfigChange"
+
+            @AlertGroup = "SNMP Configuration Status (" + $parameter + ")"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access + " " + $user
+
+        case "116": ### snTrapSyslogConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $parameter = extract ($1,"Syslog ([^ ]+)")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $action = extract ($1,"([^ ]+) [fb][ry][o ]")
+            $access = rtrim(extract ($1,"from ([^ ]+)"))
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapSyslogConfigChange"
+
+            @AlertGroup = "Syslog " + $parameter + " Configuration Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            if (nmatch($parameter,"server"))
+            {
+              $parameterValue = extract ($1,"server (.*) [dam][edo]")
+              @AlertKey = "IP: " + $parameterValue
+            } 
+
+            details($snAgGblTrapMessage,$parameter,$parameterValue,$action,$access,$user)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access + " " + $user
+
+        case "117": ### snTrapPasswordConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $parameter = extract ($1,"Security: (.*) password")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $action = extract ($1,"password ([^ ]+) [fb][ry][o ]")
+            $access = rtrim(extract ($1,"from ([^ ]+)"))
+            details($snAgGblTrapMessage,$parameter,$action,$access,$user)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapPasswordConfigChange"
+
+            @AlertGroup = "Password Configuration Status (" + $parameter + ")"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access
+
+        case "118": ### snTrapServerStatusChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $serverType = extract ($1,"([^ ]+) server")
+            $user = ltrim(rtrim(extract ($1,"by(.*)from")))
+            $action = extract ($1,"server ([^ ]+) [fb][ry][o ]")
+            $access = extract ($1,"from ([^ ]+) session") 
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapServerStatusChange"
+
+            @AlertGroup = $serverType + " Server Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            details($snAgGblTrapMessage,$serverType,$user,$action,$access)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $access + " " + $user
+
+        case "119": ### snTrapL4RealServerPortMaxConnectionLimitReached
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $server = extract($1,"Server (.*) named")
+            $serverName = extract($1,"named(.*) on port")
+            $port = extract($1,"port (.*) has reached")
+            details($snAgGblTrapMessage,$server,$serverName,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4RealServerPortMaxConnectionLimitReached"
+
+            @AlertGroup = "L4 - Real Server Port Connection Number"
+            @AlertKey = "Server: " + $server + " " + $serverName + ", Port: " + $port
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "120": ### snTrapL4LinkDown
+
+            ##########
+            # $1 = snL4TrapLinkName 
+            # $2 = snL4LinkVirtualInterface 
+            ##########
+
+            $snL4TrapLinkName = $1
+            $snL4LinkVirtualInterface = $2
+            details($snL4TrapLinkName,$snL4LinkVirtualInterface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4LinkDown"
+
+            @AlertGroup = "L4 - Link Status"
+            @AlertKey = "Link: " + $snL4TrapLinkName + ", Virtual Interface: " + $snL4LinkVirtualInterface
+            @Summary = "ISP Link " + $snL4TrapLinkName + " bound to Virtual Interface " + $snL4LinkVirtualInterface + " is down"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "121": ### snTrapL4LinkUp
+
+            ##########
+            # $1 = snL4TrapLinkName 
+            # $2 = snL4LinkVirtualInterface 
+            ##########
+
+            $snL4TrapLinkName = $1
+            $snL4LinkVirtualInterface = $2
+            details($snL4TrapLinkName,$snL4LinkVirtualInterface)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapL4LinkUp"
+
+            @AlertGroup = "L4 - Link Status"
+            @AlertKey = "Link: " + $snL4TrapLinkName + ", Virtual Interface: " + $snL4LinkVirtualInterface
+            @Summary = "ISP Link " + $snL4TrapLinkName + " bound to Virtual Interface " + $snL4LinkVirtualInterface + " is up"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "122": ### snTrapPortPriorityChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = extract ($1,"Port (.*) priority")
+            $priority = rtrim(extract ($1,"priority (.*)"))
+            details($snAgGblTrapMessage,$port,$priority)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapPortPriorityChange"
+
+            @AlertGroup = "PortSecurity - Priority Configuration Status"
+            @AlertKey = "Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $priority
+
+        case "123": ### snTrapAutoPortDisableTrigger
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = rtrim(extract ($1,"port (.*)"))
+            details($snAgGblTrapMessage,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapAutoPortDisableTrigger"
+
+            @AlertGroup = "ADC - Automatic Port Disable Status"
+            @AlertKey = "Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "124": ### snTrapAutoPortDisableRelease
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $port = rtrim(extract ($1,"port (.*)"))
+            details($snAgGblTrapMessage,$port)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapAutoPortDisableRelease"
+
+            @AlertGroup = "ADC - Automatic Port Disable Status"
+            @AlertKey = "Port: " + $port
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "125": ### snTrapPnPStatusChange
+
+            ##########
+            # $1 = wgPnPStatus 
+            # $2 = wgPnPStatus 
+            # $3 = snAgGblTrapMessage 
+            ##########
+
+            $wgPnPStatusOld = rtrim($1)
+            $wgPnPStatusNew = rtrim($2)
+            $snAgGblTrapMessage = $3
+            details($wgPnPStatus,$wgPnPStatus,$snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapPnPStatusChange"
+
+            @AlertGroup = "ADC - Plug-And-Play Status"
+            @AlertKey = "wgPnPEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = $3
+
+            switch($wgPnPStatusNew)
+            {
+                case "OPERATIONAL"|"operational": ### operational
+                    $SEV_KEY = $OS_EventId + "_operational"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "CONFIGURED"|"configured": ### configured
+                    $SEV_KEY = $OS_EventId + "_configured"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "DISCOVERED"|"discovered": ### discovered
+                    $SEV_KEY = $OS_EventId + "_discovered"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "UNKNOWN": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+        case "126": ### snTrapWirelessIsrpPeerStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"Peer (.*) has changed")
+            $oldState = extract ($1,"state from (.*) to")
+            $newState = rtrim(extract ($1,"to (.*)"))
+            if (regmatch($newState,"\."))
+            {
+              $newState = rtrim(extract($newState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$ip,$oldState,$newState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapWirelessIsrpPeerStateChange"
+
+            @AlertGroup = "WirelessMobility - ISRP Peer Status"
+            @AlertKey = "IP: " + $ip
+            @Summary = extract($snAgGblTrapMessage,"(Mobility.*)")
+
+            switch($newState)
+            {
+                case "OPERATIONAL"|"operational": ### operational
+                    $SEV_KEY = $OS_EventId + "_operational"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "CONFIGURED"|"configured": ### configured
+                    $SEV_KEY = $OS_EventId + "_configured"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "UNKNOWN": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $oldState + " " + $newState
+
+        case "127": ### snTrapWirelessStationStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $mac = extract ($1,"Station (.*) [dr][ie]")
+            $state = extract ($1,"([^ ]+)$")
+            details($snAgGblTrapMessage,$mac,$state)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapWirelessStationStateChange"
+
+            @AlertGroup = "Wireless - Station Status"
+            @AlertKey = "Mac: " + $mac
+            @Summary = extract($snAgGblTrapMessage,"(New Station.*)")
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $state
+
+        case "128": ### snTrapWirelessStationRoamingEventTriggered
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $mac = extract ($1,"Station (.*) has")
+            $ip = extract ($1,"switch ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            details($snAgGblTrapMessage,$mac,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapWirelessStationRoamingEventTriggered"
+
+            @AlertGroup = "WirelessMobility - Station Roaming"
+            @AlertKey = "Mac: " + $mac + ", IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "129": ### snTrapWirelessSappStateChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $ip = extract ($1,"AP(.*) has")
+            $oldState = extract ($1,"state from (.*) to")
+            $newState = rtrim(extract ($1,"to (.*)"))
+            if (regmatch($newState,"\."))
+            {
+              $newState = rtrim(extract($newState,"(.*)\."))
+            }
+            details($snAgGblTrapMessage,$ip,$oldState,$newState)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapWirelessSappStateChange"
+
+            @AlertGroup = "Wireless - SAPP Status"
+            @AlertKey = "IP: " + $ip
+            @Summary = $snAgGblTrapMessage
+
+            switch($newState)
+            {
+                case "OPERATIONAL"|"operational": ### operational
+                    $SEV_KEY = $OS_EventId + "_operational"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "CONFIGURED"|"configured": ### configured
+                    $SEV_KEY = $OS_EventId + "_configured"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "UNKNOWN": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $oldState + " " + $newState
+
+        case "130": ### snTrapExternalPowerConnectionStatus
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapExternalPowerConnectionStatus"
+
+            @AlertGroup = "External Power Supply Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "131": ### snTrapDot1xSecurityViolation
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"Port (.*), malicious")
+            $mac = rtrim(extract ($1,"detected: (.*)"))
+            if (regmatch($mac,"\."))
+            {
+              $mac = rtrim(extract($mac,"(.*)\."))
+            }
+
+            details($snAgGblTrapMessage,$interface,$mac)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDot1xSecurityViolation"
+
+            @AlertGroup = "Dot1x - Security Violation"
+            @AlertKey = "Interface: " + $interface + ", Mac: " + $mac 
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "132": ### snTrapDot1xPortLinkChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract ($1,"Port (.*), malicious")
+            $status = extract ($1,"port (.*) indication")  
+            details($snAgGblTrapMessage,$interface,$status)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDot1xPortLinkChange"
+
+            @AlertGroup = "Dot1x - Port Link Status"
+            @AlertKey = "Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            switch($status)
+            {
+                case "UP"|"up": ### up
+                    $SEV_KEY = $OS_EventId + "_up"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "DOWN"|"down": ### down
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $status
+
+
+        case "133": ### snTrapDot1xPortControlChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            if(regmatch($1,"AuthControlledPortStatus"))
+            {
+              $interface = extract ($1,"Port (.*):")
+              $mac = rtrim(extract ($1,"Port.*:(.*), AuthControlledPortStatus"))
+              $status = rtrim(extract ($1,"AuthControlledPortStatus change: (.*)"))
+              details($snAgGblTrapMessage,$interface,$mac,$status)
+              @AlertKey = "Interface: " + $interface + ", Mac: " + $mac
+            }
+            else
+            {
+              $interface = extract ($1,"Port (.*), Status")
+              $status = rtrim(extract ($1,"Status: (.*)"))
+              details($snAgGblTrapMessage,$interface,$status)
+              @AlertKey = "Interface: " + $interface
+            }
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDot1xPortControlChange"
+
+            @AlertGroup = "Dot1x - Port Control Status"
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $status
+
+        case "134": ### snTrapDot1xVlanIdChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            if (regmatch($1,"Port.*currently used vlan-id is set back to"))
+            {
+              $interface = extract($1,"Port (.*) currently")
+              $vlanId = rtrim (extract($1,"to port default vlan-id (.*)"))
+              details($snAgGblTrapMessage,$interface,$vlanId)
+            }
+            else
+            {
+              if (regmatch($1,"Port.*currently used vlan-id changes to.*due to"))
+              {
+                $interface = extract($1,"Port (.*) currently")
+                $vlanId = rtrim (extract($1,"vlan-id changes to (.*) due to"))
+                $reason = rtrim (extract($1,"due to (.*)"))
+                details($snAgGblTrapMessage,$interface,$vlanId,$reason)
+              }
+              else 
+              {
+              $interface = extract($1,"Port (.*) port default")
+              $vlanId = rtrim (extract($1,"changes to (.*)"))
+              details($snAgGblTrapMessage,$interface,$vlanId)
+              }
+            }
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDot1xVlanIdChange"
+
+            @AlertGroup = "Dot1x - VLAN ID"
+            @AlertKey = "Interface: " + $interface + ", VLAN ID: " + $vlanId
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $reason
+
+        case "135": ### snTrapDot1xFilterSetupFailure
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+
+            if (regmatch($1,"Port.*:.*is"))
+            {
+              $interface = extract($1,"Port (.*):.* is")
+              $mac = extract($1,"Port.*:(.*) is")
+              $status = extract ($1,"is (.*thorized)")
+              details($snAgGblTrapMessage,$interface,$mac,$status)
+              @AlertKey = "Interface: " + $interface + ", Mac: " + $mac
+            }
+            else 
+            {
+              $interface = extract($1,"Port (.*) is")
+              $status = extract ($1,"is (.*thorized)")
+              details($snAgGblTrapMessage,$interface,$status)
+              @AlertKey = "Interface: " + $interface
+            }
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDot1xFilterSetupFailure"
+
+            @AlertGroup = "Dot1x - Filter Setup Status"
+
+            @Summary = $snAgGblTrapMessage
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $status
+
+        case "136": ### snTrapDot1xError
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapDot1xError"
+
+            @AlertGroup = "Dot1x - System Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "137": ### snTrapPortConfigChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+
+            $snAgGblTrapMessage = $1
+            if(regmatch($1,"PORT: [^ ]+, [edar][nide]"))
+            {
+              $interface = rtrim(extract($1,"PORT: ([^ ]+), [edar][nide]"))
+            } 
+            else
+            {
+              $interface = rtrim(extract($1,"PORT: ([^ ]+) [edar][nide]"))
+            }
+            $action = ltrim(rtrim(extract($1,"PORT: [^ ]+ ([edar][nide][^ ]+).*by")))
+            $user = extract ($1,"by (.*) from")
+            $userType = extract ($1,"from (.*) session")
+            if (regmatch($1,"address"))
+            {
+              $ip = extract ($1,"address (.*) by")
+            } 
+            details($snAgGblTrapMessage,$interface,$action,$user,$userType,$ip)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapPortConfigChange"
+
+            @AlertGroup = "Port Configuration Status (" + $userType + " user)"
+            @AlertKey = "Interface: " + $interface
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $action + " " + $user + " " + $ip
+
+        case "138": ### snTrapMacAuthVlanIdChange
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            $interface = extract($1,"port (.*) default")
+            $vlanId = rtrim(extract ($1,"changes to (.*)"))
+            details($snAgGblTrapMessage,$interface,$vlanId)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapMacAuthVlanIdChange"
+
+            @AlertGroup = "MAC Authentication VLAN ID"
+            @AlertKey = "Interface: " + $interface + ", VLAN ID: " + $vlanId
+            @Summary = $snAgGblTrapMessage
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        ## Traps 139 to 141 are reserved for MPLS traps
+
+        case "139": ### snMplsLspUp
+
+            ##########
+            # $1 = mplsLspName 
+            # $2 = mplsPathName 
+            ##########
+
+            $mplsLspName = $1
+            $mplsPathName = $2
+            details($mplsLspName,$mplsPathName)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snMplsLspUp"
+
+            @AlertGroup = "MPLS LSP Status"
+            @AlertKey = "mplsLspEntry." + extract($OID1,"1991\.1\.2\.15\.1\.2\.3\.1\.3\.(.*)$")
+            @Summary = "MPLS LSP Up"
+            if(match($2, ""))
+            {
+                @Summary = @Summary + "  ( LSP: " + $1 + " )"
+            }
+            else
+            {
+                @Summary = @Summary + "  ( LSP: " + $1 + ", Active Path: " + $2 + " )"
+            }
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 3
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap  + " " + $2
+
+
+        case "140": ### snMplsLspDown
+
+            ##########
+            # $1 = mplsLspName 
+            # $2 = mplsPathName 
+            ##########
+
+            $mplsLspName = $1
+            $mplsPathName = $2
+            details($mplsLspName,$mplsPathName)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snMplsLspDown"
+
+            @AlertGroup = "MPLS LSP Status"
+            @AlertKey = "mplsLspEntry." + extract($OID1,"1991\.1\.2\.15\.1\.2\.3\.1\.3\.(.*)$")
+            @Summary = "MPLS LSP Down"
+            if(match($2, ""))
+            {
+                @Summary = @Summary + "  ( LSP: " + $1 + " )"
+            }
+            else
+            {
+                @Summary = @Summary + "  ( LSP: " + $1 + ", Active Path: " + $2 + " )"
+            }
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "141": ### snMplsLspChange
+
+            ##########
+            # $1 = mplsLspName 
+            # $2 = mplsPathName 
+            ##########
+
+            $mplsLspName = $1
+            $mplsPathName = $2
+            details($mplsLspName,$mplsPathName)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snMplsLspChange"
+
+            @AlertGroup = "MPLS LSP Path Change"
+            @AlertKey = "mplsLspEntry." + extract($OID1,"1991\.1\.2\.15\.1\.2\.3\.1\.3\.(.*)$")
+            @Summary = "MPLS LSP Switched to New Active Path"
+            if(match($2, ""))
+            {
+                @Summary = @Summary + "  ( LSP: " + $1 + " )"
+            }
+            else
+            {
+                @Summary = @Summary + "  ( LSP: " + $1 + ", Active Path: " + $2 + " )"
+            }
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "1000": ### snTrapChasFanOK
+
+            ##########
+            # $1 = snChasFanIndex 
+            # $2 = snChasFanDescription 
+            ##########
+
+            $snChasFanIndex = $1
+            $snChasFanDescription = $2
+            details($snChasFanIndex,$snChasFanDescription)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapChasFanOK"
+
+            @AlertGroup = "Chassis Fan Status"
+            @AlertKey = "snChasFanEntry." + $1
+            @Summary = "Fan " + $snChasFanIndex + " (" + $snChasFanDescription + ") OK"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "1001": ### snTrapTemperatureOK
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            if (regmatch($1,"Line Card Module.*PCB"))
+            {
+              $slot = extract($1,"module (.*) PCB")
+              @AlertKey = "Slot: " + $slot
+              @AlertGroup = "Line Card Module PCB "
+            }
+            else if (regmatch($1,"Line Card Module.*XPP"))
+            {
+              $slot = extract($1,"module (.*) XPP")
+              @AlertKey = "Slot: " + $slot
+              @AlertGroup = "Line Card Module PCB "
+            }
+            else if (regmatch($1,"Switch Fabric"))
+            {
+              $switchFabric = extract($1,"Switch Fabric ([0-9]+) temperature")
+              @AlertKey = "Switch Fabric: " + $switchFabric
+              @AlertGroup = "Switch Fabric "
+            } 
+            else
+            {
+              @AlertGroup = extract($1,"([aAsS][ct][ta][in][vb][ey].*)temperature") + " "
+            }
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapTemperatureOK"
+
+            @AlertGroup = @AlertGroup + "Temperature Status"
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "1002": ### snTrapCAMOverflow
+
+            ##########
+            # $1 = snAgGblTrapMessage 
+            ##########
+
+            $snAgGblTrapMessage = $1
+            details($snAgGblTrapMessage)
+
+            $OS_EventId = "SNMPTRAP-foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB-snTrapCAMOverflow"
+
+            @AlertGroup = "CAM Flow Status"
+            @AlertKey = ""
+            @Summary = $snAgGblTrapMessage
+            update(@Summary)
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/foundry/foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/foundry/foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... foundry-FOUNDRY-SN-TRAP-MIB--FOUNDRY-MPLS-MIB.include.snmptrap.rules >>>>>")

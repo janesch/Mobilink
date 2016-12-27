@@ -1,0 +1,62 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ciscoSibuStackableDualSpeedHubRptrPortLinkChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "ciscoSibuStackableDualSpeedHubRptrPortLinkChange"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "cssRepeaterPortEntry." + $rptrPortGroupIndex + "." + $rptrPortIndex
+        $OS_LocalRootObj = "rptrPortEntry." + $rptrPortGroupIndex + "." + $rptrPortIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### ciscoSibuStackableDualSpeedHubSwitchPortLinkChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "ciscoSibuStackableDualSpeedHubSwitchPortLinkChange"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "cssSwitchPortEntry." + $rptrGroupIndex + "." + $cssSwitchPortModuleID + "." + $cssSwitchPortPortID
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-SIBU-STACKABLE-DUAL-SPEED-HUB-MIB.adv.include.snmptrap.rules >>>>>")

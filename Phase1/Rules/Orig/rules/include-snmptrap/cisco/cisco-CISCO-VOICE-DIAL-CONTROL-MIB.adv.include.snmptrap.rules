@@ -1,0 +1,93 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-VOICE-DIAL-CONTROL-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-VOICE-DIAL-CONTROL-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-VOICE-DIAL-CONTROL-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### cvdcPoorQoVNotification
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2006
+        $OS_X733SpecificProb = "cvdcPoorQoVNotification"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "cvVoIPCallHistoryEntry." + $cCallHistoryIndex
+        $OS_LocalRootObj = "cCallHistoryEntry." + $cCallHistoryIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+        
+    case "2": ### cvdcPoorQoVNotificationRev1
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2006
+        $OS_X733SpecificProb = "cvdcPoorQoVNotificationRev1"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "cvVoIPCallHistoryEntry." + $cCallHistoryIndex
+        $OS_LocalRootObj = "cCallHistoryEntry." + $cCallHistoryIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $3
+
+    case "3": ### cvdcActiveDS0sHighNotification
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2006
+        $OS_X733SpecificProb = "cvdcActiveDS0sHighNotification"
+        $OS_OsiLayer = 0
+
+    case "4": ### cvdcActiveDS0sLowNotification
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2006
+        $OS_X733SpecificProb = "cvdcActiveDS0sLowNotification"
+        $OS_OsiLayer = 0
+
+    case "5": ### cvdcFallbackNotification
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2006
+        $OS_X733SpecificProb = "cvdcFallbackNotification"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "CvVoIPCallHistoryEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj 
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-VOICE-DIAL-CONTROL-MIB.adv.include.snmptrap.rules >>>>>")

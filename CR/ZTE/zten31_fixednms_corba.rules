@@ -1,0 +1,272 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       5724-P16 
+#       
+#       (C) Copyright IBM Corp. 2009. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#######################################################################
+#Available tokens
+#
+#The following tokens come from the FilterableData and remainder_of_body name/value pairs of the event:
+# EVENT_TYPE
+# EVENT_NAME
+# NV_NETYPE			
+# NV_NEIP			
+# NV_EVENT_TIME			
+# NV_PROBABLE_CAUSE		
+# NV_PERCEIVED_SEVERITY		
+# NV_ENTITY_ID			
+# NV_ALARM_ID			
+# NV_NOTIFICATION_ID		
+# NV_CLEAR_USER_ID		
+# NV_CLEAR_SYSTEM_ID		
+# NV_ACK_USER_ID		
+# NV_ACK_SYSTEM_ID		
+# NV_ACK_STATE			
+# NV_COMMENTS			
+# NV_ALARM_CLEARED_TIME		
+# NV_ALARM_CHANGED_TIME		
+# NV_ACK_TIME			
+# NV_EVENT_CODE			
+# NV_EVENT_DESC			
+# NV_PROBABLE_CAUSE_CODE	
+# NV_PROBABLE_CAUSE_DESC	
+# NV_ADDITIONAL_INFORMATION	
+# NV_POSITION			
+# NV_INFO			
+# NV_ADDITIONAL_TEXT	
+#The following tokens are additional and are not defined in the Idl:
+# NENAME
+
+#######################################################################
+#
+# This lookup will only work if the probe is run from $OMNIHOME/probes
+# If the probe is run elsewhere this path will need to be customised.
+include "$OMNIHOME/probes/includes/Corba_zten31_fixednms.lookup"
+#
+#######################################################################
+
+array name;
+array date;
+
+@Class = 5011
+
+if(match(@Manager,"ProbeWatch"))
+{
+#
+# This section deals with internal probe events
+#
+
+	switch(@Summary)
+	{
+	case "Running ...":
+		@Severity = 0
+		@AlertGroup = "probestat"
+		@Type = 2
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+		@Class = 5011
+
+
+	case "Unable to get events":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@AlertKey = @Agent
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@Type = 1
+		@Class = 5011
+		@Agent = @Agent + "@" + hostname()
+
+	case "Going Down ...":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@Type = 1
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+		@Class = 5011
+		@Agent = @Agent + "@" + hostname()
+
+	case "START SYNCHRONIZATION":
+		@Type = 1
+		@Severity = 3
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+		@Summary = @Agent + " probe on " + @Node + ":START SYNCHRONIZATION"
+		@Class = 5011
+		@Agent = @Agent + "@" + hostname()
+
+	case "END SYNCHRONIZATION":
+		@Type = 2
+		@Severity = 1
+		@Summary = @Agent + " probe on " + @Node + ":END SYNCHRONIZATION"
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+		@Class = 5011
+		@Agent = @Agent + "@" + hostname()
+
+	default:
+		@Severity = 2
+		@AlertGroup = "probestat"
+		@Type = 1
+		@AlertKey = @Agent
+		@Class = 5011
+		@Agent = @Agent + "@" + hostname()
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+	}
+} 
+else
+{
+	log(DEBUG, "<<<<< Entering.... ZTE N31 Fixed NMS rules >>>>>")
+
+	#@Manager = @Manager + " probe running on " + hostname()
+	@EventId = $NV_ALARM_ID
+	#@Agent = "ZTE Netnumen N31 Fixed NMS"
+	@Manager = "ZTE Netnumen N31 Fixed NMS"
+	@OmcEms = @Manager
+	@Agent = @Manager + "@" + hostname()
+
+	if (exists ($NV_NEIP))
+	{
+		@Node = $NV_NEIP
+	}
+	else
+	{
+		@Node = "Unknown Host"
+	}
+
+	if (exists ($NENAME))
+	{
+                @NodeAlias = $NENAME
+	}
+	else
+        {
+                @NodeAlias = "Unknown Host"
+        }
+
+
+#Reflect acknowledgement status:
+	if( exists( $NV_ACK_STATE))
+	{
+		switch($NV_ACK_STATE)
+		{
+                	case "2":
+                        	@Acknowledged = 0
+                	case "1":
+                        	@Acknowledged = 1
+			case "unacknowledged":
+				@Acknowledged = 0
+			case "acknowledged":
+				@Acknowledged = 1
+                	default:
+               			@Acknowledged = 0         
+		}
+		update(@Acknowledged)
+       	}
+	@Type = 1
+
+#convert integer enumerated types into text via lookup tables:
+        if(exists( $NV_ACK_STATE))
+        {
+                $NV_ACK_STATE = lookup($NV_ACK_STATE, AckState_t)
+        }
+
+
+
+#Handling events through lookup table and setting AlertGroup and AlertKey:
+
+	if (exists( $EVENT_TYPE ) && !match($EVENT_TYPE,"notifyHeartbeat") )
+	{
+		$TempET = $EVENT_TYPE
+	 	$EVENT_TYPE = lookup($EVENT_TYPE,EventType_t)
+	}
+	if (exists( $EVENT_TYPE ) && match($EVENT_TYPE,"Unknown Event Type") )
+	{
+		$EVENT_TYPE = $EVENT_TYPE + ":" + $TempET
+	}
+	
+	if (exists( $EVENT_NAME ) )
+	{
+		$EVENT_NAME = lookup($EVENT_NAME,EventName_t)
+	}	
+	
+	@AlertGroup = $EVENT_NAME
+	
+
+        if(exists( $NV_POSITION))
+        {
+                @AlertKey = $NV_POSITION
+        }
+	
+
+	if( match(@AlertKey, ""))
+        {
+              @AlertKey = "Unknown Alarm Location"
+        }
+
+
+	if( exists( $NV_PERCEIVED_SEVERITY))
+	{
+		@Severity = lookup($NV_PERCEIVED_SEVERITY, PerceivedSeverity_t)
+	}
+		
+	#Build Summary:
+
+		@Summary = @AlertKey + " " + $NV_PROBABLE_CAUSE_DESC + " " + $EVENT_NAME
+
+
+
+#Use the NV_EVENT_TIME timestamp to set FirstOccurrence and LastOccurrence:
+	if ( exists($NV_EVENT_TIME))
+	{
+		@FirstOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+		@LastOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+	}
+
+#Handle additional event types:  
+	switch($EVENT_TYPE)
+	{
+		case "notifyHeartbeat":
+			@Summary = @AlertKey + " " + $NV_PROBABLE_CAUSE_DESC + " " + $EVENT_TYPE
+			@Severity = 1
+			@Type = 13
+			@ExpireTime = 1800	
+						
+		case "Alarm List Rebuilt":
+			@Summary = @AlertKey + " " + $NV_PROBABLE_CAUSE_DESC + " " + $EVENT_TYPE 
+
+		case "Comment Added":
+			@Summary = @AlertKey + " " + $NV_PROBABLE_CAUSE_DESC + " " + $EVENT_TYPE + " " + $NV_COMMENTS
+  		  
+		case "Potential Faulty Alarm List":
+			@Summary = @AlertKey + " " + $NV_PROBABLE_CAUSE_DESC + " " + $EVENT_TYPE 
+			@Node = $domain_name 
+		 
+		default:
+	}
+
+	switch(@Severity)
+	{
+		case "1":
+			@Type = 2
+		default:
+			@Type = 1
+	}
+	
+	@Identifier = @Node + " " + @AlertKey  + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + @EventId
+
+	
+	##########
+	# Printing the full event-details
+	##########
+	
+	# details($*)
+	
+	log(DEBUG, "<<<<< Leaving.... ZTE N31 Fixed NMS rules >>>>>")
+}
+details($*)

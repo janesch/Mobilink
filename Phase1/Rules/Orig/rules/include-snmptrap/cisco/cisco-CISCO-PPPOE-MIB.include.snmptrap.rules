@@ -1,0 +1,143 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-PPPOE-MIB.include.snmptrap.rules 2.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-PPPOE-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.194.2": ### Cisco PPPoE Sessions Management - Notifications from CISCO-PPPOE-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-PPPOE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-PPPoE"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cPppoeSystemSessionThresholdTrap
+
+            ##########
+            # $1 = cPppoeSystemCurrSessions
+            # $2 = cPppoeSystemMaxAllowedSessions 
+            # $3 = cPppoeSystemThresholdSessions
+            ##########
+
+            $cPppoeSystemCurrSessions = $1
+            $cPppoeSystemMaxAllowedSessions = $2
+            $cPppoeSystemThresholdSessions = $3
+            details($cPppoeSystemCurrSessions,$cPppoeSystemMaxAllowedSessions,$cPppoeSystemThresholdSessions)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PPPOE-MIB-cPppoeSystemSessionThresholdTrap"
+
+            @AlertGroup = "PPPoE Session Threshold"
+            @AlertKey = ""
+            @Summary = "PPPoE Active Sessions, " + $1 + ", Exceeds " + $3
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            update(@Summary)
+
+        case "2": ### cPppoeVcSessionThresholdTrap
+
+            ##########
+            # $1 = cPppoeVcCurrSessions
+            # $2 = cPppoeVcMaxAllowedSessions
+            # $3 = cPppoeVcThresholdSessions
+            ##########
+
+            $cPppoeVcCurrSessions = $1
+            $cPppoeVcMaxAllowedSessions = $2
+            $cPppoeVcThresholdSessions = $3
+            details($cPppoeVcCurrSessions,$cPppoeVcMaxAllowedSessions,$cPppoeVcThresholdSessions)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PPPOE-MIB-cPppoeVcSessionThresholdTrap"
+
+            @AlertGroup = "PPPoE VC Session Threshold"
+            @AlertKey = ""
+            @Summary = "PPPoE Active VC Sessions, " + $1 + ", Exceeds " + $3
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            update(@Summary)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-PPPOE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-PPPOE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-PPPOE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-PPPOE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-PPPOE-MIB.include.snmptrap.rules >>>>>")

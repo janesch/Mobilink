@@ -1,0 +1,678 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-HDSL2-SHDSL-LINE-MIB.include.snmptrap.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-HDSL2-SHDSL-LINE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.10.48": ### HDSL2/SHDSL Lines - Notifications from HDSL2-SHDSL-LINE-MIB
+
+    log(DEBUG, "<<<<< Entering... IETF-HDSL2-SHDSL-LINE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-HDSL2-SHDSL-LINE-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hdsl2ShdslLoopAttenCrossing
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrAtn
+            # $2 = hdsl2ShdslEndpointThreshLoopAttenuation
+            ##########
+
+            $hdsl2ShdslEndpointCurrAtn = $1 + "dB"
+            $hdsl2ShdslEndpointThreshLoopAttenuation = $2 + "dB"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslLoopAttenCrossing"
+
+            @AlertGroup = "HDSL2/SHDSL Loop Attenuation Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint Loop Attenuation, " + $1 + "dB, Exceeded " + $2 + "dB  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrAtn,$hdsl2ShdslEndpointThreshLoopAttenuation,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "2": ### hdsl2ShdslSNRMarginCrossing
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrSnrMgn
+            # $2 = hdsl2ShdslEndpointThreshSNRMargin
+            ##########
+
+            $hdsl2ShdslEndpointCurrSnrMgn = $1 + "dB"
+            $hdsl2ShdslEndpointThreshSNRMargin = $2 + "dB"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslSNRMarginCrossing"
+
+            @AlertGroup = "HDSL2/SHDSL SNR Margin Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint SNR Margin, " + $1 + "dB, Exceeded " + $2 + "dB  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrSnrMgn,$hdsl2ShdslEndpointThreshSNRMargin,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "3": ### hdsl2ShdslPerfESThresh
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurr15MinES
+            # $2 = hdsl2ShdslEndpointThreshES
+            ##########
+
+            $hdsl2ShdslEndpointCurr15MinES = $1 + " secs."
+            $hdsl2ShdslEndpointThreshES = $2 + " secs."
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslPerfESThresh"
+
+            @AlertGroup = "HDSL2/SHDSL ES 15 Min. Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint Errored Seconds, " + $1 + " secs., Exceeded " + $2 + " secs.  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurr15MinES,$hdsl2ShdslEndpointThreshES,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "4": ### hdsl2ShdslPerfSESThresh
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurr15MinSES
+            # $2 = hdsl2ShdslEndpointThreshSES
+            ##########
+
+            $hdsl2ShdslEndpointCurr15MinSES = $1 + " secs."
+            $hdsl2ShdslEndpointThreshSES = $2 + " secs."
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslPerfSESThresh"
+
+            @AlertGroup = "HDSL2/SHDSL SES 15 Min. Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint Severely Errored Seconds, " + $1 + " secs., Exceeded " + $2 + " secs.  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurr15MinSES,$hdsl2ShdslEndpointThreshSES,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "5": ### hdsl2ShdslPerfCRCanomaliesThresh
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurr15MinCRCanomalies
+            # $2 = hdsl2ShdslEndpointThreshCRCanomalies
+            ##########
+
+            $hdsl2ShdslEndpointCurr15MinCRCanomalies = $1
+            $hdsl2ShdslEndpointThreshCRCanomalies = $2
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslPerfCRCanomaliesThresh"
+
+            @AlertGroup = "HDSL2/SHDSL CRC 15 Min. Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint CRC Anomalies, " + $1 + ", Exceeded " + $2 + "  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurr15MinCRCanomalies,$hdsl2ShdslEndpointThreshCRCanomalies,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "6": ### hdsl2ShdslPerfLOSWSThresh
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurr15MinLOSWS
+            # $2 = hdsl2ShdslEndpointThreshLOSWS
+            ##########
+
+            $hdsl2ShdslEndpointCurr15MinLOSWS = $1 + " secs."
+            $hdsl2ShdslEndpointThreshLOSWS = $2 + " secs."
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslPerfLOSWSThresh"
+
+            @AlertGroup = "HDSL2/SHDSL LOSW Secs. 15 Min. Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint Loss of Sync Word Seconds, " + $1 + " secs., Exceeded " + $2 + " secs.  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurr15MinLOSWS,$hdsl2ShdslEndpointThreshLOSWS,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "7": ### hdsl2ShdslPerfUASThresh
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurr15MinUAS
+            # $2 = hdsl2ShdslEndpointThreshUAS
+            ##########
+
+            $hdsl2ShdslEndpointCurr15MinUAS = $1 + " secs."
+            $hdsl2ShdslEndpointThreshUAS = $2 + " secs."
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslPerfUASThresh"
+
+            @AlertGroup = "HDSL2/SHDSL Unavailable Secs. 15 Min. Threshold"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Segment Endpoint Unavailable Seconds, " + $1 + " secs., Exceeded " + $2 + " secs.  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurr15MinUAS,$hdsl2ShdslEndpointThreshUAS,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+            
+            update(@Summary)
+
+        case "8": ### hdsl2ShdslSpanInvalidNumRepeaters
+
+            ##########
+            # $1 = hdsl2ShdslSpanConfNumRepeaters
+            ##########
+
+            $hdsl2ShdslSpanConfNumRepeaters = $1
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($hdsl2ShdslSpanConfNumRepeaters)
+
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslSpanInvalidNumRepeaters"
+
+            @AlertGroup = "HDSL2/SHDSL Repeater/Regenerator Configuration Mismatch"
+            @AlertKey = "hdsl2ShdslSpanConfEntry." + $ifIndex
+            @Summary = "HDSL2/SHDSL Configured Repeater/Regenerator Units Differs from EOC Discovery  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### hdsl2ShdslLoopbackFailure
+
+            ##########
+            # $1 = hdsl2ShdslMaintLoopbackConfig
+            ##########
+
+            $hdsl2ShdslMaintLoopbackConfig = $1
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslLoopbackFailure"
+
+            @AlertGroup = "HDSL2/SHDSL Loopback Status"
+            @AlertKey = "hdsl2ShdslEndpointMaintEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw
+            @Summary = "HDSL2/SHDSL Loopback Failure  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            details($hdsl2ShdslMaintLoopbackConfig,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide)
+
+        case "10": ### hdsl2ShdslpowerBackoff
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrStatus
+            ##########
+
+            $hdsl2ShdslEndpointCurrStatus = lookup($1, hdsl2ShdslEndpointCurrStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslpowerBackoff"
+
+            @AlertGroup = "HDSL2/SHDSL Power Status"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Power Backoff  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            $BIT = int($1) & 2
+            if(match($BIT, "2")) ### true
+            {                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            }
+            else ### false
+            {
+                @Summary = "End of " + @Summary
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrStatus,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+
+        case "11": ### hdsl2ShdsldeviceFault
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrStatus
+            ##########
+
+            $hdsl2ShdslEndpointCurrStatus = lookup($1, hdsl2ShdslEndpointCurrStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdsldeviceFault"
+
+            @AlertGroup = "HDSL2/SHDSL Device Status"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Device Fault  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            $BIT = int($1) & 4
+            if(match($BIT, "4")) ### true
+            {
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            }
+            else ### false
+            {
+                @Summary = "End of " + @Summary
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrStatus,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+
+        case "12": ### hdsl2ShdsldcContinuityFault
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrStatus
+            ##########
+
+            $hdsl2ShdslEndpointCurrStatus = lookup($1, hdsl2ShdslEndpointCurrStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdsldcContinuityFault"
+
+            @AlertGroup = "HDSL2/SHDSL DC Continuity Status"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL DC Continuity Fault  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            $BIT = int($1) & 8
+            if(match($BIT, "8")) ### true
+            {
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            }
+            else ### false
+            {
+                @Summary = "End of " + @Summary
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrStatus,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+
+        case "13": ### hdsl2ShdslconfigInitFailure
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrStatus
+            ##########
+
+            $hdsl2ShdslEndpointCurrStatus = lookup($1, hdsl2ShdslEndpointCurrStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslconfigInitFailure"
+
+            @AlertGroup = "HDSL2/SHDSL Configuration Status"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Endpoint Initialization Failed, Configuration Not Supported  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            $BIT = int($1) & 128
+            if(match($BIT, "128")) ### true
+            {
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            }
+            else ### false
+            {
+                @Summary = "End of " + @Summary
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrStatus,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+
+        case "14": ### hdsl2ShdslprotocolInitFailure
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrStatus
+            ##########
+
+            $hdsl2ShdslEndpointCurrStatus = lookup($1, hdsl2ShdslEndpointCurrStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslprotocolInitFailure"
+
+            @AlertGroup = "HDSL2/SHDSL Protocol Status"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Endpoint Initialization Failed, Protocol Incompatible  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            $BIT = int($1) & 256
+            if(match($BIT, "256")) ### true
+            {
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            }
+            else ### false
+            {
+                @Summary = "End of " + @Summary
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrStatus,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+
+        case "15": ### hdsl2ShdslnoNeighborPresent
+
+            ##########
+            # $1 = hdsl2ShdslEndpointCurrStatus
+            ##########
+
+            $hdsl2ShdslEndpointCurrStatus = lookup($1, hdsl2ShdslEndpointCurrStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            $hdsl2ShdslEndpointSide_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $hdsl2ShdslEndpointSide = lookup($hdsl2ShdslEndpointSide_Raw, Hdsl2ShdslUnitSide)
+            $hdsl2ShdslEndpointWirePair_Raw = extract($OID1, "\.([0-9]+)$")
+            $hdsl2ShdslEndpointWirePair = lookup($hdsl2ShdslEndpointWirePair_Raw, Hdsl2ShdslWirePair)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslnoNeighborPresent"
+
+            @AlertGroup = "HDSL2/SHDSL Neighbor Status"
+            @AlertKey = "hdsl2ShdslEndpointCurrEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw + "." + $hdsl2ShdslEndpointSide_Raw + "." + $hdsl2ShdslEndpointWirePair_Raw
+            @Summary = "HDSL2/SHDSL Neighbor Not Present  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + ", Side: " + $hdsl2ShdslEndpointSide + ", Pair: " + $hdsl2ShdslEndpointWirePair + " )"
+            $BIT = int($1) & 512
+            if(match($BIT, "512")) ### true
+            {
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            }
+            else ### false
+            {
+                @Summary = "End of " + @Summary
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            $hdsl2ShdslEndpointSide = $hdsl2ShdslEndpointSide + " ( " + $hdsl2ShdslEndpointSide_Raw + " )"
+            $hdsl2ShdslEndpointWirePair = $hdsl2ShdslEndpointWirePair + " ( " + $hdsl2ShdslEndpointWirePair_Raw + " )"
+            details($hdsl2ShdslEndpointCurrStatus,$ifIndex,$hdsl2ShdslInvIndex,$hdsl2ShdslEndpointSide,$hdsl2ShdslEndpointWirePair)
+
+        case "16": ### hdsl2ShdslLocalPowerLoss
+
+            ##########
+            # $1 = hdsl2ShdslInvVendorID
+            ##########
+
+            $hdsl2ShdslInvVendorID = $1
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $hdsl2ShdslInvIndex = lookup($hdsl2ShdslInvIndex_Raw, Hdsl2ShdslUnitId)
+            
+            $OS_EventId = "SNMPTRAP-IETF-HDSL2-SHDSL-LINE-MIB-hdsl2ShdslLocalPowerLoss"
+
+            @AlertGroup = "HDSL2/SHDSL Local Power Status"
+            @AlertKey = "hdsl2ShdslInventoryEntry." + $ifIndex + "." + $hdsl2ShdslInvIndex_Raw 
+            @Summary = "HDSL2/SHDSL Local Power Loss, Impending Unit Failure  ( Interface: ifEntry." + $ifIndex + ", Unit ID: " + $hdsl2ShdslInvIndex + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $hdsl2ShdslInvIndex = $hdsl2ShdslInvIndex + " ( " + $hdsl2ShdslInvIndex_Raw + " )"
+            details($hdsl2ShdslInvVendorID,$ifIndex,$hdsl2ShdslInvIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-HDSL2-SHDSL-LINE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-HDSL2-SHDSL-LINE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-HDSL2-SHDSL-LINE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-HDSL2-SHDSL-LINE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-HDSL2-SHDSL-LINE-MIB.include.snmptrap.rules >>>>>")

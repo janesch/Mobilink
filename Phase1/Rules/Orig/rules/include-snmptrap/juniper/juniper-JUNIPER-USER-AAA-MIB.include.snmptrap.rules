@@ -1,0 +1,159 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-USER-AAA-MIB.include.snmptrap.rules 6.0
+#    2008/02/28 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-USER-AAA-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.3.51.1": ### Juniper User Authentication,Authorization and Accounting - Notification from JUNIPER-USER-AAA-MIB (20070821)
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-USER-AAA-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-User AAA"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxAccessAuthServiceUp
+
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-USER-AAA-MIB-jnxAccessAuthServiceUp"
+
+            @AlertGroup = "Access Authentication Status"
+            @AlertKey = ""
+            @Summary = "Access Granted to Start a Specified Service"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+
+        case "2": ### jnxAccessAuthServiceDown
+
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-USER-AAA-MIB-jnxAccessAuthServiceDown"
+
+            @AlertGroup = "Access Authentication Status"
+            @AlertKey = ""
+            @Summary = "Access to a Specified Service Stopped"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+
+        case "3": ### jnxAccessAuthServerDisabled
+
+            ##########
+            # $1 = jnxUserAAAServerName 
+            ##########
+
+            $jnxUserAAAServerName = $1
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-USER-AAA-MIB-jnxAccessAuthServerDisabled"
+
+            @AlertGroup = "Authentication Server Status"
+            @AlertKey = "jnxUserAAAServerName." + $1
+            @Summary = "External Authentication Server Not Responding"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxUserAAAServerName)
+
+        case "4": ### jnxAccessAuthServerEnabled
+
+            ##########
+            # $1 = jnxUserAAAServerName 
+            ##########
+
+            $jnxUserAAAServerName = $1
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-USER-AAA-MIB-jnxAccessAuthServerEnabled"
+
+            @AlertGroup = "Authentication Server Status"
+            @AlertKey = "jnxUserAAAServerName." + $1
+            @Summary = "External Authentication Server Started Responding"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxUserAAAServerName)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-USER-AAA-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-USER-AAA-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-USER-AAA-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-USER-AAA-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-USER-AAA-MIB.include.snmptrap.rules >>>>>")

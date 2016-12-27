@@ -1,0 +1,1528 @@
+
+INC-MIB-AL DEFINITIONS ::= BEGIN
+
+        IMPORTS
+                  enterprises, MODULE-IDENTITY, OBJECT-IDENTITY,
+                  OBJECT-TYPE, NOTIFICATION-TYPE       FROM SNMPv2-SMI
+
+                  TEXTUAL-CONVENTION, DisplayString,   
+                  RowStatus                            FROM SNMPv2-TC
+
+                  tiInc, tiIncTraps, tiIncTrapVars,
+                  TiBoolean, inModules                 FROM INC-MIB-C;
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- This module defines a part of the SNMPv2C MIB definition of
+    -- the INCommander and the @vantage Commander as seen by an OSS
+    -- (Operations Support System).
+    --
+    -- The scope of this module is the reporting of alarms to the OSS.
+    --
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Specific Textual Conventions :
+    --
+
+        -- currently none
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Module Identity :
+    --
+
+    inIncMibAL MODULE-IDENTITY  
+        LAST-UPDATED "0703161700Z"
+        ORGANIZATION "Siemens AG"
+        CONTACT-INFO "TMN/IN-Team
+                      eMail: klaus.schmidtke@siemens.com"
+        DESCRIPTION
+                    "This MIB module describes the managed objecttypes
+                     of the INCommander and the @vantage Commander which 
+                     will be used currently only for the INC/AC internal
+                     alarming as reporting and faulty object.
+
+                     In addition, the notification types for the alarms 
+                     reported by the INC/AC to an Operations Support System
+                     (OSS) are defined in this MIB module."
+
+        REVISION    "0703161700Z"
+        DESCRIPTION "added value indeterminate(9999) to object type
+		     tiAlarmEventTypeId."
+
+        REVISION    "0504121600Z"
+        DESCRIPTION "Corrected SIZE constraints of the object types
+		     tiNum...Alarms."
+
+        REVISION    "0411301200Z"
+        DESCRIPTION "Added IMPORT statement for OID enterprises."
+
+        REVISION    "0304091600Z"
+        DESCRIPTION "Added SIZE constraints to the object types
+		     tiAlarmDescription, tiAlarmSymbNEname."
+
+        REVISION    "0202281400Z"
+        DESCRIPTION "Changed the syntax clause of object types
+                     tiAlarmNotificationID and tiAlarmSyncNotifID
+		     to INTEGER([1|0]..2147483647)"
+
+        REVISION    "0111161200Z"
+        DESCRIPTION "Added tiLogfileTable for alarming purposes only."
+
+        REVISION    "0012150900Z"
+        DESCRIPTION "Changed the syntax clause of object type
+                     tiAlarmNotificationID
+		     from INTEGER(...) to Counter32(...)"
+
+        REVISION    "0001311600Z"
+        DESCRIPTION "Changed the syntax clause of the object types
+                     tiAlarmDescription and tiAlarmSourceName
+		     from OCTET STRING to DisplayString"
+
+        REVISION    "9911171400Z"
+        DESCRIPTION "Added tiPmCounterTable for alarming purposes only."
+
+        REVISION    "9906211600Z"
+        DESCRIPTION "Adaptations to TeMIP MIB loader.
+                     Adaption of tiAlarmSeverity and tiMaxSeverity 
+                     to ITU-T Rec. X.721. 
+                     Adaption of tiAlarmEventTypeId to X.733"
+
+        REVISION    "9905171200Z"
+        DESCRIPTION "Added object types tiAlarmTransferID and 
+                     tiAlarmSyncNotifID.
+                     Renaming in EventInfoEntry.
+                     tiReqSeqNumbers renamed to tiReqTransferIDs. 
+                     tiStartTime renamed to tiAlarmSyncStartTime."
+
+        REVISION    "9904291700Z"
+        DESCRIPTION "naming of sequence number object types clarified"
+
+        REVISION    "9903251200Z"
+        DESCRIPTION "Added object type group tiIncAlarmControl.
+                     Added object tiAlarmNotificationID."
+
+        REVISION    "9811091600Z"
+        DESCRIPTION "Added object types tiAlarmNEtype and tiGneType"
+
+        REVISION    "9810161200Z"
+        DESCRIPTION "- Added tiIcpTable, tiGneTable
+                     - using inModules"
+
+        REVISION    "9806181200Z"
+        DESCRIPTION "- minor changes to meet RFC1902
+                     - MIB Private Syntax Extensions for the DEC TeMIP 
+                       Operation System added"
+                     
+        REVISION    "9711071200Z"
+        DESCRIPTION "enhancements for phase 2:
+                     Additional NOTIFICATION-TYPE macro
+                     instanziations for alarm summary reports."
+
+        ::= { inModules 2 } 
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- used foreign object types :
+    --
+        -- Definitions derived from the file "$OV_CONF/snmpmib" 
+        -- for EMANATE tooling only :
+        hp                OBJECT IDENTIFIER ::= { enterprises 11 }
+        nm                OBJECT IDENTIFIER ::= { hp 2 }
+        openView          OBJECT IDENTIFIER ::= { nm 17 }
+        hpOpenView        OBJECT IDENTIFIER ::= { openView 1 }
+        openViewTrapVars  OBJECT IDENTIFIER ::= { openView 2 }
+
+        openViewTraps     OBJECT IDENTIFIER ::= { hpOpenView 0 }
+
+        ovEvtNodeDown     OBJECT IDENTIFIER ::= { openViewTraps 58916865 }
+        ovEvtIfUp         OBJECT IDENTIFIER ::= { openViewTraps 58916866 }
+
+        --
+        -- openViewSourceName OID: 1.3.6.1.4.1.11.2.17.2.2.0, Type: OCTET STRING
+        --
+        -- refer to manpage trapd.conf(4)
+        --
+
+        -- Defined in module 'HP-UNIX'. Definition derived from the file 
+        -- "$OV_CONF/snmpmib" for EMANATE tooling only :
+        -- the OpenView trap variables Group
+        -- These object ID's cannot be retrieved from the SNMP Agent, but
+        -- instead document the objects sent with OpenView SNMP traps
+ 
+        openViewSourceId OBJECT-TYPE
+                SYNTAX        INTEGER(-2147483647..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The identifier of the software generating the trap/event.
+                 This number is used by HP OpenView software when it sends
+                 an event to the OpenView event system.  It identifies
+                 which software component sent the event.
+                 
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 1 }
+
+        openViewSourceName OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The source of the event (may not be the machine upon
+                 which the event was generated).  This string is used
+                 by HP OpenView software when it sends an event.  It
+                 identifies for which source (node) the event is generated.
+ 
+                 This object cannot be retrieved from the SNMP agent."
+
+                ::= { openViewTrapVars 2 }
+
+        openViewObjectId OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The OpenView object identifier associated with the
+                 source of the trap/event.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 3 }
+
+        openViewData OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "Any miscellaneous data sent with an OpenView trap/event.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 4 }
+
+        openViewSeverity OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The OpenView event severity associated with the trap/event.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 5 }
+
+        openViewCategory OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The OpenView event category associated with the trap/event.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 6 }
+
+        openViewFilter OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The event filter for an application connecting to the
+                 OpenView event system.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 7 }
+
+        openViewEntity OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The entity (string name) of an application connecting
+                 to the OpenView event system.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 8 }
+
+        openViewAddress OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The IP address of the node from where an application
+                 is connecting to the OpenView event system.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 9 }
+
+        openViewPid OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                "The process ID of an application connecting to the
+                 OpenView event system.
+
+                 This object cannot be retrieved from the SNMP agent."
+                ::= { openViewTrapVars 10 }
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        tiIncAlarmReporting OBJECT IDENTIFIER ::= { tiInc 2 } 
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- object types used as FaultyOID in INC internal alarms :
+    --
+
+        tiIncServer OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                        "The authoritative identity of the INC server."
+                ::= { tiInc 1000 }
+
+        tiIncConsole OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                        "The authoritative identity of the INC console."
+                ::= { tiInc 1001 }
+
+        --
+        -- The OMT table. Currently used for alarm reporting only. :
+        --
+
+           tiOmtTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiOmtEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The OMT table. Currently used for alarm reporting only."
+        ::= { tiInc 1002 }
+   
+           tiOmtEntry OBJECT-TYPE
+               SYNTAX     TiOmtEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the OMT table containing information about one OMT."
+               INDEX { tiOmtSymbolicName }
+               ::= { tiOmtTable 1 }
+   
+           TiOmtEntry ::= SEQUENCE {
+               tiOmtRowStatus     RowStatus,
+               tiOmtSymbolicName  DisplayString,
+               tiOmtName          DisplayString 
+                   }
+      
+           tiOmtRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the OMT
+                table."
+               DEFVAL { active }        
+               ::= { tiOmtEntry 1 }
+   
+           tiOmtSymbolicName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the OMT. At the human interface
+                and at the remote OS interface the OMT will be identified by
+                this name. This auxiliary variable is used to form the instance-
+                identifiers of the columnar objects in the OMT table."
+               ::= { tiOmtEntry 2 }
+   
+           tiOmtName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the OMT. At the human interface
+                and at the remote OS interface the OMT will be identified by
+                this name (see tiOmtSymbolicName). This read-only variable is
+                intened to display the symbolic name of the OMT to the user."
+               ::= { tiOmtEntry 3 }
+
+
+        tiIncAlPrinter OBJECT-IDENTITY
+               STATUS current
+               DESCRIPTION
+               "The authoritative identity of the INC Alarm Printer."
+               ::= { tiInc 1003 }
+
+        --
+        -- The CSC table. Currently used for alarm reporting only. :
+        --
+
+           tiCscTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiCscEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The CSC table. Currently used for alarm reporting only."
+               ::= { tiInc 1010 }
+   
+           tiCscEntry OBJECT-TYPE
+               SYNTAX     TiCscEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the CSC table containing information about one CSC."
+               INDEX { tiCscSymbolicName }
+               ::= { tiCscTable 1 }
+   
+           TiCscEntry ::= SEQUENCE {
+               tiCscRowStatus     RowStatus,
+               tiCscSymbolicName  DisplayString,
+               tiCscName          DisplayString 
+                   }
+      
+           tiCscRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the CSC
+                table."
+               DEFVAL { active }        
+               ::= { tiCscEntry 1 }
+   
+           tiCscSymbolicName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the CSC. At the human interface
+                and at the remote OS interface the CSC will be identified by
+                this name. This auxiliary variable is used to form the 
+                instance-identifiers of the columnar objects in the CSC table."
+               ::= { tiCscEntry 2 }
+   
+           tiCscName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the CSC. At the human interface
+                and at the remote OS interface the CSC will be identified by
+                this name (see tiCscSymbolicName). This read-only variable is
+                intended to display the symbolic name of the CSC to the user."
+               ::= { tiCscEntry 3 }
+   
+        --
+        -- The SCP table. Currently used for alarm reporting only. :
+        --
+
+           tiScpTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiScpEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The SCP table. Currently used for alarm reporting only."
+        ::= { tiInc 1011 }
+   
+           tiScpEntry OBJECT-TYPE
+               SYNTAX     TiScpEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the SCP table containing information about one SCP."
+               INDEX { tiScpSymbolicName }
+               ::= { tiScpTable 1 }
+   
+           TiScpEntry ::= SEQUENCE {
+               tiScpRowStatus     RowStatus,
+               tiScpSymbolicName  DisplayString,
+               tiScpName          DisplayString 
+                   }
+      
+           tiScpRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the SCP
+                table."
+               DEFVAL { active }        
+               ::= { tiScpEntry 1 }
+   
+           tiScpSymbolicName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the SCP. At the human interface
+                and at the remote OS interface the SCP will be identified by
+                this name. This auxiliary variable is used to form the 
+                instance-identifiers of the columnar objects in the SCP table."
+               ::= { tiScpEntry 2 }
+   
+           tiScpName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the SCP. At the human interface
+                and at the remote OS interface the SCP will be identified by
+                this name (see tiScpSymbolicName). This read-only variable is
+                intended to display the symbolic name of the SCP to the user."
+               ::= { tiScpEntry 3 }
+   
+        --
+        -- The SMP table. Currently used for alarm reporting only. :
+        --
+
+           tiSmpTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiSmpEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The SMP table. Currently used for alarm reporting only."
+        ::= { tiInc 1012 }
+   
+           tiSmpEntry OBJECT-TYPE
+               SYNTAX     TiSmpEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the SMP table containing information about one SMP."
+               INDEX { tiSmpSymbolicName }
+               ::= { tiSmpTable 1 }
+   
+           TiSmpEntry ::= SEQUENCE {
+               tiSmpRowStatus     RowStatus,
+               tiSmpSymbolicName  DisplayString,
+               tiSmpName          DisplayString 
+                   }
+      
+           tiSmpRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the SMP
+                table."
+               DEFVAL { active }        
+               ::= { tiSmpEntry 1 }
+   
+           tiSmpSymbolicName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the SMP. At the human interface
+                and at the remote OS interface the SMP will be identified by
+                this name. This auxiliary variable is used to form the instance-
+                identifiers of the columnar objects in the SMP table."
+               ::= { tiSmpEntry 2 }
+   
+           tiSmpName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the SMP. At the human interface
+                and at the remote OS interface the SMP will be identified by
+                this name (see tiSmpSymbolicName). This read-only variable is
+                intened to display the symbolic name of the SMP to the user."
+               ::= { tiSmpEntry 3 }
+
+        --
+        -- The ICP table. Currently used for alarm reporting only. :
+        --
+
+           tiIcpTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiIcpEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The ICP table. Currently used for alarm reporting only."
+        ::= { tiInc 1013 }
+   
+           tiIcpEntry OBJECT-TYPE
+               SYNTAX     TiIcpEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the ICP table containing information about one ICP."
+               INDEX { tiIcpSymbolicName }
+               ::= { tiIcpTable 1 }
+   
+           TiIcpEntry ::= SEQUENCE {
+               tiIcpRowStatus     RowStatus,
+               tiIcpSymbolicName  DisplayString,
+               tiIcpName          DisplayString 
+               }
+      
+           tiIcpRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the ICP
+                table."
+               DEFVAL { active }        
+               ::= { tiIcpEntry 1 }
+   
+           tiIcpSymbolicName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the ICP. At the human interface
+                and at the remote OS interface the ICP will be identified by
+                this name. This auxiliary variable is used to form the instance-
+                identifiers of the columnar objects in the ICP table."
+               ::= { tiIcpEntry 2 }
+   
+           tiIcpName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the ICP. At the human interface
+                and at the remote OS interface the ICP will be identified by
+                this name (see tiIcpSymbolicName). This read-only variable is
+                intened to display the symbolic name of the ICP to the user."
+               ::= { tiIcpEntry 3 }
+
+        --
+        -- The GNE (Generic NE) table. Currently used for alarm reporting only. :
+        --
+
+           tiGneTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiGneEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The GNE (Generic NE) table. 
+                Currently used for alarm reporting only."
+        ::= { tiInc 1014 }
+   
+           tiGneEntry OBJECT-TYPE
+               SYNTAX     TiGneEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the GNE table containing information about one GNE."
+               INDEX { tiGneSymbolicName }
+               ::= { tiGneTable 1 }
+   
+           TiGneEntry ::= SEQUENCE {
+               tiGneRowStatus     RowStatus,
+               tiGneSymbolicName  DisplayString,
+               tiGneName          DisplayString,
+               tiGneType          DisplayString
+                   }
+      
+           tiGneRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the GNE
+                table."
+               DEFVAL { active }        
+               ::= { tiGneEntry 1 }
+   
+           tiGneSymbolicName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the GNE. At the human interface
+                and at the remote OS interface the GNE will be identified by
+                this name. This auxiliary variable is used to form the instance-
+                identifiers of the columnar objects in the GNE table."
+               ::= { tiGneEntry 2 }
+   
+           tiGneName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the GNE. At the human interface
+                and at the remote OS interface the GNE will be identified by
+                this name (see tiGneSymbolicName). This read-only variable is
+                intened to display the symbolic name of the GNE to the user."
+               ::= { tiGneEntry 3 }
+
+           tiGneType OBJECT-TYPE
+               SYNTAX      DisplayString(SIZE(32))     
+               MAX-ACCESS  accessible-for-notify
+               STATUS      current
+               DESCRIPTION 
+                   "The type of the Network Element (NE).  E.g.:
+                   'SCP', 'SMP', 'CSC', 'ICP', 'Router', 'Hub',
+                   'Firewall', ..."
+               ::= { tiGneEntry 4 }
+
+        --
+        -- The Performance Monitoring (PM) Counter table.
+	-- Currently used for alarm reporting only. 
+        --
+
+           tiPmCounterTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiPmCounterEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The Performance Monitoring (PM) Counter table. 
+                Currently used for alarm reporting only."
+        ::= { tiInc 1020 }
+   
+           tiPmCounterEntry OBJECT-TYPE
+               SYNTAX     TiPmCounterEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the PM counter table containing information 
+	        about one PM counter."
+               INDEX { tiPmCounterId, tiPmCounterSource }
+               ::= { tiPmCounterTable 1 }
+   
+           TiPmCounterEntry ::= SEQUENCE {
+               tiPmCounterRowStatus     RowStatus,
+               tiPmCounterId            DisplayString,
+               tiPmCounterLabel         DisplayString,
+               tiPmCounterSource        DisplayString
+                   }
+      
+           tiPmCounterRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the GNE
+                table."
+               DEFVAL { active }        
+               ::= { tiPmCounterEntry 1 }
+   
+           tiPmCounterId OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The identifier assigned to the PM counter. 
+	        At the human interface and at the remote OS interface 
+		the PM counter will be identified by this name. 
+		This auxiliary variable is used to form the instance-
+                identifiers of the columnar objects in the PM counter 
+		table."
+               ::= { tiPmCounterEntry 2 }
+   
+           tiPmCounterLabel OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The label assigned to the PM counter. 
+	        At the human interface and at the remote OS interface 
+		the PM counter will be identified by this label (see 
+		tiPmCounterId). 
+		This read-only variable is intended to display the 
+		label of the PM counter to the user."
+               ::= { tiPmCounterEntry 3 }
+
+           tiPmCounterSource OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS read-only
+               STATUS     current
+               DESCRIPTION
+               "The source (host) name assigned to the PM counter. 
+	        At the human interface and at the remote OS interface 
+		the PM counter will be identified by this label (see 
+		tiPmCounterId). 
+		May be an empty string if the counter is not specific
+		for a single source.
+		This read-only variable is intended to display the 
+		source name of the PM counter to the user."
+               ::= { tiPmCounterEntry 4 }
+
+        --
+        -- The Commander Logfile Table.
+	-- Currently used for alarm reporting only. 
+        --
+
+           tiIncLogfileTable OBJECT-TYPE
+               SYNTAX     SEQUENCE OF TiIncLogfileEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "The Commander logfile table. 
+                Currently used for alarm reporting only."
+               ::= { tiInc 1030 }
+   
+           tiIncLogfileEntry OBJECT-TYPE
+               SYNTAX     TiIncLogfileEntry
+               MAX-ACCESS not-accessible
+               STATUS     current
+               DESCRIPTION
+               "An entry in the Commander logfile table containing 
+	        information about one Commander logfile."
+               INDEX { tiIncLogfileSymbName }
+               ::= { tiIncLogfileTable 1 }
+   
+           TiIncLogfileEntry ::= SEQUENCE {
+               tiIncLogfileRowStatus     RowStatus,
+               tiIncLogfileSymbName      DisplayString,
+               tiIncLogfileName          DisplayString
+                   }
+      
+           tiIncLogfileRowStatus OBJECT-TYPE
+               SYNTAX     RowStatus
+               MAX-ACCESS read-create
+               STATUS     current
+               DESCRIPTION
+               "The status column is used for creating, modifying, and 
+                deleting instances of the columnar objects in the Commander
+		Logfile table."
+               DEFVAL { active }        
+               ::= { tiIncLogfileEntry 1 }
+   
+           tiIncLogfileSymbName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The symbolic name assigned to the Commander logfile. 
+                This auxiliary variable is used to form the instance-
+                identifiers of the columnar objects in the Commander
+		logfile table."
+               ::= { tiIncLogfileEntry 2 }
+   
+           tiIncLogfileName OBJECT-TYPE
+               SYNTAX     DisplayString
+               MAX-ACCESS accessible-for-notify
+               STATUS     current
+               DESCRIPTION
+               "The name assigned to the Commander logfile. 
+                This variable is intended to display the symbolic name 
+		of the Commander logfile to the user."
+               ::= { tiIncLogfileEntry 3 }
+   
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Definitions regarding Alarm Surveillance function 'Report Alarm' :
+    -- 
+
+        --
+        -- Object Types :
+        -- 
+
+        tiIncAlarmTable OBJECT-TYPE
+                SYNTAX  SEQUENCE OF AlarmTableEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                      "A list of tiAlarmTable entries."
+        ::= { tiIncAlarmReporting 1 }
+
+        tiIncAlarmTableEntry OBJECT-TYPE
+                    SYNTAX     AlarmTableEntry
+                    MAX-ACCESS not-accessible
+                    STATUS     current
+                DESCRIPTION 
+                        "The information about a alarm that has occured 
+                         inbetween a NE ( e.g. SCP ) or INC."
+                INDEX { tiAlarmFaultyObject, tiAlarmErrorID }
+        ::= { tiIncAlarmTable 1 }
+
+            AlarmTableEntry ::= SEQUENCE {
+                tiAlarmDateTime        DisplayString,
+                tiAlarmReportingObject OBJECT IDENTIFIER,
+                tiAlarmFaultyObject    OBJECT IDENTIFIER,
+                tiAlarmEventTypeId     INTEGER,
+                tiAlarmSeverity        INTEGER,
+                tiAlarmErrorID         INTEGER,
+                tiAlarmEndKey          INTEGER,
+                tiAlarmDescription     OCTET STRING,
+                tiAlarmSequenceNumber  INTEGER,
+                tiAlarmSourceName      DisplayString,
+                tiAlarmSymbNEname      DisplayString,
+                tiAlarmNEtype          DisplayString,
+                tiAlarmTransferID      INTEGER,
+                tiAlarmNotificationID  INTEGER
+        }
+
+        tiAlarmDateTime OBJECT-TYPE
+                SYNTAX DisplayString(SIZE(19))     
+                    MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Represents the occurrence date and time of an alarm as 
+                  display string in the format as defined by the 
+                  ASN.1 standard data type GeneralizedTime 
+                  ( used format: YYYYMMDDHHMMSS[+-]HHMM,
+                  e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+                  respectively ITU-T Recommendation X.208"
+            ::= { tiIncAlarmTableEntry 1 }
+
+        tiAlarmReportingObject OBJECT-TYPE
+                    SYNTAX     OBJECT IDENTIFIER
+                    MAX-ACCESS accessible-for-notify
+                    STATUS     current
+                    DESCRIPTION
+                   "Object Id of the alarm reporting object according 
+                    to the SNMP object model defined for the NE."
+            ::= { tiIncAlarmTableEntry 2 }
+
+        tiAlarmFaultyObject OBJECT-TYPE
+                    SYNTAX     OBJECT IDENTIFIER
+                    MAX-ACCESS accessible-for-notify
+                    STATUS     current
+                    DESCRIPTION
+                   "Object Id of the faulty object according to the SNMP
+                    object model defined for the NE. Could be identical 
+                    with the Object Id of the alarm reporting object."
+            ::= { tiIncAlarmTableEntry 3 }
+
+        tiAlarmEventTypeId OBJECT-TYPE
+                SYNTAX INTEGER        {
+                                communicationsAlarm (2),
+                                environmentalAlarm (3),
+                                equipmentAlarm (4),
+                                processingErrorAlarm (10),
+                                qualityOfServiceAlarm (11),
+                        	indeterminate(9999)
+                                }
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Event Type Id as integer. This field specifies the 
+                  type of the alarm being reported. 
+                  The value range conforms to the ITU-T Recommendation 
+                  X.733."
+            ::= { tiIncAlarmTableEntry 4 }
+
+        tiAlarmSeverity OBJECT-TYPE
+                SYNTAX INTEGER {
+                        indeterminate(0),
+                        -- used when it is not possible to assign 
+                        -- one of the following values :
+                        critical(1), 
+                        major(2), 
+                        minor(3), 
+                        warning(4), 
+                        cleared(5)
+                    }
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                 "The perceived severity of an alarm as integer 
+                  conforming to the ITU-T Recommendation X.721.
+                  Alarm cleared messages are sent with the value 
+                  cleared."
+            ::= { tiIncAlarmTableEntry 5 }
+
+        tiAlarmErrorID OBJECT-TYPE
+                SYNTAX INTEGER (1..4294967295)     
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Error Id as integer. This Error Id is specific to 
+                  the general alarm source type (e.g. SCP, INC)."
+            ::= { tiIncAlarmTableEntry 6 }
+  
+        tiAlarmEndKey OBJECT-TYPE
+                SYNTAX     TiBoolean
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                 "End Key of an alarm as integer. It indicates whether 
+                  an alarm cleared message is expected ( value label 
+                  true ) or not ( value label false )."
+            ::= { tiIncAlarmTableEntry 7 }
+
+        tiAlarmDescription OBJECT-TYPE
+                SYNTAX  OCTET STRING(SIZE (0..255))
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                 "Represents the description of an alarm.
+                  Additional free form text as octett string
+                  in ISO Latin-1 format."
+            ::= { tiIncAlarmTableEntry 8 }
+
+        tiAlarmSequenceNumber OBJECT-TYPE
+                SYNTAX        INTEGER (1..2147483647)
+                MAX-ACCESS  accessible-for-notify
+                STATUS  deprecated
+                DESCRIPTION 
+                  "The unique event sequence number.
+                   Will be incremented by one for each new event.
+                   Could wrap from 2147483647 to 1.
+                   In case of INCommander internal alarms always 1.
+
+                   This field is provided for compatibility with 
+                   earlier versions of the INCommander.
+                   Obsoleted by tiAlarmTransferID."
+
+        ::= { tiIncAlarmTableEntry 9 }
+
+        tiAlarmSourceName OBJECT-TYPE
+                SYNTAX DisplayString
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION 
+                "The source of the event (may not be the machine upon
+                 which the event was generated)."
+        ::= { tiIncAlarmTableEntry 10 }
+
+        tiAlarmSymbNEname OBJECT-TYPE
+                SYNTAX	DisplayString(SIZE (1..64))
+                MAX-ACCESS  accessible-for-notify
+                STATUS  current
+                DESCRIPTION 
+                        "The symbolic Network Element ( NE ) name.
+                        Normally it is different from the source name."
+        ::= { tiIncAlarmTableEntry 11 }
+
+        tiAlarmNEtype OBJECT-TYPE
+                SYNTAX      DisplayString(SIZE(32))     
+                MAX-ACCESS  accessible-for-notify
+                STATUS      current
+                DESCRIPTION 
+                   "The type of the Network Element (NE).  E.g.:
+                   'SCP', 'SMP', 'CSC', 'ICP', 'Router', 'Hub',
+                   'Firewall', ..."
+        ::= { tiIncAlarmTableEntry 12 }
+
+        tiAlarmNotificationID OBJECT-TYPE
+                SYNTAX        INTEGER (1..2147483647)
+                MAX-ACCESS  accessible-for-notify
+                STATUS  current
+                DESCRIPTION 
+                   "The notification id unique for a whole INCommander
+                    management area and is common for all configured OS's.
+
+                    It will be incremented by one for each new event
+                    received from any configured network element ( 
+                    including the INCommander itself ) and could wrap 
+                    from 2147483647 to 1.
+
+                    Gaps in the notification identifier of consecutive
+                    alarm SNMP traps received at the OS site are normal
+                    because of the separate EFD processing for each OS." 
+        ::= { tiIncAlarmTableEntry 13 }
+
+        tiAlarmTransferID OBJECT-TYPE
+                SYNTAX INTEGER (1..2147483647)
+                MAX-ACCESS read-only
+                STATUS current
+                DESCRIPTION
+                   "The OS specific unique transfer identifier.
+                    Will be incremented by one for each new event
+                    sent to an OS.
+                    Could wrap from 2147483647 to 1.
+
+                    Gaps in the transfer identifier of consecutive
+                    alarm SNMP traps received at the OS site indicates 
+                    the lost of SNMP traps sent from the INCommander to 
+                    the OS."
+        ::= { tiIncAlarmTableEntry 14 }
+
+        -- object types for alarm summary reports :
+
+        tiIsConnectionReliable OBJECT-TYPE
+                SYNTAX     TiBoolean
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Is the host responding to requests ?"
+        ::= { tiIncAlarmReporting 2 }
+
+        tiMaxSeverity OBJECT-TYPE
+                SYNTAX INTEGER {
+                        indeterminate(0),
+                        -- used when it is not possible to assign 
+                        -- one of the following values :
+                        critical(1), 
+                        major(2), 
+                        minor(3), 
+                        warning(4), 
+                        cleared(5)
+                       }
+                MAX-ACCESS accessible-for-notify
+                STATUS     current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Highest alarm severity of the host specified
+                  with the trap object tiAlarmSourceName.0"
+        ::= { tiIncAlarmReporting 3 }
+
+        tiNumCriticalAlarms OBJECT-TYPE
+                SYNTAX INTEGER (0..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Number of open critical alarms."
+        ::= { tiIncAlarmReporting 4 }
+
+        tiNumMajorAlarms OBJECT-TYPE
+                SYNTAX INTEGER (0..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Number of open major alarms."
+        ::= { tiIncAlarmReporting 5 }
+
+        tiNumMinorAlarms OBJECT-TYPE
+                SYNTAX INTEGER (0..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Number of open minor alarms."
+        ::= { tiIncAlarmReporting 6 }
+
+        tiNumWarnings OBJECT-TYPE
+                SYNTAX INTEGER (0..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Number of open warnings."
+        ::= { tiIncAlarmReporting 7 }
+
+        tiNumNormalEvents OBJECT-TYPE
+                SYNTAX INTEGER (0..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Number of open events with severity normal."
+        ::= { tiIncAlarmReporting 8 }
+
+        tiNumUnknownEvents OBJECT-TYPE
+                SYNTAX INTEGER (0..2147483647)
+                MAX-ACCESS accessible-for-notify
+                STATUS current
+                DESCRIPTION
+                 "Alarm Summary Report:
+                  Number of open events with unknown severity."
+        ::= { tiIncAlarmReporting 9 }
+
+
+        --
+        -- object types for the group Alarm Control :
+        --
+
+        tiIncAlarmControl OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                "The authoritative identity of the INC alarm control."
+                ::= { tiIncAlarmReporting 100 }
+
+        tiOsName OBJECT-TYPE
+                SYNTAX DisplayString(SIZE(0..32))
+                MAX-ACCESS read-write
+                STATUS current
+                DESCRIPTION
+                 "Write access: symbolic name of the requesting OS in the 
+                  INCommander object database. Used in conjunction with
+                  other selection objects ( e.g. tiAlarmSyncStartTime.0 ).
+                  Read access: empty string."
+        ::= { tiIncAlarmControl 1 }
+
+        tiAlarmSyncStartTime OBJECT-TYPE
+                SYNTAX DisplayString(SIZE(12))
+                MAX-ACCESS read-write
+                STATUS current
+                DESCRIPTION
+                 "Alarm synchronization :
+
+                  This object could be passed in a SNMP Set Request 
+                  along with the object tiOsName.0 in order to initiate
+                  the transmission of alarms in the central INCommander 
+                  Active Alarm Database as SNMP traps to the requesting OS.
+
+                  Write access: 
+                  Time stamp ( local time ) with the format 
+                  YYYYMMDDhhmm whereas
+                    YYYY = year; value range: 1970... 2099
+                    MM   = month; value range: 01...12
+                    DD   = day of month; value range: 01...31
+                    hh   = hour; value range: 00...23
+                    mm   = minute; value range: 00...59
+
+                  The value 197001010000 could be used for requesting 
+                  the whole actual content of the INCommander Active 
+                  Alarm Database.
+                   
+                  Read access: empty string."
+        ::= { tiIncAlarmControl 10 }
+
+        tiClearNotificationIds OBJECT-TYPE
+                SYNTAX DisplayString
+                MAX-ACCESS read-write
+                STATUS current
+                DESCRIPTION
+                 "Alarm synchronization :
+
+                  This object could be passed in a SNMP Set Request
+		  along with the object tiOsName.0 in order to initiate
+		  the clearing of alarms from the central INCommander
+		  Active Alarm Database.
+
+                  Write access: notification id(s) of the event(s)
+                  to be cleared from the INCommander active alarm
+                  database. Syntax:
+
+                    tiClearNotificationIds := item 
+                            | tiClearNotificationIds ',' item
+
+                    item   := number
+                              | range
+
+                    number := digits
+                     
+                    range  := number '-' number
+                     
+                  Examples: 7771,7774 
+                            1233-1235
+                            1234
+                            1230,1233-1235
+                            
+
+                  Read access: empty string."
+
+        ::= { tiIncAlarmControl 11 }
+
+        tiAlarmSyncNotifID OBJECT-TYPE
+                SYNTAX     INTEGER (0..2147483647)
+                MAX-ACCESS read-write
+                STATUS current
+                DESCRIPTION
+                 "Alarm synchronization :
+
+                  This object could be passed in a SNMP Set Request 
+                  along with the object tiOsName.0 in order to initiate
+                  the transmission of alarms in the central INCommander 
+                  Active Alarm Database as SNMP traps to the requesting OS.
+
+                  Write access: 
+                  Notification identifier of the first alarm to be
+                  transmitted. All alarms with a notification identifier 
+                  equal or greater than the specified notification identifier 
+                  are transmitted.
+                  The value 0 could be used for requesting the whole actual
+                  content of the INCommander Active Alarm Database.
+                   
+                  Read access: 0"
+        ::= { tiIncAlarmControl 12 }
+
+        tiReqTransferIDs OBJECT-TYPE
+                SYNTAX DisplayString
+                MAX-ACCESS read-write
+                STATUS current
+                DESCRIPTION
+                 "Reliable event transmission to an OS:
+
+                  This object could be passed in a SNMP Set Request
+                  along with the object tiOsName.0 in order to initiate
+                  the retransmission of the specified alarm and alarm
+                  cleared SNMP traps from the OS specific event buffer
+                  to the requesting OS.
+
+                  Write access: transfer identifier(s) of the event(s)
+                  to be retransmitted to the requesting OS from the 
+                  associated event buffer.
+                  For the syntax refer to tiClearNotificationIds.
+
+                  Read access: empty string."
+
+        ::= { tiIncAlarmControl 20 }
+
+        tiIncEventInfoTable OBJECT-TYPE
+                SYNTAX  SEQUENCE OF EventInfoEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "Reliable event transmission to an OS:
+                     A list of tiIncEventInfoTable entries."
+        ::= { tiIncAlarmControl 21 }
+
+        tiIncEventInfoEntry OBJECT-TYPE
+                SYNTAX     EventInfoEntry
+                MAX-ACCESS not-accessible
+                STATUS     current
+                DESCRIPTION 
+                    "Reliable event transmission to an OS:
+                     This table provides information about the content 
+                     of the event buffer for the requesting OS."
+                INDEX { tiIncOsName }
+        ::= { tiIncEventInfoTable 1 }
+
+            EventInfoEntry ::= SEQUENCE {
+                tiIncOsName            DisplayString(SIZE(0..32)),
+                tiIncRecentTransferID  INTEGER (1..2147483647),
+                tiIncOldestTransferID  INTEGER (1..2147483647)
+        }
+
+        tiIncOsName OBJECT-TYPE
+                SYNTAX DisplayString(SIZE(0..32))
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                 "Reliable event transmission to an OS:
+                  Symbolic name of the requesting OS in the 
+                  INCommander object database."
+        ::= { tiIncEventInfoEntry 1 }
+
+        tiIncRecentTransferID OBJECT-TYPE
+                SYNTAX INTEGER (1..2147483647)
+                MAX-ACCESS read-only
+                STATUS current
+                DESCRIPTION
+                 "Reliable event transmission to an OS:
+                  Transfer identifier of the most recent event available 
+                  in the event buffer for the requesting an OS.
+                  Could wrap from 2147483647 to 1."
+        ::= { tiIncEventInfoEntry 2 }
+
+        tiIncOldestTransferID OBJECT-TYPE
+                SYNTAX INTEGER (1..2147483647)
+                MAX-ACCESS read-only
+                STATUS current
+                DESCRIPTION
+                 "Reliable event transmission to an OS:
+                  Transfer identifier of the oldest event available 
+                  in the event buffer for the requesting OS.
+                  Could wrap from 2147483647 to 1."
+        ::= { tiIncEventInfoEntry 3 }
+
+
+        --
+        -- Notifications Types :
+        -- 
+
+        -- notications types for single alarm and alarm cleared reports :
+
+        tiIncTrapCritical NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmDateTime, 
+                         tiAlarmReportingObject, 
+                         tiAlarmFaultyObject, 
+                         tiAlarmEventTypeId, 
+                         tiAlarmSeverity, 
+                         tiAlarmErrorID,
+                         tiAlarmEndKey,
+                         tiAlarmDescription,
+                         tiAlarmSequenceNumber,
+                         tiAlarmSourceName,
+                         tiAlarmSymbNEname,
+                         tiAlarmNotificationID,
+                         tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Trap issued by the INC to an OS with a severity 
+                     value of 'critical'.
+                     The objects contained in the variable binding list
+                     are scalar objects ( with index 0 ).
+
+                    SEVERITY-DEFAULT: Critical 
+                    NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+                    EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+                    ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+                    "
+        ::= { tiIncTraps 2301 }
+        
+        tiIncTrapMajor NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmDateTime, 
+                         tiAlarmReportingObject, 
+                         tiAlarmFaultyObject, 
+                         tiAlarmEventTypeId, 
+                         tiAlarmSeverity, 
+                         tiAlarmErrorID,
+                         tiAlarmEndKey,
+                         tiAlarmDescription,
+                         tiAlarmSequenceNumber,
+                         tiAlarmSourceName,
+                         tiAlarmSymbNEname,
+                         tiAlarmNotificationID,
+                         tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Trap issued by the INC to an OS with a severity 
+                     value of 'major'.
+                     The objects contained in the variable binding list
+                     are scalar objects ( with index 0 ).
+
+                    SEVERITY-DEFAULT: Major
+                    NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+                    EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+                    ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+                    "
+        ::= { tiIncTraps 2302 }
+        
+        tiIncTrapMinor NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmDateTime, 
+                         tiAlarmReportingObject, 
+                         tiAlarmFaultyObject, 
+                         tiAlarmEventTypeId, 
+                         tiAlarmSeverity, 
+                         tiAlarmErrorID,
+                         tiAlarmEndKey,
+                         tiAlarmDescription,
+                         tiAlarmSequenceNumber,
+                         tiAlarmSourceName,
+                         tiAlarmSymbNEname,
+                         tiAlarmNotificationID,
+                         tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Trap issued by the INC to an OS with a severity 
+                     value of 'minor'.
+                     The objects contained in the variable binding list
+                     are scalar objects ( with index 0 ).
+
+                    SEVERITY-DEFAULT: Minor
+                    NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+                    EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+                    ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+                    "
+        ::= { tiIncTraps 2303 }
+        
+        tiIncTrapWarning NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmDateTime, 
+                         tiAlarmReportingObject, 
+                         tiAlarmFaultyObject, 
+                         tiAlarmEventTypeId, 
+                         tiAlarmSeverity, 
+                         tiAlarmErrorID,
+                         tiAlarmEndKey,
+                         tiAlarmDescription,
+                         tiAlarmSequenceNumber,
+                         tiAlarmSourceName,
+                         tiAlarmSymbNEname,
+                         tiAlarmNotificationID,
+                         tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Trap issued by the INC to an OS with a 
+                     severity value of 'warning'.
+                     The objects contained in the variable binding list
+                     are scalar objects ( with index 0 ).
+
+                    SEVERITY-DEFAULT: Warning
+                    NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+                    EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+                    ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+                    "
+        ::= { tiIncTraps 2304 }
+        
+        tiIncTrapNormal NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmDateTime, 
+                         tiAlarmReportingObject, 
+                         tiAlarmFaultyObject, 
+                         tiAlarmEventTypeId, 
+                         tiAlarmSeverity, 
+                         tiAlarmErrorID,
+                         tiAlarmEndKey,
+                         tiAlarmDescription,
+                         tiAlarmSequenceNumber,
+                         tiAlarmSourceName,
+                         tiAlarmSymbNEname,
+                         tiAlarmNotificationID,
+                         tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Trap issued by the INC to an OS with a 
+                     severity value of 'indeterminate'.
+                     The objects contained in the variable binding list
+                     are scalar objects ( with index 0 ).
+
+                    SEVERITY-DEFAULT: Indeterminate
+                    NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+                    EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+                    ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+                    "
+        ::= { tiIncTraps 2305 }
+        
+        tiIncTrapCleared NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmDateTime, 
+                         tiAlarmReportingObject, 
+                         tiAlarmFaultyObject, 
+                         tiAlarmEventTypeId, 
+                         tiAlarmSeverity, 
+                         tiAlarmErrorID,
+                         tiAlarmEndKey,
+                         tiAlarmDescription,
+                         tiAlarmSequenceNumber,
+                         tiAlarmSourceName,
+                         tiAlarmSymbNEname,
+                         tiAlarmNotificationID,
+                         tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Trap issued by the INC to an OS with a 
+                     severity value of 'cleared'.
+                     The objects contained in the variable binding list
+                     are scalar objects ( with index 0 ).
+
+                    SEVERITY-DEFAULT: Clear
+                    NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+                    EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+                    ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+                    "
+        ::= { tiIncTraps 2306 }
+
+
+        -- notications types for alarm summary reports :
+
+        tiIncPeriodicalSumRep NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmSourceName,
+                           tiAlarmSymbNEname,
+                           tiIsConnectionReliable,
+                           tiMaxSeverity,
+                           tiNumCriticalAlarms,
+                           tiNumMajorAlarms,
+                           tiNumMinorAlarms,
+                           tiNumWarnings,
+                           tiNumNormalEvents,
+                           tiNumUnknownEvents
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Periodical Alarm Summary Report for 
+                     a single host."
+        ::= { tiIncTraps 2310 }
+
+        tiIncSpontaneousSumRep NOTIFICATION-TYPE
+                OBJECTS  { tiAlarmSourceName,
+                           tiAlarmSymbNEname,
+                           tiIsConnectionReliable,
+                           tiMaxSeverity,
+                           tiNumCriticalAlarms,
+                           tiNumMajorAlarms,
+                           tiNumMinorAlarms,
+                           tiNumWarnings,
+                           tiNumNormalEvents,
+                           tiNumUnknownEvents
+                }
+                STATUS current
+                DESCRIPTION 
+                    "Spontaneous Alarm Summary Report for 
+                     a single host.
+                     Will be issued if the value of the object
+                     tiMaxSeverity has changed."
+        ::= { tiIncTraps 2311 }
+
+END -- of INC-MIB-AL

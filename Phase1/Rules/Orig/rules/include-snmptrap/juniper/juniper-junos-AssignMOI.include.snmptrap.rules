@@ -1,0 +1,89 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    juniper-junos-AssignMOI.include.snmptrap.rules 1.0
+#    2005/01/21 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#       
+###############################################################################
+
+if(exists($MOI_Local))
+{
+    $MOI = $MOI_Local
+    $MOIType = $MOIType_Local
+    
+    $MOI_NodeAlias = ""
+    $MOI_PriObj = ""
+    $MOI_SecObj = ""
+    $MOI_RootObj = ""
+    $VAR_RelateRO2PO = 0
+    $VAR_RelateRO2SO = 0
+    $VAR_RelateSO2PO = 0
+    
+    include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-junos-DecodeMOI.include.snmptrap.rules"
+    
+    if(!match($MOI_NodeAlias, ""))
+    {
+        $OS_LocalNodeAlias = $MOI_NodeAlias
+    }
+    if(exists($MOI_PriObj))
+    {
+        $OS_LocalPriObj = $MOI_PriObj
+    }
+    if(exists($MOI_SecObj))
+    {
+        $OS_LocalSecObj = $MOI_SecObj
+    }
+    if(exists($MOI_RootObj))
+    {
+        $OS_LocalRootObj = $MOI_RootObj
+    }
+    
+    $VAR_RelateLRO2LPO = $VAR_RelateRO2PO
+    $VAR_RelateLRO2LSO = $VAR_RelateRO2SO
+    $VAR_RelateLSO2LPO = $VAR_RelateSO2PO
+}
+if(exists($MOI_Remote))
+{
+    $MOI = $MOI_Remote
+    $MOIType = $MOIType_Remote
+    
+    $MOI_NodeAlias = ""
+    $MOI_PriObj = ""
+    $MOI_SecObj = ""
+    $MOI_RootObj = ""
+    $VAR_RelateRO2PO = 0
+    $VAR_RelateRO2SO = 0
+    $VAR_RelateSO2PO = 0
+    
+    include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-junos-DecodeMOI.include.snmptrap.rules"
+    
+    if(!match($MOI_NodeAlias, ""))
+    {
+        $OS_RemoteNodeAlias = $MOI_NodeAlias
+    }
+    if(exists($MOI_PriObj))
+    {
+        $OS_RemotePriObj = $MOI_PriObj
+    }
+    if(exists($MOI_SecObj))
+    {
+        $OS_RemoteSecObj = $MOI_SecObj
+    }
+    if(exists($MOI_RootObj))
+    {
+        $OS_RemoteRootObj = $MOI_RootObj
+    }
+    
+    $VAR_RelateRRO2RPO = $VAR_RelateRO2PO
+    $VAR_RelateRRO2RSO = $VAR_RelateRO2SO
+    $VAR_RelateRSO2RPO = $VAR_RelateSO2PO
+}

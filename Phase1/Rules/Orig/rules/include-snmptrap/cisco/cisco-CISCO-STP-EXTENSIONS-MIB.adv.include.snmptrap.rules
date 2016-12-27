@@ -1,0 +1,75 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-STP-EXTENSIONS-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-STP-EXTENSIONS-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-STP-EXTENSIONS-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### stpxInconsistencyUpdate
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "stpxInconsistencyUpdate"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "stpxInconsistencyEntry." + $stpxVlanIndex + "." + $stpxPortIndex
+        $OS_LocalRootObj = "dot1dBasePortEntry." + $stpxPortIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### stpxRootInconsistencyUpdate
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "stpxRootInconsistencyUpdate"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "stpxRootInconsistencyEntry." + $stpxRootInconsistencyIndex + "." + $stpxRootInconsistencyPortIndex
+        $OS_LocalRootObj = "dot1dBasePortEntry." + $stpxRootInconsistencyPortIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### stpxLoopInconsistencyUpdate
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "stpxLoopInconsistencyUpdate"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "stpxLoopInconsistencyEntry." + $stpxLoopInconsistencyIndex + "." + $stpxLoopInconsistencyPortIndex
+        $OS_LocalRootObj = "dot1dBasePortEntry." + $stpxLoopInconsistencyPortIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-STP-EXTENSIONS-MIB.adv.include.snmptrap.rules >>>>>")

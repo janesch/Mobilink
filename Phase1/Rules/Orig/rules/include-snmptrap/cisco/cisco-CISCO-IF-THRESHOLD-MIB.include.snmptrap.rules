@@ -1,0 +1,227 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IF-THRESHOLD-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IF-THRESHOLD-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.218.2": ### Cisco Interface Threshold - Notifications from CISCO-IF-THRESHOLD-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IF-THRESHOLD-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Interface Threshold"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cifthIfThresholdFired
+
+            ##########
+            # $1 = cifthIfLastThresholdFired
+            # $2 = cifthIfThresholdFiredLstChange 
+            # $3 = cifthIfThresholdFiredLstSeverity
+            ##########
+
+            $cifthIfLastThresholdFired = $1
+            $cifthIfThresholdFiredLstChange = $2
+            $cifthIfThresholdFiredLstSeverity = lookup($3, CifthThresholdSeverity) + " ( " + $3 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cifthIfThresholdFiredTemplate = extract($OID1, "\.([0-9]+)$")
+            details($cifthIfLastThresholdFired,$cifthIfThresholdFiredLstChange,$cifthIfThresholdFiredLstSeverity,$ifIndex,$cifthIfThresholdFiredTemplate)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IF-THRESHOLD-MIB-cifthIfThresholdFired"
+
+            @AlertGroup = "Interface Threshold Status"
+            @AlertKey = "cifthIfThresholdFiredEntry." + $ifIndex + "." + $cifthIfThresholdFiredTemplate
+            @Summary = "Threshold Crossed"
+            switch($3)
+            {
+                case "1": ### fail
+                    @Summary = @Summary + ", Interface Failed"
+                    
+                    $SEV_KEY = $OS_EventId + "_fail"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### degrade
+                    @Summary = @Summary + ", Interface Degraded"
+                    
+                    $SEV_KEY = $OS_EventId + "_degrade"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### info
+                    @Summary = @Summary + ", Interface Information"
+                    
+                    $SEV_KEY = $OS_EventId + "_info"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### other
+                    @Summary = @Summary + ", Interface Warning"
+                    
+                    $SEV_KEY = $OS_EventId + "_other"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = @Summary + ", Interface Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+        case "2": ### cifthIfThresholdCleared
+
+            ##########
+            # $1 = cifthIfLastThresholdFired 
+            # $2 = cifthIfThresholdFiredLstChange
+            # $3 = cifthIfThresholdFiredLstSeverity
+            ##########
+
+            $cifthIfLastThresholdFired = $1
+            $cifthIfThresholdFiredLstChange = $2
+            $cifthIfThresholdFiredLstSeverity = lookup($3, CifthThresholdSeverity) + " ( " + $3 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cifthIfThresholdFiredTemplate = extract($OID1, "\.([0-9]+)$")
+            details($cifthIfLastThresholdFired,$cifthIfThresholdFiredLstChange,$cifthIfThresholdFiredLstSeverity,$ifIndex,$cifthIfThresholdFiredTemplate)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IF-THRESHOLD-MIB-cifthIfThresholdCleared"
+
+            @AlertGroup = "Interface Threshold Status"
+            @AlertKey = "cifthIfThresholdFiredEntry." + $ifIndex + "." + $cifthIfThresholdFiredTemplate
+            @Summary = "Interface Threshold Cleared  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### cifthTemplateIfStatusChange
+
+            ##########
+            # $1 = cifthTemplateIfAssignOperStatus
+            ##########
+
+            $cifthTemplateIfAssignOperStatus = lookup($1, cifthTemplateIfAssignOperStatus) + " ( " + $1 + " )"
+            $cifthTemplateIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cifthTemplateIfAssignInterface = extract($OID1, "\.([0-9]+)$")
+            details($cifthTemplateIfAssignOperStatus,$cifthTemplateIndex,$cifthTemplateIfAssignInterface)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IF-THRESHOLD-MIB-cifthTemplateIfStatusChange"
+
+            @AlertGroup = "Interface Threshold Template Status"
+            @AlertKey = "cifthTemplateIfAssignEntry." + $cifthTemplateIndex + "." + $cifthTemplateIfAssignInterface
+            switch($1)
+            {
+                case "1": ### up
+                    @Summary = "Template Thresholds Up on Interface"
+                    
+                    $SEV_KEY = $OS_EventId + "_up"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### down
+                    @Summary = "Template Thresholds Down on Interface"
+                    
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Template Thresholds Status Unknown on Interface"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IF-THRESHOLD-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IF-THRESHOLD-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IF-THRESHOLD-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IF-THRESHOLD-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IF-THRESHOLD-MIB.include.snmptrap.rules >>>>>")

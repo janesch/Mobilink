@@ -1,0 +1,71 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-SNA-SDLC-MIB.adv.include.snmptrap.rules 1.0
+#    2007/05/15 Alka Girdhar
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-SNA-SDLC-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-SNA-SDLC-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### sdlcPortStatusChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "sdlcPortStatusChange"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "ifEntry." + $ifIndex 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### sdlcLSStatusChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "sdlcLSStatusChange"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "sdlcLSAdminEntry." + $ifIndex + "." + $sdlcLSAddress
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### sdlcLSStatusChange1
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "sdlcLSStatusChange1"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "sdlcLSAdminEntry." + $ifIndex + "." + $sdlcLSAddress
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-SNA-SDLC-MIB.adv.include.snmptrap.rules >>>>>")

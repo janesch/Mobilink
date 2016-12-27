@@ -1,0 +1,363 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-RPR-MIB.include.snmptrap.rules 1.0
+#    2007/08/03 Alka Girdhar
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-RPR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.2.17.5.5": ### RPR Notifications - from RPR-MIB (20011118)
+
+    log(DEBUG, "<<<<< Entering... IETF-RPR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-RPR-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "421": ### rprTrapIpsRingWrapped
+
+            ##########
+            # $1 = hwRprIPSIfIndex
+            # $2 = hwRprIPSSide
+            # $3 = hwRprIPSIfName
+            # $4 = hwRprIPSAddress
+            # $5 = hwRprIPSNeighborAddress
+            # $6 = hwRprIPSOperatorRequest
+            # $7 = hwRprIPSAutomaticRequest
+            # $8 = hwRprIPSRequestPathIndicator
+            # $9 = hwRprIPSWrapCounter
+            # $10 = hwRprIPSLastWrapTimeStamp
+            ##########
+
+            $hwRprIPSIfIndex = $1
+            $hwRprIPSSide = lookup($2, hwRprIPSSide) + " ( " + $2 + " )"
+            $hwRprIPSIfName = $3
+            $hwRprIPSAddress = $4
+            $hwRprIPSNeighborAddress = $5
+            $hwRprIPSOperatorRequest = lookup($6, hwRprIPSOperatorRequest) + " ( " + $6 + " )"
+            $hwRprIPSAutomaticRequest = lookup($7, hwRprIPSAutomaticRequest) + " ( " + $7 + " )"
+            $hwRprIPSRequestPathIndicator = lookup($8, hwRprIPSRequestPathIndicator) + " ( " + $8 + " )"
+            $hwRprIPSWrapCounter = $9
+            $hwRprIPSLastWrapTimeStamp = $10
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapIpsRingWrapped"
+
+            @AlertGroup = "RPR IPS Ring"
+            @AlertKey = "hwRprIPSTrapEntry." + $hwRprIPSIfIndex
+            @Summary = "RPR Trap IPS Ring Wrapped - Value of rprMACIpsWrapCounter incremented"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprIPSIfIndex,$hwRprIPSSide,$hwRprIPSIfName,$hwRprIPSAddress,$hwRprIPSNeighborAddress,$hwRprIPSOperatorRequest,$hwRprIPSAutomaticRequest,$hwRprIPSRequestPathIndicator,$hwRprIPSWrapCounter,$hwRprIPSLastWrapTimeStamp)
+
+        case "422": ### rprTrapIpsRingRestored
+
+            ##########
+            # $1 = hwRprIPSIfIndex
+            # $2 = hwRprIPSSide
+            # $3 = hwRprIPSIfName
+            # $4 = hwRprIPSAddress
+            # $5 = hwRprIPSNeighborAddress
+            # $6 = hwRprIPSWrapCounter
+            # $7 = hwRprIPSLastWrapTimeStamp
+            ##########
+
+            $hwRprIPSIfIndex = $1
+            $hwRprIPSSide = lookup($2, hwRprIPSSide) + " ( " + $2 + " )"
+            $hwRprIPSIfName = $3
+            $hwRprIPSAddress = $4
+            $hwRprIPSNeighborAddress = $5
+            $hwRprIPSWrapCounter = $6
+            $hwRprIPSLastWrapTimeStamp = $7
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapIpsRingRestored"
+
+            @AlertGroup = "RPR IPS Ring"
+            @AlertKey = "hwRprIPSTrapEntry." + $hwRprIPSIfIndex
+            @Summary = "RPR Trap IPS Ring Restored - Value of rprMACIpsUnWrapCounter increments"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprIPSIfIndex,$hwRprIPSSide,$hwRprIPSIfName,$hwRprIPSAddress,$hwRprIPSNeighborAddress,$hwRprIPSWrapCounter,$hwRprIPSLastWrapTimeStamp)
+
+        case "423": ### rprTrapIpsPassThrough
+
+            ##########
+            # $1 = hwRprIPSIfIndex
+            # $2 = hwRprIPSIfName
+            # $3 = hwRprIPSAddress
+            # $4 = hwRprIPSOperatorRequest
+            # $5 = hwRprIPSAutomaticRequest
+            ##########
+
+            $hwRprIPSIfIndex = $1
+            $hwRprIPSIfName = $2
+            $hwRprIPSAddress = $3
+            $hwRprIPSOperatorRequest = lookup($4, hwRprIPSOperatorRequest) + " ( " + $4 + " )"
+            $hwRprIPSAutomaticRequest = lookup($5, hwRprIPSAutomaticRequest) + " ( " + $5 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapIpsPassThrough"
+
+            @AlertGroup = "RPR IPS Ring Pass Through"
+            @AlertKey = "hwRprIPSTrapEntry." + $hwRprIPSIfIndex
+            @Summary = "RPR Trap IPS Ring is in pass through mode"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprIPSIfIndex,$hwRprIPSIfName,$hwRprIPSAddress,$hwRprIPSOperatorRequest,$hwRprIPSAutomaticRequest)
+
+        case "424": ### rprTrapSDClear
+
+            ##########
+            # $1 = hwRprSfSdIfIndex
+            # $2 = hwRprSfSdSide
+            # $3 = hwRprSfSdIfName
+            # $4 = hwRprSfSdProtectLevel
+            # $5 = hwRprSfSdErrorCode
+            ##########
+
+            $hwRprSfSdIfIndex = $1
+            $hwRprSfSdSide = lookup($2, hwRprSfSdSide) + " ( " + $2 + " )"
+            $hwRprSfSdIfName = $3
+            $hwRprSfSdProtectLevel = $4
+            $hwRprSfSdErrorCode = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapSDClear"
+
+            @AlertGroup = "RPR Signal Degrade"
+            @AlertKey = "hwRprSfSdTrapEntry." + $hwRprSfSdIfIndex
+            @Summary = "RPR Signal Degrade error restored"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprSfSdIfIndex,$hwRprSfSdSide,$hwRprSfSdIfName,$hwRprSfSdProtectLevel,$hwRprSfSdErrorCode)
+
+        case "425": ### rprTrapSDHappen
+
+            ##########
+            # $1 = hwRprSfSdIfIndex
+            # $2 = hwRprSfSdSide
+            # $3 = hwRprSfSdIfName
+            # $4 = hwRprSfSdProtectLevel
+            # $5 = hwRprSfSdErrorCode
+            ##########
+
+            $hwRprSfSdIfIndex = $1
+            $hwRprSfSdSide = lookup($2, hwRprSfSdSide) + " ( " + $2 + " )"
+            $hwRprSfSdIfName = $3
+            $hwRprSfSdProtectLevel = $4
+            $hwRprSfSdErrorCode = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapSDHappen"
+
+            @AlertGroup = "RPR Signal Degrade"
+            @AlertKey = "hwRprSfSdTrapEntry." + $hwRprSfSdIfIndex
+            @Summary = "RPR Signal Degrade error happened"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprSfSdIfIndex,$hwRprSfSdSide,$hwRprSfSdIfName,$hwRprSfSdProtectLevel,$hwRprSfSdErrorCode)
+
+        case "426": ### rprTrapSFClear
+
+            ##########
+            # $1 = hwRprSfSdIfIndex
+            # $2 = hwRprSfSdSide
+            # $3 = hwRprSfSdIfName
+            # $4 = hwRprSfSdProtectLevel
+            # $5 = hwRprSfSdErrorCode
+            ##########
+
+            $hwRprSfSdIfIndex = $1
+            $hwRprSfSdSide = lookup($2, hwRprSfSdSide) + " ( " + $2 + " )"
+            $hwRprSfSdIfName = $3
+            $hwRprSfSdProtectLevel = $4
+            $hwRprSfSdErrorCode = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapSFClear"
+
+            @AlertGroup = "RPR Signal Failure"
+            @AlertKey = "hwRprSfSdTrapEntry." + $hwRprSfSdIfIndex
+            @Summary = "RPR Signal Failure restored"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprSfSdIfIndex,$hwRprSfSdSide,$hwRprSfSdIfName,$hwRprSfSdProtectLevel,$hwRprSfSdErrorCode)
+
+        case "427": ### rprTrapSFHappen
+
+            ##########
+            # $1 = hwRprSfSdIfIndex
+            # $2 = hwRprSfSdSide
+            # $3 = hwRprSfSdIfName
+            # $4 = hwRprSfSdProtectLevel
+            # $5 = hwRprSfSdErrorCode
+            ##########
+
+            $hwRprSfSdIfIndex = $1
+            $hwRprSfSdSide = lookup($2, hwRprSfSdSide) + " ( " + $2 + " )"
+            $hwRprSfSdIfName = $3
+            $hwRprSfSdProtectLevel = $4
+            $hwRprSfSdErrorCode = $5
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprTrapSFHappen"
+
+            @AlertGroup = "RPR Signal Failure"
+            @AlertKey = "hwRprSfSdTrapEntry." + $hwRprSfSdIfIndex
+            @Summary = "RPR Signal Failure occured"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprSfSdIfIndex,$hwRprSfSdSide,$hwRprSfSdIfName,$hwRprSfSdProtectLevel,$hwRprSfSdErrorCode)
+
+        case "428": ### rprMateLineFailedClear
+
+            ##########
+            # $1 = hwRprMatelineIfIndex
+            # $2 = hwRprMatelineIfName
+            # $3 = hwRprMatelineEncodeErr
+            # $4 = hwRprMatelineSyncErrCount
+            # $5 = hwRprMatelineRuntPacket
+            # $6 = hwRprMatelineLostPacket
+            ##########
+
+            $hwRprMatelineIfIndex = $1
+            $hwRprMatelineIfName = $2
+            $hwRprMatelineEncodeErr = $3
+            $hwRprMatelineSyncErrCount = $4
+            $hwRprMatelineRuntPacket = $5
+            $hwRprMatelineLostPacket = $6
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprMateLineFailedClear"
+
+            @AlertGroup = "RPR Mate Line"
+            @AlertKey = "hwRprMatelineTrapEntry." + $hwRprMatelineIfIndex
+            @Summary = "RPR Mate Line Failure restored"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprMatelineIfIndex,$hwRprMatelineIfName,$hwRprMatelineEncodeErr,$hwRprMatelineSyncErrCount,$hwRprMatelineRuntPacket,$hwRprMatelineLostPacket)
+
+        case "429": ### rprMateLineFailedHappen
+
+            ##########
+            # $1 = hwRprMatelineIfIndex
+            # $2 = hwRprMatelineIfName
+            # $3 = hwRprMatelineEncodeErr
+            # $4 = hwRprMatelineSyncErrCount
+            # $5 = hwRprMatelineRuntPacket
+            # $6 = hwRprMatelineLostPacket
+            ##########
+
+            $hwRprMatelineIfIndex = $1
+            $hwRprMatelineIfName = $2
+            $hwRprMatelineEncodeErr = $3
+            $hwRprMatelineSyncErrCount = $4
+            $hwRprMatelineRuntPacket = $5
+            $hwRprMatelineLostPacket = $6
+
+            $OS_EventId = "SNMPTRAP-IETF-RPR-MIB-rprMateLineFailedHappen"
+
+            @AlertGroup = "RPR Mate Line"
+            @AlertKey = "hwRprMatelineTrapEntry." + $hwRprMatelineIfIndex
+            @Summary = "RPR Mate Line Failure happened" 
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($hwRprMatelineIfIndex,$hwRprMatelineIfName,$hwRprMatelineEncodeErr,$hwRprMatelineSyncErrCount,$hwRprMatelineRuntPacket,$hwRprMatelineLostPacket)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-RPR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-RPR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-RPR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-RPR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-RPR-MIB.include.snmptrap.rules >>>>>")

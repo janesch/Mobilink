@@ -1,0 +1,176 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-OPTICAL-MONITOR-MIB.include.snmptrap.rules 1.0
+#    2006/04/28 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-OPTICAL-MONITOR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.264.2": ### Cisco Monitoring for Optical Parameters - Notifications from CISCO-OPTICAL-MONITOR-MIB (20020510) 
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-OPTICAL-MONITOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-OPTICAL MONITOR"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cOpticalMonParameterStatus
+
+            ##########
+            # $1 = cOpticalParameterValue 
+            # $2 = cOpticalParamAlarmStatus 
+            # $3 = cOpticalParamAlarmCurMaxThresh 
+            # $4 = cOpticalParamAlarmCurMaxSev 
+            # $5 = cOpticalParamAlarmLastChange 
+            ##########
+
+            $cOpticalParameterValue = $1
+            $cOpticalParamAlarmStatus = $2
+            $cOpticalParamAlarmCurMaxThresh = $3
+            $cOpticalParamAlarmCurMaxSev = lookup($4, OpticalAlarmSeverity) + " ( " + $4 + " )"
+            $cOpticalParamAlarmLastChange = $5
+            
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $cOpticalMonDirection_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $cOpticalMonLocation_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cOpticalMonParameterType_Raw = extract($OID1, "\.([0-9]+)$")
+            $cOpticalMonParameterType = lookup($cOpticalMonParameterType_Raw, OpticalParameterType)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-OPTICAL-MONITOR-MIB-cOpticalMonParameterStatus"
+
+            @AlertGroup = $cOpticalMonParameterType + " Threshold"
+            @AlertKey = "cOpticalMonEntry." + $ifIndex + "." + $cOpticalMonDirection_Raw + "." + $cOpticalMonLocation_Raw + "." + $cOpticalMonParameterType_Raw
+
+            $cOpticalParamAlarmStatusBit0 = int($2) & 1
+            if(match($cOpticalParamAlarmStatusBit0, "1"))
+            {
+                @Summary = $cOpticalMonParameterType + " Monitored Value, " + $1 + " Exceeds High Alarm Threshold, " + $3 
+            }
+            $cOpticalParamAlarmStatusBit1 = (int($2) & 2) >> 1
+            if(match($cOpticalParamAlarmStatusBit1, "1"))
+            {
+               @Summary = $cOpticalMonParameterType + " Monitored Value, " + $1 + " Exceeds High Warning Threshold, " + $3 
+            }
+            $cOpticalParamAlarmStatusBit2 = (int($2) & 4) >> 2
+            if(match($cOpticalParamAlarmStatusBit2, "1"))
+            {
+               @Summary = $cOpticalMonParameterType + " Monitored Value, " + $1 + " Exceeds Low Alarm Threshold, " + $3 
+            }
+            $cOpticalParamAlarmStatusBit3 = (int($2) & 8) >> 3
+            if(match($cOpticalParamAlarmStatusBit3, "1"))
+            {
+               @Summary = $cOpticalMonParameterType + " Monitored Value, " + $1 + " Exceeds Low Warning Threshold, " + $3 
+            }
+            switch($4)
+            {
+                case "1": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                    
+                    $DEFAULT_Severity = 5 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### major 
+                    $SEV_KEY = $OS_EventId + "_major"
+                    
+                    $DEFAULT_Severity = 4 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### minor 
+                    $SEV_KEY = $OS_EventId + "_minor"
+                    
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### notAlarmed 
+                    $SEV_KEY = $OS_EventId + "_notAlarmed"
+                    
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### notReported 
+                    $SEV_KEY = $OS_EventId + "_notReported"
+                    
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### cleared 
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    
+                    $DEFAULT_Severity = 1 
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            update(@Severity)
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            $cOpticalMonDirection = lookup($cOpticalMonDirection_Raw, OpticalIfDirection) + " ( " + $cOpticalMonDirection_Raw + " )"
+            $cOpticalMonLocation = lookup($cOpticalMonLocation_Raw, OpticalIfMonLocation) + " ( " + $cOpticalMonLocation_Raw + " )"
+            $cOpticalMonParameterType = $cOpticalMonParameterType + " ( " + $cOpticalMonParameterType_Raw + " )"
+            details($cOpticalParameterValue,$cOpticalParamAlarmStatus,$cOpticalParamAlarmCurMaxThresh,$cOpticalParamAlarmCurMaxSev,$cOpticalParamAlarmLastChange,$ifIndex,$cOpticalMonDirection,$cOpticalMonLocation,$cOpticalMonParameterType)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-OPTICAL-MONITOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-OPTICAL-MONITOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-OPTICAL-MONITOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-OPTICAL-MONITOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-OPTICAL-MONITOR-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,291 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-SNMP-REPEATER-MIB.include.snmptrap.rules 2.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-SNMP-REPEATER-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-SNMP-REPEATER-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.2.1.22": ### SNMP Repeater - Traps from SNMP-REPEATER-MIB (RFC1368, RFC1516, RFC2108) 
+
+    @Agent = "IETF-SNMP-REPEATER-MIB"
+    @Class = "40086"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### rptrHealth (Obsolete in RFC2108 compliant agents)
+        
+            ##########
+            # $1 = rptrOperStatus
+            ##########
+
+            $rptrOperStatus = lookup($1, rptrOperStatus) + " ( " + $1 + " )"
+            details($rptrOperStatus)
+
+            $OS_EventId = "SNMPTRAP-IETF-SNMP-REPEATER-MIB-rptrHealth"
+            
+            @AlertGroup = "Repeater Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### other - undefined or unknown status
+                    @Summary = "Repeater Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_other"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### ok - no known failures
+                    @Summary = "Repeater OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### rptrFailure - repeater-related failure
+                    @Summary = "Repeater Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_rptrFailure"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### groupFailure - group-related failure
+                    @Summary = "Repeater Group Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_groupFailure"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### portFailure - port-related failure
+                    @Summary = "Repeater Port Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_portFailure"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### generalFailure - failure, unspecified type
+                    @Summary = "Repeater Failure, Unspecified Type"
+                    
+                    $SEV_KEY = $OS_EventId + "_generalFailure"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "Repeater Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+   
+        case "2": ### rptrGroupChange (Obsolete in RFC2108 compliant agents)
+        
+            ##########
+            # $1 = rptrGroupIndex
+            ##########
+
+            $rptrGroupIndex = $1
+            details($rptrGroupIndex)
+            
+            $OS_EventId = "SNMPTRAP-IETF-SNMP-REPEATER-MIB-rptrGroupChange"
+            
+            @AlertGroup = "Repeater Port Group Change"
+            @AlertKey = "rptrGroupEntry." + $1
+            @Summary = "Repeater Port Group Structure Changed  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager
+
+        case "3": ### rptrResetEvent (Obsolete in RFC2108 compliant agents)
+        
+            ##########
+            # $1 = rptrOperStatus
+            ##########
+
+            $rptrOperStatus = lookup($1, rptrOperStatus) + " ( " + $1 + " )"
+            details($rptrOperStatus)
+
+            $OS_EventId = "SNMPTRAP-IETF-SNMP-REPEATER-MIB-rptrResetEvent"
+            
+            @AlertGroup = "Repeater Status"
+            @AlertKey = ""
+            @Summary = "Repeater Reset"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager
+            
+        case "4": ### rptrInfoHealth
+
+            ##########
+            # $1 = rptrInfoOperStatus
+            ##########
+
+            $rptrInfoOperStatus = lookup($1, rptrInfoOperStatus) + " ( " + $1 + " )"
+            details($rptrInfoOperStatus)
+
+            $OS_EventId = "SNMPTRAP-IETF-SNMP-REPEATER-MIB-rptrInfoHealth"
+            
+            @AlertGroup = "Repeater Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### other
+                    @Summary = "Repeater Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_other"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### ok
+                    @Summary = "Repeater OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### failure
+                    @Summary = "Repeater Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_failure"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "Repeater Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "5": ### rptrInfoResetEvent
+
+            ##########
+            # $1 = rptrInfoOperStatus
+            ##########
+
+            $rptrInfoOperStatus = lookup($1, rptrInfoOperStatus) + " ( " + $1 + " )"
+            details($rptrInfoOperStatus)
+
+            $OS_EventId = "SNMPTRAP-IETF-SNMP-REPEATER-MIB-rptrInfoResetEvent"
+            
+            @AlertGroup = "Repeater Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### other
+                    @Summary = "Repeater Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_other"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### ok
+                    @Summary = "Repeater OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### failure
+                    @Summary = "Repeater Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_failure"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "Repeater Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-SNMP-REPEATER-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-SNMP-REPEATER-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-SNMP-REPEATER-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-SNMP-REPEATER-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-SNMP-REPEATER-MIB.include.snmptrap.rules >>>>>")

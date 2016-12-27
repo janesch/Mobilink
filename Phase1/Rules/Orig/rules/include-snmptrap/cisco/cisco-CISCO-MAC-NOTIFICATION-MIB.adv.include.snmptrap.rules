@@ -1,0 +1,69 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-MAC-NOTIFICATION-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-MAC-NOTIFICATION-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-MAC-NOTIFICATION-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### cmnMacChangedNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "cmnMacChangedNotification"
+        $OS_OsiLayer = 2
+        
+    case "2": ### cmnMacMoveNotification
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "cmnMacMoveNotification"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "dot1dBasePortEntry." + $4
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### cmnMacThresholdExceedNotif
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2008
+        $OS_X733SpecificProb = "cmnMacThresholdExceedNotif"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "cmnUtilizationEntry." + $entPhysicalIndex
+        $OS_LocalRootObj = "entPhysicalEntry." + $entPhysicalIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-MAC-NOTIFICATION-MIB.adv.include.snmptrap.rules >>>>>")

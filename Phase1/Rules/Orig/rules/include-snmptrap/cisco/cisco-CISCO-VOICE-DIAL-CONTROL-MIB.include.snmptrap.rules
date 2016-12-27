@@ -1,0 +1,250 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-VOICE-DIAL-CONTROL-MIB.include.snmptrap.rules 2.2 
+#    2005/04/08 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-VOICE-DIAL-CONTROL-MIB
+#
+###############################################################################
+#
+# 2.2 - Corrected a bug that caused incorrect direction/origin of call to be
+#       displayed in the Alarm Details.
+#
+#     - Changed default Severity, Type and ExpireTime of
+#       cvdcPoorQoVNotification and cvdcPoorQoVNotificationRev1 to 2, 13, and
+#       1800 respectively.
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.63.2": ### Cisco Voice Dial Control - Notifications from CISCO-VOICE-DIAL-CONTROL-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-VOICE-DIAL-CONTROL-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Voice Dial Control"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cvdcPoorQoVNotification
+
+            ##########
+            # $1 = cvVoIPCallHistoryConnectionId 
+            # $2 = cvVoIPCallHistoryIcpif
+            # $3 = cvVoIPCallHistoryRemoteIPAddress 
+            # $4 = cCallHistoryCallOrigin
+            # $5 = cvCommonDcCallHistoryCoderTypeRate
+            ##########
+
+            $cvVoIPCallHistoryConnectionId = $1
+            $cvVoIPCallHistoryIcpif = $2
+            $cvVoIPCallHistoryRemoteIPAddress = $3
+            $cCallHistoryCallOrigin = lookup($4, cCallHistoryCallOrigin) + " ( " + $4 + " )"
+            $cvCommonDcCallHistoryCoderTypeRate = lookup($5, CvcCoderTypeRate)
+            $cCallHistoryIndex = extract($OID1, "\.([0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-VOICE-DIAL-CONTROL-MIB-cvdcPoorQoVNotification"
+
+            @AlertGroup = "VoIP Quality of Voice"
+            @AlertKey = "cvVoIPCallHistoryEntry." + $cCallHistoryIndex
+            @Summary = "Poor VoIP Quality of Voice, Coder Rate: " + $cvCommonDcCallHistoryCoderTypeRate
+            switch($4)
+            {
+                case "1": ### originate
+                    @Summary = @Summary + "  ( Call To: " + $3 + " )"
+                case "2": ### answer
+                    @Summary = @Summary + "  ( Call From: " + $3 + " )"
+                case "3": ### callback
+                    @Summary = @Summary + "  ( Callback To: " + $3 + " )"
+                default:
+                    @Summary = @Summary + "  ( Call: " + $3 + " )"
+            }
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $cvCommonDcCallHistoryCoderTypeRate = $cvCommonDcCallHistoryCoderTypeRate + " ( " + $5 + " )"
+            details($cvVoIPCallHistoryConnectionId,$cvVoIPCallHistoryIcpif,$cvVoIPCallHistoryRemoteIPAddress,$cCallHistoryCallOrigin,$cvCommonDcCallHistoryCoderTypeRate,$cCallHistoryIndex)
+
+        case "2": ### cvdcPoorQoVNotificationRev1
+
+            ##########
+            # $1 = cvVoIPCallHistoryConnectionId
+            # $2 = cvVoIPCallHistoryIcpif
+            # $3 = cvVoIPCallHistoryRemMediaIPAddrT
+            # $4 = cvVoIPCallHistoryRemMediaIPAddr
+            # $5 = cCallHistoryCallOrigin 
+            # $6 = cvCommonDcCallHistoryCoderTypeRate
+            ##########
+
+            $cvVoIPCallHistoryConnectionId = $1
+            $cvVoIPCallHistoryIcpif = $2
+            $cvVoIPCallHistoryRemMediaIPAddrT = lookup($3, InetAddressType) + " ( " + $3 + " )"
+            $cvVoIPCallHistoryRemMediaIPAddr = $4
+            $cCallHistoryCallOrigin = lookup($5, cCallHistoryCallOrigin) + " ( " + $5 + " )"
+            $cvCommonDcCallHistoryCoderTypeRate = lookup($6, CvcCoderTypeRate)
+            $cCallHistoryIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-VOICE-DIAL-CONTROL-MIB-cvdcPoorQoVNotificationRev1"
+
+            @AlertGroup = "VoIP Quality of Voice"
+            @AlertKey = "cvVoIPCallHistoryEntry." + $cCallHistoryIndex
+            @Summary = "Poor VoIP Quality of Voice, Coder Rate: " + $cvCommonDcCallHistoryCoderTypeRate
+            switch($5)
+            {
+                case "1": ### originate
+                    @Summary = @Summary + "  ( Call To: " + $4 + " )"
+                case "2": ### answer
+                    @Summary = @Summary + "  ( Call From: " + $4 + " )"
+                case "3": ### callback
+                    @Summary = @Summary + "  ( Callback To: " + $4 + " )"
+                default:
+                    @Summary = @Summary + "  ( Call: " + $4 + " )"
+            }
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $cvCommonDcCallHistoryCoderTypeRate = $cvCommonDcCallHistoryCoderTypeRate + " ( " + $6 + " )"
+            details($cvVoIPCallHistoryConnectionId,$cvVoIPCallHistoryIcpif,$cvVoIPCallHistoryRemMediaIPAddrT,$cvVoIPCallHistoryRemMediaIPAddr,$cCallHistoryCallOrigin,$cvCommonDcCallHistoryCoderTypeRate,$cCallHistoryIndex)
+
+
+        case "3": ### cvdcActiveDS0sHighNotification
+
+            $cvCallActiveDS0s = $1
+            $cvCallActiveDS0sHighThreshold = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-VOICE-DIAL-CONTROL-MIB-cvdcActiveDS0sHighNotification"
+
+            @AlertGroup = "DS0 Threshold Status"
+
+            @AlertKey = ""
+            @Summary = "Percentage of Active DSO Exceeds Threshold Value " + $2
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cvCallActiveDS0s,$cvCallActiveDS0sHighThreshold)
+  
+        case "4": ### cvdcActiveDS0sLowNotification
+            
+            $cvCallActiveDS0s = $1
+            $cvCallActiveDS0sLowThreshold = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-VOICE-DIAL-CONTROL-MIB-cvdcActiveDS0sLowNotification"
+
+            @AlertGroup = "DS0 Threshold Status"
+            @AlertKey = ""
+            @Summary = "Percentage of Active DSO Below Threshold Value " + $2
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+        
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cvCallActiveDS0s,$cvCallActiveDS0sLowThreshold)
+
+        case "5": ### cvdcFallbackNotification
+
+            $cvVoIPCallHistoryConnectionId = $1
+            $cvVoIPCallHistoryFallbackIcpif = $2
+            $cvVoIPCallHistoryFallbackLoss = $3
+            $cvVoIPCallHistoryFallbackDelay = $4
+            $cvVoIPCallHistoryRemSigIPAddrT = $5
+            $cvVoIPCallHistoryRemSigIPAddr = $6
+            $cvVoIPCallHistoryRemMediaIPAddrT = $7
+            $cvVoIPCallHistoryRemMediaIPAddr = $8
+            $cCallHistoryCallOrigin = $9
+            $cvCommonDcCallHistoryCoderTypeRate = $10
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-VOICE-DIAL-CONTROL-MIB-cvdcFallbackNotification"
+
+            @AlertGroup = "Call Fallback Probe Status"
+            @AlertKey = "CvVoIPCallHistoryEntry." + $1
+            @Summary = "Destination IP Address of Call Fallback Probe Fails"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cvVoIPCallHistoryConnectionId,$cvVoIPCallHistoryFallbackIcpif,$cvVoIPCallHistoryFallbackLoss,$cvVoIPCallHistoryFallbackDelay,$cvVoIPCallHistoryRemSigIPAddrT,$cvVoIPCallHistoryRemSigIPAddr,$cvVoIPCallHistoryRemMediaIPAddrT,$cvVoIPCallHistoryRemMediaIPAddr,$cCallHistoryCallOrigin,$cvCommonDcCallHistoryCoderTypeRate)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-VOICE-DIAL-CONTROL-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-VOICE-DIAL-CONTROL-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-VOICE-DIAL-CONTROL-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-VOICE-DIAL-CONTROL-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-VOICE-DIAL-CONTROL-MIB.include.snmptrap.rules >>>>>")

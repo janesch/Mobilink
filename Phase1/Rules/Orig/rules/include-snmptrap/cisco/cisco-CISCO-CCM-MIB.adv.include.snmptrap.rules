@@ -1,0 +1,120 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CCM-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CCM-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-CCM-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ccmCallManagerFailed
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3010
+        $OS_X733SpecificProb = "ccmCallManagerFailed"
+        $OS_OsiLayer = 7
+
+    case "2": ### ccmPhoneFailed
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "ccmPhoneFailed"
+        $OS_OsiLayer = 0
+    
+    case "3": ### ccmPhoneStatusUpdate
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "ccmPhoneStatusUpdate"
+        $OS_OsiLayer = 0
+    
+    case "4": ### ccmGatewayFailed
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1009
+        $OS_X733SpecificProb = "ccmGatewayFailed"
+        $OS_OsiLayer = 1
+    
+        $OS_LocalPriObj = "ccmGatewayEntry." + extract($OID2, "\.([0-9]+)$")
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $4
+
+    case "5": ### ccmMediaResourceListExhausted
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3009
+        $OS_X733SpecificProb = "ccmMediaResourceListExhausted"
+        $OS_OsiLayer = 0
+        
+    case "6": ### ccmRouteListExhausted
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3009
+        $OS_X733SpecificProb = "ccmRouteListExhausted"
+        $OS_OsiLayer = 0
+
+    case "7": ### ccmGatewayLayer2Change
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1009
+        $OS_X733SpecificProb = "ccmGatewayLayer2Change"
+        $OS_OsiLayer = 1
+    
+        $OS_LocalPriObj = "ccmGatewayEntry." + extract($OID2, "\.([0-9]+)$")
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $4
+        $OS_RemotePriObj = "ifEntry." + $5
+        $OS_RemoteRootObj = $OS_LocalPriObj
+        $VAR_RelateRRO2RPO = 1
+        $VAR_RelateRRO2RSO = 0
+        $VAR_RelateRSO2RPO = 0
+
+    case "8": ### ccmMaliciousCall
+
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 0
+        $OS_X733SpecificProb = "ccmMaliciousCall"
+        $OS_OsiLayer = 0
+
+    case "9": ### ccmQualityReport
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 0
+        $OS_X733SpecificProb = "ccmQualityReport"
+        $OS_OsiLayer = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CCM-MIB.adv.include.snmptrap.rules >>>>>")

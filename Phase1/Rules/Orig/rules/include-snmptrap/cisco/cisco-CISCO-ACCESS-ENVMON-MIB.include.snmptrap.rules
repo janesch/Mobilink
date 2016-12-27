@@ -1,0 +1,245 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ACCESS-ENVMON-MIB.include.snmptrap.rules 2.1 
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ACCESS-ENVMON-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.61.2": ### Cisco Access Environment Monitor - traps from CISCO-ACCESS-ENVMON-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ACCESS-ENVMON-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Access Environmental Monitor"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch($specific-trap)
+    {
+        case "1": ### caemTemperatureNotification
+        
+            ##########
+            # $1 = ciscoEnvMonTemperatureStatusDescr 
+            # $2 = ciscoEnvMonTemperatureState 
+            ##########
+            
+            $ciscoEnvMonTemperatureStatusDescr = $1
+            $ciscoEnvMonTemperatureState = lookup($2, ciscoEnvMonState) + " ( " + $2 + " )"
+            $ciscoEnvMonTemperatureStatusIndex = extract($OID1, "\.([0-9]+)$")
+            details($ciscoEnvMonTemperatureStatusDescr,$ciscoEnvMonTemperatureState,$ciscoEnvMonTemperatureStatusIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ACCESS-ENVMON-MIB-caemTemperatureNotification"
+
+            @AlertGroup = "Temperature Status"
+            @AlertKey = "ciscoEnvMonTemperatureStatusEntry." + $ciscoEnvMonTemperatureStatusIndex
+            switch($2)
+            {
+                case "1": ### normal
+                    @Summary = "Temperature Normal"
+                    
+                    $SEV_KEY = $OS_EventId + "_normal"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### warning
+                    @Summary = "Temperature Warning"
+                    
+                    $SEV_KEY = $OS_EventId + "_warning"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### critical
+                    @Summary = "Temperature Critical"
+                    
+                    $SEV_KEY = $OS_EventId + "_critical"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### shutdown
+                    @Summary = "Temperature Critical, Shutdown System Immediately"
+                    
+                    $SEV_KEY = $OS_EventId + "_shutdown"
+                    $DEFAULT_Severity = 5
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### notPresent
+                    @Summary = "Temperature Sensor Not Present"
+                    
+                    $SEV_KEY = $OS_EventId + "_notPresent"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### notFunctioning
+                    @Summary = "Temperature Sensor Not Functioning Properly"
+                    
+                    $SEV_KEY = $OS_EventId + "_notFunctioning"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Temperature Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( Testpoint: " + $1 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+        
+        case "2": ### caemVoltageNotification
+            
+            ##########
+            # $1 = ciscoEnvMonVoltageStatusDescr 
+            # $2 = ciscoEnvMonVoltageState 
+            ##########
+            
+            $ciscoEnvMonVoltageStatusDescr = $1
+            $ciscoEnvMonVoltageState = lookup($2, ciscoEnvMonState) + " ( " + $2 + " )"
+            $ciscoEnvMonVoltageStatusIndex = extract($OID1, "\.([0-9]+)$")
+            details($ciscoEnvMonVoltageStatusDescr,$ciscoEnvMonVoltageState,$ciscoEnvMonVoltageStatusIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ACCESS-ENVMON-MIB-caemVoltageNotification"
+
+            @AlertGroup = "Voltage Status"
+            @AlertKey = "ciscoEnvMonVoltageStatusEntry." + $ciscoEnvMonVoltageStatusIndex
+            switch($2)
+            {
+                case "1": ### normal
+                    @Summary = "Voltage Normal"
+
+                    $SEV_KEY = $OS_EventId + "_normal"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### warning
+                    @Summary = "Voltage Warning"
+                    
+                    $SEV_KEY = $OS_EventId + "_warning"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### critical
+                    @Summary = "Voltage Critical"
+                    
+                    $SEV_KEY = $OS_EventId + "_critical"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### shutdown
+                    @Summary = "Voltage Critical, Shutdown System Immediately"
+                    
+                    $SEV_KEY = $OS_EventId + "_shutdown"
+                    $DEFAULT_Severity = 5
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### notPresent
+                    @Summary = "Voltage Sensor Not Present"
+                    
+                    $SEV_KEY = $OS_EventId + "_notPresent"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### notFunctioning
+                    @Summary = "Voltage Sensor Not Functioning Properly"
+                    
+                    $SEV_KEY = $OS_EventId + "_notFunctioning"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Voltage Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( Testpoint: " + $1 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+        
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ACCESS-ENVMON-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ACCESS-ENVMON-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ACCESS-ENVMON-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ACCESS-ENVMON-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ACCESS-ENVMON-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,44 @@
+////////////////////////////////////////////////
+//
+//	Maintenance.ipl
+//
+//	Impact policy for Mobilink - Sets new Events into Maintenance
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100525	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+//check if it is in Maint table
+NowTime = getdate();
+
+DataType = "Maintenance";		// this needs to be setup
+Filter = "EventID = '" + EventContainer.Node + "' and MaintStart < " + NowTime + " and MaintEnd > " + NowTime;		// this needs to be setup
+Log("Filter  = " + Filter );
+CountOnly = False;
+GetByFilter(DataType, Filter, CountOnly);
+Num_Matching_Events = Num;
+
+Log("Num_Matching_Events = " + Num_Matching_Events);
+Log("Matching_Events = " + DataItems);
+if (Num_Matching_Events == 0)
+{
+	EventContainer.MaintFlag = 1;
+	Log("Set maint Flag to In service");
+	ReturnEvent(EventContainer);
+}
+else
+{
+	Log("MaintFlag = " + DataItems[0].Reason);
+	Log("MaintEnd= " + DataItems[0].MaintEnd);
+	Log("OS      = " + @MaintEnd);
+
+	EventContainer.MaintFlag = DataItems[0].Reason;
+	EventContainer.MaintEnd = DataItems[0].MaintEnd;
+	Log("Set Maint Flag to show not in service");
+	ReturnEvent(EventContainer);
+}
+
+Log("");
+Log("");
+

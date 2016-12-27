@@ -1,0 +1,160 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCOWORKS-MIB.include.snmptrap.rules 1.0
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCOWORKS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.14.1.2": ### Cisco-CiscoWorks - Traps from CISCOWORKS-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCOWORKS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-CiscoWorks"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### cwAppLogTrap
+
+            ##########
+            # $1 = sysUpTime
+            # $2 = cwLogDate
+            # $3 = cwLogSource
+            # $4 = cwLogApp
+            # $5 = cwLogMsg
+            ##########
+
+            $sysUpTime = $1
+            $cwLogDate = $2
+            $cwLogSource = lookup($3, cwLogSource) + " ( " + $3 + " )"
+            $cwLogApp = $4 
+            $cwLogMsg = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCOWORKS-MIB-cwAppLogTrap"
+
+            @AlertKey = $cwLogApp
+
+            @AlertGroup = "Application Log"
+            switch($3)
+            {
+                case "1": ### other
+                    $SEV_KEY = $OS_EventId + "_other"
+                    @Summary = $5
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ciscoworks
+                    $SEV_KEY = $OS_EventId + "_ciscoworks"
+                    @Summary = $4 + ": " + $5
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### device
+                    $SEV_KEY = $OS_EventId + "_device"
+                    @Summary = $5
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = $5
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + $specific-trap + " " + $3 + " " +  $4 + " " + $5 + " " + @Agent + " " + @Manager
+
+            details($sysUpTime,$cwLogDate,$cwLogSource,$cwLogApp,$cwLogMsg)
+  
+        case "2": ### cwDevLogTrap
+
+            ##########
+            # $1 = sysUpTime
+            # $2 = cwLogDate
+            # $3 = cwLogSource
+            # $4 = cwLogMsg 
+            ##########
+ 
+            $sysUpTime = $1
+            $cwLogDate = $2
+            $cwLogSource = lookup($3, cwLogSource) + " ( " + $3 + " )"
+            $cwLogMsg = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCOWORKS-MIB-cwDevLogTrap"
+
+            @AlertGroup = "Device Log"
+            @AlertKey = ""
+            @Summary = $4
+                    
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + $specific-trap + " " + $3 + " " +  $4 + " " + @Agent + " " + @Manager
+
+            details($sysUpTime,$cwLogDate,$cwLogSource,$cwLogMsg)
+        
+     default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCOWORKS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCOWORKS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCOWORKS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCOWORKS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCOWORKS-MIB.include.snmptrap.rules >>>>>")

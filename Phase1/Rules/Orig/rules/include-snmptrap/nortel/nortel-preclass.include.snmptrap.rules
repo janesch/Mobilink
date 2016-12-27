@@ -1,0 +1,48 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    nortal-preclass.include.snmptrap.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+#     - Corrected mispelling of $OS_EventId (was $EventId) which caused lookups
+#       to fail.
+#
+#     - Modified to support AdvCorrCauseType.
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... nortal-preclass.include.snmptrap.rules >>>>>")
+
+if(match(@Type, "2"))
+{
+    $OS_AdvCorrCauseType_nortal = 4
+}
+else
+{
+    if(exists($SEV_KEY))
+    {
+        $OS_AdvCorrCauseType_nortal = lookup($SEV_KEY, nortel_preclass)
+    }
+    else
+    {
+        $OS_AdvCorrCauseType_nortal = lookup($OS_EventId, nortel_preclass)
+    }
+}
+
+log(DEBUG, "<<<<< Leaving... nortal-preclass.include.snmptrap.rules >>>>>")

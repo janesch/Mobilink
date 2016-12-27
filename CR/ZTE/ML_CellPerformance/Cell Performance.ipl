@@ -1,0 +1,197 @@
+/* Cell Performance Policy
+Author: Chris Janes, Innovise Sept 2010
+Description:
+V 1.0 20100909 Chris Janes Original
+V 1.1 20100929 Chris Janes Correlation by BSC added
+V 1.2 20101006 Chris Janes NePriority Field replace with BusImportance
+
+EventReader Filter:
+EventID = 'CellPer_001'
+*/
+CurrentSerial=@Serial;
+Log("CurrentSerial = " + CurrentSerial + " start ");
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer);
+
+
+paramSummary=@Summary;
+paramType=@Type;
+paramNodeAlias=@NodeAlias;
+paramLastOcc=@LastOccurrence;
+paramSerial=@Serial;
+if(@Type==2)
+{
+paramSerial=@ProblemSerial;
+}
+
+// Is there an existing Synthetic Event
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "BSC_Name = '"+ @BSC_Name + "' and Class = 200026 And Severity > 0";
+log("CurrentSerial = " + CurrentSerial + "SyntheticEventFilter = " + SyntheticEventFilter );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEventFilter = Length(SyntheticEvent);
+//if so set LogTicket = 1
+log("NumSyntheticEventFilter = " + NumSyntheticEventFilter );
+
+if (NumSyntheticEventFilter == 0)
+{
+Log("No Synthetic Event 1");
+site_name = @Site;
+SleepTime = 60;
+alarm_id = 'Cell Performance';
+MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+
+// for testing
+//SleepTime = 30;
+
+if (@Type == 2)
+{
+SleepTime = 0;
+}
+
+// 20100927 End of Change
+@Grade = SleepTime;
+
+ReturnEvent(EventContainer);
+
+
+log (" TT has not created yet: Hibernate for: " + SleepTime + " seconds ");
+
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+@HibernateFlag = 1; 
+ReturnEvent(EventContainer);
+Action_key = 'CellPerformance' + @ServerSerial + @ServerName + "#" + getdate();
+Hibernate(Action_key, "Sleeping", SleepTime);
+//Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+RemoveHibernation(Action_key); 
+@HibernateFlag = 2; 
+ReturnEvent(EventContainer);
+// Is the event still there
+ExistingCellPerDataType = "OS_Status";
+ExistingCellPerFilter = "ServerSerial = "+ @ServerSerial + " and ServerName = '" + @ServerName + "' And Severity > 0";
+log("ExistingCellPerFilter = " + ExistingCellPerFilter );
+ExistingCellPer = GetByFilter(ExistingCellPerDataType, ExistingCellPerFilter,False);
+NumExistingCellPer = Length(ExistingCellPer);
+//if so set LogTicket = 1
+log("NumExistingCellPer = " + NumExistingCellPer );
+
+if (NumExistingCellPer == 0)
+{
+// Event no longer Exists
+Log(" Event no longer Exists");
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer); 
+Exit();
+}
+else
+{
+// Is there an existing Synthetic Event?
+Log(" Is there an existing Synthetic Event");
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "BSC_Name = '"+ @BSC_Name + "' and Class = 200026 And Severity > 0";
+log("SyntheticEventFilter = " + SyntheticEventFilter );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+//if so set LogTicket = 1
+log("NumSyntheticEvent = " + NumSyntheticEvent );
+if (NumSyntheticEvent == 0)
+{
+// Create Synthetic Event
+Log("Create New Event");
+NewEvent = NewEvent(DefaultEventReader);
+NewEvent.EventReaderName = "DefaultEventReader";
+NewEvent.EventId = 'CellPer_001';
+NewEvent.ImpactFlag = 2;
+NewEvent.Domain=EventContainer.Domain;
+NewEvent.Site=EventContainer.Site;
+// 20101006 Change by Chris Janes of Innovise
+// NewEvent.NePriority=EventContainer.NePriority;
+NewEvent.BusImportance = EventContainer.BusImportance ;
+// 20101006 End of Change
+NewEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+NewEvent.OmcEms=EventContainer.OmcEms;
+NewEvent.Region=EventContainer.Region;
+NewEvent.ManCity=EventContainer.ManCity;
+NewEvent.CovCity=EventContainer.CovCity;
+NewEvent.Agent = "Netcool Impact";
+NewEvent.AlertGroup = 'Cell Performance';
+NewEvent.AlertKey = EventContainer.BSC_Name ;
+NewEvent.BSC_Name = EventContainer.BSC_Name ;
+NewEvent.EventType = EventContainer.EventType ;
+NewEvent.Network= EventContainer.Network;
+NewEvent.Identifier= "CellPer" + @EventType + @BSC_Name + @Node + @LastOccurrence;
+NewEvent.Summary= "Cell Performance Alarm Handling for " + @BSC_Name + " ";
+NewEvent.Severity= 4;
+NewEvent.Type= 1;
+NewEvent.Tally= 1;
+NewEvent.HibernateFlag = 99;
+NewEvent.Node= EventContainer.Node;
+NewEvent.NodeAlias= EventContainer.NodeAlias;
+NewEvent.SyntheticServerName = "";
+NewEvent.SyntheticServerSerial = 0;
+NewEvent.FirstOccurrence = NowTime ;
+NewEvent.LastOccurrence = NowTime ;
+NewEvent.LogTicket = 1;
+NewEvent.Class = 200026;
+AddDataItem('OS_Status', NewEvent);
+Log("New Event Created ");
+}
+}
+}
+
+//while(NumSyntheticEvent == 0)
+//{
+//Wait % seconds
+Hibernate(Action_key, "Sleeping", 5 );
+RemoveHibernation(Action_key); 
+
+//Does the Synthetic event exist?
+DataType = "OS_Status"; // this needs to be setup
+Filter = "Class = 200026 and BSC_Name = '" + @BSC_Name + "'"; 
+log("Filter1 = " + Filter);
+CountOnly = False;
+SyntheticEvent = GetByFilter(DataType, Filter, CountOnly);
+NumSyntheticEvent = Length(SyntheticEvent );
+//}
+
+log("SyntheticEvent [0].ServerName = " + SyntheticEvent [0].ServerName);
+log("SyntheticEvent [0].ServerSerial = " + SyntheticEvent [0].ServerSerial);
+
+//Update Source Event
+EventContainer.SyntheticServerName = SyntheticEvent [0].ServerName; 
+EventContainer.SyntheticServerSerial = SyntheticEvent [0].ServerSerial; 
+ReturnEvent(EventContainer);
+
+// Get Count of cells Down
+DataType = "OS_Status";
+Filter = "Class <> 200026 and EventId = 'CellPer_001' and BSC_Name = '" + @BSC_Name + "' And Severity > 0";
+log("Filter = " + Filter );
+ProblemCells= GetByFilter(DataType , Filter ,False);
+NumProblemCells = Length(ProblemCells);
+log("NumProblemCells = " + NumProblemCells );
+
+DataType = "OS_Status";
+Filter = "Class = 200026 and EventId = 'CellPer_001' and BSC_Name = '" + @BSC_Name + "' And Severity > 0";
+Log("Filter = " + Filter );
+
+UpdateExpression = "Summary = 'Cell Performance Alarm Handling for " + @BSC_Name + " : " + NumProblemCells + " Cells Down'";
+Log("UpdateExpression = " + UpdateExpression );
+BatchUpdate(DataType, Filter, UpdateExpression);
+
+
+
+
+Log(" Update Events");
+//Update Synthetic Event's Journal
+// 20101001 Changed by Chris Janes of Innovise at ML request 
+// EventTime = localtime(@FirstOccurrence , "dd/MM/yy HH:mm:ss");
+EventTime = localtime(@LastOccurrence , "dd/MM/yy HH:mm:ss");
+// 20101001 End of Change
+se=SyntheticEvent[0].ServerSerial;
+MobiLib.AddGenericJournal(se, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+
+
+log("Return ImpactFlag = 6 to indicate policy has completed");
+// This have to be changed in order to be in sync with other policies or other control flag might be added
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer);

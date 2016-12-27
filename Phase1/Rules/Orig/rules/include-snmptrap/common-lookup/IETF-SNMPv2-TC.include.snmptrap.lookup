@@ -1,0 +1,101 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-SNMPv2-TC.include.snmptrap.lookup 1.1
+#    2002/04/26 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-SNMPv2-TC-MIB
+#
+###############################################################################
+table TruthValue = ### Represents a boolean value
+{
+    {"1","True"}, ### true
+    {"2","False"} ### false
+}
+default = "Unknown"
+
+table RowStatus =
+{
+    ##########
+    # The RowStatus textual convention is used to manage the creation and
+    # deletion of conceptual rows, and is used as the value of the SYNTAX
+    # clause for the status column of a conceptual row (as described in
+    # Section 7.7.1 of [2].)
+    ##########
+    
+    {"1","Active"}, ##########
+                    # indicates that the conceptual row is available for use by
+                    # the managed device
+                    ##########
+                    
+    {"2","Not In Service"}, ##########
+                            # indicates that the conceptual row exists in the
+                            # agent, but is unavailable for use by the managed
+                            # device. 'notInService' has no implication
+                            # regarding the internal consistency of the row,
+                            # availability of resources, or consistency with
+                            # the current state of the managed device.
+                            ##########
+                          
+    {"3","Not Ready"}, ##########
+                       # indicates that the conceptual row exists in the agent,
+                       # but is missing information necessary in order to be
+                       # available for use by the managed device (i.e., one or
+                       # more required columns in the conceptual row have not
+                       # been instanciated)
+                       ##########
+                      
+    {"4","Create and Go"}, ##########
+                           # is supplied by a management station wishing to
+                           # create a new instance of a conceptual row and to
+                           # have its status automatically set to active,
+                           # making it available for use by the managed device.
+                           ##########
+                         
+    {"5","Create and Wait"}, ##########
+                             # is supplied by a management station wishing to
+                             # create a new instance of a conceptual row (but
+                             # not make it available for use by the managed
+                             # device).
+                             ##########
+                           
+    {"6","Destroy"} ##########
+                    # is supplied by a management station wishing to delete all
+                    # of the instances associated with an existing conceptual
+                    # row.
+                    ##########
+}
+default = "Unknown"
+
+table StorageType =
+{
+    ##########
+    # Describes the memory realization of a conceptual row. (All illegal
+    # modifications result in a 'wrongValue' error.)
+    ##########
+    
+    {"1","Other"}, ### cannot be modified to be permanent(4) or readOnly(5)
+    {"2","Volatile"}, ### in RAM, lost upon reboot, cannot be modified to be permanent(4) or readOnly(5)
+    {"3","Non-volatile"}, ### in NVRAM, backed up by stable storage, cannot be modified to be permanent(4) or readOnly(5)
+    {"4","Permanent"}, ### partially in ROM, backed up by stable storage, can be changed but not deleted
+    {"5","Read-Only"} ### completely in ROM, backed up by stable storage, cannot be changed nor deleted
+}
+default = "Unknown"
+
+
+
+

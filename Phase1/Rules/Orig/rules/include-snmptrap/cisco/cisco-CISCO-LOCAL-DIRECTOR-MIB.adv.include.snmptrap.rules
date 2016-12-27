@@ -1,0 +1,122 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-LOCAL-DIRECTOR-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-LOCAL-DIRECTOR-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-LOCAL-DIRECTOR-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ciscoLocalDirectorVirtualStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoLocalDirectorVirtualStateChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "cldVirtualTableEntry." + $cldVirtualIpAddress + "." + $cldVirtualPort + "." + $cldVirtualBindID
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### ciscoLocalDirectorRealStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoLocalDirectorRealStateChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "cldRealTableEntry." + $cldRealIpAddress + "." + $cldRealPort
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### ciscoLocalDirectorFailoverEnableChange
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3011
+        $OS_X733SpecificProb = "ciscoLocalDirectorFailoverEnableChange"
+        $OS_OsiLayer = 0
+
+    case "4": ### ciscoLocalDirectorFailoverCableChange
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "ciscoLocalDirectorFailoverCableChange"
+        $OS_OsiLayer = 0
+
+    case "5": ### ciscoLocalDirectorFailoverUnitStatus
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "ciscoLocalDirectorFailoverCableChange"
+        $OS_OsiLayer = 0
+
+    case "6": ### ciscoLocalDirectorEVirtualStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoLocalDirectorEVirtualStateChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "cldeVirtualTableEntry." + $cldeVirtualIpAddress + "." + $cldeVirtualPort + "." + $cldeVirtualBindID + "." + $cldeVirtualProtocol_Raw
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "7": ### ciscoLocalDirectorERealStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoLocalDirectorERealStateChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "cldeRealTableEntry." + $cldeRealIpAddress + "." + $cldeRealPort + "." + $cldeRealBindID + "." + $cldeRealProtocol_Raw
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "8": ### ciscoLocalDirectorExVirtualStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoLocalDirectorExVirtualStateChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "cldexVirtualTableEntry." + $cldexVirtualIpAddress + "." + $cldexVirtualPort + "." + $cldexVirtualBindID + "." + $cldexVirtualProtocol_Raw + "." + $cldexVirtualRule_OctetString
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-LOCAL-DIRECTOR-MIB.adv.include.snmptrap.rules >>>>>")

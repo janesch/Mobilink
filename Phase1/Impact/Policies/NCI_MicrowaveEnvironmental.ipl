@@ -1,0 +1,160 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MicrowaveEnvironmental.ipl
+//
+//	Impact policy for Mobilink - Microwave Environmental Alarm Handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100610	Chris Janes Original
+//
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Although s StdEnrich will add some data more is needed
+//	Site
+//	Site Priority (From which Severity is derived)
+// for the timebeing
+
+Site = @ManCity;
+SitePriority = 4;
+Default_SleepTime = 60;
+
+
+//Is there an Existing Parent Event
+DataType = "Status";		// this needs to be setup
+Filter = "Class = 200011 and AlertKey = '" + Site + "'";		// this needs to be setup
+Log("Filter = " + Filter );
+CountOnly = False;
+Parent = GetByFilter(DataType, Filter, CountOnly);
+Num_Parent = Num;
+Log("Num_Parent = " + Num_Parent );
+
+
+	//if so update TT
+if( Num_Parent == 1)
+{
+	//Update TT
+}
+elseif(@ImpactFlag = 1)	//else 
+{
+ log("ImpactFlagSet");
+}
+else
+{
+	//Wait to see if the event clears
+	// Get Sleep Time
+	DataType = "CMDB_SleepTime";		// this needs to be setup
+	Filter = "Node = '" + @Node + "'";		// this needs to be setup
+	CountOnly = False;
+	CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+	Num_CMDB__SleepTime = Num;
+	if(Num_CMDB_SleepTime == 0)
+	{
+		//No record for this so set default Time 
+		SleepTime = Default_SleepTime ;
+	}
+	else
+	{
+		SleepTime = CMDB_SleepTime[0].SleepTime;
+		if (SleepTime == 0)
+		{
+			SleepTime = Default_SleepTime ;
+		}
+	}
+	EventContainer.ImpactFlag = 1;
+	ReturnEvent(EventContainer);
+	ActionKey = "MicrowaveEnvironmental" + @ServerSerial + @ServerName;
+	Log("Going To Sleep "  + ActionKey + " for " + SleepTime );
+
+	Hibernate(ActionKey , wait, SleepTime);
+
+	EventContainer.ImpactFlag = 2;
+	ReturnEvent(EventContainer);
+	Log ("Wake Up " + @ServerSerial);
+	RemoveHibernation(ActionKey);	
+
+	DataType = "Status";		// this needs to be setup
+	Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+	CountOnly = False;
+	Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+	Num_Existing_Event = Num;
+	// If it does Clear then bug out
+log("Check that eent still exists = " + Num_Existing_Event );
+	if (Num_Existing_Event = 0)
+	{
+		// Event nolonger existd
+		Log("Event No Longer Exists");
+	}
+	else
+	{
+		Log("Do TT Stuff");
+		//else Raise Synthetic event with associated TT
+		// Check that There still isn't a Parent
+		//Is there an Existing Parent Event
+		DataType = "Status";		// this needs to be setup	
+		Filter = "Class = 200011 and AlertKey = '" + Site + "'";		// this needs to be setup
+		Log("Filter = " + Filter );
+		CountOnly = False;
+		Parent = GetByFilter(DataType, Filter, CountOnly);
+		Num_Parent = Num;
+		Log("Num_Parent = " + Num_Parent );
+		if(Num_Parent == 0)
+		{
+			
+			// Create New Synthetic Event
+			Log("Create New Event");
+			NewEvent = NewEvent(DefaultEventReader);
+			NewEvent.EventReaderName = "DefaultEventReader";
+			NewEvent.Domain=EventContainer.Domain;
+			NewEvent.Region=EventContainer.Region;
+			NewEvent.ManCity=EventContainer.ManCity;
+			NewEvent.CovCity=EventContainer.CovCity;
+			NewEvent.Agent = "Impact";
+			NewEvent.MaximoStatus= 1;
+			NewEvent.AlertGroup = "Synthetic Event";
+			NewEvent.AlertKey = Site;
+			NewEvent.Identifier= "MicrowaveEnvironmental20100614" +  Site;
+			NewEvent.Summary= "Microwave Environmental Alarm Handling for " + Site ;
+			NewEvent.Severity= 5;
+			NewEvent.Type= 1;
+			NewEvent.Tally= 1;
+			NewEvent.Node= "Impact";
+			NewEvent.ParentName = "";
+			NewEvent.ParentSerial = 0;
+			NewEvent.FirstOccurrence = NowTime ;
+			NewEvent.LastOccurrence = NowTime ;
+			NewEvent.Class = 200011;
+			AddDataItem('Status', NewEvent);
+
+			// Get Synthetic Event Data
+			DataType = "Status";		// this needs to be setup
+			Filter = "Class = 200011 and AlertKey = '" + Site + "'";		// this needs to be setup
+			NowTime = GetDate();
+			CountOnly = False;
+			New_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+			Num_New_Synthetic_Event = Num;
+
+			// Get latest version of the child Event
+			DataType = "Status";		// this needs to be setup
+			Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+			CountOnly = False;
+			Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+			Num_Existing_Event = Num;
+
+
+			Existing_Event[0].ParentName = New_Synthetic_Event[0].ServerName ;
+			Existing_Event[0].ParentSerial = New_Synthetic_Event[0].ServerSerial ;
+			ReturnEvent(Existing_Event);
+
+		}
+		else
+		{
+
+			//Update Child Event with Parent details
+			EventContainer.ParentName = New_Synthetic_Event[0].ServerName ;
+			EventContainer.ParentSerial = New_Synthetic_Event[0].ServerSerial ;
+			ReturnEvent(EventEventContainer);
+		}
+	}
+}
+
+

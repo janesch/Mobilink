@@ -1,0 +1,406 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ATM-PVCTRAP-EXTN-MIB.include.snmptrap.rules 1.1 
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ATM-PVCTRAP-EXTN-MIB
+#
+###############################################################################
+#
+# 1.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.97.2": ### Cisco ATM PVC Extensions - Notifications from CISCO-ATM-PVCTRAP-EXTN-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ATM-PVCTRAP-EXTN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-ATM PVC Extensions"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### catmIntfPvcUpTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfCurrentlyDownToUpPVcls
+            ##########
+
+            $ifIndex = $1
+            $catmIntfCurrentlyDownToUpPVcls = $2
+            details($ifIndex,$catmIntfCurrentlyDownToUpPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcUpTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs Up on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### catmIntfPvcOAMFailureTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfOAMFailedPVcls
+            # $3 = catmIntfCurrentOAMFailingPVcls
+            ##########
+
+            $ifIndex = $1
+            $catmIntfOAMFailedPVcls = $2
+            $catmIntfCurrentOAMFailingPVcls = $3
+            details($ifIndex,$catmIntfOAMFailedPVcls,$catmIntfCurrentOAMFailingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcOAMFailureTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have OAM Loopback Failure on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### catmIntfPvcSegCCOAMFailureTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = catmIntfSegCCOAMFailedPVcls
+            # $3 = catmIntfCurSegCCOAMFailingPVcls
+            ##########
+
+            $ifIndex = $1
+            $catmIntfSegCCOAMFailedPVcls = $2
+            $catmIntfCurSegCCOAMFailingPVcls = $3
+            details($ifIndex,$catmIntfSegCCOAMFailedPVcls,$catmIntfCurSegCCOAMFailingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcSegCCOAMFailureTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have Segment CC OAM Failure on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### catmIntfPvcEndCCOAMFailureTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfEndCCOAMFailedPVcls 
+            # $3 = catmIntfCurEndCCOAMFailingPVcls
+            ##########
+
+            $ifIndex = $1
+            $catmIntfEndCCOAMFailedPVcls = $2
+            $catmIntfCurEndCCOAMFailingPVcls = $3
+            details($ifIndex,$catmIntfEndCCOAMFailedPVcls,$catmIntfCurEndCCOAMFailingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcEndCCOAMFailureTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have End-to-End CC OAM Failure on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### catmIntfPvcAISRDIOAMFailureTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfAISRDIOAMFailedPVcls
+            # $3 = catmIntfCurAISRDIOAMFailingPVcls 
+            ##########
+
+            $ifIndex = $1
+            $catmIntfAISRDIOAMFailedPVcls = $2
+            $catmIntfCurAISRDIOAMFailingPVcls = $3
+            details($ifIndex,$catmIntfAISRDIOAMFailedPVcls,$catmIntfCurAISRDIOAMFailingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcAISRDIOAMFailureTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have AIS/RDI OAM Failure on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### catmIntfPvcAnyOAMFailureTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = catmIntfAnyOAMFailedPVcls
+            # $3 = catmIntfCurAnyOAMFailingPVcls
+            # $4 = catmIntfTypeOfOAMFailure 
+            ##########
+
+            $ifIndex = $1
+            $catmIntfAnyOAMFailedPVcls = $2
+            $catmIntfCurAnyOAMFailingPVcls = $3
+            $catmIntfTypeOfOAMFailure = $4
+            details($ifIndex,$catmIntfAnyOAMFailedPVcls,$catmIntfCurAnyOAMFailingPVcls,$catmIntfTypeOfOAMFailure)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcAnyOAMFailureTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have OAM Failure on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### catmIntfPvcOAMRecoverTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfOAMRcovedPVcls 
+            # $3 = catmIntfCurrentOAMRcovingPVcls 
+            ##########
+
+            $ifIndex = $1
+            $catmIntfOAMRcovedPVcls = $2
+            $catmIntfCurrentOAMRcovingPVcls = $3
+            details($ifIndex,$catmIntfOAMRcovedPVcls,$catmIntfCurrentOAMRcovingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcOAMRecoverTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have OAM Loopback Recovery on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### catmIntfPvcSegCCOAMRecoverTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfSegCCOAMRcovedPVcls 
+            # $3 = catmIntfCurSegCCOAMRcovingPVcls 
+            ##########
+
+            $ifIndex = $1
+            $catmIntfSegCCOAMRcovedPVcls = $2
+            $catmIntfCurSegCCOAMRcovingPVcls = $3
+            details($ifIndex,$catmIntfSegCCOAMRcovedPVcls,$catmIntfCurSegCCOAMRcovingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcSegCCOAMRecoverTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have Segment CC OAM Recovery on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### catmIntfPvcEndCCOAMRecoverTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = catmIntfEndCCOAMRcovedPVcls 
+            # $3 = catmIntfCurEndCCOAMRcovingPVcls
+            ##########
+
+            $ifIndex = $1
+            $catmIntfEndCCOAMRcovedPVcls = $2
+            $catmIntfCurEndCCOAMRcovingPVcls = $3
+            details($ifIndex,$catmIntfEndCCOAMRcovedPVcls,$catmIntfCurEndCCOAMRcovingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcEndCCOAMRecoverTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have End-to-End CC OAM Recovery on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### catmIntfPvcAISRDIOAMRecoverTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfAISRDIOAMRcovedPVcls 
+            # $3 = catmIntfCurAISRDIOAMRcovingPVcls 
+            ##########
+
+            $ifIndex = $1
+            $catmIntfAISRDIOAMRcovedPVcls = $2
+            $catmIntfCurAISRDIOAMRcovingPVcls = $3
+            details($ifIndex,$catmIntfAISRDIOAMRcovedPVcls,$catmIntfCurAISRDIOAMRcovingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcAISRDIOAMRecoverTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have AIS/RDI OAM Recovery on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "11": ### catmIntfPvcAnyOAMRecoverTrap
+
+            ##########
+            # $1 = ifIndex
+            # $2 = catmIntfAnyOAMRcovedPVcls
+            # $3 = catmIntfCurAnyOAMRcovingPVcls 
+            # $4 = catmIntfTypeOfOAMRecover
+            ##########
+
+            $ifIndex = $1
+            $catmIntfAnyOAMRcovedPVcls = $2
+            $catmIntfCurAnyOAMRcovingPVcls = $3
+            $catmIntfTypeOfOAMRecover = lookup($4, CatmOAMRecoveryType) + " ( " + $4 + " )"
+            details($ifIndex,$catmIntfAnyOAMRcovedPVcls,$catmIntfCurAnyOAMRcovingPVcls,$catmIntfTypeOfOAMRecover)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcAnyOAMRecoverTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs have OAM Recovery on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "12": ### catmIntfPvcUp2Trap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = catmIntfCurrentlyDownToUpPVcls
+            ##########
+
+            $ifIndex = $1
+            $catmIntfCurrentlyDownToUpPVcls = $2
+            details($ifIndex,$catmIntfCurrentlyDownToUpPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcUp2Trap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "catmInterfaceExt2Entry." + $1
+            @Summary = $2 + " PVCLs Up on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### catmIntfPvcDownTrap
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = atmIntfPvcFailures 
+            # $3 = atmIntfCurrentlyFailingPVcls 
+            ##########
+
+            $ifIndex = $1
+            $atmIntfPvcFailures = $2
+            $atmIntfCurrentlyFailingPVcls = $3
+            details($ifIndex,$atmIntfPvcFailures,$atmIntfCurrentlyFailingPVcls)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-PVCTRAP-EXTN-MIB-catmIntfPvcDownTrap"
+
+            @AlertGroup = "ATM Interface PVCL Status"
+            @AlertKey = "atmInterfaceExtEntry." + $1
+            @Summary = $3 + " PVCLs Failed on ATM Interface  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ATM-PVCTRAP-EXTN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ATM-PVCTRAP-EXTN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ATM-PVCTRAP-EXTN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ATM-PVCTRAP-EXTN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ATM-PVCTRAP-EXTN-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,58 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-DOT3-OAM-MIB.adv.include.snmptrap.rules 1.0
+#    2007/01/17 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  DOT3-OAM-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-DOT3-OAM-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### dot3OamThresholdEvent
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "dot3OamThresholdEvent"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "dot3OamEventLogEntry." + $ifIndex + "." + $dot3OamEventLogIndex 
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### dot3OamNonThresholdEvent
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "dot3OamNonThresholdEvent"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "dot3OamEventLogEntry." + $ifIndex + "." + $dot3OamEventLogIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-DOT3-OAM-MIB.adv.include.snmptrap.rules >>>>>")

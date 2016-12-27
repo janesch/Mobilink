@@ -1,0 +1,71 @@
+/***************************************************************************
+This policy demonstrates how to retrieve rows from an SNMP TableType using the 
+GetByFilter Action Module on an SNMP TableType data type. As explained in the 
+documentation the content of the Filter determines if the complete table has 
+to be retrieved or if only a particular row is to be retrieved. A particular 
+row can be retrieved if all the index values (values of index columns of 
+table) are concatenated together and given as the value for the "TableKey" 
+variable. 
+
+This policy also demonstrates how then to update the contents of the row
+that was retrieved (SNMP SET in the background) 
+
+HowToRun this policy:
+---------------------
+1) Make sure the DataSource and DataType have the correct authentication
+   information.
+
+2) Make sure an SNMP agent on the proper host and proper portId is
+   running and one which has implemented the RFC1213.
+
+3) The ifTable Data Type must be created.  Choose the Oid Configuration
+   type to be "Table" and fill in the table OIDs.  TODO Created by installer?
+
+4) Then send a trigger to execute this policy.
+
+****************************************************************************/
+
+Type = "ifTable";
+
+//Filter = "hostId = '" + @HostId + "'";
+Filter = "";
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting SNMPTableTest with Type = " + Type + " and Filter = " + Filter + " at " + StartTime + "***");
+
+/* Filter to retrieve a particular row of the table, row with index value 1 in this case */
+/*Filter = "hostId = '" + @HostId + "' AND TableKey = '1'";*/
+
+/* This filter will retrieve the complete table for the given SNMPv3 user and then checks */
+/*all the rows to return the rows that have ifType = 30.                                  */
+/*Filter = "hostId = '" + @HostId + "' AND ifType = '30' AND UserId = 'netcool'";*/
+
+/* This filter demonstrates how to use SNMPv2 GET-BULK operation for Table retrieval */
+/*Filter = "hostId = '" + @HostId + "' AND RetrievalMode = 'Bulk' AND MaxRepetitions = '25' AND NonRepeaters = '1'";*/
+
+/* The actual SNMP GET operation is done by this action */
+GetByFilter(Type, Filter, CountOnly);
+
+i = 0;
+if (OrgNode.ErrorString = "") {
+  log(" Number of orgnodes returned = " + Num);
+  while (i < Num) {
+    /* Got a valid result from the SNMP Get on the table. Print the results. */
+    log("DataItem " + i + ":");
+    log("ifIndex = " + OrgNodes[i].ifIndex);
+    log("ifDescr = " + OrgNodes[i].ifDescr);
+    log("ifType = " + OrgNodes[i].ifType);
+    log("ifAdminStatus = " + OrgNodes[i].ifAdminStatus);
+    i = i + 1;
+  } 
+
+  /* The row is getting updated here. SNMP SET is being performed */
+//  OrgNode.ifAdminStatus = "2";
+//  OrgNode.ifDescr = "NEW DESCRIPTION"; /* Not writeable, and hence not updated */
+} else {
+  log("Error doing an SNMP GET operation on the table ");
+  log("Error string is " + OrgNode.ErrorString);
+}
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with SNMPTableTest at " + EndTime + " ***");

@@ -1,0 +1,265 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-GPRS-CHARGING-MIB.include.snmptrap.rules 1.0
+#    2006/04/06 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-GPRS-CHARGING-MIB
+#
+###############################################################################
+case ".1.3.6.1.4.1.9.9.192.2": ### Cisco GPRS Charging Gateway - Notifications from CISCO-GPRS-CHARGING-MIB (20040726)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-GPRS-CHARGING-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-GPRS Charging Gateway"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cgprsCgAlarmNotif
+
+            ##########
+            # $1 = cgprsCgAlarmHistType 
+            # $2 = cgprsCgAlarmHistAddrType 
+            # $3 = cgprsCgAlarmHistAddress 
+            # $4 = cgprsCgAlarmHistSeverity 
+            # $5 = cgprsCgAlarmHistInfo 
+            ##########
+
+            $cgprsCgAlarmHistType = lookup($1, CgprsCgAlarmType) + " ( " + $1 + " )"
+            $cgprsCgAlarmHistAddrType = lookup($2, InetAddressType) + " ( " + $2 + " )"
+            $cgprsCgAlarmHistAddress = $3
+            $cgprsCgAlarmHistSeverity = lookup($4, CiscoAlarmSeverity) + " ( " + $4 + " )" 
+            $cgprsCgAlarmHistInfo = $5
+            $cgprsCgAlarmHistIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GPRS-CHARGING-MIB-cgprsCgAlarmNotif"
+             
+            @AlertKey = "cgprsCgAlarmHistEntry." + $cgprsCgAlarmHistIndex
+            switch($1)
+            {
+                case "1": ### cgprsCgAlarmCgDown
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmCgDown"
+                    @AlertGroup = "GPRS Charging Gateway Status"
+                    @Summary = "Charging Gateway Down"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### cgprsCgAlarmCgUp
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmCgUp"
+                    @AlertGroup = "GPRS Charging Gateway Status"
+                    @Summary = "Charging Gateway Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### cgprsCgAlarmTransFailure
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmTransFailure"
+                    @AlertGroup = "GGSN Data Transfer Status"
+                    @Summary = "GGSN Failed to Receive Responses for 'Data Transfer Request'"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### cgprsCgAlarmTransSuccess 
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmTransSuccess"
+                    @AlertGroup = "GGSN Data Transfer Status"
+                    @Summary = "GGSN Successfully Sent 'Data Transfer Request'"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### cgprsCgAlarmCapacityFull
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmCapacityFull"
+                    @AlertGroup = "GGSN Memory Status"
+                    @Summary = "GGSN Out Of Memory, Failed to Buffer G-CDRs"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### cgprsCgAlarmCapacityFree
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmCapacityFree"
+                    @AlertGroup = "GGSN Memory Status"
+                    @Summary = "GGSN Memory Free, Able to Buffer G-CDRs"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### cgprsCgAlarmEchoFailure
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmEchoFailure"
+                    @AlertGroup = "GGSN Message Echo Status"
+                    @Summary = "GGSN Failed to Receive 'Echo Response' Messages"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### cgprsCgAlarmEchoRestored
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmEchoRestored"
+                    @AlertGroup = "GGSN Message Echo Status"
+                    @Summary = "GGSN Successfully Received 'Echo Response' Messages"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "9": ### cgprsCgAlarmCdrDiscard
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmCdrDiscard"
+                    @AlertGroup = "G-CDR Status"
+                    @Summary = "GGSN Discarding G-CDRs"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "10": ### cgprsCgAlarmCdrBuffered
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmCdrBuffered"
+                    @AlertGroup = "G-CDR Status"
+                    @Summary = "GGSN Buffering G-CDRs"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "11": ### cgprsCgAlarmChargingDisabled
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmChargingDisabled"
+                    @AlertGroup = "GGSN Charging Transaction Status"
+                    @Summary = "GGSN Charging Transactions Disabled"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "12": ### cgprsCgAlarmChargingEnabled
+                    $SEV_KEY = $OS_EventId + "_cgprsCgAlarmChargingEnabled"
+                    @AlertGroup = "GGSN Charging Transaction Status"
+                    @Summary = "GGSN Charging Transactions Enabled"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @AlertGroup = "GGSN Charging Gateway Status"
+                    @Summary = "GGSN Charging Gateway Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($5,""))
+             {
+               @Summary = @Summary + ", " + $5
+             }
+            @Summary = @Summary + "  ( Charging Gateway: " + $3 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cgprsCgAlarmHistType,$cgprsCgAlarmHistAddrType,$cgprsCgAlarmHistAddress,$cgprsCgAlarmHistSeverity,$cgprsCgAlarmHistInfo,$cgprsCgAlarmHistIndex)
+
+        case "2": ### cgprsCgGatewaySwitchoverNotif
+
+            ##########
+            # $1 = cgprsCgActiveChgGatewayAddrType 
+            # $2 = cgprsCgActiveChgGatewayAddress 
+            # $3 = cgprsCgOldChgGatewayAddress 
+            ##########
+
+            $cgprsCgActiveChgGatewayAddrType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $cgprsCgActiveChgGatewayAddress = $2
+            $cgprsCgOldChgGatewayAddress = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GPRS-CHARGING-MIB-cgprsCgGatewaySwitchoverNotif"
+             
+            @AlertGroup = "GPRS CG Switchover Status"
+            @AlertKey = "Current CG: " + $2
+            @Summary = "GPRS Charging Gateway Switchover  ( From: " + $3 + ", To: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+            details($cgprsCgActiveChgGatewayAddrType,$cgprsCgActiveChgGatewayAddress,$cgprsCgOldChgGatewayAddress)
+
+        case "3": ### cgprsCgInServiceModeNotif
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GPRS-CHARGING-MIB-cgprsCgInServiceModeNotif"
+             
+            @AlertGroup = "GPRS CG Operational Status"
+            @AlertKey = ""
+            @Summary = "GPRS Charging Gateway In Service"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+          
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+        case "4": ### cgprsCgMaintenanceModeNotif
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-GPRS-CHARGING-MIB-cgprsCgMaintenanceModeNotif"
+             
+            @AlertGroup = "GPRS CG Operational Status"
+            @AlertKey = ""
+            @Summary = "GPRS Charging Gateway In Maintenance"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 12
+            $DEFAULT_ExpireTime = 0
+          
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-GPRS-CHARGING-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-GPRS-CHARGING-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-GPRS-CHARGING-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-GPRS-CHARGING-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-GPRS-CHARGING-MIB.include.snmptrap.rules >>>>>")

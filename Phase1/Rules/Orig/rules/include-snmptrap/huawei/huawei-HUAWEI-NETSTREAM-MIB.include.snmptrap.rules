@@ -1,0 +1,103 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    huawei-HUAWEI-NETSTREAM-MIB.include.snmptrap.rules 1.0
+#    2007/08/03 Sagar Karangle
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  HUAWEI-NETSTREAM-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.5.25.110.2": ### Huawei Netstream Environment - Notifications from HUAWEI-NETSTREAM-MIB (20051025)
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-NETSTREAM-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwNetStreamIndexStatusChanged
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NETSTREAM-MIB-hwNetStreamIndexStatusChanged"
+
+            @AlertGroup = "Netstream Interface Status"
+            @AlertKey = ""
+            @Summary = "Netstream Interface Deleted/Created and Board Inserted, Drawed"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwNetStreamIndexUsedUp
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NETSTREAM-MIB-hwNetStreamIndexUsedUp"
+
+            @AlertGroup = "Netstream Interface Status"
+            @AlertKey = ""
+            @Summary = "Netstream Interfaces Used Up"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-NETSTREAM-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-NETSTREAM-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-NETSTREAM-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-NETSTREAM-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-NETSTREAM-MIB.include.snmptrap.rules >>>>>")

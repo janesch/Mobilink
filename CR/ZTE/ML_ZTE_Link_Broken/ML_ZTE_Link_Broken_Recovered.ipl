@@ -1,0 +1,169 @@
+ /*------------------------------------------------------------------------------------------------------- 
+Policy Name: ML_ZTE_LinkBroken
+Author: Chris Janes, Innovise 
+Description: 
+· The following are events that indicate ‘The link between the Server and the NE Agent is broken’. 
+· These Network events should be suppressed from Synthetic Event generation for a specified period of time
+· If the event clears within this period then no further action is required.
+· These Network events should create a Synthetic Event for each ‘BSC Location’
+· The Synthetic Event should have a summary “ of  in disconnected state from EMS”
+· A Incident record should be generated for each Synthetic Event
+Further details of the policies design can be found in ML ZTE Link Broken LLD.docx
+Reviewed By: 
+V 0.0 20111212 Chris Janes Original
+------------------------------------------------------------------------------------------------------- 
+Event Reader filter :EventID = 'NET_ZTE_LINKBROKEN_001' and ImpactFlag = 4
+------------------------------------------------------------------------------------------------------- */
+LogPrefix = EventContainer.Serial + " - ";
+Log ( LogPrefix + "");
+// Set policy Variables
+SleepTime = 20;
+// Set Impact Flag to show processing has started
+EventContainer.ImpactFlag = 5; 
+ReturnEvent(EventContainer);
+if ( EventContainer.Severity 0)
+{
+Log ( LogPrefix + "Processing Problem Event");
+// is there an existing Synthetic Event
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "EventId = 'SYN_ZTE_LINKBROKEN_001' and SourceNode = '" + EventContainer.SourceNode + "' And Severity > 0";
+log( LogPrefix + "SyntheticEventFilter = " + SyntheticEventFilter );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+log( LogPrefix + "NumSyntheticEvent = " + NumSyntheticEvent );
+// No Existing Synthetic Event
+if (NumSyntheticEvent == 0)
+{
+// Set Sleeptime
+// Get Number of BSC with ZeroCall in last 5 mins
+FiveMinsAgo = EventContainer.FirstOccurrence - 300;
+Log( LogPrefix + "FO = " + EventContainer.FirstOccurrence + " FiveMinsAgo = " + FiveMinsAgo );
+RecentNEDataType = "OS_Status";
+RecentNEFilter = "EventId = 'NET_ZTE_LINKBROKEN_001' and FirstOccurrence > " + FiveMinsAgo + " And Severity > 0";
+log( LogPrefix + "RecentNEFilter = " + RecentNEFilter );
+RecentNE = GetByFilter(RecentNEDataType , RecentNEFilter ,False);
+NumRecentNE = Length(RecentNE );
+log( LogPrefix + "NumRecentNE = " + NumRecentNE );
+if( NumRecentNE == 0 )
+{
+SleepTime = 1200;
+}
+else
+{
+SleepTime = 600;
+}
+log( LogPrefix + "SleepTime = " + SleepTime );
+// Next Line is for debug only - MUST NOT GO INTO PRODUCTION
+SleepTime = 20;
+// Hibernate
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+EventContainer.HibernateFlag = 1; 
+ReturnEvent(EventContainer);
+Action_key = 'ZTE Link Broken ' + EventContainer.ServerSerial + EventContainer.ServerName + "#" + getdate();
+Hibernate(Action_key, "Sleeping", SleepTime);
+//Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+RemoveHibernation(Action_key); 
+EventContainer.HibernateFlag = 2; 
+ReturnEvent(EventContainer);
+// Does Network Event still exist
+NetworkEventDataType = "OS_Status";
+NetworkEventFilter = "ServerSerial = "+ EventContainer.ServerSerial + " and ServerName = '" + EventContainer.ServerName + "' And Severity > 0";
+log( LogPrefix + "NetworkEventFilter = " + NetworkEventFilter );
+NetworkEvent = GetByFilter(NetworkEventDataType , NetworkEventFilter ,False);
+NumNetworkEvent = Length(NetworkEvent );
+//if so set LogTicket = 1
+log( LogPrefix + "NumNetworkEvent = " + NumNetworkEvent );
+// Yes - Create Synthetic Event
+if ( NumNetworkEvent == 1)
+{
+Log( LogPrefix + "Create New Event");
+NewEvent = NewEvent(DefaultEventReader);
+NewEvent.EventReaderName = "DefaultEventReader";
+NewEvent.EventId = 'SYN_ZTE_LINKBROKEN_001';
+NewEvent.ImpactFlag = 2;
+NewEvent.Domain=EventContainer.Domain;
+NewEvent.Site=EventContainer.Site;
+NewEvent.BusImportance = EventContainer.BusImportance ;
+NewEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+NewEvent.OmcEms=EventContainer.OmcEms;
+NewEvent.Region=EventContainer.Region;
+NewEvent.ManCity=EventContainer.ManCity;
+NewEvent.CovCity=EventContainer.CovCity;
+NewEvent.Agent = "Netcool Impact";
+NewEvent.AlertGroup = 'ZTE Link Broken';
+NewEvent.AlertKey = EventContainer.BSC_Name ;
+NewEvent.BSC_Name = EventContainer.BSC_Name ;
+NewEvent.EventType = EventContainer.EventType ;
+NewEvent.Network= EventContainer.Network;
+NewEvent.Identifier= "ZTE Link Broken" + EventContainer.SourceNode;
+NewEvent.Summary= "ZTE Link Broken Alarm Handling for " + EventContainer.SourceNode + " ";
+NewEvent.Severity= 4;
+NewEvent.Type= 1;
+NewEvent.HibernateFlag = 99;
+NewEvent.Node= EventContainer.Node;
+NewEvent.NodeAlias= EventContainer.NodeAlias;
+NewEvent.SyntheticServerName = "";
+NewEvent.SyntheticServerSerial = 0;
+NewEvent.FirstOccurrence = EventContainer.FirstOccurrence ;
+NewEvent.LastOccurrence = NowTime ;
+NewEvent.LogTicket = 1;
+NewEvent.Class = 5010;
+NewEvent.SourceNode = EventContainer.SourceNode ;
+AddDataItem('OS_Status', NewEvent);
+Log( LogPrefix + "New Event Created ");
+}
+}
+// Update Network Event with Synthetic Event
+//Get Synthetic event 
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "EventId = 'SYN_ZTE_LINKBROKEN_001' and SourceNode = '" + EventContainer.SourceNode + "' And Severity > 0";
+log( LogPrefix + "SyntheticEventFilter = " + SyntheticEventFilter );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+log( LogPrefix + "SyntheticEvent [0].ServerName = " + SyntheticEvent [0].ServerName);
+log( LogPrefix + "SyntheticEvent [0].ServerSerial = " + SyntheticEvent [0].ServerSerial);
+//Update Source Event
+EventContainer.SyntheticServerName = SyntheticEvent [0].ServerName; 
+EventContainer.SyntheticServerSerial = SyntheticEvent [0].ServerSerial; 
+ReturnEvent(EventContainer);
+}
+else
+{
+Log( LogPrefix + "Processing Clear Event");
+}
+// Calculate Number of BSC Codes (SiteCodes) with Link Broken for this BSC Location (SourceNode)
+BSCLocationNetworkEventDataType = "OS_Status";
+BSCLocationNetworkEventFilter = "EventId = 'NET_ZTE_LINKBROKEN_001' and SourceNode = '"+ EventContainer.SourceNode+ "' And Severity > 0";
+log( LogPrefix + "BSCLocationNetworkEventFilter = " + BSCLocationNetworkEventFilter );
+BSCLocationNetworkEvent = GetByFilter(BSCLocationNetworkEventDataType , BSCLocationNetworkEventFilter ,False);
+BSCLocationNumNetworkEvent = Length(BSCLocationNetworkEvent );
+log( LogPrefix + "BSCLocationNumNetworkEvent = " + BSCLocationNumNetworkEvent );
+DistinctBSCLocationNetworkEvent = Distinct(BSCLocationNetworkEvent, "SiteCode");
+NumDistinctBSCLocationNetworkEvent = Length(DistinctBSCLocationNetworkEvent );
+log( LogPrefix + "NumDistinctBSCLocationNetworkEvent = " + NumDistinctBSCLocationNetworkEvent );
+// Update Synthetic Event with Number of BSC Codes from this BSC Location
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "EventId = 'SYN_ZTE_LINKBROKEN_001' and SourceNode = '" + EventContainer.SourceNode + "' And Severity > 0";
+log( LogPrefix + "SyntheticEventFilter = " + SyntheticEventFilter );
+if ( NumDistinctBSCLocationNetworkEvent == 0 )
+{
+SyntheticEventUpdateExpression = "Severity = 0, ExpireID= 65516, ClearTime = " + EventContainer.ClearTime + ", ImpactDate = " + getdate() + ", Summary = 'No BSC of " + EventContainer.SourceNode +" in disconnected state from EMS'";
+}
+else
+{
+SyntheticEventUpdateExpression = "Summary = '" + NumDistinctBSCLocationNetworkEvent + " BSC of " + EventContainer.SourceNode +" in disconnected state from EMS'";
+}
+log( LogPrefix + "SyntheticEventUpdateExpression = " + SyntheticEventUpdateExpression );
+BatchUpdate(SyntheticEventDataType, SyntheticEventFilter, SyntheticEventUpdateExpression);
+// Exit Gracefully
+// Set Impact Flag to show processing has Completed
+if (EventContainer.Severity == 0)
+{ 
+EventContainer.ImpactFlag= 100; 
+}
+else
+{ 
+EventContainer.ImpactFlag= 6; 
+} 
+ReturnEvent(EventContainer);
+Log ( LogPrefix + "");

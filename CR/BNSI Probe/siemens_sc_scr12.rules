@@ -1,0 +1,729 @@
+
+#
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       
+#       
+#       (C) Copyright IBM Corp. 2007. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#       Example rules file for the Netcool/OMNIbus Probe 
+#       for Siemens Switch Commander SCR12 
+#
+#
+#######################################################################
+#
+#
+# Available Elements:
+#
+#$OSI Alarm     
+#$Alarm_Object   
+#$Managed_Object      
+#$Event_Type     
+#$Event_Time     
+#$DateTime      
+#$UTC           
+#$Probable_Cause         
+#$Perceived_Severity     
+#$Additional_Text  
+#
+#######################################################################
+#table eventtype="$OMNIHOME/probes/includes/siemens_EventType.lookup"
+#default = {"unknown"}
+#@EventType = lookup(@Summary, eventtype)
+############################################################
+# Alex Silva@Innovise ESM, October 2010
+############################################################
+
+array add_text_array;
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+#
+# This section deals with internal probe events
+#
+    switch(@Summary)
+    {
+    case "Running ...":
+            @Severity = 1
+            @AlertGroup = "probestat"
+            @Type = 2
+    case "Going Down ...":
+            @Severity = 5
+            @AlertGroup = "probestat"
+            @Type = 1
+
+    case "Unable to get events":
+    	    @Severity = 5
+	    @AlertGroup = "probestat"
+	    @AlertKey = @Agent
+	    @Type = 1	 	    
+	    
+    default:
+	#            @Severity = 2
+    }
+    @AlertKey = @Agent
+    @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+# Setting straight forward fields
+    	@Class = 9207 
+	@Manager = "siemens_sc_scr12"
+	@Domain= "CORE"
+	@Vendor= "Siemens"
+	@OmcEms = @Manager
+    @Agent = @Manager + hostname()
+	@AlertGroup = $a_Actual_Probable_Cause
+
+# Setting AlertKey
+
+        #@AlertKey = $a_MaintenanceManualNumber
+        if(exists($AdditionalLine00))
+        {
+		if(regmatch($AdditionalLine00, ".*Affected MOC.*"))
+		{
+                	@AlertKey = extract($AdditionalLine00, ".*Affected MOC (.*)$")
+		}
+        }
+        if(exists($a_Affected_MOC_SAL__MOI_CLASS))
+        {
+                @AlertKey = @AlertKey + ": " + $a_Affected_MOC_SAL__MOI_CLASS
+        }
+
+# Setting EventType and discard notifyAlarmListRebuilt events
+	if(exists($EventName))
+	{
+		if(match($EventName,"notifyAlarmListRebuilt"))
+		{
+			discard
+		}
+#		else
+#		{
+#			@EventType = $EventName
+#		}
+	}
+
+# Setting Node and NodeAlias
+	if (exists($i_val_1_value_val))
+	{
+		@Node = extract($i_val_1_value_val, "([],A-Z,a-z,0-9,[,-,_, ]+)")
+		@NodeAlias = @Node
+	}
+	else
+	{
+		
+	}
+
+#	if (exists ($nativeEMSName))
+#	{
+#		$node = extract($nativeEMSName,"huaweit2000/dwdm;"("[A-Za-z]+[0-9]+_[A-Za-z]+_[A-Za-z]+"))
+#
+#	@Node = $node
+#	} 
+# Setting Severity, Type and ExpireTime fields
+	if (exists($r_perceivedSeverity)) 
+	{
+		switch($r_perceivedSeverity)
+		{
+			case "cleared":
+				@Severity = 1
+				@Type = 2
+
+			case "critical":
+				@Severity = 5
+                                @Type = 1
+
+			case "major":
+				@Severity = 4
+                                @Type = 1
+
+			case "minor":
+				@Severity = 3
+                                @Type = 1
+
+			case "warning" | "indeterminate":
+				#@Severity = 2
+                                #@Type = 1
+				#@ExpireTime = 600
+				discard
+
+			default:
+				@Severity = 1
+				@ExpireTime = 600
+		}
+	
+	}  
+	else 
+	{
+		@Severity = 1
+		@ExpireTime = 600
+	}
+
+# Setting First and LastOccurrence fields in sync with EMS date
+	if (exists($a_DATE)) 
+	{
+		# $a_DATE = "20101019183021"
+		$EMS_Datr = extract($a_DATE, "([0-9]+)")
+		@FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+		@LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+	}
+	else
+	{
+
+		@FirstOccurrence = 0
+		@LastOccurrence = 0
+	}
+
+	
+
+# Setting Summary and AddText Fields
+	switch(@AlertGroup)
+	{
+		case "commercialPowerFailure":
+			if(exists($a_Actual_Additional_Text))
+			{
+				@Summary = $a_Actual_Additional_Text
+			}
+			else
+			{
+				@Summary = "Commercial Power Failure"
+			}
+
+			if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+				@AddText = $AdditionalLine00
+			}
+			
+
+		case "communicationsProtocolError":
+                        @Summary = "Communications Protocol Error Failure"
+			if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "communicationsSubsystemFailure":
+                        @Summary = "Communications Subsystem Failure"
+                        if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+
+		case "configurationOrCustomizationError":
+                        @Summary = "Configuration Or Customization Error"
+			if(exists($a_Actual_Additional_Text))
+			{
+				@Summary = @Summary + ": " + $a_Actual_Additional_Text
+			}
+			if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+				@AddText = $AdditionalLine00
+			}
+
+		case "coolingFanFailure":
+                        @Summary = "Cooling Fan Failure"
+			if(exists($a_Actual_Additional_Text))
+			{
+				@Summary = @Summary + ": " + $a_Actual_Additional_Text
+			}
+			if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+				@AddText = $AdditionalLine00
+                        }
+			
+
+		case "equipmentMalfunction":
+                        @Summary = "Equipment Mal Function"
+			if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+				@AddText = $AdditionalLine00
+                        }
+
+		case "fireDetectorFailure":
+                        @Summary = "Fire Detector Failure"
+                        if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "generatorFailure":
+                        @Summary = "Generator Failure"
+                        if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "inputOutputDeviceError":
+                        @Summary = "Input Output Device Error"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "intrusionDetection":
+                        @Summary = "Intrusion Detection"
+			if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "linkSetFailure":
+                        @Summary = "Link Set Failure"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+
+		case "lossOfSignal":
+                        @Summary = "Loss Of Signal"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "msusDiscarded":
+                        @Summary = "MSUS Discarded"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "noRuleForAddress":
+                        @Summary = "No Rule For Address"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "noSegmentationSupport":
+                        @Summary = "No Segmentation Support"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "noTranslatorForAddress":
+                        @Summary = "No Translator For Address"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "pointCodeNotAvailable":
+                        @Summary = "Point Code Not Available"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "powerProblem":
+                        @Summary = "Power Problem"
+			if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "rectifierFailure":
+                        @Summary = "Fire Detector Failure"
+			if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "remoteAlarmInterface":
+                        @Summary = "Remote Alarm Interface"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "remoteSubsystemUnavailable":
+                        @Summary = "Remote Subsystem Unavailable"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "routeSetUnavailable":
+                        @Summary = "Route Set Unavailable"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "routingFailureNoReasonOrUnqualified":
+                        @Summary = "Routing Failure No Reason Or Unqualified"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "slCongested":
+                        @Summary = "Signaling Link Congested"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "slFailure":
+                        @Summary = "Signaling Link Failure"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "storageCapacityProblem":
+                        @Summary = "Storage Capacity Problem"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "syntaxErrorDetected":
+                        @Summary = "Syntax Error Detected"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "thresholdCrossed":
+                        @Summary = "Threshold Crossed"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "trunkCardProblem":
+                        @Summary = "Trunk Card Problem"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "unauthorizedAccessAttempt":
+                        @Summary = "Unauthorized Access Attempt"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+		case "underlyingResourceUnavailable":
+                        @Summary = "Underlying Resource Unavailable"
+			if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+
+		case "unequippedSubsystem":
+                        @Summary = "Unequipped Subsystem"
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+
+
+
+		default:
+			@Summary = @AlertGroup
+			if(exists($a_Actual_Additional_Text))
+                        {
+                                @Summary = @Summary + ": " + $a_Actual_Additional_Text
+                        }
+                        if(exists($AdditionalLine00))
+                        {
+				@Summary = @Summary + ": " + $AdditionalLine00
+                                @AddText = $AdditionalLine00
+                        }
+	}
+
+
+###Set EventType to TG Alarm###
+
+	if (regmatch(@Summary, ".*Equipment Mal Function: Affected MOC TGAL.*"))
+	{
+		@EventType = "TG Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+	}
+	else if (regmatch(@Summary, ".*Communications Protocol Error Failure: Affected MOC TGAL, MOI CLASS=CCSTGAL.*"))
+
+	{
+
+		@EventType = "TG Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+
+	}
+
+
+###Set EventType to Critical Threshold Alarm###
+
+	if (regmatch(@Summary, ".*DTYPE=LUPSUCC; Affected MOC ADMINAL, MOI CLASS=THRES.*"))
+
+	{
+
+                @EventType = "Critical Threshold Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+
+        }else if (regmatch(@Summary, ".*DTYPE.*"))
+
+		{
+
+		 @EventType = "Critical Threshold Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+
+		}
+
+###Set EventType to Critical Threshold Alarm###
+
+	if (regmatch(@Summary, ".*CLASS=LTG.*"))
+
+	{
+
+		@EventType = "LTG Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+	}
+	else if (regmatch(@Summary, ".*Affected MOC MMLADC.*"))
+
+	{
+
+                @EventType = "NE Conn Loss Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+        
+	}
+
+	if (regmatch (@Summary, ".*Affected MOC Q3ADC.*"))
+
+	{
+
+                @EventType = "NE Conn Loss Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+
+        }
+	else if (regmatch(@Summary, ".*Affected MOC NE_TCP_LINK.*"))
+
+	{
+
+                @EventType = "NE Conn Loss Alarm"
+		@TTHibernate= 900 
+		@EventId = "NET_CORE_DEF_001"
+
+        }
+
+
+	 if (regmatch(@Summary, ".*MOI CLASS = LTG.*"))
+	
+	{
+		@TTHibernate= 900
+                @EventId = "NET_CORE_DEF_001"
+	}
+
+# Setting EventId = "CRIT_HW_001"
+	#@AddText = ltrim(@AddText)
+	#log(DEBUG, "CRIT AddText to be :" +  @AddText)
+	#$num_elements = split(@AddText, add_text_array,",")
+	#log(DEBUG, "CRIT AddText :" +  $num_elements)
+	#$add_text = add_text_array[0]
+	#log(DEBUG, "CRIT AddText array :" +  $add_text)
+	#switch($add_text)
+	#{
+	#	case "Affected MOC CU"|"Affected MOC CU"|"Affected MOC CP FAILURE"|"Affected MOC SYOP"|"Affected MOC MCH FAILURE"|"Affected MOC MPU"|"Affected MOC LIC"|"Affected MOC AMX"|"Affected MOC ATMBU"|"Affected MOC CCG"|"Affected MOC RECOV"|"Affected MOC Disk Device"|"Affected MOC MB"|"Affected MOC ACCG"|"Affected MOC SN"|"Affected MOC Logical backup storage"|"Affected MOC DLU":
+	#		@EventId = "CRIT_HW_001"
+		
+	#	default:
+	#}
+	if (regmatch (@Summary, ".*Affected MOC CU.*"))
+	{
+		@EventId = "CRIT_HW_001"
+		log(DEBUG, "CRIT AddText to be :" +  @EventId)
+	}
+	else if (regmatch (@Summary,".* Affected MOC CP FAILURE.*"))
+{
+                @EventId = "CRIT_HW_001"
+        }
+
+if (regmatch (@Summary,".*Affected MOC SYOP.*"))
+ {
+                @EventId = "CRIT_HW_001"
+        }
+else if (regmatch (@Summary,".*Affected MOC MCH FAILURE.*"))
+
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary,".*Affected MOC MPU.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+else if (regmatch (@Summary,".*Affected MOC LIC.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary,".*Affected MOC AMX.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+else if (regmatch (@Summary,".*Affected MOC ATMBU.*"))
+
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary,".*Affected MOC CCG.*"))
+
+{
+                @EventId = "CRIT_HW_001"
+      }
+else if (regmatch (@Summary,".*Affected MOC RECOV.*"))
+
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary, ".*Affected MOC Disk device.*"))
+{
+                @EventId = "CRIT_HW_001"
+		log(DEBUG, "CRIT EventId :" +  @EventId)
+      }
+else if (regmatch (@Summary,".*Affected MOC MB.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary,".*Affected MOC ACCG.*"))
+
+{
+                @EventId = "CRIT_HW_001"
+      }
+else if (regmatch (@Summary,".*Affected MOC SN.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary,".*Affected MOC Logical backup storage.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+else if (regmatch (@Summary,".*AAffected MOC DLU.*"))
+{
+                @EventId = "CRIT_HW_001"
+      }
+if (regmatch (@Summary,"Affected MOC LNLCKOUT, MOI CLASS=PBX LAC=.*"))
+{
+                @EventId = "NET_C7_004"
+      }
+
+
+
+# Setting EventId = "NET_CORE_ENV_001" for CoreHardwareAlarm policy
+
+	if (regmatch (@Summary,"Alarm Input Interface=.*"))
+	{                        
+		@EventId = "NET_CORE_ENV_001"
+	}
+	else if (regmatch (@Summary,"Affected MOC Alarm Input Interface"))
+	{
+             @EventId = "NET_CORE_ENV_001"
+
+# MihaiStrava 02/03/2011
+             if (regmatch (@Summary,"MOI Alarm Input Interface") && regmatch (@Summary,"Main Power")) 
+             {
+                 @EventId = "DEFAULT"
+             }
+
+             if (regmatch (@Summary,"MOI Alarm Input Interface") && regmatch (@Summary,"Genset"))
+             {
+                 @TTHibernate = 8100
+             }
+        }
+
+# Alex Silva (07-06-2011): Requested by Iram Javaid
+
+	$upper_summary = upper(@Summary)
+        if (regmatch($upper_summary, "GENSET"))
+	{
+		@TTHibernate = 8100
+	}
+	
+	if (regmatch($upper_summary, "MAIN POWER") Or regmatch($upper_summary, "KESC MAIN FAILURE") Or regmatch($upper_summary, "POWER PROBLEM") Or regmatch($upper_summary, "COMMERCIAL POWER FAILURE") Or regmatch($upper_summary, "WAPDA FAILURE") Or regmatch($upper_summary, "COMMERCIAL POWER BY WAPDA HAS FAILED"))
+	{
+
+		@TTHibernate = 0
+		@EventId = ""
+	}
+
+
+	#@Identifier = $Event+$nsap+$MOInstance
+	@Identifier = @Node + @Type + @AlertKey + @AlertGroup + @Manager 
+}
+details($*)

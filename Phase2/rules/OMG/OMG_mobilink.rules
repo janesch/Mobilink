@@ -1,0 +1,28 @@
+@Agent = @Manager + "@" + hostname()
+@Domain = "VAS"
+@Vendor= "OMG"
+@Class = 303006
+@Information = $*
+# @OmcEms = "OMG"
+@NodeAlias = @Manager + @Node + @AlertGroup + @Summary + @Type
+@ExpireTime = 604800
+if( match( $2, "8" ) )
+{
+@Severity = 5
+}
+# if (match(@Severity,"2")) { discard }
+# if (match(@Severity,"1")) { discard }
+# if (match(@Severity,"2")) { discard }
+if (match(@Severity,"5")) { @EventId = "NET_VAS_IMP_001" }
+if (match(@Severity,"4")) { @EventId = "NET_VAS_IMP_001" }
+if (match(@Severity,"2")) { @ExpireTime = 3600 }
+if (match(@Severity,"1")) { @ExpireTime = 3600 }
+# @Summary = $3
+# @AlertGroup = $1
+# @AlertKey = $ReqId
+# @Identifier = $2 + @Manager + @Node + @AlertGroup + @Summary + @Type
+@Identifier = @Manager + @Node + @AlertGroup + @Summary + @Type
+# @Identifier = @Manager + @Node + @AlertGroup + @AlertKey + @Summary + @Type
+# details($*)
+# @AddText = $alarmAdditionalInfo + $alarmAction
+# @EventType = $alarmTypeId

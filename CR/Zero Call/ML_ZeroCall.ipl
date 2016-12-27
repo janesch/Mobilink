@@ -1,0 +1,230 @@
+/*------------------------------------------------------------------------------------------------------- 
+ Policy Name: ML_ZeroCalls
+ Author: Chris Janes, Innovise 
+ Description: This policy CheckZero Call Events and if appropriate raises  Synthetic Event
+ 
+  Further details of the policies design can be found in ML Zero Calls LLD.doc and ML Zero Calls.vsd
+ 
+ Reviewed By: 
+ 
+ V 0.0  20111117    Chris Janes     Original
+------------------------------------------------------------------------------------------------------- 
+ Event Reader filter :EventId = 'NET_ZERO_CALL_001' and ImpactFlag = 4
+           
+------------------------------------------------------------------------------------------------------- */
+Log ("< ----------------------------- Starting ML_ZeroCalls ----------------------------- >");
+
+ @ImpactFlag = 5;
+ReturnEvent(EventContainer);
+// Set Policy Variables
+//is there an associate Site Down Event
+    // is ther a site down
+    // EventId = MSD_002 and SiteCode = @SiteCode
+    
+SiteDownEventDataType = "OS_Status";
+SiteDownEventFilter = "EventId = 'MSD_002' and SiteCode ='"+ @SiteCode + "'";
+log("CurrentSerial = " + CurrentSerial + "SiteDownEventFilter = " + SiteDownEventFilter  );
+SiteDownEvent = GetByFilter(SiteDownEventDataType, SiteDownEventFilter,False);
+NumSiteDownEvent = Length(SiteDownEvent);
+log("NumSiteDownEvent = " + NumSiteDownEvent );    
+if(NumSiteDownEvent > 0)
+{
+    // There is an Associated Site  Event
+    Log("There is an Associated Site Down Event");
+    @ImpactFlag = 6;
+    ReturnEvent(EventContainer);
+    exit();
+    
+}
+// is there a cell down?
+// XXXXXXXXXXXX EventId = 'MSD_001' and BSC_Name like @BSC_Name and Addtext (SiteIndex Cell Index) XXXXXXXXXXXX
+CellDownEventDataType = "OS_Status";
+CellDownEventFilter = "EventId = 'MSD_001' ";
+log("CurrentSerial = " + CurrentSerial + "CellDownEventFilter = " + CellDownEventFilter  );
+CellDownEvent = GetByFilter(CellDownEventDataType, CellDownEventFilter,False);
+NumCellDownEvent = Length(CellDownEvent);
+log("NumCellDownEvent = " + NumCellDownEvent );    
+if( NumCellDownEvent > 0 )
+{
+    // There is an Associated Cell Down Event
+    Log("There is an Associated Cell Down Event");
+    @ImpactFlag = 6;
+    ReturnEvent(EventContainer);
+    exit();
+    
+}
+//There is NOT an Associated Site or Cell Down Event
+Log("There is an Associated Site or Cell Down Event");
+// Is there an associated SE
+// EventId = 'SYN_ZERO_CELL_001' and BSC_Name = BSC_Name
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "EventId = 'SYN_ZERO_CELL_001' and BSC_Name = '" + @BSC_Name + "'";
+log("CurrentSerial = " + CurrentSerial + "SyntheticEventFilter = " + SyntheticEventFilter  );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+log("NumSyntheticEvent = " + NumSyntheticEvent );
+if( NumSyntheticEvent == 0)
+{
+    // Get Percentage of Cells in Zero Call for this BSC
+    // Get Total Number of Cells in this BSC
+    BSCTotalCellsDataType = "OS_Status";
+    BSCTotalCellsFilter = "";
+    log("CurrentSerial = " + CurrentSerial + "BSCTotalCellsFilter = " + BSCTotalCellsFilter  );
+    BSCTotalCells = GetByFilter(BSCTotalCellsDataType, BSCTotalCellsFilter,False);
+    NumBSCTotalCells = Length(BSCTotalCells);
+    log("NumBSCTotalCells = " + NumBSCTotalCells );
+    // Get Total Number of Cells in ZeroCall for this BSC
+    // EventId = 'NET_ZERO_CALL_001' and BSC_Name = @BSC_Name
+    BSCZeroCallCellsDataType = "OS_Status";
+    BSCZeroCallCellsFilter = "EventId = 'NET_ZERO_CALL_001' and BSC_Name ='" + @BSC_Name + "'";
+    log("CurrentSerial = " + CurrentSerial + "BSCZeroCallCellsFilter = " + BSCZeroCallCellsFilter  );
+    BSCZeroCallCells = GetByFilter(BSCZeroCallCellsDataType, BSCZeroCallCellsFilter,False);
+    NumBSCZeroCallCells = Length(BSCZeroCallCells);
+    log("NumBSCZeroCallCells = " + NumBSCZeroCallCells );
+    PerCells = (NumBSCZeroCallCells * 100) / NumBSCTotalCells;
+     log("PerCells = " + PerCells );
+    // Set Hibernate Time
+    if ( PerCells < 25)
+    {
+        HibernateTime = 3600;
+    }
+    elseif ( PerCells < 50)
+    {
+        HibernateTime = 2700;
+    }
+    elseif ( PerCells < 50)
+    {
+        HibernateTime = 1800;
+    }
+    else 
+    {
+        HibernateTime = 900;
+    }
+ 
+    HibernateTime = 90;
+    log("HibernateTime = " + HibernateTime );
+ 
+    // Hibernate 
+        // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+        @HibernateFlag = 1;        
+        ReturnEvent(EventContainer);
+        Action_key = ZeroCalls + @ServerSerial + @ServerName + "#" + getdate();
+        Hibernate(Action_key, "Sleeping", HibernateTime);
+        //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+        RemoveHibernation(Action_key); 
+        @HibernateFlag = 2;        
+        ReturnEvent(EventContainer);
+
+        // Get Percentage of Cells in Zero Call for this BSC
+        // Get Total Number of Cells in this BSC
+        BSCTotalCellsDataType = "OS_Status";
+        BSCTotalCellsFilter = "";
+        log("CurrentSerial = " + CurrentSerial + "BSCTotalCellsFilter = " + BSCTotalCellsFilter  );
+        BSCTotalCells = GetByFilter(BSCTotalCellsDataType, BSCTotalCellsFilter,False);
+        NumBSCTotalCells = Length(BSCTotalCells);
+        log("NumBSCTotalCells = " + NumBSCTotalCells );
+        // Get Total Number of Cells in ZeroCall for this BSC
+        // EventId = 'NET_ZERO_CALL_001' and BSC_Name = @BSC_Name
+        BSCZeroCallCellsDataType = "OS_Status";
+        BSCZeroCallCellsFilter = "EventId = 'NET_ZERO_CALL_001' and BSC_Name ='" + @BSC_Name + "'";
+        log("CurrentSerial = " + CurrentSerial + "BSCZeroCallCellsFilter = " + BSCZeroCallCellsFilter  );
+        BSCZeroCallCells = GetByFilter(BSCZeroCallCellsDataType, BSCZeroCallCellsFilter,False);
+        NumBSCZeroCallCells = Length(BSCZeroCallCells);
+        log("NumBSCZeroCallCells = " + NumBSCZeroCallCells );
+        PerCells = (NumBSCZeroCallCells * 100) / NumBSCTotalCells;
+        // Update SE.Severity
+        if ( PerCells < 25)
+        {
+            seSeverity = 3;
+        }
+        elseif ( PerCells < 50)
+        {
+            seSeverity = 3;
+        }
+        elseif ( PerCells < 50)
+        {
+            seSeverity = 4;
+        }
+        else 
+        {
+            seSeverity = 5;
+        }
+ 
+    // Does the NE still exist
+    NetworkEventDataType = "OS_Status";
+    NetworkEventFilter = "Severity > 0 and ServerName = '" + @ServerName + "' and ServerSerial = " + @ServerSerial;
+    log("CurrentSerial = " + CurrentSerial + "NetworkEventFilter = " + NetworkEventFilter  );
+    NetworkEvent = GetByFilter(NetworkEventDataType, NetworkEventFilter,False);
+    NumNetworkEvent = Length(NetworkEvent);
+    log("NumNetworkEvent = " + NumNetworkEvent );
+    if(NumNetworkEvent  == 1)
+    {
+        // NE Does exist
+        // Create SE
+        Log("Create SYN Event");
+        SynthEvent = NewObject();
+        SynthEvent.Node= @Node ;
+        SynthEvent.NodeAlias= @NodeAlias;
+        SynthEvent.Summary=  PerCells + "% Cells of " + @BSC_Name + " in Zero Call";
+        SynthEvent.EventId = 'SYN_ZERO_CALL_001';
+        SynthEvent.Class = 203002;
+        SynthEvent.Agent = "Netcool Impact";
+        SynthEvent.Manager = "Netcool Impact";
+        SynthEvent.Severity= seSeverity;
+        SynthEvent.Type= 1;
+        //SynthEvent .LogTicket = 1;
+        SynthEvent.ImpactFlag = 0;
+        SynthEvent.MaintFlag = @MaintFlag;
+        SynthEvent.Identifier= SynthEvent.Node + SynthEvent.Summary + SynthEvent.Type+ @LastOccurrence;
+        SynthEvent.FirstOccurrence = @FirstOccurrence;
+        SynthEvent.LastOccurrence = @LastOccurrence;
+        SynthEvent.AlertGroup = @AlertGroup;
+        SynthEvent.AlertKey = @AlertKey;
+        SynthEvent.EventType = @EventType;
+        SynthEvent.Domain= @Domain;
+        SynthEvent.OmcEms = @OmcEms;
+        SynthEvent.AdvCorrServerSerial =@Serial;
+        SynthEvent.OwnerUID = 65534;
+        SynthEvent.BSC_Name = @BSC_Name;
+        AddDataItem('OS_Status', SynthEvent );
+    }
+    else
+    {
+        // NE has Cleared
+        @ImpactFlag = 6;
+        ReturnEvent(EventContainer);
+        exit();
+    }
+}
+ 
+    
+// Update NE SSN and SSS
+// Is there an associated SE
+// EventId = 'SYN_ZERO_CELL_001' and BSC_Name = BSC_Name
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "EventId = 'SYN_ZERO_CELL_001' and BSC_Name = '" + @BSC_Name + "'";
+log("CurrentSerial = " + CurrentSerial + "SyntheticEventFilter = " + SyntheticEventFilter  );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+log("NumSyntheticEvent = " + NumSyntheticEvent );
+if ( NumSyntheticEvent > 0)
+{
+    Log("Synthetic Event being updated");
+    
+    UpdateExpression = "Severity = " + seSeverity + ", Summary = " + PerCells + "% Cells of " + @BSC_Name + " in Zero Call";
+    Log("UpdateExpression = " + UpdateExpression );
+    BatchUpdate(SyntheticEventDataType, SyntheticEventFilter, UpdateExpression);
+    
+    Log("Network Event being updated");
+    @SyntheticServerName = SyntheticEvent[0].ServerName;
+    @SyntheticServerSerial = SyntheticEvent[0].ServerSerial;
+    ReturnEvent(EventContainer);
+}
+else
+{
+    Log("No Synthetic Event Found");
+}
+    
+ 
+ 
+Log ("< ----------------------------- Finishing ML_ZeroCalls ----------------------------- >");

@@ -1,0 +1,67 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-UPS-MIB.include.snmptrap.lookup 1.1
+#    2004/08/26 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-UPS-MIB
+#
+###############################################################################
+table upsTestResultsSummary =
+{
+    ##########
+    # The results of the current or last UPS diagnostics test performed.
+    ##########
+    
+    {"1","Completed Successfully"}, ### donePass - Test completed successfully
+    {"2","Completed with Warning"}, ### doneWarning - Test completed with a warning
+    {"3","Completed with Error"}, ### doneError - Test completed with an error
+    {"4","Aborted"}, ### aborted - Test aborted by setting the value of upsTestId to upsTestAbortTestInProgress
+    {"5","In Progress"}, ### inProgress - Tests not yet concluded
+    {"6","No Tests Initiated"} ### noTestsInitiated - No previous test results are available
+}
+default = "Unknown"
+
+table upsWellKnownAlarms =
+{
+    {"33.1.6.3.1","UPS Battery Status","4","100041","upsAlarmBatteryBad","UPS Battery Bad"}, ### upsAlarmBatteryBad - One or more batteries have been determined to require replacement.
+    {"33.1.6.3.2","UPS Status","4","100040","upsAlarmOnBattery","UPS on Battery"}, ### upsAlarmOnBattery - The UPS is drawing power from the batteries.
+    {"33.1.6.3.3","UPS Battery Status","4","100048","upsAlarmLowBattery","UPS Battery Low"}, ### upsAlarmLowBattery - The remaining battery run-time is less than or equal to upsConfigLowBattTime.
+    {"33.1.6.3.4","UPS Battery Status","4","100048","upsAlarmDepletedBattery","UPS Battery Depleted"}, ### upsAlarmDepletedBattery - The UPS will be unable to sustain the present load when and if the utility power is lost.
+    {"33.1.6.3.5","UPS Temperature Status","4","100059","upsAlarmTempBad","UPS Temperature Out of Tolerance"}, ### upsAlarmTempBad - A temperature is out of tolerance.
+    {"33.1.6.3.6","UPS Input Status","4","4001","upsAlarmInputBad","UPS Input Bad"}, ### upsAlarmInputBad - An input condition is out of tolerance.
+    {"33.1.6.3.7","UPS Output Status","4","4001","upsAlarmOutputBad","UPS Output Bad"}, ### upsAlarmOutputBad - An output condition (other than OutputOverload) is out of tolerance.
+    {"33.1.6.3.8","UPS Output Status","4","4001","upsAlarmOutputOverload","UPS Output Overload"}, ### upsAlarmOutputOverload - The output load exceeds the UPS output capacity.
+    {"33.1.6.3.9","UPS Bypass Status","4","4001","upsAlarmOnBypass","UPS on Bypass"}, ### upsAlarmOnBypass - The Bypass is presently engaged on the UPS.
+    {"33.1.6.3.10","UPS Bypass Status","4","4001","upsAlarmBypassBad","UPS Bybass Bad"}, ### upsAlarmBypassBad - The Bypass is out of tolerance.
+    {"33.1.6.3.11","UPS Output Status","4","4001","upsAlarmOutputOffAsRequested","UPS Output Off as Requested"}, ### upsAlarmOutputOffAsRequested - The UPS has shutdown as requested, i.e., the output is off.
+    {"33.1.6.3.12","UPS Status","4","4001","upsAlarmUpsOffAsRequested","UPS Off as Requested"}, ### upsAlarmUpsOffAsRequested - The entire UPS has shutdown as commanded.
+    {"33.1.6.3.13","UPS Charger Status","4","100098","upsAlarmChargerFailed","UPS Charger Failed"}, ### upsAlarmChargerFailed - An uncorrected problem has been detected within the UPS charger subsystem.
+    {"33.1.6.3.14","UPS Output Status","4","4001","upsAlarmUpsOutputOff","UPS Output Off"}, ### upsAlarmUpsOutputOff - The output of the UPS is in the off state.
+    {"33.1.6.3.15","UPS Status","4","4001","upsAlarmUpsSystemOff","UPS System Off"}, ### upsAlarmUpsSystemOff - The UPS system is in the off state.
+    {"33.1.6.3.16","UPS Fan Status","4","100043","upsAlarmFanFailure","UPS Fan Failure"}, ### upsAlarmFanFailure - The failure of one or more fans in the UPS has been detected.
+    {"33.1.6.3.17","UPS Fuse Status","4","100046","upsAlarmFuseFailure","UPS Fuse Failure"}, ### upsAlarmFuseFailure - The failure of one or more fuses has been detected.
+    {"33.1.6.3.18","UPS Status","4","4001","upsAlarmGeneralFault","UPS General Fault"}, ### upsAlarmGeneralFault - A general fault in the UPS has been detected.
+    {"33.1.6.3.19","UPS Diagnostic Status","4","4001","upsAlarmDiagnosticTestFailed","UPS Diagnostic Test Failed"}, ### upsAlarmDiagnosticTestFailed - The result of the last diagnostic test indicates a failure.
+    {"33.1.6.3.20","UPS Communications Status","1","1009","upsAlarmCommunicationsLost","UPS Communications Lost"}, ### upsAlarmCommunicationsLost - A problem has been encountered in the communications between the agent and the UPS.
+    {"33.1.6.3.21","UPS Status","4","4001","upsAlarmAwaitingPower","UPS Awaiting Power"}, ### upsAlarmAwaitingPower - The UPS output is off and the UPS is awaiting the return of input power.
+    {"33.1.6.3.22","UPS Status","4","4001","upsAlarmShutdownPending","UPS Shutdown Pending"}, ### upsAlarmShutdownPending - A upsShutdownAfterDelay countdown is underway.
+    {"33.1.6.3.23","UPS Status","4","4001","upsAlarmShutdownImminent","UPS Shutdown Imminent"}, ### upsAlarmShutdownImminent - The UPS will turn off power to the load in less than 5 seconds; this may be either a timed shutdown or a low battery shutdown.
+    {"33.1.6.3.24","UPS Test Status","4","4001","upsAlarmTestInProgress","UPS Test in Progress"}, ### upsAlarmTestInProgress - A test is in progress, as initiated and indicated by the Test Group.  Tests initiated via other implementation-specific mechanisms can indicate the presence of the testing in the alarm table, if desired, via a macro in the MIB document specific to that implementation and are outside the scope of this.
+}
+default = {"UPS Status","4","4001","unknown","UPS Status Unknown"}
+

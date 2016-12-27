@@ -1,0 +1,107 @@
+function AddPolicyProcessMapping() {
+   log("Start AddPolicyProcessMapping");    
+   FindIDGivenPolicyName();
+}
+
+function FindIDGivenPolicyName() {
+  Type = "REPORT_Policy";
+  log("PolicyName is "+POLICYNAME);
+  Filter = " name='"+POLICYNAME+"'";
+  findPolicies = GetByFilter(Type, Filter, CountOnly);
+  log("GetByFilter. found "+Num+" dataItem(s)");
+  if (Num>0) {
+    //cleanup the old mappings
+    Type = "REPORT_PolicyProcessMappings";
+    Filter = "policy_id="+findPolicies[0].id;
+    BatchDelete(Type, Filter, null);
+    log("BatchDelete successful");
+    AddMappings(findPolicies[0].id);
+  } else {
+    addNewPolicy();
+  }
+}
+
+function addNewPolicy() {
+  Type = "REPORT_Policy";
+  log("addNewPolicy "+POLICYNAME);
+  ObjectToCopy=NewObject();
+  ObjectToCopy.Name=POLICYNAME;
+  AddDataItem(Type, ObjectToCopy);
+  log("Successfully added policy "+POLICYNAME+". About to logID");
+  Filter = " name='"+POLICYNAME+"'";
+  GetByFilter(Type, Filter, CountOnly);
+  if(Num>0){
+    AddMappings(OrgNode.id);
+  }
+}
+
+function AddMappings(policyID) {
+  log("policyID "+policyID);
+  log("processNames is "+PROCESSNAMES);
+  number = Length(PROCESSNAMES);
+  index=0;
+  while( index < number) {
+    Filter = " name='"+PROCESSNAMES[index]+"'";
+    Type = "REPORT_ROIProcess";
+    GetByFilter(Type, Filter, CountOnly);
+    if (Num>0) {
+     processID = OrgNode.id;
+       log("LogProcessID: processID "+processID+" PolicyID "+policyID);
+        f = " process_id="+processID+" AND policy_id="+policyID;
+        GetByFilter("REPORT_PolicyProcessMappings", f, null);
+        if(Num<1) {
+          ObjectToCopy=NewObject();
+          ObjectToCopy.process_id=processID;
+          ObjectToCopy.policy_id=policyID;
+          log("Adding newOrgNode into type "+ "REPORT_PolicyProcessMappings");
+          AddDataItem("REPORT_PolicyProcessMappings", ObjectToCopy);
+        }
+    }
+    index=index+1;
+  }
+}
+
+AddPolicyProcessMapping();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

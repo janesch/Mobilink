@@ -1,0 +1,127 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB.include.snmptrap.rules 2.2
+#    2005/12/16 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-WIRELESS-P2MP-RF-METRICS-MIB
+#
+###############################################################################
+#
+# 2.2 - Corrected incorrect enterprise ID value.
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.180.3.2": ### Cisco Wireless Radio Point to MultiPoint RF Metrics - Notifications from CISCO-WIRELESS-P2MP-RF-METRICS-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Wireless Radio P2MP RF"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### p2mpTrapThresh
+
+            ##########
+            # $1 = p2mpThreshValue
+            # $2 = p2mpThreshHysteresisTime 
+            # $3 = p2mpThreshLimitTime
+            ##########
+
+            $p2mpThreshValue = $1
+            $p2mpThreshHysteresisTime = $2
+            $p2mpThreshLimitTime = $3
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $p2mpThreshSuMacAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+$")
+            $p2mpThreshAttribute_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $p2mpThreshAttribute = lookup($p2mpThreshAttribute_Raw, P2mpRadioSignalAttribute)
+            $p2mpThreshType_Raw = extract($OID1, "\.([0-9]+)$")
+            $p2mpThreshType = lookup($p2mpThreshType_Raw, CwrThreshLimitType)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB-p2mpTrapThresh"
+
+            @AlertGroup = "Radio Interface Threshold Status"
+            @AlertKey = "p2mpThresholdEntry." + $ifIndex + "." + $p2mpThreshSuMacAddr + "." + $p2mpThreshAttribute_Raw + "." + $p2mpThreshType_Raw
+            @Summary = "Radio Interface " + $p2mpThreshAttribute + " " + $p2mpThreshType + " " + $1 + "  ( MAC: " + $p2mpThreshSuMacAddr + ", Interface: ifEntry." + $ifIndex + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $p2mpThreshAttribute = $p2mpThreshAttribute + " ( " + $p2mpThreshAttribute_Raw + " )"
+            $p2mpThreshType = $p2mpThreshType + " ( " + $p2mpThreshType_Raw + " )"
+            details($p2mpThreshValue,$p2mpThreshHysteresisTime,$p2mpThreshLimitTime,$ifIndex,$p2mpThreshSuMacAddr,$p2mpThreshAttribute,$p2mpThreshType)
+            
+            update(@Summary)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-WIRELESS-P2MP-RF-METRICS-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,382 @@
+MIB-PNMS-PASOCOMMON DEFINITIONS ::= BEGIN
+
+------------------------------------------------------
+--- 2001/09/04 Version 0.9
+--- 2003/04/18 Version 1.0
+--- 2004/08/20 Version 1.1
+--- 2004/12/09 Version 1.2
+--- 2005/02/23 Version 1.3
+--- 2006/01/07 Version 1.4
+--- 2006/01/20 Version 1.5
+--- 2007/12/04 Version 1.6
+------------------------------------------------------
+
+-----------------------------------------------
+-- INPORTS Definitions
+-----------------------------------------------
+
+	IMPORTS
+		IpAddress,Counter,TimeTicks,enterprises
+			FROM RFC1155-SMI
+		OBJECT-TYPE
+			FROM RFC-1212
+		DisplayString
+			FROM RFC1213-MIB
+		pnms
+			FROM NEC-SMI;
+
+-----------------------------------------------
+-- enterprises Group Definitions
+-----------------------------------------------
+
+	pasoCommon OBJECT IDENTIFIER
+		::= { pnms 101 }
+
+-----------------------------------------------
+-- pasoCommon Group Definitions
+-----------------------------------------------
+
+	pasoCommonInformation OBJECT IDENTIFIER
+		::= { pasoCommon 1 }
+
+	pasoCommonAlarmTrapDefinition OBJECT IDENTIFIER
+		::= { pasoCommon 2 }
+
+-----------------------------------------------
+-- pasoCommonInformation Group
+-- pcNetworkElementTable Definitions
+-----------------------------------------------
+
+	pcNetworkElementTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PcNetworkElementEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Network Element Information"
+		::= { pasoCommonInformation 1 }
+	
+	pcNetworkElementEntry OBJECT-TYPE
+		SYNTAX		PcNetworkElementEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink Network Element Information Entry"
+		INDEX { pnePasoIndex } 
+		::= { pcNetworkElementTable 1 }
+	
+	PcNetworkElementEntry ::= SEQUENCE {
+		pnePasoIndex			IpAddress,
+		pneGroupID			INTEGER,
+		pnePasoName			OCTET STRING,
+		pneConnection			INTEGER,
+		pneSummary			INTEGER,
+		pneEquipmentType		INTEGER	
+	}
+
+	pnePasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IpAddress"
+		::= { pcNetworkElementEntry 1 }
+
+	pneGroupID OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Group ID
+				Note: 0 stands for No Group"
+		::= { pcNetworkElementEntry 2 }
+		
+	pnePasoName OBJECT-TYPE
+		SYNTAX		OCTET STRING
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Paso Name"
+		::= { pcNetworkElementEntry 3 }
+
+	pneConnection OBJECT-TYPE
+		SYNTAX		INTEGER (0..1)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Not Used
+                            Connection Status
+		                disconnect(0),
+				  connect(1)"
+		::= { pcNetworkElementEntry 4 }
+		
+	pneSummary OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Network Element Summary Status
+		          unknown(0),
+		          clear(1),
+		          minor(2),
+		          major(3),
+		          critical(4)"
+		::= { pcNetworkElementEntry 5 }
+
+	pneEquipmentType OBJECT-TYPE
+		SYNTAX		INTEGER (0..15)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Equipment Type
+		Note: If disconnect occurs, this vaile is set to invailed(0).
+		invalid(0),
+		pasolinkV3(1),
+		pasoS(2),
+		MIU(3),
+		pasolink+STM-1(4),
+		pasolink+PDH(5),
+		pasolink+STM-0(6),
+		pasolinkV4(7),
+		pasolinkMx(8),
+		NLiteL(9),
+		NLiteLx(10),
+		PASOLINK NEO STD(11),
+		5000S(12),
+		PASOLINK NEO CPV(13),
+		PASOLINK NEO NODAL(14),
+		PASOLINK NEO A(15)"
+		::= { pcNetworkElementEntry 6 }
+	
+-----------------------------------------------
+-- Alarm Trap Status Group Definitions
+-----------------------------------------------
+	NormalAlarmStatusId ::= INTEGER {
+		invalid(0),
+		normal(1),
+		alarm(2)
+	}
+
+	alarmTrapSequenceNumber OBJECT-TYPE
+    		SYNTAX  Counter
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"When a new trap is created, trapSequenceCounter
+               		is incremented, and copied to this scalar."
+    	::= { pasoCommonAlarmTrapDefinition  1 }
+
+	alarmDate OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Date when alarm was raised or cleared: YYYY/MM/DD"
+    	::= { pasoCommonAlarmTrapDefinition  2 }
+
+	alarmTime OBJECT-TYPE
+    		SYNTAX  OCTET STRING
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Time when alarm was raised or cleared. A value in
+             		the format hh:mm:ss. The time is expressed as a
+             		24 hour clock. Some examples of legal values
+             		are: 02:03:33 and 14:59:59."
+    	::= { pasoCommonAlarmTrapDefinition  3 }
+
+	alarmSeverity OBJECT-TYPE
+    		SYNTAX  INTEGER
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"The valid values for this object are:
+           		        0=unknown,
+                    	1=clear,
+                    	2=minor,
+                    	3=major,
+                    	4=critical. 
+                 Alarm severity( 1-4 ) per X.733."
+    	::= { pasoCommonAlarmTrapDefinition  4 }
+
+	alarmType OBJECT-TYPE
+    		SYNTAX  INTEGER (0..10)
+		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Alarm types per X.733/X.736.
+           		        invalid(0),
+                 		communicationAlarm(1),
+                 		qualityOfServiceAlarm(2),
+                 		processingErrorAlarm(3),
+                 		equipmentAlarm(4),
+                 		environmentalAlarm(5),
+                 		integrityViolationAlarm(6),
+                 		operationalViolationAlarm(7),
+                 		physicalViolationAlarm(8),
+                 		securityViolationAlarm(9),
+                 		timeDomainViolationAlarm(10)"
+    	::= { pasoCommonAlarmTrapDefinition  5 }
+
+	probableCause OBJECT-TYPE
+    		SYNTAX  INTEGER (0..522)
+    		ACCESS  read-only
+    		STATUS  mandatory
+    		DESCRIPTION
+           		"Probable causes per X.733/X.736.
+            		Values 1..50 are used with communications alarms.
+            		Values 51..100 are used with equipment alarms.
+            		Values 101..150 are used with environmental alarms.
+            		Values 151..200 are used with processing error alarms.
+            		Values 501..600 are used with any of the violation
+            		alarm types.
+            		          invalid(0),
+                 		aIS(1),
+                 		callSetUpFailure(2),
+                 		degradedSignal(3),
+                 		farEndReceiverFailure(4),
+                 		framingError(5),
+                 		lossOfFrame(6),
+                 		lossOfPointer(7),
+                 		lossOfSignal(8),
+                 		payloadTypeMismatch(9),
+                 		transmissionError(10),
+                 		remoteAlarmInterface(11),
+                 		excessiveBER(12),
+                 		pathTraceMismatch(13),
+                 		backplaneFailure(51),
+                 		dataSetProblem(52),
+                 		equipmentIdentifierDuplication(53),
+                 		externalIFDeviceProblem(54),
+                 		lineCardProblem(55),
+                 		multiplexerProblem(56),
+                 		nEIdentifierDuplication(57),
+                 		powerProblem(58),
+                 		processorProblem(59),
+                 		protectionPathFailure(60),
+                 		receiverFailure(61),
+                 		replaceableUnitMissing(62),
+                 		replaceableUnitTypeMismatch(63),
+                 		synchronizationSourceMismatch(64),
+                 		terminalProblem(65),
+                 		timingProblem(66),
+                 		transmitterFailure(67),
+                 		trunkCardProblem(68),
+                 		replaceableUnitProblem(69),
+                 		airCompressorFailure(101),
+                 		airConditioningFailure(102),
+                 		airDryerFailure(103),
+                 		batteryDischarging(104),
+                 		batteryFailure(105),
+                 		commercialPowerFailure(106),
+                 		coolingFanFailure(107),
+                 		engineFailure(108),
+                 		fireDetectorFailure(109),
+                 		fuseFailure(110),
+                 		generatorFailure(111),
+                 		lowBatteryThreshold(112),
+                 		pumpFailure(113),
+                 		rectifierFailure(114),
+                 		rectifierHighVoltage(115),
+                 		rectifierLowFVoltage(116),
+                 		ventilationsSystemFailure(117),
+                 		enclosureDoorOpen(118),
+                 		explosiveGas(119),
+                 		fire(120),
+                 		flood(121),
+                 		highHumidity(122),
+                 		highTemperature(123),
+                 		highWind(124),
+                 		iceBuildUp(125),
+                 		intrusionDetection(126),
+                 		lowFuel(127),
+                 		lowHumidity(128),
+                 		lowCablePressure(129),
+                 		lowTemperature(130),
+                 		lowWater(131),
+                 		smoke(132),
+                 		toxicGas(133),
+                 		storageCapacityProblem(151),
+                 		memoryMismatch(152),
+                 		corruptData(153),
+                 		outOfCPUCycles(154),
+                 		sfwrEnvironmentProblem(155),
+                 		sfwrDownloadFailure(156),
+                 		communicationsProtocolError(157),
+                 		congestion(158),
+                 		heatingOrVentilationOrCoolingSystemProblem(159),
+                 		lANError(160),
+                	 	performanceDegraded(161),
+                 		temperatureUnacceptable(162),
+                 		thresholdCrossed(163),
+                 		underlyingResourceUnavailable(164),
+                 		equipmentMalfunction(165),
+                            configurationOrCustomizationError(166),
+                 		duplicateInformation(501),
+                 		informationMissing(502),
+                 		informationModificationDetected(503),
+                 		informationOutOfSequence(504),
+                 		unexpectedInformation(505),
+                 		denialOfService(506),
+                 		outOfService(507),
+                 		proceduralError(508),
+                 		cableTamper(509),
+                 		securityIntrusionDetection(510),
+                 		authenticationFailure(511),
+                 		breachOfConfidentiality(512),
+                 		unauthorisedAccessAttempt(513),
+                 		delayedInformation(514),
+                	 	keyExpired(515),
+                 		outOfHoursActivity(516),
+                 		otherReasons(517),
+                 		bossHardwareFailure(518),
+                 		bossSystemSoftwareFailure(519),
+                 		bossApplicationSoftwareFailure(520),
+                 		bossDatabaseFailure(521),
+                 		bossNetworkFailure(522)"
+    	::= { pasoCommonAlarmTrapDefinition  6 }
+
+	alarmSource OBJECT-TYPE
+			SYNTAX		OBJECT IDENTIFIER
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Pasolink OID"
+    	::= { pasoCommonAlarmTrapDefinition  7 }
+
+	alarmItemStatusId OBJECT-TYPE
+		SYNTAX		NormalAlarmStatusId
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION
+			"Alarm Status"
+	::= { pasoCommonAlarmTrapDefinition  8	}
+
+	
+-----------------------------------------------
+-- Alarm Trap Group Definitions
+-----------------------------------------------
+
+	alarmNESummary TRAP-TYPE
+		ENTERPRISE pnms
+		VARIABLES {
+			alarmTrapSequenceNumber,
+       			alarmDate,
+       			alarmTime,
+       			alarmSeverity,
+       			alarmType,
+       			probableCause,
+       			alarmSource,
+       			alarmItemStatusId
+       		}
+		DESCRIPTION	"Network Element Summary"	
+	::= 100
+
+	alarmPasoConnection TRAP-TYPE
+		ENTERPRISE pnms
+		VARIABLES {
+			alarmTrapSequenceNumber,
+       			alarmDate,
+       			alarmTime,
+       			alarmSeverity,
+       			alarmType,
+       			probableCause,
+       			alarmSource,
+       			alarmItemStatusId
+       		}
+		DESCRIPTION	"Not Used
+                            Pasolink Connection"	
+	::= 101
+
+
+END

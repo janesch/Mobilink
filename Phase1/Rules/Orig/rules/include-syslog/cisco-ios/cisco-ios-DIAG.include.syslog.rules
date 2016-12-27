@@ -1,0 +1,97 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-DIAG.include.syslog.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.  
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "DIAG": ### The following are CMCC Channel Interface Processor (CIP) messages for diagnostic testing.
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-DIAG.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADCODE":
+        
+            ##########
+            # A request was made to run an ECA diagnostic, but the number of
+            # the diagnostic to run was not valid. This is an internal logic
+            # error. The request to run the diagnostic is ignored.
+            #
+            # %DIAG-6-BADCODE: Invalid request code ([dec]) to run_diag
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "request code \(([0-9/]+)\) to")
+        
+        case "BADLOAD":
+        
+            ##########
+            # %DIAG-6-BADLOAD: Firmware load error. Unable to run_diag
+            ##########
+            
+            @AlertKey = ""
+        
+        case "DIAG_OK":
+        
+            ##########
+            # %DIAG-SP-6-DIAG_OK: Module [dec]: Passed Online Diagnostics
+            ##########
+            
+            $MOI_Local = extract($Message, "[Mm]odule ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "DIAG_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+        
+        case "NO_TEST":
+        
+            ##########
+            # %DIAG-SP-3-NO_TEST: Module [dec]: No test to run
+            ##########
+            
+            $MOI_Local = extract($Message, "[Mm]odule ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "DIAG_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "RUN_MINIMUM":
+        
+            ##########
+            # %DIAG-SP-6-RUN_MINIMUM: Module [dec]: Running Minimum
+            # Diagnostics...
+            ##########
+            
+            $MOI_Local = extract($Message, "[Mm]odule ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "DIAG_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-DIAG.include.syslog.rules >>>>>")

@@ -1,0 +1,1415 @@
+------------------------------------------------------------------------------
+--
+-- (c) Copyright 2008 mBalance.
+--
+--  This MIB is proprietary to and embodies the confidential technology of
+--  mBalance. Possession, use, duplication or dissemination of this MIB is
+--  authorized only pursuant to a valid written license from mBalance.
+--
+------------------------------------------------------------------------------
+-- $Id: textpass-xs-tie-mib.my,v 1.25 2010/05/06 10:50:18 psheer Exp $
+------------------------------------------------------------------------------
+--
+-- File    : textpass-xs-tie-mib.my
+-- Release : R01.00.00
+--
+------------------------------------------------------------------------------
+
+
+TEXTPASS-XS-TIE-MIB DEFINITIONS ::= BEGIN
+
+    ----------------------------------------------------------------------------
+    --                              I M P O R T S                             --
+    ----------------------------------------------------------------------------
+
+    IMPORTS
+        Gauge, Counter, IpAddress
+            FROM RFC1155-SMI
+        TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        textpass
+            FROM MBALANCE-MIB
+        AdminState, Boolean, DeviceOperationalState, IntervalTime,
+        NameString, FileSpec, OperationalState, TcpPort, deviceType
+            FROM TEXTPASS-GEN-MIB
+        TimeString
+            FROM TEXTPASS-XS-GEN-MIB
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215;
+
+    ----------------------------------------------------------------------------
+    --                                T Y P E S                               --
+    ----------------------------------------------------------------------------
+
+    ----------------------------------------------------------------------------
+    --  XsTieGetTextMode. Defines how the application will get the text       --
+    --                    to be inserted.                                     --
+    --  The choices can be:                                                   --
+    --   httpMode(0)    - Get text from an HTTP server via a URL of the       --
+    --                    form http:// or https:// - i.e. supporting SSL/TLS  --
+    --   fileMode(1)    - Get text from a flat file.                          --
+    ----------------------------------------------------------------------------
+    XsTieGetTextMode ::=
+        INTEGER {
+            httpMode(0),
+            fileMode(1)
+        }
+
+    ----------------------------------------------------------------------------
+    --  XsTieUcs2SeparatorString used to define separator for UCS-2 SMs.      --
+    ----------------------------------------------------------------------------
+    XsTieUcs2SeparatorString ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "30a"
+        STATUS mandatory
+        DESCRIPTION 
+            "Defines a string to be used to prepend inserted 
+             text to UCS-2 encoded SMs. Is 3 times larger than
+             XsTieGsm7SeparatorString in terms of octets due to its UTF-8 
+             encoding using up to 3 octets per character.
+            "
+        SYNTAX OCTET STRING (SIZE (0..30)) 
+
+    ----------------------------------------------------------------------------
+    --  XsTieGsm7SeparatorString used to define separator for GSM7 SMs.       --
+    ----------------------------------------------------------------------------
+    XsTieGsm7SeparatorString ::= OCTET STRING (SIZE (0..10)) 
+
+    ----------------------------------------------------------------------------
+    --  XsTieUrlString used to define URL                                     --
+    ----------------------------------------------------------------------------
+    XsTieUrlString ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "2000a"
+        STATUS mandatory
+        DESCRIPTION
+            "Defines a URL. This can include placeholders, in order to allow
+             for the dynamic insertion of ECI parameters. The following
+             table illustrates this:
+
+                Placeholder         Expands to
+                =====================================================
+                %O or %o            SM originator address
+                %R or %r            SM recipient address
+                %C or %c            1 if it's a concatenated SM
+                                    0 otherwise
+
+             For example, given the following provisioned URL:
+                http://www.example.com/ads.php?orig=%O&concat=%C
+
+             and an ECI request for a non-concatenated SM with 
+             originator address +31617589193, the URL would be expanded at 
+             ECI request time into:
+
+                 http://www.example.com/ads.php?orig=31617589193&concat=0
+            "
+        SYNTAX OCTET STRING (SIZE (0..2000)) 
+
+    ----------------------------------------------------------------------------
+    --  XsTieHttpTimeout time out for a HTTP request.                         --
+    ----------------------------------------------------------------------------
+    XsTieHttpTimeout ::= INTEGER (3..180)
+
+    ----------------------------------------------------------------------------
+    --  XsTieMaxHttpRequests defines number of concurrent connections.        --
+    ----------------------------------------------------------------------------
+    XsTieMaxHttpRequests ::= INTEGER (10..10000)
+
+    ----------------------------------------------------------------------------
+    --  XsTieTextIndex defines the index for XsTieTextTable.                  --
+    ----------------------------------------------------------------------------
+    XsTieTextIndex ::= INTEGER (1..1000)
+
+    ----------------------------------------------------------------------------
+    --  XsTieTextPrologue used to define prologue                             --
+    ----------------------------------------------------------------------------
+    XsTieTextPrologue ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "255a"
+        STATUS mandatory
+        DESCRIPTION 
+            "Defines a string to be used as a prologue."
+        SYNTAX OCTET STRING (SIZE (0..255)) 
+
+    ----------------------------------------------------------------------------
+    --  XsTieTextEpilogue used to define epilogue                             --
+    ----------------------------------------------------------------------------
+    XsTieTextEpilogue ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "255a"
+        STATUS mandatory
+        DESCRIPTION 
+            "Defines a string to be used as an epilogue."
+        SYNTAX OCTET STRING (SIZE (0..255))  
+
+    ----------------------------------------------------------------------------
+    --  XsTieCategoryIndex used to define the category to which the text      --
+    --  belongs.                                                              --
+    ----------------------------------------------------------------------------
+    XsTieCategoryIndex ::= INTEGER (1..1000) 
+
+    ----------------------------------------------------------------------------
+    --  XsTieSponsorIndex used to define the sponsor of the text              --
+    ----------------------------------------------------------------------------
+    XsTieSponsorIndex ::= INTEGER (1..1000)
+
+    ----------------------------------------------------------------------------
+    --  XsTieTextDcs. Defines the types of DCS to which text can be           --
+    --                     applied.                                           --                    
+    --  The choices can be:                                                   --
+    --   gsm7(0)    - This text can be applied to GSM 7-bit encoded SMs.      --
+    --   ucs2(1)    - This text can be applied to UCS-2 encoded SMs.          --
+    --   both(1)    - This text can be applied to both GSM 7-bit and UCS-2    --
+    --                encoded SMs.                                            --
+    ----------------------------------------------------------------------------
+    XsTieTextDcs ::=
+        INTEGER {
+            gsm7(0),
+            ucs2(1),
+            both(2)
+        }
+
+    ----------------------------------------------------------------------------
+    --  XsTieTextWeighting used to define weighting associated with the       --
+    --  text. 1 = lowest weighting (the default), 5 = highest weighting.      --
+    ----------------------------------------------------------------------------
+    XsTieTextWeighting ::= INTEGER (1..5)
+
+    ----------------------------------------------------------------------------
+    --  XsTieCategoryName used to define the name of a text category.         --
+    ----------------------------------------------------------------------------
+    XsTieCategoryName ::= OCTET STRING (SIZE (1..100)) 
+
+    ----------------------------------------------------------------------------
+    --  XsTieSponsorName used to define the name of the text sponsor.         --
+    ----------------------------------------------------------------------------
+    XsTieSponsorName ::= OCTET STRING (SIZE (1..100)) 
+
+    ----------------------------------------------------------------------------
+    -- DataFileErrorString defines a string holding errors seen during loading -
+    ----------------------------------------------------------------------------
+    DataFileErrorString ::= OCTET STRING (SIZE (1..256))
+
+    ----------------------------------------------------------------------------
+    -- MaxContentLength defines how much content HTTP data will be accepted    -
+    ----------------------------------------------------------------------------
+    MaxContentLength ::= INTEGER (1024..1073741824)
+
+    ----------------------------------------------------------------------------
+    --                              O B J E C T S                             --
+    ----------------------------------------------------------------------------
+
+    xsTie OBJECT IDENTIFIER ::= { textpass 139 }
+
+    ----------------------------------------------------------------------------
+    --                   Definition of xsTieProperties                        --
+    ----------------------------------------------------------------------------
+
+    ----------------------------------------------------------------------------
+    --   G E N E R A L  P R O P E R T I E S                                   --
+    ----------------------------------------------------------------------------
+
+    xsTieGeneralProperties OBJECT IDENTIFIER ::= { xsTie 1 }
+
+    xsTieGetTextMode OBJECT-TYPE
+        SYNTAX  XsTieGetTextMode
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The method by which the XS-TIE will receive text. 
+            Default is 'fileMode'."
+        ::= { xsTieGeneralProperties 1 }
+
+    xsTieUcs2PrologueSeparatorString OBJECT-TYPE
+        SYNTAX  XsTieUcs2SeparatorString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The string used to append the prologue text inserted by a
+            request initiated by a UCS-2 SM."
+         ::= { xsTieGeneralProperties 2 }
+
+    xsTieGsm7PrologueSeparatorString OBJECT-TYPE
+        SYNTAX  XsTieGsm7SeparatorString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The string used to append the prologue text inserted by a
+            request initiated by a GSM 7-bit SM."
+         ::= { xsTieGeneralProperties 3 }
+
+    xsTieUcs2EpilogueSeparatorString OBJECT-TYPE
+        SYNTAX  XsTieUcs2SeparatorString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The string used to prepend the epilogue text inserted by a
+            request initiated by a UCS-2 SM."
+         ::= { xsTieGeneralProperties 4 }
+
+    xsTieGsm7EpilogueSeparatorString OBJECT-TYPE
+        SYNTAX  XsTieGsm7SeparatorString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The string used to prepend the epilogue text inserted by a
+            request initiated by a GSM 7-bit SM."
+         ::= { xsTieGeneralProperties 5 }
+
+    xsTieInsertPerRecipient OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag specifies whether a lookup should be performed
+            to determine whether the MT/SM recipient should receive
+            text insertion. 'true' implies a lookup is required, and so an
+            address datafile must be configured.
+            Default is 'false', which implies no lookup (i.e. text insertion
+            is attempted for all incoming MT/SMs).
+            This flag may only be set when the device is inactive."
+        ::= { xsTieGeneralProperties 6 }
+    
+    ----------------------------------------------------------------------------
+    --  A D Q L  D A T A  F I L E                                             --
+    ----------------------------------------------------------------------------
+
+     xsTieAddressDataFilePath OBJECT-TYPE
+        SYNTAX  FileSpec
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Full filename of the data file containing the list of
+            addresses.
+            The file shall consist of one address per line. Addresses shall be
+            in international format, starting with the country code. The 
+            leading '+' will be optional.
+
+            Data file example:
+                # some addresses,
+                311000000000
+                +311000000001
+                311000000002
+
+            When a duplicate address is found, it will be ignored.          
+            "
+         ::= { xsTieGeneralProperties 11 }
+
+     xsTieAddressDataFileReload OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  write-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Setting this attribute to 'true' will trigger reloading of
+            the data file."
+         ::= { xsTieGeneralProperties 12 }
+
+    xsTieAddressDataFileAutoReload OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag specifies whether the data file should 
+            automatically be reloaded at a configurable time.
+            Default is 'true'."
+         ::= { xsTieGeneralProperties 13 }
+
+    xsTieAddressDatafileAutoReloadTime OBJECT-TYPE
+        SYNTAX  TimeString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION 
+            "Specifies the time when a auto reload (if enabled) occurs
+            configured in HHMM. The default is around 02:00 based on the 
+            index of the service. This parameter may be changed while the
+            entity is active; however, the reload will not occur if the
+            new time has been passed already. This means the reload will
+            be done on the next passing of the time."
+        ::= { xsTieGeneralProperties 14 }
+   
+    xsTieAddressDataFileNumAddresses OBJECT-TYPE
+         SYNTAX  Counter
+         ACCESS  read-only
+         STATUS  mandatory
+         DESCRIPTION
+             "The number of addresses in the data file."
+         ::= { xsTieGeneralProperties 15 }
+
+    xsTieLastAddressDataFileError OBJECT-TYPE
+        SYNTAX  DataFileErrorString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Describes the last error encountered when loading
+            the datafile."
+        ::= { xsTieGeneralProperties 16 }
+
+    ----------------------------------------------------------------------------
+    --   H T T P  M O D E  P R O P E R T I E S                                --
+    ----------------------------------------------------------------------------
+
+    xsTieHttpProperties OBJECT IDENTIFIER ::= { xsTie 11 }
+
+    xsTieUcs2Url OBJECT-TYPE
+        SYNTAX  XsTieUrlString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The URL of the Ad server used to provide text to UCS-2 SMs.
+            for example http://my-ad-server.com/ or
+            https://my-secure-ad-server.com/ for an SSL-enabled web server."
+         ::= { xsTieHttpProperties 1 }
+
+    xsTieGsm7Url OBJECT-TYPE
+        SYNTAX  XsTieUrlString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The URL of the Ad server used to provide text to GSM 7-bit SMs."
+         ::= { xsTieHttpProperties 2 }
+
+    xsTieHttpTimeout OBJECT-TYPE
+        SYNTAX  XsTieHttpTimeout
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Max cumulative time for a single HTTP request after which the 
+            connection is considered dead and is failed. Range 3 through 180. 
+            Default 30."
+         ::= { xsTieHttpProperties 3 }
+
+    xsTieMaxHttpRequests OBJECT-TYPE
+        SYNTAX  XsTieMaxHttpRequests
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Max number of concurrent outgoing sockets where excess requests 
+            are are queued. Range 10 through 10000. Default 50."
+         ::= { xsTieHttpProperties 4 }
+
+    xsTieHttpMaxStateMachines OBJECT-TYPE
+        SYNTAX  INTEGER (10..10000)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Max number of concurrent pending requests where excess requests 
+            are skipped. Range 10 through 10000. Default 500."
+         ::= { xsTieHttpProperties 5 }
+
+    xsTieHttpMaxContentLength OBJECT-TYPE
+        SYNTAX  MaxContentLength
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Max content length. Excess content length causes connection to 
+            be dropped. Range 1024 through 1073741824. Default 32768."
+         ::= { xsTieHttpProperties 6 }
+
+    xsTieHttpInactivityTimeoutSeconds OBJECT-TYPE
+        SYNTAX  XsTieHttpTimeout
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Max time of receiving no data after which the connection is 
+            considered dead and is failed. Range 3 through 180. 
+            Default 10."
+         ::= { xsTieHttpProperties 7 }
+
+    xsTieHttpsProxyEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Send HTTPS requests through proxy."
+         ::= { xsTieHttpProperties 8 }
+
+    xsTieHttpProxyEnabled OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Send HTTP requests through proxy."
+         ::= { xsTieHttpProperties 9 }
+
+    xsTieHttpProxyPort OBJECT-TYPE
+        SYNTAX  TcpPort
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Proxy is configured to listen on this port."
+         ::= { xsTieHttpProperties 10 }
+
+    xsTieHttpProxyHost OBJECT-TYPE
+        SYNTAX  XsTieUrlString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Hostname of proxy server."
+         ::= { xsTieHttpProperties 11 }
+
+    ----------------------------------------------------------------------------
+    --   F I L E  M O D E  P R O P E R T I E S                                --
+    ----------------------------------------------------------------------------
+
+    xsTieFileProperties OBJECT IDENTIFIER ::= { xsTie 21 }
+
+    xsTieTextDataFilePath OBJECT-TYPE
+        SYNTAX  FileSpec
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Full filename of the data file containing the list of
+            texts.
+            Each line should take the following general form:
+
+            *** N.B. All double quotes have been sanitized with single
+            quotes due to ASN.1 restrictions. ***
+
+            <weight>,<'category'>,<'sponsor'>,<dcs>,['prologue'],['epilogue']
+
+            where:
+
+            <weight> := An integer in range [1,5], with 1 as lowest 
+                           weighting possible. Default setting should be 1.
+            <category>  := Describes the class to which the text belongs 
+                           e.g. 'Sportswear', 'Food \'and\' Drink'  
+                           This must be *double* quoted; double quotes within
+                           this field must be escaped.   
+            <sponsor>   := The 'owner' of the text. e.g. 'Coca-Cola'
+                           This must be *double* quoted; double quotes within
+                           this field must be escaped.
+            <dcs>       := The DCS of the *MT/SM* to which this text can be 
+                           applied. Must be one character: 
+                                'G' for GSM default alphabet encoded SMs.
+                                'U' for UCS-2 encoded SMs.
+                                'B' for both types of encoding.
+            [prologue]  := (optional) The text to be inserted before the 
+                           MT/SM user data (and any configured separator).
+                           This must be *double* quoted; double quotes within
+                           this field must be escaped.
+            [epilogue]  := (optional) The text to be inserted after the  
+                           MT/SM user data  (and any configured separator).
+                           This must be *double* quoted; double quotes within
+                           this field must be escaped.
+            
+            N.B. 
+                * All are mandatory, unless otherwise indicated. 
+                * One of the last 2 fields must, of course, be present!
+                * Each line entry must contain exactly 5 commas.
+            
+            Example:
+
+            # Some comment
+            1,'Food & drink','Coca-Cola',G,'Always Coca-Cola',
+                'Drink Coca-Cola'
+            ; Next line has no prologue
+            4,'Food & drink','McDonalds',G,,'I'm Lovin' it.'
+            5,'Sportswear','Nike',G,'Just do it!', 
+            3,'Sportswear','Nike',G,'Air Jordan sale now on.',
+            2,'Golf equipment','Nike',G,,
+                'Eldrick \'Tiger\' Woods recommends...'
+            "
+         ::= { xsTieFileProperties 1 }
+
+    xsTieTextDataFileReload OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  write-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Setting this attribute to 'true' will trigger reloading of
+            the data file."
+         ::= { xsTieFileProperties 2 }
+
+    xsTieTextDataFileAutoReload OBJECT-TYPE
+        SYNTAX  Boolean
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This flag specifies whether the data file should 
+            automatically be reloaded every night at 02:00.
+            Default is 'true'."
+         ::= { xsTieFileProperties 3 }
+
+    xsTieTextDataFileAutoReloadTime OBJECT-TYPE
+        SYNTAX  TimeString
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION 
+            "Specifies the time when an auto reload (if enabled) occurs,
+            configured in HHMM. The default is arround 02:00 based on the 
+            index of the service. This parameter may be changed while the
+            entity is active; however, the reload will not occur if the
+            new time has been passed already. This means the reload will
+            be done on the next passing of the time."
+        ::= { xsTieFileProperties 4 }
+
+    xsTieTextDataFileNumTexts OBJECT-TYPE
+         SYNTAX  Counter
+         ACCESS  read-only
+         STATUS  mandatory
+         DESCRIPTION
+             "The number of text entries in the data file."
+         ::= { xsTieFileProperties 5 }
+
+    xsTieLastTextDataFileError OBJECT-TYPE
+        SYNTAX  DataFileErrorString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Describes the last error encountered when loading
+            the datafile."
+        ::= { xsTieFileProperties 6 }
+
+
+    ----------------------------------------------------------------------------
+    --   T E X T  T A B L E                                                   --
+    ----------------------------------------------------------------------------
+
+    xsTieTextTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF XsTieTextTableEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing the inserted text."
+        ::= { xsTie 22 }
+    
+     xsTieTextTableEntry OBJECT-TYPE
+        SYNTAX  XsTieTextTableEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table entry describing a single inserted text."
+        INDEX   { xsTieTextIndex }
+        ::= { xsTieTextTable 1 }
+
+    XsTieTextTableEntry ::=
+        SEQUENCE {
+            xsTieTextIndex                        XsTieTextIndex,
+            xsTieTextWeighting                    XsTieTextWeighting,
+            xsTieTextCategoryIndex                XsTieCategoryIndex,         
+            xsTieTextSponsorIndex                 XsTieSponsorIndex,                 
+            xsTieTextDcs                          XsTieTextDcs,
+            xsTieTextPrologue                     XsTieTextPrologue,
+            xsTieTextEpilogue                     XsTieTextEpilogue,
+            xsTieTextCntInsertions                Counter
+        }
+
+    xsTieTextIndex OBJECT-TYPE
+        SYNTAX  XsTieTextIndex
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index for the xsTieTextTable."
+        ::= { xsTieTextTableEntry 1 }
+
+    xsTieTextWeighting OBJECT-TYPE
+        SYNTAX  XsTieTextWeighting
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Integral weighting given to the text. A higher weighting
+            will result in a proportionally higher probability of this
+            text being used. Default is 1. 
+            E.G.
+                If one text has a weighting of 3, and another a weighting
+                of 2, the former is 1.5 times more likely to be inserted than
+                the latter.
+            From this, we can see that if all texts have the same 
+            weighting, all are equally likely to be inserted."
+         ::= { xsTieTextTableEntry 2 }
+
+    xsTieTextCategoryIndex OBJECT-TYPE
+        SYNTAX  XsTieCategoryIndex
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Integer indicating the category to which this text belongs."
+         ::= { xsTieTextTableEntry 3 }
+
+    xsTieTextSponsorIndex OBJECT-TYPE
+        SYNTAX  XsTieSponsorIndex
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Integer indicating the sponsor to which this text belongs."
+         ::= { xsTieTextTableEntry 4 }
+
+    xsTieTextDcs OBJECT-TYPE
+        SYNTAX  XsTieTextDcs
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "This determines the DCS of the message to which this text
+            can be inserted. All text will be encoded as UTF-8; some 
+            will be suitable for GSM 7-bit encoded SMs, while other 
+            text will be suitable for insertion into UCS-2 encoded SMs"
+         ::= { xsTieTextTableEntry 5 }
+
+    xsTieTextPrologue OBJECT-TYPE
+        SYNTAX  XsTieTextPrologue
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Text to be used as message prologue."
+         ::= { xsTieTextTableEntry 6 }
+
+    xsTieTextEpilogue OBJECT-TYPE
+        SYNTAX  XsTieTextEpilogue
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Text to be used as message epilogue."
+         ::= { xsTieTextTableEntry 7 }
+
+    xsTieTextCntInsertions OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of times this text
+            has been inserted in a successfully delivered message."
+         ::= { xsTieTextTableEntry 11 }
+
+    ----------------------------------------------------------------------------
+    --   S P O N S O R  T A B L E                                             --
+    ----------------------------------------------------------------------------
+
+    xsTieSponsorTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF XsTieSponsorTableEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing the text sponsors."
+        ::= { xsTie 23 }
+
+    xsTieSponsorTableEntry OBJECT-TYPE
+        SYNTAX  XsTieSponsorTableEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table entry describing a single sponsor."
+        INDEX   { xsTieSponsorIndex }
+        ::= { xsTieSponsorTable 1 }
+
+    XsTieSponsorTableEntry ::=
+        SEQUENCE {
+            xsTieSponsorIndex                         XsTieSponsorIndex,
+            xsTieSponsorAdminState                    AdminState,                    
+            xsTieSponsorOperationalState              OperationalState,
+            xsTieSponsorName                          XsTieSponsorName,
+            xsTieSponsorCntInsertions                 Counter
+        }
+
+    xsTieSponsorIndex OBJECT-TYPE
+        SYNTAX  XsTieSponsorIndex
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index for the xsTieSponsorTable."
+        ::= { xsTieSponsorTableEntry 1 }
+
+    xsTieSponsorAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "AdminState of the sponsor.
+            Transition from 'inactive' state to 'active' state is 
+            always possible.
+
+            Transition from 'active' state to 'inactive' state is always
+            possible but will result in:
+            - the XS-TIE not selecting texts for this sponsor;
+
+            Transition to 'destroy' is not possible.
+            "
+        ::= { xsTieSponsorTableEntry 2 }
+
+    xsTieSponsorOperationalState OBJECT-TYPE
+        SYNTAX  OperationalState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The operational state of the sponsor.
+             These have the following correspondance with the admin states:
+
+             'active' admin state    <=> 'available' operational state
+             'inactive' admin state  <=> 'disabled' operational state  
+   
+            "
+        ::= { xsTieSponsorTableEntry 3 }
+
+    xsTieSponsorName OBJECT-TYPE
+        SYNTAX  XsTieSponsorName
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Name of the text sponsor."
+         ::= { xsTieSponsorTableEntry 4 }
+
+    xsTieSponsorCntInsertions OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of times that text
+            from this sponsor has been inserted in a successfully delivered 
+            message. This counter is persistent across reloads, provided that
+            the sponsor is present in the newly-reloaded datafile."            
+         ::= { xsTieSponsorTableEntry 11 }
+
+    ----------------------------------------------------------------------------
+    --   C A T E G O R Y  T A B L E                                           --
+    ----------------------------------------------------------------------------
+
+    xsTieCategoryTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF XsTieCategoryTableEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table containing the category to which the text belongs."
+        ::= { xsTie 24 }
+
+    xsTieCategoryTableEntry OBJECT-TYPE
+        SYNTAX  XsTieCategoryTableEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Table entry describing a single category."
+        INDEX   { xsTieCategoryIndex }
+        ::= { xsTieCategoryTable 1 }
+
+    XsTieCategoryTableEntry ::=
+        SEQUENCE {
+            xsTieCategoryIndex                         XsTieCategoryIndex,
+            xsTieCategoryAdminState                    AdminState,
+            xsTieCategoryOperationalState              OperationalState,
+            xsTieCategoryName                          XsTieCategoryName,
+            xsTieCategoryCntInsertions                 Counter
+        }
+
+    xsTieCategoryIndex OBJECT-TYPE
+        SYNTAX  XsTieCategoryIndex
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "Index for the xsTieCategoryTable."
+        ::= { xsTieCategoryTableEntry 1 }
+
+    xsTieCategoryAdminState OBJECT-TYPE
+        SYNTAX  AdminState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "AdminState of the text category.
+            "
+        ::= { xsTieCategoryTableEntry 2 }
+
+    xsTieCategoryOperationalState OBJECT-TYPE
+        SYNTAX  OperationalState
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The operational state of the category.
+             These have the following correspondance with the admin states:
+
+             'active' admin state    <=> 'available' operational state
+             'inactive' admin state  <=> 'disabled' operational state 
+
+            "
+        ::= { xsTieCategoryTableEntry 3 }
+
+    xsTieCategoryName OBJECT-TYPE
+        SYNTAX  XsTieCategoryName
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Name of the text category."
+         ::= { xsTieCategoryTableEntry 4 }
+
+    xsTieCategoryCntInsertions OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of times that text
+            from this category has been inserted in a successfully delivered
+            message. This counter is persistent across reloads, provided 
+            that the category is present in the newly-reloaded datafile."            
+         ::= { xsTieCategoryTableEntry 11 }
+
+    ----------------------------------------------------------------------------
+    --                   Definition of xsTieGenCounters                       --
+    ----------------------------------------------------------------------------
+
+    xsTieGenCounters OBJECT IDENTIFIER ::= { xsTie 5 }
+
+    xsTieCntTotalEciRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of ECI requests received by
+            this eXternal Service."
+         ::= { xsTieGenCounters 1 }
+
+    xsTieCntTotalInvalidRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of invalid ECI requests 
+            received by this eXternal Service."
+         ::= { xsTieGenCounters 2 }
+
+    xsTieCntTotalAddressLookups OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of times 
+            the XSTIE performed address lookup ."
+         ::= { xsTieGenCounters 3 }
+
+    xsTieCntTotalMatchedAddressLookups OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of times a matching
+            subscriber address was found after lookup."
+         ::= { xsTieGenCounters 4 }
+
+    xsTieCntTotalUnmatchedAddressLookups OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of times no matching
+            subscriber address was found after lookup."
+         ::= { xsTieGenCounters 5 }
+    
+    xsTieCntTotalUcs2RequestsInit OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Counter indicating the total number of requests 
+            initiated for UCS-2 encoded SMs."
+         ::= { xsTieGenCounters 6 }
+    
+    xsTieCntTotalGsm7RequestsInit OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of requests 
+             initiated for GSM 7-bit encoded SMs."
+         ::= { xsTieGenCounters 7 }
+
+    xsTieCntTotalSuccessUcs2Resps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of successful 
+              responses for requests triggered by UCS-2 encoded SMs.
+              This includes non-error responses containing a space."
+         ::= { xsTieGenCounters 8 }
+
+    xsTieCntTotalSuccessGsm7Resps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of successful
+              responses for requests triggered by GSM 7-bit encoded SMs.
+              This includes non-error responses containing a space."
+         ::= { xsTieGenCounters 9 }
+
+    xsTieCntTotalUcs2PrologueTruncations OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of times the text returned 
+             by a request triggered by a UCS-2 encoded SM had to be 
+             truncated to fit into the prologue."
+         ::= { xsTieGenCounters 10 }
+
+    xsTieCntTotalGsm7PrologueTruncations OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of times the text returned 
+             by a request triggered by a GSM 7-bit encoded SM had to be 
+             truncated to fit into the prologue."
+         ::= { xsTieGenCounters 11 }
+
+    xsTieCntTotalUcs2EpilogueTruncations OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of times the text returned 
+             by a request triggered by a UCS-2 encoded SM had to be 
+             truncated to fit into the epilogue."
+         ::= { xsTieGenCounters 12 }
+
+    xsTieCntTotalGsm7EpilogueTruncations OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of times the text returned 
+             by a request triggered by a GSM 7-bit encoded SM had to be 
+             truncated to fit into the epilogue."
+         ::= { xsTieGenCounters 13 }
+
+    xsTieCntTotalUcs2TextInsertions OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of times that text was 
+             inserted into a request triggered by a UCS-2 encoded SM "
+         ::= { xsTieGenCounters 14 }
+
+    xsTieCntTotalGsm7TextInsertions OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+             "Counter indicating the total number of times that text was 
+             inserted into a request triggered by a GSM 7-bit encoded SM "
+         ::= { xsTieGenCounters 15 }
+
+    ----------------------------------------------------------------------------
+    --                   Definition of xsTieHttpCounters                      --
+    ----------------------------------------------------------------------------
+
+    xsTieHttpCounters OBJECT IDENTIFIER ::= { xsTie 6 }
+
+    xsTieHttpStateMachinesCreated OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of state machines thus far created."
+         ::= { xsTieHttpCounters 1 }
+
+    xsTieHttpTotalCurrentSockets OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of sockets currently in use."
+         ::= { xsTieHttpCounters 2 }
+
+    xsTieHttpTotalCurrentLookups OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Total number of requests currently pending."
+         ::= { xsTieHttpCounters 3 }
+
+    xsTieHttpUcs2HttpRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Total UCS2 URL lookups initiated for each final SM segment.
+            This figure is defined as the number of successful HTTP requests
+            less the 15 combined failure counts for the UCS2 URL."
+         ::= { xsTieHttpCounters 4 }
+
+    xsTieHttpGsm7HttpRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Total GSM7 URL lookups initiated for each final SM segment.
+            This figure is defined as the number of successful HTTP requests
+            less the 15 combined failure counts for the GSM7 URL."
+         ::= { xsTieHttpCounters 5 }
+
+    xsTieHttpUcs2NoUrlSet OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to no UCS2 url set."
+         ::= { xsTieHttpCounters 6 }
+
+    xsTieHttpGsm7NoUrlSet OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to no GSM7 url set."
+         ::= { xsTieHttpCounters 7 }
+
+    xsTieHttpUcs2HttpErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL web server errors."
+         ::= { xsTieHttpCounters 8 }
+
+    xsTieHttpGsm7HttpErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL web server errors."
+         ::= { xsTieHttpCounters 9 }
+
+    xsTieHttpUcs2InvalidUrl OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to invalid UCS2 URL."
+         ::= { xsTieHttpCounters 10 }
+
+    xsTieHttpGsm7InvalidUrl OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to invalid GSM7 URL."
+         ::= { xsTieHttpCounters 11 }
+
+    xsTieHttpUcs2MissingText OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to empty HTTP content on UCS2 URL."
+         ::= { xsTieHttpCounters 12 }
+
+    xsTieHttpGsm7MissingText OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to empty HTTP content on GSM7 URL."
+         ::= { xsTieHttpCounters 13 }
+
+    xsTieHttpUcs2InvalidEncoding OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to invalid encoding in HTTP response 
+            for UCS2 URL."
+         ::= { xsTieHttpCounters 14 }
+
+    xsTieHttpGsm7InvalidEncoding OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to invalid encoding in HTTP response 
+            for GSM7 URL."
+         ::= { xsTieHttpCounters 15 }
+
+    xsTieHttpUcs2ExceededMaxConcurrentRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL exceeding maximum number 
+            of concurrent requests."
+         ::= { xsTieHttpCounters 16 }
+
+    xsTieHttpGsm7ExceededMaxConcurrentRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL exceeding maximum number 
+            of concurrent requests."
+         ::= { xsTieHttpCounters 17 }
+
+    xsTieHttpUcs2TimeoutWaitingForSocket OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL timeouts waiting for
+            free socket."
+         ::= { xsTieHttpCounters 18 }
+
+    xsTieHttpGsm7TimeoutWaitingForSocket OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL timeouts waiting for
+            free socket."
+         ::= { xsTieHttpCounters 19 }
+
+    xsTieHttpUcs2DnsLookupFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL DNS lookup error."
+         ::= { xsTieHttpCounters 20 }
+
+    xsTieHttpGsm7DnsLookupFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL DNS lookup error."
+         ::= { xsTieHttpCounters 21 }
+
+    xsTieHttpUcs2SslFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL SSL errors."
+         ::= { xsTieHttpCounters 22 }
+
+    xsTieHttpGsm7SslFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL SSL errors."
+         ::= { xsTieHttpCounters 23 }
+
+    xsTieHttpUcs2ConnectTimeout OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL connect timeouts."
+         ::= { xsTieHttpCounters 24 }
+
+    xsTieHttpGsm7ConnectTimeout OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL connect timeouts."
+         ::= { xsTieHttpCounters 25 }
+
+    xsTieHttpUcs2ConnectFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL connect errors."
+         ::= { xsTieHttpCounters 26 }
+
+    xsTieHttpGsm7ConnectFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL connect errors."
+         ::= { xsTieHttpCounters 27 }
+
+    xsTieHttpUcs2SslIoFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL SSL IO operation errors."
+         ::= { xsTieHttpCounters 28 }
+
+    xsTieHttpGsm7SslIoFailed OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL SSL IO operation errors."
+         ::= { xsTieHttpCounters 29 }
+
+    xsTieHttpUcs2IdleTimeout OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL idle timeouts."
+         ::= { xsTieHttpCounters 30 }
+
+    xsTieHttpGsm7IdleTimeout OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL idle timeouts."
+         ::= { xsTieHttpCounters 31 }
+
+    xsTieHttpUcs2TimeExceeded OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL total time exceeded."
+         ::= { xsTieHttpCounters 32 }
+
+    xsTieHttpGsm7TimeExceeded OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL total time exceeded."
+         ::= { xsTieHttpCounters 33 }
+
+    xsTieHttpUcs2ContentLengthExceeded OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to UCS2 URL content length exceeded."
+         ::= { xsTieHttpCounters 34 }
+
+    xsTieHttpGsm7ContentLengthExceeded OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "Failures due to GSM7 URL content length exceeded."
+         ::= { xsTieHttpCounters 35 }
+
+    ----------------------------------------------------------------------------
+    --                                T R A P S                               --
+    ----------------------------------------------------------------------------
+
+    noUcs2UrlConfigured TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "No URL has been configured for HTTP requests triggered by UCS-2 
+            encoded messages."
+        ::= 1
+
+    noGsm7UrlConfigured TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "No URL has been configured for HTTP requests triggered by GSM 
+            default alphabet encoded messages."
+        ::= 2
+
+    trapInvalidUcs2Url TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Invalid URL has been configured for HTTP requests triggered by
+            UCS-2 encoded messages."
+        ::= 3
+
+    trapInvalidGsm7Url TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Invalid URL has been configured for HTTP requests triggered by 
+            GSM default alphabet encoded messages."
+        ::= 4
+
+    trapUcs2DnsLookupFailed TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "DNS resolver library could not resolv UCS2 URL domain name."
+        ::= 5
+
+    trapGsm7DnsLookupFailed TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "DNS resolver library could not resolv GSM7 URL domain name."
+        ::= 6
+
+    trapProxyNotConfigured TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Proxy enabled and not configured correctly."
+        ::= 7
+
+    trapProxyLookupError TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { deviceType }
+        DESCRIPTION
+            "Proxy hostname DNS lookup failed."
+        ::= 8
+
+
+
+    addressDataFileUnavailable TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieAddressDataFilePath, xsTieLastAddressDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file cannot be read."
+        ::= 11
+
+    addressDataFileIncorrectlyFormatted TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieAddressDataFilePath, xsTieLastAddressDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file contains a line which is improperly 
+            formed."
+        ::= 12
+
+    addressDataFileTooBig TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieAddressDataFilePath, xsTieLastAddressDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file contains too many entries (> 1.000.000).
+            "
+        ::= 13
+
+    addressDataFileEmpty TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieAddressDataFilePath, xsTieLastAddressDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file is empty."
+        ::= 14
+
+    textDataFileUnavailable TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieTextDataFilePath, xsTieLastTextDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file cannot be read."
+        ::= 21
+
+    textDataFileIncorrectlyFormatted TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieTextDataFilePath, xsTieLastTextDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file contains lines which are improperly 
+            formed."
+        ::= 22
+
+    textDataFileTooBig TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieTextDataFilePath, xsTieLastTextDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file contains too many entries (> 1.000)."
+        ::= 23
+
+    textDataFileEmpty TRAP-TYPE
+        ENTERPRISE xsTie
+        VARIABLES { xsTieTextDataFilePath, xsTieLastTextDataFileError, 
+                    deviceType }
+        DESCRIPTION
+            "The specified data file is empty."
+        ::= 24
+
+END

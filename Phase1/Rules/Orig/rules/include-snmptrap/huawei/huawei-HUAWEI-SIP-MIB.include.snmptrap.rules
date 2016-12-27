@@ -1,0 +1,170 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-SIP-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  HUAWEI-SIP-MIB release V1.1
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  HUAWEI-SIP-MIB release V1.1
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.5.25.1.12.2.2": ### Huawei Technologies - Notifications from HUAWEI-SIP-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-SIP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwSIPRegisterFailure
+
+            ##########
+            # The trap is generated when a SIP gateway fails to register.
+            #
+            # $1 = hwSIPServerIPAddress - The IP address of a SIP server.
+            # $2 = hwSIPServerPort - The port of a SIP server.
+            #        By default, the object value is 5060.
+            # $3 = hwSIPRegisterFailReason - The object describes the reason
+            #        that a SIP gateway fails to register.
+            # $4 = hwSIPID - The unique identification of a SIP gateway.
+            #        By default, this object should have the value 'VRP-GATEWAY'
+            ##########
+
+            $hwSIPServerIPAddress = $1
+            $hwSIPServerPort = $2
+            $hwSIPRegisterFailReason = $3
+            $hwSIPID = $4
+            details($hwSIPServerIPAddress,$hwSIPServerPort,
+                    $hwSIPRegisterFailReason,$hwSIPID)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-SIP-MIB-hwSIPRegisterFailure"
+
+            @AlertGroup = "SIP Register Failure"
+            @AlertKey = "hwSIPServerConfigEntry." + $hwSIPServerIPAddress + "." + $hwSIPServerPort
+            @Summary = "SIP Gateway Registration Failure  ( Server: " + $1 + ", Port: " + $2 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwSIPAuthenticateFailure
+
+            ##########
+            # The trap is generated when a requests with its credential
+            # fail to authenticate.
+            #
+            # $1 = hwSIPID - The unique identification of a SIP gateway.
+            #        By default, this object should have the value 'VRP-GATEWAY'
+            # $2 = hwSIPAuthenticatedRequestMethord - The object denotes the
+            #        method of a request that fails to authenticate.
+            ##########
+
+            $hwSIPID = $1
+            $hwSIPAuthenticatedRequestMethord = lookup($2,hwSIPAuthenticatedRequestMethord) + " ( " + $2 + " )"
+            details($hwSIPID,
+                    $hwSIPAuthenticatedRequestMethord)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-SIP-MIB-hwSIPAuthenticateFailure"
+
+            @AlertGroup = "SIP Authentication Failure"
+            @AlertKey = "Gateway: "+ $1 + ", Method: " + $2
+            @Summary = "SIP Authentication Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### hwSIPServerSwitch
+
+            ##########
+            # The trap is generated when a switch happens between master
+            # and slave SIP server.
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-SIP-MIB-hwSIPServerSwitch"
+
+            @AlertGroup = "SIP Server Switch"
+            @AlertKey = ""
+            @Summary = "SIP Server Switch Master-Slave"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+#########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-SIP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-SIP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-SIP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-SIP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-SIP-MIB.include.snmptrap.rules >>>>>")

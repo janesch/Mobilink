@@ -1,0 +1,488 @@
+ 
+INC-MIB-EFD DEFINITIONS ::= BEGIN
+
+        IMPORTS
+                  MODULE-IDENTITY, OBJECT-IDENTITY,
+                  OBJECT-TYPE                           FROM SNMPv2-SMI
+
+                  TEXTUAL-CONVENTION, RowStatus, DisplayString    
+                                                        FROM SNMPv2-TC
+
+                  tiInc, TiBoolean, inModules           FROM INC-MIB-C;
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Module Identity :
+    --
+
+    inIncMibEFD MODULE-IDENTITY
+                LAST-UPDATED "9908181200Z"
+                ORGANIZATION "Siemens AG"
+                CONTACT-INFO
+                     "        T.V.Phan
+                      Postal: Siemens AG
+                              Information and Communication Networks
+                              Otto-Hahn-Ring 6
+                              D-81739 Muenchen
+                              Germany
+                         Tel: +49 89 636 27384
+                         Fax: +49 89 636 27743
+                      E-mail: Thai-Vinh.Phan@icn.siemens.de"
+
+                DESCRIPTION
+                        "This MIB module describes the managed objecttypes
+                         of the INC which will be used for EFD administration."
+                
+                REVISION "9908181200Z"
+                DESCRIPTION 
+                        "The variables 
+                             tiEfdDateSched, 
+                             tiEfdWeekSched,
+                             tiEfdHoliday,
+                             tiEfdOsName,
+                             tiEfdOsUserName and
+                         the new value forad
+                         are added into this MIB-documment."
+
+                REVISION "9810161600Z"
+                DESCRIPTION "using inModules"
+
+                REVISION "9806181200Z"
+                DESCRIPTION "minor changes to meet RFCs"
+
+                REVISION "9711061600Z"
+                DESCRIPTION
+                        "The variables 
+                             tiEfdEvenType, 
+                             tiEfdIntervalsOfDay, 
+                             tiEfdEventGroup
+                         are added into this MIB-documment."
+
+    ::= { inModules 3 } 
+
+    tiIncEfd OBJECT IDENTIFIER ::= { tiInc 3 } 
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Textual Conventions :
+    --
+
+           TiEfdSeverity ::= TEXTUAL-CONVENTION
+                  STATUS current
+                  DESCRIPTION  
+                        "Severity threshold of an EFD for forwarding alarms."
+                  SYNTAX INTEGER {
+                                   critical (1),
+                                   major (2),
+                                   minor (3),
+                                   warning (4),
+                                   normal (5),
+                                   cleared (6)
+                                 }
+
+           TiEfdDestinationType ::= TEXTUAL-CONVENTION
+                  STATUS current
+                  DESCRIPTION  
+                    "Type of the EFD destination for forwarding events to.
+                     The destination may be the alarm printer or an operation 
+                     system (OS) or a forwarding address (e.g. email address)."
+                  SYNTAX INTEGER {
+                                   os (1),
+                                   alprt (2),
+                                   forad (3)
+                                 }
+
+           TiEfdEventType ::= TEXTUAL-CONVENTION
+                  STATUS current
+                  DESCRIPTION  
+                     "The event type as defined in X.733"
+                  SYNTAX INTEGER  { 
+                                    instanceValueChange (1),
+                                    communicationsAlarm (2),
+                                    environmentalAlarm (3),
+                                    equipmentAlarm (4),
+                                    integrityViolation (5),
+                                    objectCreation (6),
+                                    objectDeletion (7),
+                                    operationalViolation (8),
+                                    physicalViolation (9),
+                                    processingErrorAlarm (10),
+                                    qualityOfServiceAlarm (11),
+                                    relationshipChange (12),
+                                    securityServiceOrMechanismViolation(13),
+                                    stateChange (14),
+                                    timeDomainViolation (15),
+                                    indeterminate (9999),
+                                    none(10000)
+                                  }
+
+        TiEfdNeList ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "NE-name[,NE-name]..."
+                  STATUS current
+                  DESCRIPTION  
+                     "The list of the names of the network elementes (NE)."
+                  SYNTAX OCTET STRING (SIZE (0..65535))
+
+        TiEfdIntervalsOfDay ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "hh:mm-hh:mm[,hh:mm-hh:mm]..."
+                  STATUS current
+                  DESCRIPTION  
+                  "The list of time intervals (interval-start and interval-end 
+                   times of day).
+                     - hh is hour in INTEGER(0..23)
+                     - mm is minute in INTEGER(0..59).
+                   The introducing 0 in hh and mm is mandatory for
+                   hour and minute less than 10, eg. 00:01-05:08."
+                  SYNTAX OCTET STRING (SIZE (0..65535))
+
+        TiEfdEventGroup ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "g1,g2,g3,g4"
+                  STATUS current
+                  DESCRIPTION  
+                  "The list of the event groups:
+                     g1: all events reported from the managed objects,
+                     g2: alarm cleared events generated by the alarm correlation function,
+                     g3: periodical alarm summary peport,
+                     g4: spontanenous alarm summary report.
+                   The gi may only have either the value 0 or 1."
+                  SYNTAX OCTET STRING (SIZE (7)) 
+
+        TiEfdDateSched ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "yyyy-mm-dd yyyy-mm-dd"
+                  STATUS current
+                  DESCRIPTION  
+                  "The date for the event forwarding (from the start day to the end day).
+                     - yyyy is year in INTEGER(1999..9999)
+                     - mm is month in INTEGER(01..12)
+                     - dd is day in INTEGER(01..31)."
+                  SYNTAX OCTET STRING (SIZE (21))
+
+        TiEfdWeekSched ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "Mo,Tu,We,Th,Fr,Sa,Su"
+                  STATUS current
+                  DESCRIPTION  
+                  "The list of the weekdays for the event forwarding:
+                   A weekday may only have either the value 0 or 1."
+                  SYNTAX OCTET STRING (SIZE (13)) 
+
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Subtrees of the tiInc tree :
+    --
+
+           tiEfdMIBObjects OBJECT IDENTIFIER ::= { tiIncEfd 1 }
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Managed objects :
+    --
+
+           tiEfdTable OBJECT-TYPE
+                       SYNTAX     SEQUENCE OF TiEfdEntry
+                       MAX-ACCESS not-accessible
+                       STATUS     current
+                       DESCRIPTION
+                        "The EFD table. An EFD has some attributes
+                         and may have no or more NEs assigned to. Some 
+                         EFDs may have the same NEs assigned to."
+               ::= { tiEfdMIBObjects 1 }
+   
+           tiEfdEntry OBJECT-TYPE
+                       SYNTAX     TiEfdEntry
+                       MAX-ACCESS not-accessible
+                       STATUS     current
+                       DESCRIPTION
+                       "An entry in the EFD table containing information about one EFD."
+                       INDEX { tiEfdSymbolicName }
+               ::= { tiEfdTable 1 }
+   
+           TiEfdEntry ::= SEQUENCE {
+                       tiEfdRowStatus             RowStatus,
+                       tiEfdSymbolicName          DisplayString,
+                       tiEfdName                  DisplayString,
+                       tiEfdAdminState            TiBoolean,
+                       tiEfdSeverity              TiEfdSeverity,
+                       tiEfdDestinationName       DisplayString, 
+                       tiEfdDestinationType       TiEfdDestinationType,
+                       tiEfdNeList                TiEfdNeList,
+                       tiEfdAddNe                 DisplayString,
+                       tiEfdDelNe                 DisplayString,
+                       tiEfdEventType             TiEfdEventType,
+                       tiEfdIntervalsOfDay        TiEfdIntervalsOfDay,
+                       tiEfdEventGroup            TiEfdEventGroup,
+                       tiEfdDateSched             TiEfdDateSched,
+                       tiEfdWeekSched             TiEfdWeekSched,
+                       tiEfdHoliday               TiBoolean,
+                       tiEfdOsName                OCTET STRING (SIZE (1..16)), --is subset of DisplayString
+                       tiEfdOsUserName            OCTET STRING (SIZE (1..16))  --is subset of DisplayString
+                     }
+      
+           tiEfdRowStatus OBJECT-TYPE
+                       SYNTAX     RowStatus
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                        "The status column is used for creating, modifying, and 
+                         deleting instances of the columnar objects in the EFD
+                         table."
+                       DEFVAL { active }        
+               ::= { tiEfdEntry 1 }
+   
+           tiEfdSymbolicName OBJECT-TYPE
+                       SYNTAX     DisplayString
+                       MAX-ACCESS not-accessible
+                       STATUS     current
+                       DESCRIPTION
+                       "The symbolic name assigned to the EFD. At the human interface
+                        and at the remote OS interface the EFD will be identified by
+                        this name. This auxiliary variable is used to form the instance-
+                        identifiers of the columnar objects in the EFD table."
+               ::= { tiEfdEntry 2 }
+   
+           tiEfdName OBJECT-TYPE
+                       SYNTAX     DisplayString
+                       MAX-ACCESS read-only
+                       STATUS     current
+                       DESCRIPTION
+                       "The symbolic name assigned to the EFD. At the human interface
+                        and at the remote OS interface the EFD will be identified by
+                        this name (see tiEfdSymbolicName). This read-only variable is
+                        intened to display the symbolic name of the EFD to the user."
+               ::= { tiEfdEntry 3 }
+   
+           tiEfdAdminState OBJECT-TYPE
+                       SYNTAX     TiBoolean
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "Administrative state of an EFD for forwarding events. This variable
+                        enables (true) or disables (false) the EFD for forwarding the destination 
+                        declared in the variable tiEfdDestinationName."
+                       DEFVAL { false }        
+               ::= { tiEfdEntry 4 }
+   
+           tiEfdSeverity OBJECT-TYPE
+                       SYNTAX     TiEfdSeverity
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                        "This parameter specifies the severity threshold. All 
+                         alarms with lower severity are not forwarded to the 
+                         destination"
+                       DEFVAL { normal }        
+               ::= { tiEfdEntry 5 }
+    
+           tiEfdDestinationName OBJECT-TYPE
+                       SYNTAX     DisplayString 
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "The symbolic name of the destination the events have to be 
+                        forwarded to. If this symbolic name is empty string and the 
+                        administrative state is not specified in the set request, 
+                        the administrative state of its EFD will be set to false."
+                       DEFVAL { "" }        
+               ::= { tiEfdEntry 6 }
+    
+           tiEfdDestinationType OBJECT-TYPE
+                       SYNTAX     TiEfdDestinationType
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "The type of the destination the events have to
+                        be forwarded to. The destination may be the alarm 
+                        printer or an OS."
+                       DEFVAL { os }        
+               ::= { tiEfdEntry 7 }
+
+        tiEfdNeList  OBJECT-TYPE
+                       SYNTAX     TiEfdNeList
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "The list of the names of the network elementes assiocated 
+                        to the EFD. An event that is not in the list will not be 
+                        forwarded to the forwarding destination. INCommander events 
+                        (alarms caused by the components of the INCommander) will be 
+                        forwared if the name 'INCommander' is included to the list."
+                       DEFVAL { "All" }        
+               ::= { tiEfdEntry 8 }           
+    
+        tiEfdAddNe  OBJECT-TYPE
+                       SYNTAX     DisplayString 
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "The conceptual variable for adding the names of the network 
+                        elementes to the list of the names of the network elementes 
+                        assiocated to the EFD, so that this variable always has empty 
+                        value at query."
+                       DEFVAL { "" }        
+               ::= { tiEfdEntry 9 }           
+    
+        tiEfdDelNe  OBJECT-TYPE
+                       SYNTAX     DisplayString 
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "The conceptual variable for deleting the names of the network 
+                        elementes from the list of the names of the network elementes 
+                        assiocated to the EFD, so that this variable always has empty 
+                        value at query."
+                       DEFVAL { "" }        
+               ::= { tiEfdEntry 10 }           
+    
+        tiEfdEventType OBJECT-TYPE
+                       SYNTAX     TiEfdEventType
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                               "The event type as defined in X.733."
+                       DEFVAL { none }        
+               ::= { tiEfdEntry 11 }
+    
+        tiEfdIntervalsOfDay OBJECT-TYPE
+                       SYNTAX     TiEfdIntervalsOfDay
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION
+                       "This attribute defines the list of time intervals (interval-start and
+                        interval-end times of day) for which the forwarding is enabled. The 
+                        syntax is: hh:mm-hh:mm[,hh:mm-hh:mm]... 
+                                    - hh is hour in INTEGER(0..23)
+                                    - mm is minute in INTEGER(0..59).
+                        The introducing 0 in hh and mm is mandatory for hour and minute less 
+                        than 10, eg. 00:01-05:08.
+                        If not specified in the create request, the value of this attribute 
+                        defaults to a single interval encompassing the entire 24 h period of 
+                        a day (00:00-23:59)."
+                       DEFVAL { "00:00-23:59" }        
+               ::= { tiEfdEntry 12 }
+    
+        tiEfdEventGroup OBJECT-TYPE
+                       SYNTAX     TiEfdEventGroup
+                       MAX-ACCESS read-create
+                       STATUS     current
+                  DESCRIPTION  
+                  "Filter for the event groups (g1,g2,g3,g4):
+                    g1: all events reported from the managed objects,
+                    g2: alarm cleared events generated by the alarm correlation function,
+                    g3: periodical alarm summary peport,
+                    g4: spontanenous alarm summary report.
+                   The gi may only have either the value 0 (not forwarded) or 1 (forwarded).
+                   If all groups are set to 0 and the administrative state is not specified 
+                   in the set request, the administrative state of its EFD will be set to false."
+                       DEFVAL { "1,1,0,0" }        
+               ::= { tiEfdEntry 13 }
+    
+        tiEfdDateSched OBJECT-TYPE
+                       SYNTAX     TiEfdDateSched
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION  
+                       "The date for the event forwarding (from the start day to the end day).
+                          - yyyy is year in INTEGER(1999..9999)
+                          - mm is month in INTEGER(01..12)
+                          - dd is day in INTEGER(01..31)."   
+                       DEFVAL { "0000-00-00 0000-00-00" }        
+               ::= { tiEfdEntry 14 }
+       
+        tiEfdWeekSched OBJECT-TYPE
+                       SYNTAX     TiEfdWeekSched
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION  
+                       "The list of the weekdays for the event forwarding:
+                        A weekday may only have either the value 0 or 1."   
+                       DEFVAL { "0,0,0,0,0,0,0" }        
+               ::= { tiEfdEntry 15 }
+       
+        tiEfdHoliday  OBJECT-TYPE
+                       SYNTAX     TiBoolean
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION  
+                       "The flag for the event forwarding on holidays."   
+                       DEFVAL { false }        
+               ::= { tiEfdEntry 16 }
+       
+        tiEfdOsName   OBJECT-TYPE
+                       SYNTAX     OCTET STRING (SIZE (1..16))  --is subset of DisplayString
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION  
+                       "The name of OS. This variable should always be present with 
+                        an unempty value in set request. It is used for logging. As 
+                        response to a get request it always has an empty string as value."
+               ::= { tiEfdEntry 17 }
+
+        tiEfdOsUserName OBJECT-TYPE
+                       SYNTAX     OCTET STRING (SIZE (1..16))  --is subset of DisplayString
+                       MAX-ACCESS read-create
+                       STATUS     current
+                       DESCRIPTION  
+                       "The name of user. This variable should always be present with
+                        an unempty value in set request. It is used for logging. As 
+                        response to a get request it always has an empty string as value."
+               ::= { tiEfdEntry 18 }
+        
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Agent-Capabilities information 
+    -- describes the behavior of the current implementation of the EFD-Agent
+    --
+
+           tiEfdCapability         OBJECT IDENTIFIER ::= { tiIncEfd 2 }
+
+           tiEfdCapabilities       OBJECT IDENTIFIER ::= { tiEfdCapability 1 }
+           tiEfdMIBGroups          OBJECT IDENTIFIER ::= { tiEfdCapability 2 }
+
+           --
+           -- Capabilities statements
+           --
+
+           tiEfdAgent AGENT-CAPABILITIES
+                PRODUCT-RELEASE        
+                "EMANATE EFD-Subagent release 1.0 for INCommander V6.2"
+                STATUS        current
+                DESCRIPTION        
+                "EMANATE EFD-Subagent for INCommander V6.2"
+                SUPPORTS        EFD-MIB
+                INCLUDES        { tiEfdGroup }
+                VARIATION   tiEfdDestinationType
+                SYNTAX  INTEGER { os (1) }                                     
+                DESCRIPTION 
+                "Unable to access EFDs of tiEfdDestinationType of alarm printer and of forwarding address."
+        ::= { tiEfdCapabilities 1 }
+
+           --
+           -- Units of capabilities 
+           --
+
+           tiEfdGroup OBJECT-GROUP
+                OBJECTS { tiEfdRowStatus,           
+                          tiEfdSymbolicName,        
+                          tiEfdName,        
+                          tiEfdAdminState,          
+                          tiEfdSeverity,           
+                          tiEfdDestinationName, 
+                          tiEfdDestinationType,
+                          tiEfdNeList,
+                          tiEfdAddNe,
+                          tiEfdDelNe,
+                          tiEfdEventType,
+                          tiEfdIntervalsOfDay,
+                          tiEfdEventGroup, 
+                          tiEfdDateSched,
+                          tiEfdWeekSched,
+                          tiEfdHoliday,
+                          tiEfdOsName,
+                          tiEfdOsUserName }
+                STATUS current
+                DESCRIPTION 
+                        "A collection of objects describing an EFD."
+        ::= { tiEfdMIBGroups 1 }  
+ 
+END
+-- INC-MIB-EFD

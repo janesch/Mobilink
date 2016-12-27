@@ -1,0 +1,76 @@
+######
+# utibaAgentMib include file
+######
+case ".1.3.6.1.4.1.20862": # - utibaAgentMib
+	@OmcEms = "GCASH"
+	switch($specific-trap) {
+		case "2": ### - poolStateChange
+			# SNMPv2
+			# A severity transition occurred in a pool
+			$monitoringWorstSeverity = $1
+			$monitoringResourceName = $2
+			@AlertGroup = "GCASH"
+			@Agent = "UTIBA-AGENT-MIB"
+			@Summary = "poolStateChange: A severity transition occurred in a pool"
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup + @Summary + @Type
+			details($monitoringWorstSeverity,$monitoringResourceName)
+
+		case "4": ### - threadStateChange
+			# SNMPv2
+			# A severity transition occurred in a thread
+			$monitoringWorstSeverity = $1
+			$monitoringResourceName = $2
+			@AlertGroup = "GCASH"
+			@Agent = "UTIBA-AGENT-MIB"
+			@Summary = "threadStateChange: A severity transition occurred in a thread"
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup + @Summary + @Type
+			details($monitoringWorstSeverity,$monitoringResourceName)
+
+		case "6": ### - agentStateChange
+			# SNMPv2
+			# A severity transition occurred in an agent
+			$monitoringWorstSeverity = $1
+			$monitoringResourceName = $2
+			@AlertGroup = "GCASH"
+			@Agent = "UTIBA-AGENT-MIB"
+			@Summary = "agentStateChange: A severity transition occurred in an agent"
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup + @Summary + @Type
+			details($monitoringWorstSeverity,$monitoringResourceName)
+
+		default:
+			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+			@Severity = 1
+			details($*)
+	}
+
+case ".1.3.6.1.4.1.20862.10": # - log4j
+	@OmcEms = "GCASH"
+	switch($specific-trap) {
+		case "1": ### - logStateChange
+			# SNMPv2
+			# This trap contains a log message that was sent after configuring the
+			# Utiba agent for with a log4j appender.
+			$logMessage = $1
+			@AlertGroup = "GCASH"
+			@Agent = "UTIBA-AGENT-MIB"
+			@Summary = "logStateChange: This trap contains a log message that was sent after configuring the Utiba agent for with a log4j appender."
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup + @Summary + @Type
+			details($logMessage)
+
+		default:
+			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+			@Severity = 1
+			details($*)
+	}
+
+

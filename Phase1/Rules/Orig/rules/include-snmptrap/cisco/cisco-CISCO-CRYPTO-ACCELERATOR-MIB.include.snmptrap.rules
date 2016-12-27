@@ -1,0 +1,325 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CRYPTO-ACCELERATOR-MIB.include.snmptrap.rules 1.0
+#    2006/04/13 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CRYPTO-ACCELERATOR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.467": ### Cisco Monitoring Identity, Status, Activity and Faults of Crypto Accelerator (CA) Modules - Notifications from CISCO-CRYPTO-ACCELERATOR-MIB (20050308)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CRYPTO-ACCELERATOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Crypto Accelerator"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoCryAccelInserted
+
+            ##########
+            #$1 = ccaAcclSlot
+            ##########
+
+            $ccaAcclSlot = $1
+            $ccaAcclIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CRYPTO-ACCELERATOR-MIB-ciscoCryAccelInserted"
+
+            @AlertGroup = "Crypto Accelerator Install Status"
+            @AlertKey = "ccaAcceleratorEntry." + $ccaAcclIndex
+            @Summary = "Crypto Accelerator Inserted  ( Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ccaAcclSlot,$ccaAcclIndex)
+
+        case "2": ### ciscoCryAccelRemoved
+
+            ##########
+            # $1 = ccaAcclSlot
+            ##########
+
+            $ccaAcclSlot = $1
+            $ccaAcclIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CRYPTO-ACCELERATOR-MIB-ciscoCryAccelRemoved"
+
+            @AlertGroup = "Crypto Accelerator Install Status"
+            @AlertKey = "ccaAcceleratorEntry." + $ccaAcclIndex
+            @Summary = "Crypto Accelerator Removed  ( Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ccaAcclSlot,$ccaAcclIndex)
+
+        case "3": ### ciscoCryAccelOperational
+
+            ##########
+            # $1 = ccaAcclSlot
+            ##########
+
+            $ccaAcclSlot = $1
+            $ccaAcclIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CRYPTO-ACCELERATOR-MIB-ciscoCryAccelOperational"
+
+            @AlertGroup = "Crypto Accelerator Status"
+            @AlertKey = "ccaAcceleratorEntry." + $ccaAcclIndex
+            @Summary = "Crypto Accelerator Operational  ( Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ccaAcclSlot,$ccaAcclIndex)
+
+        case "4": ### ciscoCryAccelDisabled
+
+            ##########
+            # $1 = ccaAcclSlot
+            # $2 = ccaAcclStatus
+            # $3 = ccaAcclActiveTime
+            ##########
+
+            $ccaAcclSlot = $1
+            $ccaAcclStatus = lookup($2, ModuleOperType) + " ( " + $2 + " )"
+            $ccaAcclActiveTime = $3
+            $ccaAcclIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CRYPTO-ACCELERATOR-MIB-ciscoCryAccelDisabled"
+
+            @AlertGroup = "Crypto Accelerator Status"
+            @AlertKey = "ccaAcceleratorEntry." + $ccaAcclIndex
+            switch($2)
+            {
+                case "1":### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Crypto Accelerator Status Unknown"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2":### ok 
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    @Summary = "Crypto Accelerator Operational"
+                
+                    $DEFAULT_Severity = 1 
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3":### disabled 
+                    $SEV_KEY = $OS_EventId + "_disabled"
+                    @Summary = "Crypto Accelerator Administratively Disabled"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "4":### okButDiagFailed  
+                    $SEV_KEY = $OS_EventId + "_okButDiagFailed"
+                    @Summary = "Crypto Accelerator Operational, but Failed Diagnostics"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5":### boot  
+                    $SEV_KEY = $OS_EventId + "_boot"
+                    @Summary = "Crypto Accelerator Booting"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "6":### selfTest  
+                    $SEV_KEY = $OS_EventId + "_selfTest"
+                    @Summary = "Crypto Accelerator in Self Testing"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "7":### failed  
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    @Summary = "Crypto Accelerator Failed"
+                
+                    $DEFAULT_Severity = 4 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8":### missing  
+                    $SEV_KEY = $OS_EventId + "_missing"
+                    @Summary = "Crypto Accelerator Provisioned, but Missing"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "9":### mismatchWithParent  
+                    $SEV_KEY = $OS_EventId + "_mismatchWithParent"
+                    @Summary = "Crypto Accelerator Not Compatible with Parent"
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "10":### mismatchConfig  
+                    $SEV_KEY = $OS_EventId + "_mismatchConfig"
+                    @Summary = "Crypto Accelerator Not Compatible with Current Configuration" 
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "11":### diagFailed  
+                    $SEV_KEY = $OS_EventId + "_diagFailed"
+                    @Summary = "Crypto Accelerator Diagnostic Test Failed, Hardware Failure" 
+                
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "12":### dormant  
+                    $SEV_KEY = $OS_EventId + "_dormant"
+                    @Summary = "Crypto Accelerator in Dormant" 
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "13":### outOfServiceAdmin  
+                    $SEV_KEY = $OS_EventId + "_outOfServiceAdmin"
+                    @Summary = "Crypto Accelerator Administratively On, but Out Of Service" 
+                
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "14":### outOfServiceEnvTemp 
+                    $SEV_KEY = $OS_EventId + "_outOfServiceEnvTemp"
+                    @Summary = "Crypto Accelerator Out Of Service, Environmental Temperature Problem" 
+                
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "15":### poweredDown  
+                    $SEV_KEY = $OS_EventId + "_poweredDown"
+                    @Summary = "Crypto Accelerator Powered Down" 
+                
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16":### poweredUp  
+                    $SEV_KEY = $OS_EventId + "_poweredUp"
+                    @Summary = "Crypto Accelerator Powered Up" 
+                
+                    $DEFAULT_Severity = 1 
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "17":### powerDenied  
+                    $SEV_KEY = $OS_EventId + "_powerDenied"
+                    @Summary = "Crypto Accelerator Power Denied" 
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "18":### powerCycled  
+                    $SEV_KEY = $OS_EventId + "_powerCycled"
+                    @Summary = "Crypto Accelerator Power Cycled" 
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "19":### okButPowerOverWarning  
+                    $SEV_KEY = $OS_EventId + "_okButPowerOverWarning"
+                    @Summary = "Crypto Accelerator Ok, but Power Over Warning" 
+                
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "20":### okButPowerOverCritical  
+                    $SEV_KEY = $OS_EventId + "_okButPowerOverCritical"
+                    @Summary = "Crypto Accelerator Ok, but Power Over Critical" 
+                
+                    $DEFAULT_Severity = 4 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0                
+                case "21":### syncInProgress
+                    $SEV_KEY = $OS_EventId + "_syncInProgress"
+                    @Summary = "Synchronization in Progress"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                default: 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Crypto Accelerator Status Unknown" 
+                
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+ 
+            @Summary = @Summary + "  ( Slot: " + $1 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            details($ccaAcclSlot,$ccaAcclStatus,$ccaAcclActiveTime,$ccaAcclIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CRYPTO-ACCELERATOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CRYPTO-ACCELERATOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CRYPTO-ACCELERATOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CRYPTO-ACCELERATOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CRYPTO-ACCELERATOR-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,1044 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CBUS.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CBUS": ### ciscoBus controller
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-CBUS.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CMDTIMEOUT":
+            
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %CBUS-3-CMDTIMEOUT : Cmd timed out, CCB 0x[hex], slot
+            # [dec], cmd code [dec]
+            ##########
+            
+            @AlertKey = "Slot: " + extract($Message, " slot ([0-9]+)")
+            update(@Summary)
+        
+        case "ADDRFILTR":
+            
+            ##########
+            # The specified address filter command, which was sent to the
+            # specified interface, has failed with the displayed error code.
+            #
+            # %CBUS-3-ADDRFILTR: Interface [chars], address filter [chars]
+            # command failed, code [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "AIPINVPLIM":
+            
+            ##########
+            # A software error has occurred.
+            #
+            # %CBUS-3-AIPINVPLIM: Interface [chars], Invalid PLIM detected.
+            # Interface downed
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "BADRXEOFVEC":
+            
+            ##########
+            # This message provides debugging information when an IP panic
+            # occurs.
+            #
+            # %CBUS-3-BADRXEOFVEC: [chars] ustatus: [chars] ([hex]), [hex]
+            # [hex] [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "BADTXEOFVEC":
+            
+            ##########
+            # This message provides debugging information when an IP panic
+            # occurs.
+            #
+            # %CBUS-3-BADTXEOFVEC: [chars] ustatus: [chars] ([hex]), [hex]
+            # [hex] [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "BADTXSTATE":
+            
+            ##########
+            # This message provides debugging information when an IP panic
+            # occurs.
+            #
+            # %CBUS-3-BADTXSTATE: [chars] ustatus: [chars] ([hex]), [hex] [hex]
+            # [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "BADVC":
+            
+            ##########
+            # An interface has received a packet with bad VC encapsulation.
+            # This indicates either a software or hardware problem.
+            #
+            # %CBUS-3-BADVC: [chars] [dec]/[dec] got bad VC packet \n [hex]
+            # [hex] [hex] [hex] [hex] [hex] [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "BUFFER":
+            
+            ##########
+            # An internal software error has occurred.
+            #
+            # %CBUS-3-BUFFER: Controller [dec], Error ([hex]), Buffersize =
+            # [dec], Bufferpool = [dec], number [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CATMCFG":
+            
+            ##########
+            # A software error has occurred.
+            #
+            # %CBUS-3-CATMCFG: Interface [chars], Cannot config interface, CBus
+            # ATM MEM [hex], status [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CATMREJCMD":
+            
+            ##########
+            # The ciscoBus ATM microcode rejected a command sent by the route
+            # processor (RP). The error code is the status value returned by
+            # the command.
+            #
+            # %CBUS-3-CATMREJCMD: [chars] [chars] command failed (error code
+            # [hex])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CATMRSET":
+            
+            ##########
+            # A software error has occurred.
+            #
+            # %CBUS-3-CATMRSET: Interface [chars], Error ([hex]) [chars] -
+            # aip_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CATMRSETU":
+            
+            ##########
+            # A software error has occurred.
+            #
+            # %CBUS-3-CATMRSETU: Unit [dec], Error ([hex]) [chars] -
+            # cbus_atm_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CBADVCSETUP":
+            
+            ##########
+            # The TI1570 chip reserves three Rx DMA channels for OAM cells. As
+            # a result, the last three VCIs of the last VPI block cannot be
+            # used for regular traffic.
+            #
+            # %CBUS-5-CBADVCSETUP: Interface [chars], setup vc failed with vci
+            # exceeding (vc-per-vp - 3) on the last vpi.
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CBUSBCE":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %CBUS-3-CBUSBCE: Failed to select a BCE, response [hex] -
+            # cbus_bce_update_ifa()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CBUSBCEPERM":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %CBUS-3-CBUSBCEPERM: Failed to select a BCE, response [hex] -
+            # cbus_bce_permissions_update()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CCBCMDFAIL0":
+            
+            ##########
+            # A command that was sent from the system to an interface processor
+            # has failed to complete successfully.
+            #
+            # %CBUS-3-CCBCMDFAIL0: Controller [dec], cmd ([dec]) failed ([hex])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CCBCMDFAIL1":
+            
+            ##########
+            # A command that was sent from the system to an interface processor
+            # has failed to complete successfully.
+            #
+            # %CBUS-3-CCBCMDFAIL1: Controller [dec], cmd ([dec] [hex]) failed
+            # ([hex])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CE3DSX3ERR":
+            
+            ##########
+            # The internal data structure is corrupted. The corruption has
+            # caused the "love letter" (operating status or configuration
+            # message) to be dropped.
+            #
+            # %CBUS-3-CE3DSX3ERR: ([chars])Illegal E3 value - unit is [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CFGCMDDROPPED":
+            
+            ##########
+            # The sending of a configuration command was retried. The receiving
+            # queues were still full after retries; therefore the command was
+            # dropped.
+            #
+            # %CBUS-3-CFGCMDDROPPED: Config queue is full, command was dropped,
+            # slot [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CMDTIMEOUT":
+            
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %CBUS-3-CMDTIMEOUT: Cmd timed out, CCB 0x[hex], slot [dec], cmd
+            # code [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CORRUPT":
+            
+            ##########
+            # A hardware component has failed an internal diagnostic test.
+            #
+            # %CBUS-3-CORRUPT: Controller [dec], wrote [hex], read [hex], loc
+            # [hex] - dci_memtest()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CE3DSX3ERR":
+            
+            ##########
+            # A status information message was received from the CT3 VIP, but
+            # during message processing it was detected that an element in the
+            # data structure corresponding to the status information message
+            # has not been set. This condition may be caused by either an
+            # element that has not been passed by the VIP or a corruption in
+            # the status message.
+            #
+            # %CBUS-3-CE3DSX3ERR: ([chars])Illegal E3 value - unit is [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CT3STAT":
+            
+            ##########
+            # A status information message from the VIP was received. A memory
+            # buffer is required to process the status information message, but
+            # the memory allocation routine failed because of insufficient
+            # system buffer memory, and the status information message was not
+            # processed. This condition may be caused either by heavy memory
+            # utilization at the time of the memory buffer request or by
+            # insufficient memory in the system.
+            #
+            # %CBUS-3-CT3STAT: Out of buffers--losing status information for
+            # CT3 on VIP card
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRACHECK":
+            
+            ##########
+            # The Token Ring monitor firmware has detected a fatal error on the
+            # interface card.
+            #
+            # %CBUS-3-CTRACHECK: Interface [chars], Adapter Check Error ([hex]
+            # [hex] [hex] [hex])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRBADLOVE1":
+            
+            ##########
+            # The system has received a message from the Token Ring interface
+            # but does not recognize the message.
+            #
+            # %CBUS-3-CTRBADLOVE1: Interface [chars], SRB_COMPLETE lovenote
+            # received with unknown command ([hex])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRBADLOVE1_DUMP":
+            
+            ##########
+            # The system is printing codes related to a previous "love letter"
+            # (operating status or configuration message) error message.
+            #
+            # %CBUS-3-CTRBADLOVE1_DUMP: Dump of MEMB follows\n -SRB_ADDR: [hex]
+            # [hex] [hex] [hex] [hex] [hex] [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRBADLOVE2":
+            
+            ##########
+            # The system has received an unsolicited message from the Token
+            # Ring interface. The system ignored the message and continued
+            # normal processing.
+            #
+            # %CBUS-4-CTRBADLOVE2: Interface [chars], Unexpected SRB_COMPLETE
+            # lovenote, command=[hex], result=[hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRCMDFAILED":
+            
+            ##########
+            # A command that was sent from the system to the Token Ring
+            # interface has failed to complete successfully.
+            #
+            # %CBUS-3-CTRCMDFAILED: Interface [chars], CTR Command [chars]
+            # Failed, [chars] ([hex])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRCMDFAILED2":
+            
+            ##########
+            # A command that was sent from the system to the Token Ring
+            # interface has failed to complete successfully.
+            #
+            # %CBUS-3-CTRCMDFAILED2: Interface [chars], CTR Command [chars]
+            # Failed, Code [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRINIT":
+            
+            ##########
+            # The Token Ring interface has failed one of its internal
+            # self-tests.
+            #
+            # %CBUS-3-CTRINIT: Interface [chars], CTR Initialization Failed -
+            # [chars]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRLRCMDFAIL0":
+            
+            ##########
+            # A command that was sent from the system to an interface processor
+            # has failed to complete successfully.
+            #
+            # %CBUS-3-CTRLRCMDFAIL0: Controller [dec], cmd ([dec]) failed
+            # ([hex]) count ([dec])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRLRCMDFAIL1":
+            
+            ##########
+            # A command that was sent from the system to an interface processor
+            # has failed to complete successfully.
+            #
+            # %CBUS-3-CTRLRCMDFAIL1: Controller [dec], cmd ([dec] [hex]) failed
+            # ([hex]) count ([dec])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRRAMTEST":
+            
+            ##########
+            # The Token Ring interface has failed its memory diagnostic tests.
+            #
+            # %CBUS-3-CTRRAMTEST: Interface [chars], RAM Addressing Test Failed
+            # - [chars]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRRSET":
+            
+            ##########
+            # The Token Ring interface failed to insert into the Token Ring.
+            # The interface is placed into a reset state and will not
+            # automatically try to reinsert itself.
+            #
+            # %CBUS-3-CTRRSET: Interface [chars] failed to initialize
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "CTRUCHECK":
+            
+            ##########
+            # The Token Ring interface microcode has detected an unrecoverable
+            # error.
+            #
+            # %CBUS-3-CTRUCHECK: Interface [chars], Microcode Check Error
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "DAUGHTER":
+            
+            ##########
+            # A hardware component failed an internal diagnostic test. Test
+            # output and descriptions of ranges follow:
+            #
+            # - Unit [dec] (ranges 0-14): Indicates the Multibus jumper setting
+            #   for the ciscoBus controller, or a slot number in the Cisco
+            #   7000.
+            # - daughter controller [dec] (ranges 0-3): Indicates the ciscoBus
+            #   relative slot number (0 to 3, or, in the Cisco 7000, 0 to 4) of
+            #   the daughter card that failed the test.
+            # - failed [chars] test ([chars]= memd read, memd write): If the
+            #   failed test was 'memd read', the processor was able to write to
+            #   shared ciscoBus buffer memory from the ciscoBus registers, but
+            #   was unable to read back that memory through special commands to
+            #   the daughter card. If the failed test was 'memd write', writes
+            #   to the memory device through the daughter card were not
+            #   verified successfully with reads through the ciscoBus
+            #   controller.
+            #
+            # The daughter card under test responds successfully to some
+            # commands (otherwise the software would have received a
+            # DAUGHTER_NO_RSP message), but its memory device tests failed. The
+            # daughter card must be able to write to some memory device
+            # addresses; otherwise, it cannot respond to any commands.
+            #
+            # %CBUS-3-DAUGHTER: Unit [dec], daughter controller [dec] failed
+            # [chars] test - interface disabled
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "DAUGHTER_NO_RSP":
+            
+            ##########
+            # A hardware component failed an internal diagnostic test. Test
+            # output and descriptions of ranges are as follows:
+            #
+            # - Unit [dec] (ranges 0-14): Indicates the Multibus jumper setting
+            #   for the ciscoBus controller.
+            # - daughter controller [dec] (ranges 0-3): Indicates the ciscoBus
+            #   relative slot number (0 to 3, or, in the Cisco 7000, 0 to 4) of
+            #   the daughter card that failed the test.
+            #
+            # The daughter card hardware was recognized across the CBus
+            # backplane, but the daughter card did not respond to the first
+            # command issued to it. This condition is a result of one of the
+            # following: the daughter card did not reset, the microcode on the
+            # card is in a hung state, or the card cannot fully communicate
+            # across the ciscoBus backplane (cannot read or write shared MEMD
+            # or did not get the MALU_ATTENTION signal across the ciscoBus).
+            #
+            # %CBUS-3-DAUGHTER_NO_RSP: Unit [dec], daughter [dec], not
+            # responding ([hex]) - disabled
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "FCICMDFAIL0":
+            
+            ##########
+            # A command that was sent from the system to an interface processor
+            # has failed to complete successfully.
+            #
+            # %CBUS-3-FCICMDFAIL0: Controller [dec], cmd ([dec]) failed ([hex])
+            # count ([dec])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "FCICMDFAIL1":
+            
+            ##########
+            # A command that was sent from the system to an interface processor
+            # has failed to complete successfully.
+            #
+            # %CBUS-3-FCICMDFAIL1: Controller [dec], cmd ([dec] [hex]) failed
+            # ([hex]) count ([dec])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "FDDICMD":
+            
+            ##########
+            # The issued command is not supported on this FDDI interface.
+            #
+            # %CBUS-5-FDDICMD: .[chars]. is not supported on [chars]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "FDDIRSET":
+            
+            ##########
+            # The specified hardware device did not respond appropriately to a
+            # request.
+            #
+            # %CBUS-3-FDDIRSET: Interface [chars], Error ([hex]) [chars] -
+            # fddi_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "FDDIRSETU":
+            
+            ##########
+            # The specified hardware device did not respond appropriately to a
+            # request.
+            #
+            # %CBUS-3-FDDIRSETU: Unit [dec], Error ([hex]) [chars] -
+            # fddi_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "FSIPRSET":
+            
+            ##########
+            # An FSIP did not respond to a reset request from the RP.
+            #
+            # %CBUS-3-FSIPRSET: Interface [chars], Error ([hex]) [chars] -
+            # fsip_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "HALSDHERR":
+            
+            ##########
+            # The internal data structure has been corrupted, causing the "love
+            # letter" (operating status or configuration message) to be
+            # dropped.
+            #
+            # %CBUS-3-HALSDHERR: ([chars])Illegal sdh value - unit is [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "HALSTAT":
+            
+            ##########
+            # An internal software resource has been exhausted.
+            #
+            # %CBUS-3-HALSTAT: Out of buffers--losing status information for
+            # ChSTM-1 on VIP card
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "HSSIRSET":
+            
+            ##########
+            # A command to reset an HSSI interface was issued by the RSP, but
+            # the interface did not respond to the command within the expected
+            # time delay. The delay is given for the processor to return the
+            # buffers that it has allocated and to perform any necessary
+            # cleanup. This condition may be caused by the allocation of a
+            # large number of buffers by the interface due to either heavy
+            # traffic or a hardware problem with the interface.
+            #
+            # %CBUS-3-HSSIRSET: Interface [chars], Error ([hex]) [chars] -
+            # hssi_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "INITERR":
+            
+            ##########
+            # The switch processor or ciscoBus controller has signalled an
+            # error while processing a packet or selecting an interface. This
+            # message indicates a software problem.
+            #
+            # %CBUS-3-INITERR: Interface [dec], Error ([hex]), idb [hex] [dec]
+            # [chars] - cbus_init()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "INTR":
+            
+            ##########
+            # The switch processor or ciscoBus controller has returned an
+            # invalid value.
+            #
+            # %CBUS-3-INTR: Interface [dec], idb [hex] [dec] [chars] -
+            # cbus_interrupt()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "NOCOOKIE":
+            
+            ##########
+            # The controller type was derived from a hardware probe. The
+            # controller number indicates the ciscoBus relative slot number.
+            # This message indicates a hardware error.
+            #
+            # %CBUS-4-NOCOOKIE: [chars]-[dec] controller missing configuration
+            # data - disabled
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "OUTHUNG":
+            
+            ##########
+            # A transmission attempt on an interface has failed. The interface
+            # might not be attached to a cable or there might be a software
+            # problem.
+            #
+            # %CBUS-3-OUTHUNG: [chars]: tx[char] output hung ([hex] - [chars]),
+            # [chars]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "POLLFAIL":
+            
+            ##########
+            # A Token Ring interface card failed to respond to periodic
+            # polling. This can indicate a software or hardware problem. See
+            # "CBUS-3-POLLFAILDAT" for the syntax of this message.
+            #
+            # %CBUS-3-POLLFAIL: Interface [chars] failed to respond, debug info
+            # follows
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "POLLFAILDAT":
+            
+            ##########
+            # This is the debugging information for the "CBUS-3-POLLFAIL"
+            # error.
+            #
+            # %CBUS-3-POLLFAILDAT: Int [dec]: [hex] [hex] [hex] [hex] [hex]
+            # [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "POTSTAT":
+            
+            ##########
+            # An internal software resource has been exhausted.
+            #
+            # %CBUS-3-POTSTAT: Out of buffers--losing status information for
+            # POTENT on VIP card
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "RESETNXI":
+            
+            ##########
+            # An interface reset was attempted on an interface that had been
+            # removed from the router. This message appears if you use the
+            # shutdown command to bring down a previously removed interface.
+            #
+            # %CBUS-3-RESETNXI: Reset of removed interface [hex] ([chars])
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "RSETFAIL":
+            
+            ##########
+            # An interface reset command has failed. This may be a software or
+            # hardware problem.
+            #
+            # %CBUS-4-RSETFAIL: Interface [chars] failed to reset properly in
+            # [chars], code [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "SERRSET":
+            
+            ##########
+            # A software error has occurred.
+            #
+            # %CBUS-3-SERRSET: Interface [chars], Error ([hex]) [chars] -
+            # serial_reset()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "TESTFAIL":
+            
+            ##########
+            # A hardware component has failed an internal diagnostic test.
+            #
+            # %CBUS-3-TESTFAIL: Unit [dec], failed [chars] test - interface
+            # disabled
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "TXALLOC":
+            
+            ##########
+            # A hardware device did not respond appropriately to a request.
+            #
+            # %CBUS-3-TXALLOC: Error ([hex]) tx_allocate - cbus_init()
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "TXSTARTPENDACTIVE":
+            
+            ##########
+            # This message provides debugging information when an IP panics.
+            #
+            # %CBUS-3-TXSTARTPENDACTIVE: [chars] ustatus: [chars] ([hex]),
+            # [hex] [hex] [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "UNKENC":
+            
+            ##########
+            # A packet was received from the CIP with an unknown encapsulation
+            # type. The packet will be dropped.
+            #
+            # %CBUS-3-UNKENC: Interface [chars], unknown encaps type [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        case "UNKNOWN":
+            
+            ##########
+            # This message provides debugging information when an IP panics.
+            #
+            # %CBUS-3-UNKNOWN: [chars] ustatus: [chars] ([hex]), [hex] [hex]
+            # [hex] [hex]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CBUS.include.syslog.rules >>>>>")

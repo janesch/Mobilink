@@ -1,0 +1,80 @@
+/****************************************************************************
+This policy demonstrates how to do an SNMP GET-NEXT operation on a bunch of
+OIDs together using the SNMPGetNextAction module.  The OPTIONAL args will
+override the values set in the Data Type and its Data Source.
+
+Explaination of the parameters for the SnmpGetNextAction module:
+----------------------------------------------------------------
+ TypeName: The name of the type on which the authentication parameters are set.
+ HostId: The hostId on which the SNMP agent is running. OPTIONAL.
+ Port: The port number on which the agent is running. OPTIONAL.
+       Default 161. It is of typeInteger.
+ VarIdList: An array of OIDs of the variables to GET. There is no 
+            restriction whether the OID should be an instance value or not.
+ Community: The read community string. OPTIONAL. Default value is public.
+ Timeout: The time to wait for a response. OPTIONAL. Its of type Integer.
+ Version: The SNMP protocol version. OPTIONAL. Possible values are 1 or 2 
+          or 3. Default is 1.
+ UserId: The userId for authentication. OPTIONAL. NEEDED for SNMPv3.
+ AuthProtocol: The protocol for SNMPv3 authentication. OPTIONAL. Possible 
+               values are: MD5_AUTH, SHA_AUTH, NO_AUTH. Default is NO_AUTH.
+ AuthPassword: The password for SNMPv3 authentication. OPTIONAL.
+ PrivPassword: The password for SNMPv3 encryption. OPTIONAL.
+ ContextId: The context id for SNMPv3 authorization. OPTIONAL.
+ ContextName: The context name for SNMPv3 authorization. OPTIONAL
+
+Explaination of the return values of the SnmpGetNextAction module:
+------------------------------------------------------------------
+ VarIdList: An array of OIDs that are returned as a result of the GET-NEXT 
+            operation. They can be different from the input VarIdList.
+ ValueList: An array of values of the variables in the VarIdList after 
+            GET-NEXT operation.
+ ErrorString: Will describe the error in case the GET-NEXT failed. Else will 
+              be an empty string.
+
+HowToRun this policy:
+---------------------
+1) Make sure the agent is running on the proper portId and with proper
+   authentication parameters(community strings, userId etc). Change the
+   values in the Data Source or Action Module to match the one in the agent.
+
+2) Add a runtime variable called TypeName.
+
+3) Then do a trigger to execute this policy.
+
+****************************************************************************/
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting SNMPGetNextActionTest at " + StartTime + " ***");
+
+/* Host related information */
+
+HostId = "localhost";
+Port = 167;
+Community = "public";
+Timeout = 15;
+Version = 1;
+
+/* An array of OIDs for which SNMP GET-NEXT has to be done */
+VarIdList =  {".1.3.6.1.2.1.2.2.1.2", ".1.3.6.1.2.1.2.2.1.7", ".1.3.6.1.2.1.2.2.1.3"};
+
+/* SNMPv3 related parameters */
+UserId = "netcool";
+AuthProtocol = "MD5_AUTH";
+AuthPassword = "suresh";
+ContextId = "ctx";
+
+/* The actual SNMP GETNEXT action being done here */
+SnmpGetNextAction(TypeName, HostId, Port, VarIdList, Community, Timeout, Version, UserId, AuthProtocol, AuthPassword, PrivPassword, ContextId, ContextName);
+
+log("** DisplayGetNextActionResults: **");
+log("ValueList[0] = " + ValueList[0]);
+log("VarIdList[0] = " + VarIdList[0]);
+log("ValueList[1] = " + ValueList[1]);
+log("VarIdList[1] = " + VarIdList[1]);
+log("ValueList[2] = " + ValueList[2]);
+log("VarIdList[2] = " + VarIdList[2]);
+log("ErrorString = " + ErrorString);
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with SNMPGetNextActionTest at " + EndTime + " ***");

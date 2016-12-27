@@ -1,0 +1,755 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-FIBRE-CHANNEL-MGMT-MIB.include.snmptrap.rules 1.1
+#    2003/12/19 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-FIBRE-CHANNEL-MGMT
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.8888": ### Fibre Channel Management - Notifications from FIBRE-CHANNEL-MGMT-MIB
+
+    log(DEBUG, "<<<<< Entering... IETF-FIBRE-CHANNEL-MGMT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-FIBRE-CHANNEL-MGMT-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### fcConnUnitStatusChange
+
+            ##########
+            # $1 = fcConnUnitStatus
+            # $2 = fcConnUnitState
+            ##########
+
+            $fcConnUnitStatus = lookup($1, fcConnUnitStatus) + " ( " + $1 + " )"
+            $fcConnUnitState = lookup($2, fcConnUnitState) + " ( " + $2 + " )"
+
+            $fcConnUnitId = extract($OID1, "8888\.1\.1\.3\.1\.[0-9]+\.(.*)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-FIBRE-CHANNEL-MGMT-MIB-fcConnUnitStatusChange"
+
+            @AlertGroup = "Conn. Unit Status"
+            @AlertKey = "fcConnUnitEntry." + $fcConnUnitId
+
+            switch($1)
+            {
+                case "2": ### Unused
+
+                    switch($2)
+                    {
+                        case "2": ### Online
+		    	    $SEV_KEY = $OS_EventId + "_unused"
+                            @Summary = "Connectivity Unit Unused, Online  ( " + @AlertKey + " )"
+
+                    	    $DEFAULT_Severity = 2
+                    	    $DEFAULT_Type = 1
+                    	    $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+		    	    $SEV_KEY = $OS_EventId + "_unused"
+                            @Summary = "Connectivity Unit Unused, Offline  ( " + @AlertKey + " )"
+
+                    	    $DEFAULT_Severity = 2
+                    	    $DEFAULT_Type = 1
+                    	    $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+		    	    $SEV_KEY = $OS_EventId + "_unused"
+                            @Summary = "Connectivity Unit Unused, State Unknown  ( " + @AlertKey + " )"
+
+                    	    $DEFAULT_Severity = 2
+                    	    $DEFAULT_Type = 1
+                    	    $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### OK
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_ok_online"
+                            @Summary = "Connectivity Unit OK, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_ok_offline"
+                            @Summary = "Connectivity Unit OK, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_ok_unknown"
+                            @Summary = "Connectivity Unit OK, State Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### Warning
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_warning_online"
+                            @Summary = "Connectivity Unit Warning, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_warning_offline"
+                            @Summary = "Connectivity Unit Warning, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_warning_unknown"
+                            @Summary = "Connectivity Unit Warning, State Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### Failed
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_failed_online"
+                            @Summary = "Connectivity Unit Failed, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_failed_offline"
+                            @Summary = "Connectivity Unit Failed, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_failed_unknown"
+                            @Summary = "Connectivity Unit Failed, State Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### Unknown
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_unknown_online"
+                            @Summary = "Connectivity Unit Status Unknown, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_unknown_offline"
+                            @Summary = "Connectivity Unit Status Unknown, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Connectivity Unit Status Unknown, State Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+            details($fcConnUnitStatus,$fcConnUnitState,$fcConnUnitId)
+
+        case "2": ### fcConnUnitDeletedTrap
+
+            ##########
+            # $1 = fcConnUnitGlobalId
+            ##########
+
+            $fcConnUnitGlobalId = $1
+
+            $fcConnUnitId = extract($OID1, "8888\.1\.1\.3\.1\.2\.(.*)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-FIBRE-CHANNEL-MGMT-MIB-fcConnUnitDeletedTrap"
+
+            @AlertGroup = "Conn. Unit"
+            @AlertKey = "fcConnUnitEntry." + $fcConnUnitId
+            @Summary = "Connectivity Unit Deleted  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($fcConnUnitGlobalId,$fcConnUnitId)
+
+        case "3": ### fcConnUnitEventTrap
+
+            ##########
+            # $1 = fcConnUnitGlobalId
+            # $2 = fcConnUnitEventType
+            # $3 = fcConnUnitEventObject
+            # $4 = fcConnUnitEventDescr
+            ##########
+
+            $fcConnUnitGlobalId = $1
+            $fcConnUnitEventType = lookup($2, fcConnUnitEventType)
+            $fcConnUnitEventObject = $3
+            $fcConnUnitEventDescr = $4
+
+            $fcConnUnitId = extract($OID1, "8888\.1\.1\.3\.1\.[0-9]+\.(.*)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-FIBRE-CHANNEL-MGMT-MIB-fcConnUnitEventTrap"
+
+            @AlertGroup = "Conn. Unit Event"
+            @AlertKey = "fcConnUnitEntry." + $fcConnUnitId
+            @Summary = "Connectivity Unit " + $fcConnUnitEventType + " Event, " + $4 + "  ( " + $3 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+            
+            details($fcConnUnitGlobalId,$fcConnUnitEventType,$fcConnUnitEventObject,$fcConnUnitEventDescr,$fcConnUnitId)
+
+        case "4": ### fcConnUnitSensorStatusChange
+
+            ##########
+            # $1 = fcConnUnitSensorStatus
+            ##########
+
+            $fcConnUnitSensorStatus = lookup($1, fcConnUnitSensorStatus) + " ( " + $1 + " )"
+
+            $fcConnUnitId = extract($OID1, "8888\.1\.1\.5\.1\.([0-9]+)\.[0-9]+$")
+            $fcConnUnitSensorIndex = extract($OID1, "8888\.1\.1\.5\.1\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-FIBRE-CHANNEL-MGMT-MIB-fcConnUnitSensorStatusChange"
+
+            @AlertGroup = "Conn. Unit Sensor Status"
+            @AlertKey = "fcConnUnitSensorEntry." + $fcConnUnitId + "." + $fcConnUnitSensorIndex
+  
+            switch($1)
+            {
+                case "1": ### Unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Connectivity Unit Sensor Status Unknown  ( " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### Other
+                    $SEV_KEY = $OS_EventId + "_other"
+                    @Summary = "Connectivity Unit Sensor Status: Other  ( " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### OK
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    @Summary = "Connectivity Unit Sensor OK  ( " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### Warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                    @Summary = "Connectivity Unit Sensor Warning  ( " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### Failed
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    @Summary = "Connectivity Unit Sensor Failed  ( " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Connectivity Unit Sensor Status Unknown  ( " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($fcConnUnitSensorStatus,$fcConnUnitId,$fcConnUnitSensorIndex)
+
+        case "5": ### fcConnUnitPortStatusChange
+
+            ##########
+            # $1 = fcConnUnitPortStatus
+            # $2 = fcConnUnitPortState
+            ##########
+
+            $fcConnUnitPortStatus = lookup($1, fcConnUnitPortStatus)
+            $fcConnUnitPortState = lookup($2, fcConnUnitPortState)
+
+            $fcConnUnitId = extract($OID1, "8888\.1\.1\.6\.([0-9]+)\.[0-9]+$")
+            $fcConnUnitPortIndex = extract($OID1, "8888\.1\.1\.6\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-FIBRE-CHANNEL-MGMT-MIB-fcConnUnitPortStatusChange"
+ 
+            @AlertGroup = "Conn. Unit Port Status"
+            @AlertKey = "fcConnUnitPortEntry." + $fcConnUnitId + "." + $fcConnUnitPortIndex
+
+            switch($1)
+            {
+                case "2": ### Unused
+                    switch($2)
+                    {
+                        case "2": ### Online
+	                    $SEV_KEY = $OS_EventId + "_unused_online"
+                            @Summary = "Connectivity Unit Port Unused, Online  ( " + @AlertKey + " )"
+
+        	            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_unused_offline"
+                            @Summary = "Connectivity Unit Port Unused, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_unused_bypassed"
+                            @Summary = "Connectivity Unit Port Unused, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_unused_diagnostics"
+                            @Summary = "Connectivity Unit Port Unused, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_unused_unknown"
+                            @Summary = "Connectivity Unit Port Unused, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### Ready
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_ready_online"
+                            @Summary = "Connectivity Unit Port Ready, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_ready_offline"
+                            @Summary = "Connectivity Unit Port Ready, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_ready_bypassed"
+                            @Summary = "Connectivity Unit Port Ready, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_ready_diagnostics"
+                            @Summary = "Connectivity Unit Port Ready, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_ready_unknown"
+                            @Summary = "Connectivity Unit Port Ready, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### Warning
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_warning_online"
+                            @Summary = "Connectivity Unit Port Warning, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_warning_offline"
+                            @Summary = "Connectivity Unit Port Warning, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_warning_bypassed"
+                            @Summary = "Connectivity Unit Port Warning, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_warning_diagnostics"
+                            @Summary = "Connectivity Unit Port Warning, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_warning_unknown"
+                            @Summary = "Connectivity Unit Port Warning, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### Failure
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_failure_online"
+                            @Summary = "Connectivity Unit Port Failure, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_failure_offline"
+                            @Summary = "Connectivity Unit Port Failure, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_failure_bypassed"
+                            @Summary = "Connectivity Unit Port Failure, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_failure_diagnostics"
+                            @Summary = "Connectivity Unit Port Failure, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_failure_unknown"
+                            @Summary = "Connectivity Unit Port Failure, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### Not Participating
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            @Summary = "Connectivity Unit Port Not Participating, Online  ( " + @AlertKey + " )"
+                            $SEV_KEY = $OS_EventId + "_notparticipating_online"
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            @Summary = "Connectivity Unit Port Not Participating, Offline  ( " + @AlertKey + " )"
+                            $SEV_KEY = $OS_EventId + "_notparticipating_offline"
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            @Summary = "Connectivity Unit Port Not Participating, Bypassed  ( " + @AlertKey + " )"
+                            $SEV_KEY = $OS_EventId + "_notparticipating_bypassed"
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            @Summary = "Connectivity Unit Port Not Participating, Diagnostics  ( " + @AlertKey + " )"
+                            $SEV_KEY = $OS_EventId + "_notparticipating_diagnostics"
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            @Summary = "Connectivity Unit Port Not Participating, Unknown  ( " + @AlertKey + " )"
+                            $SEV_KEY = $OS_EventId + "_unknown"
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### Initializing
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_initializing_online"
+                            @Summary = "Connectivity Unit Port Initializing, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_initializing_offline"
+                            @Summary = "Connectivity Unit Port Initializing, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_initializing_bypassed"
+                            @Summary = "Connectivity Unit Port Initializing, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_initializing_diagnostics"
+                            @Summary = "Connectivity Unit Port Initializing, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_initializing_unknown"
+                            @Summary = "Connectivity Unit Port Initializing, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "8": ### Bypass
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_bypass_online"
+                            @Summary = "Connectivity Unit Port Bypassed, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_bypass_offline"
+                            @Summary = "Connectivity Unit Port Bypassed, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_bypass_bypassed"
+                            @Summary = "Connectivity Unit Port Bypassed, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_bypass_diagnostics"
+                            @Summary = "Connectivity Unit Port Bypassed, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_bypass_unknown"
+                            @Summary = "Connectivity Unit Port Bypassed, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "9": ### Offline
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_offline_online"
+                            @Summary = "Connectivity Unit Port Offline, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_offline_offline"
+                            @Summary = "Connectivity Unit Port Offline, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_offline_bypassed"
+                            @Summary = "Connectivity Unit Port Offline, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_offline_diagnostics"
+                            @Summary = "Connectivity Unit Port Offline, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_offline_unknown"
+                            @Summary = "Connectivity Unit Port Offline, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "10": ### Other
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_other_online"
+                            @Summary = "Connectivity Unit Port Status: Other, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_other_offline"
+                            @Summary = "Connectivity Unit Port Status: Other, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_other_bypassed"
+                            @Summary = "Connectivity Unit Port Status: Other, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_other_diagnostics"
+                            @Summary = "Connectivity Unit Port Status: Other, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_other_unknown"
+                            @Summary = "Connectivity Unit Port Status: Other, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### Unknown(1)
+                    switch($2)
+                    {
+                        case "2": ### Online
+                            $SEV_KEY = $OS_EventId + "_unknown_online"
+                            @Summary = "Connectivity Unit Port Status: Unknown, Online  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### Offline
+                            $SEV_KEY = $OS_EventId + "_unknown_offline"
+                            @Summary = "Connectivity Unit Port Status: Unknown, Offline  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "4": ### Bypassed
+                            $SEV_KEY = $OS_EventId + "_unknown_bypassed"
+                            @Summary = "Connectivity Unit Port Status: Unknown, Bypassed  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "5": ### Diagnostics
+                            $SEV_KEY = $OS_EventId + "_unknown_diagnostics"
+                            @Summary = "Connectivity Unit Port Status: Unknown, Diagnostics  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### Unknown(1)
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "Connectivity Unit Port Status: Unknown, Unknown  ( " + @AlertKey + " )"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+            details($fcConnUnitPortStatus,$fcConnUnitPortState,$fcConnUnitId,$fcConnUnitId)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-FIBRE-CHANNEL-MGMT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-FIBRE-CHANNEL-MGMT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-FIBRE-CHANNEL-MGMT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-FIBRE-CHANNEL-MGMT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-FIBRE-CHANNEL-MGMT-MIB.include.snmptrap.rules >>>>>")

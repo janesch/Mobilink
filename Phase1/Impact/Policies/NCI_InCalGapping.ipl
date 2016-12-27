@@ -1,0 +1,86 @@
+////////////////////////////////////////////////
+//
+//	InCalGapping.ipl
+//
+//	Impact policy for Mobilink - IN Call Gapping Alarm Handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100525	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+//	For Production
+Default_SleepTime = 600;
+//	For Testing
+Default_SleepTime = 600;
+
+// Is there a TT
+
+if( @MaximoInfo != '')
+{
+	// there is a TT
+	//if Threshold < 70%
+	if (float(@AlertKey) < 70)
+	{
+		\\ ClearTT
+		@MaximoStatus = 11;
+	}
+}
+else
+{
+	//There is no TT
+	if (float(@AlertKey) == 100)
+	{
+		//Wait to see if the event clears
+		// Get Sleep Time
+		DataType = "CMDB_SleepTime";		// this needs to be setup
+		Filter = "Node = '" + @Node + "'";		// this needs to be setup
+		CountOnly = False;
+		CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+		Num_CMDB__SleepTime = Num;
+		if(Num_CMDB_SleepTime == 0)
+		{
+			//No record for this so set default Time 
+			SleepTime = Default_SleepTime ;
+		}
+		else
+		{
+			SleepTime = CMDB_SleepTime[0].SleepTime;
+			if (SleepTime == 0)
+			{
+				SleepTime = Default_SleepTime ;
+			}
+		}
+		EventContainer.ImpactFlag = 1;
+		ReturnEvent(EventContainer);
+		ActionKey = "InCalGapping" + @ServerSerial + @ServerName;
+		Log("Going To Sleep "  + ActionKey + " for " + SleepTime );	
+
+		Hibernate(ActionKey , wait, SleepTime);	
+	
+		EventContainer.ImpactFlag = 2;
+		ReturnEvent(EventContainer);
+		Log ("Wake Up " + @ServerSerial);
+		RemoveHibernation(ActionKey);	
+	
+		DataType = "Status";		// this needs to be setup
+		Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+		CountOnly = False;
+		Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+		Num_Existing_Event = Num;
+		// If it does Clear then bug out
+	log("Check that eent still exists = " + Num_Existing_Event );
+		if (Num_Existing_Event = 0)
+		{
+			// Event nolonger existd
+			Log("Event No Longer Exists");
+		}
+		else
+		{
+		
+			\\ Raise TT
+			@MaximoStatus = 1;
+		}
+	}
+}
+	

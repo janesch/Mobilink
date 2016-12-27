@@ -1,0 +1,123 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-VRRP-MIB.include.snmptrap.rules 3.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  VRRP-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.68": ### Virtual Router Redundancy Protocol - Notifications from VRRP-MIB (RFC2787)
+
+    log(DEBUG, "<<<<< Entering... IETF-VRRP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-VRRP-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### vrrpTrapNewMaster
+
+            ##########
+            # $1 = vrrpOperMasterIpAddr
+            ##########
+
+            $vrrpOperMasterIpAddr = $1
+            $ifIndex = extract($OID1, "3\.6\.1\.2\.1\.68\.1\.3\.1\.7\.([0-9]+)\..*$")
+            $vrrpOperVrId = extract($OID1, "3\.6\.1\.2\.1\.68\.1\.3\.1\.7\.[0-9]+\.(.*)$")
+            details($vrrpOperMasterIpAddr,$ifIndex,$vrrpOperVrId)
+            
+            $OS_EventId = "SNMPTRAP-IETF-VRRP-MIB-vrrpTrapNewMaster"
+            
+            @AlertGroup = "Master Status"
+            @AlertKey = "vrrpOperEntry." + $ifIndex + "." + $vrrpOperVrId
+            @Summary = "Router Transitioned to VRRP Master  ( Master: " + $1 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### vrrpTrapAuthFailure
+
+            ##########
+            # $1 = vrrpTrapPacketSrc
+            # $2 = vrrpTrapAuthErrorType
+            ##########
+
+            $vrrpTrapPacketSrc = $1
+            $vrrpTrapAuthErrorType = lookup($2, vrrpTrapAuthErrorType)
+            
+            $OS_EventId = "SNMPTRAP-IETF-VRRP-MIB-vrrpTrapAuthFailure"
+            
+            @AlertGroup = "Authentication Failure"
+            @AlertKey = "From: " + $1
+            @Summary = "VRRP " + $vrrpTrapAuthErrorType + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+            
+            $vrrpTrapAuthErrorType = $vrrpTrapAuthErrorType + " ( " + $2 + " )"
+            details($vrrpTrapPacketSrc,$vrrpTrapAuthErrorType)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-VRRP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-VRRP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-VRRP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-VRRP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-VRRP-MIB.include.snmptrap.rules >>>>>")

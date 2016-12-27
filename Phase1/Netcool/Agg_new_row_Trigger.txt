@@ -1,0 +1,294 @@
+declare
+now utc;
+begin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	-- USE A TEMPORARY VARIABLE TO STORE THE CURRENT TIMESTAMP
+	set now = getdate();
+
+	-- UPDATE InternalLast AND StateChange
+	set new.InternalLast = now;
+	set new.StateChange = now;
+
+	-- SET FirstOccurrence IF NOT SET
+	if (new.FirstOccurrence = 0) then
+
+		set new.FirstOccurrence = getdate();
+	end if;
+
+	-- SET LastOccurrence IF NOT SET
+	if (new.LastOccurrence = 0) then
+
+		set new.LastOccurrence = getdate();
+	end if;
+
+	-- IF INSERT IS NOT COMING FROM A FAILOVER GATEWAY
+	if (%user.description <> 'failover_gate') then
+		-- Set EventID from custom.EventId Chris Janes
+		-- Moved into this if by Alex Silva 14/09/2010
+--		if( new.EventId = '')
+--   		 then
+--			for each row EventID in custom.EventId where EventID.KeyField=new.Manager + new.AlertGroup
+--         			begin
+--				set new.EventId = EventID.EventId;
+--         			end;
+--		end if;
+
+		-- INITIALISE ServerName AND ServerSerial
+		set new.ServerName = getservername();
+		set new.ServerSerial = new.Serial;
+
+		-- SET TALLY TO 1 IF SET TO 0.  THIS CAN HAPPEN WHEN
+		-- A COLLECTION-TO-AGGREGATION RESYNC TAKES PLACE
+		if (new.Tally = 0) then
+
+			set new.Tally = 1;
+		end if;
+
+		-- IF INSERT IS NOT COMING FROM A COLLECTION GATEWAY
+		if (%user.description <> 'collection_gate') then
+
+			set new.SourceServerName = getservername();
+			set new.SourceServerSerial = new.Serial;
+			set new.SourceStateChange = now;
+			set new.OriginalSeverity = new.Severity;
+
+			set new.Tally = 1;
+		end if;
+	end if;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+end

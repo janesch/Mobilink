@@ -1,0 +1,179 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-ENTITY-STATE-MIB.include.snmptrap.rules 1.0
+#    2007/01/17 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ENTITY-STATE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.131": ### IETF Entity State - Notifications from ENTITY-STATE-MIB(20040215) 
+
+    log(DEBUG, "<<<<< Entering... IETF-ENTITY-STATE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-Entity State"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### entStateOperEnabled
+
+            ##########
+            # $1 = entStateAdmin 
+            # $2 = entStateAlarm 
+            ##########
+
+            $entStateAdmin = lookup($1, AdminState) + " ( " + $1 + " )"
+            $entStateAlarm = lookup($2, AlarmStatus) + " ( " + $2 + " )"
+
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-ENTITY-STATE-MIB-entStateOperEnabled"
+
+            @AlertGroup = "Entity Operational Status"
+            @AlertKey = "entStateEntry." + $entPhysicalIndex
+            switch($1)
+            {
+                case "1": ### locked
+                    $SEV_KEY = $OS_EventId + "_locked"
+                    @Summary = "Resource Administratively Prohibited from Use"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### shuttingDown
+                    $SEV_KEY = $OS_EventId + "_shuttingDown"
+                    @Summary = "Resource Usage Administratively Limited to Current Instances of Use"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unlocked
+                    $SEV_KEY = $OS_EventId + "_unlocked"
+                    @Summary = "Resource not Administratively Prohibited from Use"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Resource Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($entStateAdmin,$entStateAlarm,$entPhysicalIndex)
+
+        case "2": ### entStateOperDisabled
+
+            ##########
+            # $1 = entStateAdmin 
+            # $2 = entStateAlarm 
+            ##########
+
+            $entStateAdmin = lookup($1, AdminState) + " ( " + $1 + " )"
+            $entStateAlarm = lookup($2, AlarmStatus) + " ( " + $2 + " )"
+
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-ENTITY-STATE-MIB-entStateOperDisabled"
+
+            @AlertGroup = "Entity Operational Status"
+            @AlertKey = "entStateEntry." + $entPhysicalIndex
+            switch($1)
+            {
+                case "1": ### locked
+                    $SEV_KEY = $OS_EventId + "_locked"
+                    @Summary = "Resource Administratively Prohibited from Use"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### shuttingDown
+                    $SEV_KEY = $OS_EventId + "_shuttingDown"
+                    @Summary = "Resource Usage Administratively Limited to Current Instances of Use"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unlocked
+                    $SEV_KEY = $OS_EventId + "_unlocked"
+                    @Summary = "Resource not Administratively Prohibited from Use"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Resource Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($entStateAdmin,$entStateAlarm,$entPhysicalIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ENTITY-STATE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ENTITY-STATE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ENTITY-STATE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ENTITY-STATE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-ENTITY-STATE-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,378 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-COLLECTOR-MIB.include.snmptrap.rules 6.0
+#    2008/02/18 Anchala Bansal
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-COLLECTOR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.8": ### Juniper Collector PIC - Notifications from JUNIPER-COLLECTOR-MIB
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-COLLECTOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Collector PIC"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxCollUnavailableDest
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollNotifyDate
+            # $3 = jnxCollNotifyUrl
+            # $4 = jnxCollNotifyInetType
+            # $5 = jnxCollNotifyInetAddress
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollNotifyDate = $2
+            $jnxCollNotifyUrl = $3
+            $jnxCollNotifyInetType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $jnxCollNotifyInetAddress = $5
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollUnavailableDest"
+
+            @AlertGroup = "Collector Destination Status"
+            @AlertKey = "PIC: " + $1 + ", URL: " + $3 + ", Dest IP: " + $5
+            @Summary = "Unavailable Destination Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+ 
+            details($ifDescr,$jnxCollNotifyDate,$jnxCollNotifyUrl,$jnxCollNotifyInetType,$jnxCollNotifyInetAddress)
+
+        case "2": ### jnxCollUnavailableDestCleared
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollNotifyDate
+            # $3 = jnxCollNotifyUrl
+            # $4 = jnxCollNotifyInetType
+            # $5 = jnxCollNotifyInetAddress
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollNotifyDate = $2
+            $jnxCollNotifyUrl = $3
+            $jnxCollNotifyInetType = lookup($4, InetAddressType) + " ( " + $4 + " )"
+            $jnxCollNotifyInetAddress = $5
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollUnavailableDestCleared"
+
+            @AlertGroup = "Collector Destination Status"
+            @AlertKey = "PIC: " + $1 + ", URL: " + $3 + ", Dest IP: " + $5
+            @Summary = "End of Unavailable Destination Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifDescr,$jnxCollNotifyDate,$jnxCollNotifyUrl,$jnxCollNotifyInetType,$jnxCollNotifyInetAddress)
+
+        case "3": ### jnxCollUnsuccessfulTransfer
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollNotifyDate
+            # $3 = jnxCollNotifyFile
+            # $4 = jnxCollNotifyUrl
+            # $5 = jnxCollNotifyInetType
+            # $6 = jnxCollNotifyInetAddress
+            # $7 = jnxCollNotifyError
+            # $8 = jnxCollNotifyFtpResultCode
+            # $9 = jnxCollNotifyFtpErrorText
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollNotifyDate = $2
+            $jnxCollNotifyFile = $3
+            $jnxCollNotifyUrl = $4
+            $jnxCollNotifyInetType = lookup($5, InetAddressType) + " ( " + $5 + " )"
+            $jnxCollNotifyInetAddress = $6
+            $jnxCollNotifyError = $7
+            $jnxCollNotifyFtpResultCode = $8
+            $jnxCollNotifyFtpErrorText = $9
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollUnsuccessfulTransfer"
+
+            @AlertGroup = "Collector File Transfer Status"
+            @AlertKey = "PIC: " + $1 + ", File: " + $3 + ", URL: " + $4 + ", Dest IP: " + $6
+            @Summary = "Collector File Transfer Error, " + $7 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $7
+     
+            details($ifDescr,$jnxCollNotifyDate,$jnxCollNotifyFile,$jnxCollNotifyUrl,$jnxCollNotifyInetType,$jnxCollNotifyInetAddress,$jnxCollNotifyError,$jnxCollNotifyFtpResultCode,$jnxCollNotifyFtpErrorText)
+
+        case "4": ### jnxCollFlowOverload
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollPicIfStateChangeDate
+            # $3 = jnxCollNotifyOverloadType
+            # $4 = jnxCollNotifyNewRecordRate
+            # $5 = jnxCollPicIfCreatedFiles
+            # $6 = jnxCollPicIfDestroyedFiles
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollPicIfStateChangeDate = $2
+            $jnxCollNotifyOverloadType = lookup($3, jnxCollNotifyOverloadType)
+            $jnxCollNotifyNewRecordRate = $4
+            $jnxCollPicIfCreatedFiles = $5
+            $jnxCollPicIfDestroyedFiles = $6
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollFlowOverload"
+
+            @AlertGroup = "Collector Flow Status"
+            @AlertKey = "jnxCollPicIfEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "Collector Flow " + $jnxCollNotifyOverloadType + "  ( PIC: " + $1 + " )"
+
+            switch($3)
+            {
+                case "1": ### softOverload
+                    $SEV_KEY = $OS_EventId + "_softOverload"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### hardOverload
+                    $SEV_KEY = $OS_EventId + "_hardOverload"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_default"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+            
+            $jnxCollNotifyOverloadType = $jnxCollNotifyOverloadType + " ( " + $3 + " )"
+            details($ifDescr,$jnxCollPicIfStateChangeDate,$jnxCollNotifyOverloadType,$jnxCollNotifyNewRecordRate,$jnxCollPicIfCreatedFiles,$jnxCollPicIfDestroyedFiles)
+
+        case "5": ### jnxCollFlowOverloadCleared
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollPicIfStateChangeDate
+            # $3 = jnxCollNotifyOverloadType
+            # $4 = jnxCollNotifyNewRecordRate
+            # $5 = jnxCollPicIfCreatedFiles
+            # $6 = jnxCollPicIfDestroyedFiles
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollPicIfStateChangeDate = $2
+            $jnxCollNotifyOverloadType = lookup($3, jnxCollNotifyOverloadType)
+            $jnxCollNotifyNewRecordRate = $4
+            $jnxCollPicIfCreatedFiles = $5
+            $jnxCollPicIfDestroyedFiles = $6
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollFlowOverloadCleared"
+
+            @AlertGroup = "Collector Flow Status"
+            @AlertKey = "jnxCollPicIfEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "End of Collector Flow " + $jnxCollNotifyOverloadType + "  ( PIC: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+            
+            $jnxCollNotifyOverloadType = $jnxCollNotifyOverloadType + " ( " + $3 + " )"
+            details($ifDescr,$jnxCollPicIfStateChangeDate,$jnxCollNotifyOverloadType,$jnxCollNotifyNewRecordRate,$jnxCollPicIfCreatedFiles,$jnxCollPicIfDestroyedFiles)
+
+        case "6": ### jnxCollMemoryUnavailable
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollPicIfStateChangeDate
+            # $3 = jnxCollNotifyMemThresh
+            # $4 = jnxCollNotifyMemUtil
+            # $5 = jnxCollNotifyMemFree
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollPicIfStateChangeDate = $2
+            $jnxCollNotifyMemThresh = $3
+            $jnxCollNotifyMemUtil = $4
+            $jnxCollNotifyMemFree = $5
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollMemoryUnavailable"
+
+            @AlertGroup = "Collector Memory Status"
+            @AlertKey = "jnxCollPicIfEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "Collector Memory Unavailable  ( PIC: " + $1 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifDescr,$jnxCollPicIfStateChangeDate,$jnxCollNotifyMemThresh,$jnxCollNotifyMemUtil,$jnxCollNotifyMemFree)
+ 
+        case "7": ### jnxCollMemoryAvailable
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollPicIfStateChangeDate
+            # $3 = jnxCollNotifyMemThresh
+            # $4 = jnxCollNotifyMemUtil
+            # $5 = jnxCollNotifyMemFree
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollPicIfStateChangeDate = $2
+            $jnxCollNotifyMemThresh = $3
+            $jnxCollNotifyMemUtil = $4
+            $jnxCollNotifyMemFree = $5
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollMemoryAvailable"
+
+            @AlertGroup = "Collector Memory Status"
+            @AlertKey = "jnxCollPicIfEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "End of Collector Memory Unavailable  ( PIC: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+         
+            details($ifDescr,$jnxCollPicIfStateChangeDate,$jnxCollNotifyMemThresh,$jnxCollNotifyMemUtil,$jnxCollNotifyMemFree)
+
+        case "8": ### jnxCollFtpSwitchover
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxCollNotifyDate
+            # $3 = jnxCollNotifyFromFtpServerInetType
+            # $4 = jnxCollNotifyFromFtpServerInetAddress
+            # $5 = jnxCollNotifyFromFtpServerType
+            # $6 = jnxCollNotifyToFtpServerInetType 
+            # $7 = jnxCollNotifyToFtpServerInetAddress
+            # $8 = jnxCollNotifyToFtpServerType
+            # $9 = jnxCollNotifyInitiatedBy  
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxCollNotifyDate = $2
+            $jnxCollNotifyFromFtpServerInetType = lookup($3, InetAddressType) + " ( " + $3 + " )"
+            $jnxCollNotifyFromFtpServerInetAddress = $4
+            $jnxCollNotifyFromFtpServerType = lookup($5, jnxCollNotifyFromFtpServerType)
+            $jnxCollNotifyToFtpServerInetType = lookup($6, InetAddressType) + " ( " + $6 + " )"
+            $jnxCollNotifyToFtpServerInetAddress = $7
+            $jnxCollNotifyToFtpServerType = lookup($8, jnxCollNotifyToFtpServerType)
+            $jnxCollNotifyInitiatedBy = lookup($9, jnxCollNotifyInitiatedBy) + " ( " + $9 + " )"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-COLLECTOR-MIB-jnxCollFtpSwitchover"
+
+            @AlertGroup = "Collector FTP Server Status"
+            @AlertKey = "jnxCollPicIfEntry." + extract($OID1, "\.([0-9]+)$")
+            @Summary = "FTP Server Switchover Occured from " + $jnxCollNotifyFromFtpServerType + " to " + $jnxCollNotifyToFtpServerType
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $jnxCollNotifyFromFtpServerType = lookup($5, jnxCollNotifyFromFtpServerType) + " ( " + $5 + " )"
+            $jnxCollNotifyToFtpServerType = lookup($8, jnxCollNotifyToFtpServerType) + " ( " + $8 + " )"
+            details($ifDescr,$jnxCollNotifyDate,$jnxCollNotifyFromFtpServerInetType,$jnxCollNotifyFromFtpServerInetAddress,$jnxCollNotifyFromFtpServerType,$jnxCollNotifyToFtpServerInetType,$jnxCollNotifyToFtpServerInetAddress,$jnxCollNotifyToFtpServerType,$jnxCollNotifyInitiatedBy)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-COLLECTOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-COLLECTOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-COLLECTOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-COLLECTOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-COLLECTOR-MIB.include.snmptrap.rules >>>>>")

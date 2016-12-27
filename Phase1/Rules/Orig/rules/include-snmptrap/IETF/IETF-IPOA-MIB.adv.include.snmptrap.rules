@@ -1,0 +1,85 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-IPOA-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-IPOA-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-IPOA-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ipoaMtuExceeded
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1010
+        $OS_X733SpecificProb = "ipoaMtuExceeded"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "ipoaVcEntry." + extract($OID1, "6\.1\.2\.1\.10\.46\.1\.7\.1\.(.*)$")
+        $OS_LocalSecObj = "ipNetToMediaEntry." + extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+$")
+        $OS_LocalRootObj = "ifEntry." + $ipNetToMediaIfIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "2": ### ipoaDuplicateIpAddress
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ipoaDuplicateIpAddress"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ipNetToMediaEntry." + extract($OID1, "3\.6\.1\.2\.1\.4\.22\.1\.1\.(.*)$")
+        $OS_LocalRootObj = "ifEntry." + $ipNetToMediaIfIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### ipoaLisCreate
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ipoaLisCreate"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ipoaLisEntry." + extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "4": ### ipoaLisDelete
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ipoaLisDelete"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "ipoaLisEntry." + extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-IPOA-MIB.adv.include.snmptrap.rules >>>>>")

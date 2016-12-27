@@ -1,0 +1,75 @@
+#
+# load_include.rules
+#
+#on first event after probe start %PLEvents is undefined, so it is
+#set to '1', the Mean is set to '0' and the Max is set to '0'.
+#The PLStartTime and PLMaxTime are set to the current time.
+#
+#For every subsequent event %PLEvents is incremented.
+#
+#Every 5 minutes (300 seconds) the rate is calculated and is reported
+#as events per second. A running max and mean EPS are kept tract of 
+#as %PLMax and %Mean respectively. The time of the maximum is also
+#recored.
+#
+
+%PLNow = getdate
+if (match(%PLEvents,""))
+{
+   %PLEvents = 1
+   %Mean = 0
+   %PLMax = 0
+   %PLStartTime = %PLNow
+   %PLMaxTime = %PLStartTime
+   %PLCounter = 0
+}
+else
+{
+   %PLEvents = int(%PLEvents) + 1
+   #log(ERROR, "PROBELOAD: Events = " + %PLEvents)
+}
+
+if (int(%PLNow) - int(%PLStartTime) >= 300)
+{
+   %PLCounter = int(%PLCounter) + 1
+   %PLElapsedTime = int(%PLNow) - int(%PLStartTime)
+   %EPS = real(%PLEvents) / real(%PLElapsedTime)
+   %Mean = real(%Mean) + (( real(%EPS) - real(%Mean)) / real(%PLCounter))
+
+   if (real(%EPS) > real(%PLMax))
+   {
+      %PLMax = %EPS
+      %PLMaxTime = timetodate(%PLNow, "%D %T")
+   }
+
+   log(Error, "EPS: " + %EPS + " Mean: " + %Mean + " Max: " + %PLMax + " at " + %PLMaxTime)
+   %PLEvents = 0
+   %PLStartTime = %PLNow
+}
+
+# initialize array items with the number of seconds samples may span and
+# number of samples to maintain.
+
+if(match("", loads[@Node]))
+{
+    loads[@Node] = "2.50"
+}
+if(match("", %general_load))
+{
+    %general_load="2.50"
+}
+
+loads[@Node] = updateload(loads[@Node])
+%general_load=updateload(%general_load)
+
+if (int(getload(loads[@Node])) > 5)
+{
+    log(WARN, $Node + " is creating more than 5 events per second")
+}
+
+if(int(getload(%general_load)) > 80)
+{
+    log(WARN, "Probe is creating more than 80 events per second")
+}
+
+

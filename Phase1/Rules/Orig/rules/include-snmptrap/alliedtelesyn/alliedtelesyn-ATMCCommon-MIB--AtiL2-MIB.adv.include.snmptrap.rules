@@ -1,0 +1,244 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    alliedtelesyn-ATMCCommon-MIB--AtiL2-MIB.adv.include.snmptrap.rules 1.0
+#    2005/10/10 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ATMCCommon-MIB
+#          -  AtiL2-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... alliedtelesyn-ATMCCommon-MIB--AtiL2-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "101": ### newRoot
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1010
+        $OS_X733SpecificProb = "newRoot"
+        $OS_OsiLayer = 2
+
+    case "102": ### topologyChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1010
+        $OS_X733SpecificProb = "topologyChange"
+        $OS_OsiLayer = 2
+
+    case "103":
+    
+        if(match($OID1, "1.3.6.1.4.1.207.8.32.11.1")) ### fstswitchFanStopTrap
+        {
+            $OS_X733EventType = 4
+            $OS_X733ProbableCause = 100043
+            $OS_X733SpecificProb = "fstswitchFanStopTrap"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else if(match($OID1, "1.3.6.1.4.1.207.8.33.11.1")) ### atiL2FanStopTrap
+        {
+            $OS_X733EventType = 4
+            $OS_X733ProbableCause = 100043
+            $OS_X733SpecificProb = "atiL2FanStopTrap"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else ### overTemperature
+        {
+            $OS_X733EventType = 5
+            $OS_X733ProbableCause = 5001
+            $OS_X733SpecificProb = "overTemperature"
+            $OS_OsiLayer = 0
+        }
+
+    case "104":
+
+        if(match($OID1, "1.3.6.1.4.1.207.8.32.11.1")) ### fstswitchTemperatureAbnormalTrap
+        {
+            $OS_X733EventType = 5
+            $OS_X733ProbableCause = 5001
+            $OS_X733SpecificProb = "fstswitchTemperatureAbnormalTrap"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else if(match($OID1, "1.3.6.1.4.1.207.8.33.11.1")) ### atiL2TemperatureAbnormalTrap
+        {
+            $OS_X733EventType = 5
+            $OS_X733ProbableCause = 5001
+            $OS_X733SpecificProb = "atiL2TemperatureAbnormalTrap"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else ### fanFailure
+        {
+            $OS_X733EventType = 4
+            $OS_X733ProbableCause = 100043
+            $OS_X733SpecificProb = "fanFailure"
+            $OS_OsiLayer = 0
+        }
+
+    case "105":
+    
+        if(match($OID1, "1.3.6.1.4.1.207.8.32.11.1")) ### fstswitchPowerSupplyOutage
+        {
+            $OS_X733EventType = 4
+            $OS_X733ProbableCause = 4001
+            $OS_X733SpecificProb = "fstswitchPowerSupplyOutage"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }        
+        else if(match($OID1, "1.3.6.1.4.1.207.8.33.11.1")) ### atiL2PowerSupplyOutage
+        {
+            $OS_X733EventType = 4
+            $OS_X733ProbableCause = 4001
+            $OS_X733SpecificProb = "atiL2PowerSupplyOutage"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1
+            $OS_LocalRootObj = $OS_LocalPriObj
+            $VAR_RelateLRO2LPO = 1
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }        
+        else ### intruderTrap
+        {
+            $OS_X733EventType = 9
+            $OS_X733ProbableCause = 100085
+            $OS_X733SpecificProb = "intruderTrap"
+            $OS_OsiLayer = 0
+        }
+
+    case "106":
+
+        if(match($OID1, "1.3.6.1.4.1.207.8.33.11.1")) ### atiL2IntruderAlert
+        {
+            $OS_X733EventType = 9
+            $OS_X733ProbableCause = 100085
+            $OS_X733SpecificProb = "atiL2IntruderAlert"
+            $OS_OsiLayer = 0
+    
+            $OS_LocalPriObj = "Module: " + $1 + ", Port: " + $2
+            $OS_LocalRootObj = "Module: " + $1
+            $VAR_RelateLRO2LPO = 3
+            $VAR_RelateLRO2LSO = 0
+            $VAR_RelateLSO2LPO = 0
+        }
+        else ### powersupplyFailure
+        {
+            $OS_X733EventType = 4
+            $OS_X733ProbableCause = 4001
+            $OS_X733SpecificProb = "powersupplyFailure"
+            $OS_OsiLayer = 0
+        }
+
+    case "107": ### powersupplyInstalled
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4001
+        $OS_X733SpecificProb = "powersupplyInstalled"
+        $OS_OsiLayer = 0
+
+    case "108": ### powersupplyRemoved
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4001
+        $OS_X733SpecificProb = "powersupplyRemoved"
+        $OS_OsiLayer = 0
+
+    case "109": ### moduleInstalled
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100029
+        $OS_X733SpecificProb = "moduleInstalled"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "Module: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "110": ### moduleRemoved
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100029
+        $OS_X733SpecificProb = "moduleRemoved"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "Module: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "111": ### mcLinkDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "mcLinkDown"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Module: " + $1 + ", Port: " + $2
+        $OS_LocalRootObj = "Module: " + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "112": ### mcLinkUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "mcLinkUp"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "Module: " + $1 + ", Port: " + $2
+        $OS_LocalRootObj = "Module: " + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... alliedtelesyn-ATMCCommon-MIB--AtiL2-MIB.adv.include.snmptrap.rules >>>>>")

@@ -1,0 +1,59 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-MICA.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "MICA": ### Modem ISDN Channel Aggregation modem
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-MICA.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADMODEM":
+        
+            ##########
+            # Run-time checks for modem health have determined that the
+            # indicated modem is no longer functional. The loss of
+            # functionality was caused by a hardware or software error.
+            #
+            # %MICA-3-BADMODEM : Modem [dec] went bad
+            ##########
+            
+            @AlertKey = "Modem: " + extract($Message, "odem ([0-9]+) ")
+            
+        case "NAK":
+        
+            ##########
+            # A message sent to the specified modem has been rejected.
+            #
+            # %MICA-3-NAK : NAK from modem [dec] in state [dec] --
+            # payload [hex]
+            ##########
+            
+            @AlertKey = "Modem: " + extract($Message, "odem ([0-9]+) ")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-MICA.include.syslog.rules >>>>>")

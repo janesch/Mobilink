@@ -1,0 +1,162 @@
+
+SCP-MIB-AL DEFINITIONS ::= BEGIN 
+
+    IMPORTS
+              MODULE-IDENTITY, OBJECT-TYPE,
+              NOTIFICATION-TYPE                      FROM SNMPv2-SMI
+
+              TEXTUAL-CONVENTION, DisplayString      FROM SNMPv2-TC
+
+              enterprises                            FROM RFC1155-SMI
+
+              in, inModules                          FROM INC-MIB-C
+
+              openViewSourceName                     FROM INC-MIB-AL;
+
+    -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    --
+    -- Module Identity :
+    --
+    inScpMibAL MODULE-IDENTITY
+            LAST-UPDATED "0012181400Z"
+            ORGANIZATION "Siemens AG"
+            CONTACT-INFO
+                     "        TMN/IN-Team
+                              K.Schmidtke
+                      Postal: Siemens AG
+                              Information and Communication Mobile
+                              Otto-Hahn-Ring 6
+                              D-81739 Muenchen
+                              Germany
+                      E-mail: Klaus.Schmidtke@icn.siemens.de"
+     
+            DESCRIPTION
+                     "The MIB module describes the managed objecttypes of
+                      the Siemens IN SCP NEs."
+     
+            REVISION    "0012181400Z"
+            DESCRIPTION "Reduced size of scpEtText and scpEtParams."
+
+            REVISION    "9910201600Z"
+            DESCRIPTION "Shortened some identifier names."
+
+            REVISION    "9906171600Z"
+            DESCRIPTION "Adaptations to TeMIP MIB loader."
+
+            REVISION "9810161600Z"
+            DESCRIPTION "using inModules"
+
+            REVISION "9810011200Z"
+            DESCRIPTION
+                     "Added object type for the APS version."
+
+            REVISION "9806181200Z"
+            DESCRIPTION
+               "minor changes to meet RFC1902."
+                   
+            REVISION "9711251600Z"
+            DESCRIPTION
+                     "Renamed 'in5' to 'in'"
+                   
+            REVISION "9711061200Z"
+            DESCRIPTION
+                     "Added SPC specific OID name prefixes."
+                   
+    ::= { inModules 4 } 
+
+    scp OBJECT IDENTIFIER ::= { in 1 }
+
+    --
+    -- Textual conventions :
+    --
+
+    SequenceNumber ::= TEXTUAL-CONVENTION
+         STATUS       current
+         DESCRIPTION
+                 "The event sequence number type."
+         SYNTAX       INTEGER (1..2147483647)
+
+ 
+    -- Traps/Notifications in SCP-MIB
+
+    scpTraps OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+               "Base OID for the notification OIDs
+                of the IN SCP NEs."
+
+            ::= { scp 0 }
+
+    -- groups in SCP-MIB
+
+    scp99 OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+               "The authoritative identity of Siemens AG,
+                OeN IN for IN SCP NEs."
+
+            ::= { scp 99 }
+
+      -- the scp99 group
+  
+      scpProcessTable OBJECT-TYPE
+          SYNTAX  SEQUENCE OF ProcessTableEntry
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+             "The processTable represents the SCP entities that 
+              created the events."
+          ::= { scp99  1 }
+
+      scpProcessTableEntry OBJECT-TYPE
+          SYNTAX  ProcessTableEntry
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+             "A processTable entry - processIDIndex and cloneIDIndex 
+              serve as indices to the processTable." 
+          INDEX   { scpPtProcessIDIndex , scpPtCloneIDIndex }
+          ::= { scpProcessTable 1 }
+
+      ProcessTableEntry ::=
+          SEQUENCE {
+              scpPtProcessIDIndex
+                  INTEGER,
+              scpPtCloneIDIndex
+                  INTEGER,
+              scpPtName 
+                  DisplayString  
+          }
+
+      scpPtProcessIDIndex OBJECT-TYPE
+          SYNTAX  INTEGER ( 1..65535)
+          MAX-ACCESS  read-only
+          STATUS  current
+
+          DESCRIPTION 
+             "Identifier of the SCP process that caused the event."
+          ::= { scpProcessTableEntry 1 }
+
+      scpPtCloneIDIndex OBJECT-TYPE
+          SYNTAX  INTEGER ( 1..65535)
+          MAX-ACCESS  read-only
+          STATUS  current
+
+          DESCRIPTION 
+             "Identifier to distinguish multiple instances of 
+              the same program."
+          ::= { scpProcessTableEntry 2 }
+
+      scpPtName OBJECT-TYPE
+
+          SYNTAX DisplayString
+          MAX-ACCESS  read-only
+          STATUS  current
+
+          DESCRIPTION 
+             "Name of the process that caused the event." 
+          ::= { scpProcessTableEntry 3 }
+
+
+END -- SCP-MIB-AL
+

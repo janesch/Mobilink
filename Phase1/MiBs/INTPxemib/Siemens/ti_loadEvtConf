@@ -1,0 +1,1299 @@
+#!/bin/sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HPOVDIR=/opt/OV
+CMD=`basename $0`
+tmpFile=/tmp/.${CMD}.$$
+
+#*--- "main" function : ---*
+
+[ -r $HPOVDIR/bin/ov.envvars.sh ] || {
+cat <<_END_
+ERROR: HP OV NNM not installed in the right version.
+       At least version 4.1 is required.
+_END_
+  exit 1
+}
+. $HPOVDIR/bin/ov.envvars.sh || exit 2
+
+[ -x $OV_BIN/xnmevents ] || {
+  echo "ERROR: $OV_BIN/xnmevents not executable."
+  exit 3
+}
+
+# build HP OV NMM event configuration file :
+cat >$tmpFile <<__END__
+VERSION 3
+#
+# Created using xnmtrap by root on Wed Nov 04 11:54:03
+#
+# Configuration for event formats and actions.
+# This configuration file is used by pmd, xnmevents, and ovactiond.
+#
+# The Hewlett-Packard shipped version of this file can be found in
+# /opt/OV/newconfig/OVEVENT-MIN/conf/\$LANG/trapd.conf, where \$LANG is
+# your native language (by default, "C").  This file documents the HP
+# internal events, as well as setting a template for other events
+# (sometimes called traps).  HP does not support users sending any of the
+# HP OpenView events, unless otherwise documented.  See the trapd.conf(4)
+# man page for more information on the format of events in this file.
+#
+# The HP internal event names all start with the characters:
+# "OV", and can be listed using the command:
+#           grep '^EVENT OV' /opt/OV/newconfig/OVEVENT-MIN/conf/\$LANG/trapd.conf
+#
+#
+# WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+#   Do not modify this file directly, use xnmtrap via the
+#   OVW menu item 'Options:Event Configuration', or
+#   merge in your changes via 'xnmevents -load FILE'.
+#   See trapd.conf(4), xnmtrap(1), and xnmevents(1) man pages for details.
+# WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+#
+#
+############################################################################
+#
+# Display Categories:
+#
+# Categories 0 and 1 are required, and cannot be modified by the user,
+# however, their category names never show up.  These can be used
+# as categories in the trap formats below to "IGNORE" (don't log or
+# display) or to "LOGONLY" (don't display) events.
+# Category 2 is required but it's title may be changed via this file.
+#
+#
+CATEGORY 0 "IGNORE"
+CATEGORY 1 "LOGONLY"
+CATEGORY 2 "Error Events"
+CATEGORY 3 "Threshold Events"
+CATEGORY 4 "Status Events"
+CATEGORY 5 "Configuration Events"
+CATEGORY 6 "Application Alert Events"
+CATEGORY 7 "Security Alert Events"
+CATEGORY 8 "INXpress Events"
+############################################################################
+#
+# Operator-initiated (manual) Actions:
+#
+# none additional
+############################################################################
+#
+# Enterprises:
+#
+OID_ALIAS tiInc .1.3.6.1.4.1.231.7.99.4
+OID_ALIAS legato .1.3.6.1.4.1.160
+OID_ALIAS tecnomen .1.3.6.1.4.1.2451
+#
+############################################################################
+#
+# Event formats and actions:
+#
+#
+EVENT tiIncTrapCritical .1.3.6.1.4.1.231.7.99.4.0.2301 "INXpress Events" Critical
+FORMAT \$*
+SDESC
+Long Descr.:
+"Trap issued by the INC to an OS with a severity 
+value of 'critical'.
+The objects contained in the variable binding list
+are scalar objects ( with index 0 ).
+SEVERITY-DEFAULT: Critical 
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+"
+Variables:
+  1: tiAlarmDateTime
+     Syntax="Display String (SIZE(19))"
+     Descr="Represents the occurrence date and time of an alarm as 
+display string in the format as defined by the 
+ASN.1 standard data type GeneralizedTime 
+( used format: YYYYMMDDHHMMSS[+-]HHMM,
+e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+respectively ITU-T Recommendation X.208"
+  2: tiAlarmReportingObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the alarm reporting object according 
+to the SNMP object model defined for the NE."
+  3: tiAlarmFaultyObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the faulty object according to the SNMP
+object model defined for the NE. Could be identical 
+with the Object Id of the alarm reporting object."
+  4: tiAlarmEventTypeId
+     Syntax="Integer"
+     Descr="Event Type Id as integer. This field specifies the 
+type of the event being reported. In the scope of 
+alarm surveillance is only a subset of the possible 
+event types, the so-called error types with the value 
+labels communicationsAlarm, environmentalAlarm, 
+equipmentAlarm, processingErrorAlarm and 
+qualityOfServiceAlarm."
+  5: tiAlarmSeverity
+     Syntax="Integer"
+     Descr="The perceived severity of an alarm as integer with the 
+possible values labels critical, major, minor, warning, 
+normal and cleared. Alarm cleared messages must 
+always be sent with the value cleared."
+  6: tiAlarmErrorID
+     Syntax="Integer (1..4294967295)"
+     Descr="Error Id as integer. This Error Id is specific to 
+the general alarm source type (e.g. SCP, INC)."
+  7: tiAlarmEndKey
+     Syntax="Boolean  (Integer) "
+     Descr="End Key of an alarm as integer. It indicates whether 
+an alarm cleared message is expected ( value label 
+true ) or not ( value label false )."
+  8: tiAlarmDescription
+     Syntax="Octet String (SIZE(0..512))"
+     Descr="Represents the description of an alarm.
+Additional free form text as octett string
+in ISO Latin-1 format."
+  9: tiAlarmSequenceNumber
+     Syntax="Integer (1..2147483647)"
+     Descr="The unique event sequence number.
+Will be incremented by one for each new event.
+Could wrap from 2147483647 to 1.
+This field is provided for compatibility with the 
+IN V5.x NEs. INC uses always the value 1."
+ 10: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the separate EFD processing for each OS." 
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT tiIncTrapMajor .1.3.6.1.4.1.231.7.99.4.0.2302 "INXpress Events" Major
+FORMAT \$*
+SDESC
+Long Descr.:
+"Trap issued by the INC to an OS with a severity 
+value of 'major'.
+The objects contained in the variable binding list
+are scalar objects ( with index 0 ).
+SEVERITY-DEFAULT: Major
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+"
+Variables:
+  1: tiAlarmDateTime
+     Syntax="Display String (SIZE(19))"
+     Descr="Represents the occurrence date and time of an alarm as 
+display string in the format as defined by the 
+ASN.1 standard data type GeneralizedTime 
+( used format: YYYYMMDDHHMMSS[+-]HHMM,
+e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+respectively ITU-T Recommendation X.208"
+  2: tiAlarmReportingObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the alarm reporting object according 
+to the SNMP object model defined for the NE."
+  3: tiAlarmFaultyObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the faulty object according to the SNMP
+object model defined for the NE. Could be identical 
+with the Object Id of the alarm reporting object."
+  4: tiAlarmEventTypeId
+     Syntax="Integer"
+     Descr="Event Type Id as integer. This field specifies the 
+type of the event being reported. In the scope of 
+alarm surveillance is only a subset of the possible 
+event types, the so-called error types with the value 
+labels communicationsAlarm, environmentalAlarm, 
+equipmentAlarm, processingErrorAlarm and 
+qualityOfServiceAlarm."
+  5: tiAlarmSeverity
+     Syntax="Integer"
+     Descr="The perceived severity of an alarm as integer with the 
+possible values labels critical, major, minor, warning, 
+normal and cleared. Alarm cleared messages must 
+always be sent with the value cleared."
+  6: tiAlarmErrorID
+     Syntax="Integer (1..4294967295)"
+     Descr="Error Id as integer. This Error Id is specific to 
+the general alarm source type (e.g. SCP, INC)."
+  7: tiAlarmEndKey
+     Syntax="Boolean  (Integer) "
+     Descr="End Key of an alarm as integer. It indicates whether 
+an alarm cleared message is expected ( value label 
+true ) or not ( value label false )."
+  8: tiAlarmDescription
+     Syntax="Octet String (SIZE(0..512))"
+     Descr="Represents the description of an alarm.
+Additional free form text as octett string
+in ISO Latin-1 format."
+  9: tiAlarmSequenceNumber
+     Syntax="Integer (1..2147483647)"
+     Descr="The unique event sequence number.
+Will be incremented by one for each new event.
+Could wrap from 2147483647 to 1.
+This field is provided for compatibility with the 
+IN V5.x NEs. INC uses always the value 1."
+ 10: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the separate EFD processing for each OS." 
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT tiIncTrapMinor .1.3.6.1.4.1.231.7.99.4.0.2303 "INXpress Events" Minor
+FORMAT \$*
+SDESC
+Long Descr.:
+"Trap issued by the INC to an OS with a severity 
+value of 'minor'.
+The objects contained in the variable binding list
+are scalar objects ( with index 0 ).
+SEVERITY-DEFAULT: Minor
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+"
+Variables:
+  1: tiAlarmDateTime
+     Syntax="Display String (SIZE(19))"
+     Descr="Represents the occurrence date and time of an alarm as 
+display string in the format as defined by the 
+ASN.1 standard data type GeneralizedTime 
+( used format: YYYYMMDDHHMMSS[+-]HHMM,
+e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+respectively ITU-T Recommendation X.208"
+  2: tiAlarmReportingObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the alarm reporting object according 
+to the SNMP object model defined for the NE."
+  3: tiAlarmFaultyObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the faulty object according to the SNMP
+object model defined for the NE. Could be identical 
+with the Object Id of the alarm reporting object."
+  4: tiAlarmEventTypeId
+     Syntax="Integer"
+     Descr="Event Type Id as integer. This field specifies the 
+type of the event being reported. In the scope of 
+alarm surveillance is only a subset of the possible 
+event types, the so-called error types with the value 
+labels communicationsAlarm, environmentalAlarm, 
+equipmentAlarm, processingErrorAlarm and 
+qualityOfServiceAlarm."
+  5: tiAlarmSeverity
+     Syntax="Integer"
+     Descr="The perceived severity of an alarm as integer with the 
+possible values labels critical, major, minor, warning, 
+normal and cleared. Alarm cleared messages must 
+always be sent with the value cleared."
+  6: tiAlarmErrorID
+     Syntax="Integer (1..4294967295)"
+     Descr="Error Id as integer. This Error Id is specific to 
+the general alarm source type (e.g. SCP, INC)."
+  7: tiAlarmEndKey
+     Syntax="Boolean  (Integer) "
+     Descr="End Key of an alarm as integer. It indicates whether 
+an alarm cleared message is expected ( value label 
+true ) or not ( value label false )."
+  8: tiAlarmDescription
+     Syntax="Octet String (SIZE(0..512))"
+     Descr="Represents the description of an alarm.
+Additional free form text as octett string
+in ISO Latin-1 format."
+  9: tiAlarmSequenceNumber
+     Syntax="Integer (1..2147483647)"
+     Descr="The unique event sequence number.
+Will be incremented by one for each new event.
+Could wrap from 2147483647 to 1.
+This field is provided for compatibility with the 
+IN V5.x NEs. INC uses always the value 1."
+ 10: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the separate EFD processing for each OS." 
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT tiIncTrapWarning .1.3.6.1.4.1.231.7.99.4.0.2304 "INXpress Events" Warning
+FORMAT \$*
+SDESC
+Long Descr.:
+"Trap issued by the INC to an OS with a 
+severity value of 'warning'.
+The objects contained in the variable binding list
+are scalar objects ( with index 0 ).
+SEVERITY-DEFAULT: Warning
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+"
+Variables:
+  1: tiAlarmDateTime
+     Syntax="Display String (SIZE(19))"
+     Descr="Represents the occurrence date and time of an alarm as 
+display string in the format as defined by the 
+ASN.1 standard data type GeneralizedTime 
+( used format: YYYYMMDDHHMMSS[+-]HHMM,
+e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+respectively ITU-T Recommendation X.208"
+  2: tiAlarmReportingObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the alarm reporting object according 
+to the SNMP object model defined for the NE."
+  3: tiAlarmFaultyObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the faulty object according to the SNMP
+object model defined for the NE. Could be identical 
+with the Object Id of the alarm reporting object."
+  4: tiAlarmEventTypeId
+     Syntax="Integer"
+     Descr="Event Type Id as integer. This field specifies the 
+type of the event being reported. In the scope of 
+alarm surveillance is only a subset of the possible 
+event types, the so-called error types with the value 
+labels communicationsAlarm, environmentalAlarm, 
+equipmentAlarm, processingErrorAlarm and 
+qualityOfServiceAlarm."
+  5: tiAlarmSeverity
+     Syntax="Integer"
+     Descr="The perceived severity of an alarm as integer with the 
+possible values labels critical, major, minor, warning, 
+normal and cleared. Alarm cleared messages must 
+always be sent with the value cleared."
+  6: tiAlarmErrorID
+     Syntax="Integer (1..4294967295)"
+     Descr="Error Id as integer. This Error Id is specific to 
+the general alarm source type (e.g. SCP, INC)."
+  7: tiAlarmEndKey
+     Syntax="Boolean  (Integer) "
+     Descr="End Key of an alarm as integer. It indicates whether 
+an alarm cleared message is expected ( value label 
+true ) or not ( value label false )."
+  8: tiAlarmDescription
+     Syntax="Octet String (SIZE(0..512))"
+     Descr="Represents the description of an alarm.
+Additional free form text as octett string
+in ISO Latin-1 format."
+  9: tiAlarmSequenceNumber
+     Syntax="Integer (1..2147483647)"
+     Descr="The unique event sequence number.
+Will be incremented by one for each new event.
+Could wrap from 2147483647 to 1.
+This field is provided for compatibility with the 
+IN V5.x NEs. INC uses always the value 1."
+ 10: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the separate EFD processing for each OS." 
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT tiIncTrapNormal .1.3.6.1.4.1.231.7.99.4.0.2305 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"Trap issued by the INC to an OS with a 
+severity value of 'normal'.
+The objects contained in the variable binding list
+are scalar objects ( with index 0 ).
+SEVERITY-DEFAULT: Indeterminate
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+"
+Variables:
+  1: tiAlarmDateTime
+     Syntax="Display String (SIZE(19))"
+     Descr="Represents the occurrence date and time of an alarm as 
+display string in the format as defined by the 
+ASN.1 standard data type GeneralizedTime 
+( used format: YYYYMMDDHHMMSS[+-]HHMM,
+e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+respectively ITU-T Recommendation X.208"
+  2: tiAlarmReportingObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the alarm reporting object according 
+to the SNMP object model defined for the NE."
+  3: tiAlarmFaultyObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the faulty object according to the SNMP
+object model defined for the NE. Could be identical 
+with the Object Id of the alarm reporting object."
+  4: tiAlarmEventTypeId
+     Syntax="Integer"
+     Descr="Event Type Id as integer. This field specifies the 
+type of the event being reported. In the scope of 
+alarm surveillance is only a subset of the possible 
+event types, the so-called error types with the value 
+labels communicationsAlarm, environmentalAlarm, 
+equipmentAlarm, processingErrorAlarm and 
+qualityOfServiceAlarm."
+  5: tiAlarmSeverity
+     Syntax="Integer"
+     Descr="The perceived severity of an alarm as integer with the 
+possible values labels critical, major, minor, warning, 
+normal and cleared. Alarm cleared messages must 
+always be sent with the value cleared."
+  6: tiAlarmErrorID
+     Syntax="Integer (1..4294967295)"
+     Descr="Error Id as integer. This Error Id is specific to 
+the general alarm source type (e.g. SCP, INC)."
+  7: tiAlarmEndKey
+     Syntax="Boolean  (Integer) "
+     Descr="End Key of an alarm as integer. It indicates whether 
+an alarm cleared message is expected ( value label 
+true ) or not ( value label false )."
+  8: tiAlarmDescription
+     Syntax="Octet String (SIZE(0..512))"
+     Descr="Represents the description of an alarm.
+Additional free form text as octett string
+in ISO Latin-1 format."
+  9: tiAlarmSequenceNumber
+     Syntax="Integer (1..2147483647)"
+     Descr="The unique event sequence number.
+Will be incremented by one for each new event.
+Could wrap from 2147483647 to 1.
+This field is provided for compatibility with the 
+IN V5.x NEs. INC uses always the value 1."
+ 10: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the separate EFD processing for each OS." 
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT tiIncTrapCleared .1.3.6.1.4.1.231.7.99.4.0.2306 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"Trap issued by the INC to an OS with a 
+severity value of 'cleared'.
+The objects contained in the variable binding list
+are scalar objects ( with index 0 ).
+SEVERITY-DEFAULT: Clear
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+EVENTTYPE-VARIABLE: tiAlarmEventTypeId
+ADDITIONAL-TEXT-VARIABLES: { tiAlarmDescription }
+"
+Variables:
+  1: tiAlarmDateTime
+     Syntax="Display String (SIZE(19))"
+     Descr="Represents the occurrence date and time of an alarm as 
+display string in the format as defined by the 
+ASN.1 standard data type GeneralizedTime 
+( used format: YYYYMMDDHHMMSS[+-]HHMM,
+e.g.: 19960322123000+0100 ). Refer to IS ISO/IEC 8824 
+respectively ITU-T Recommendation X.208"
+  2: tiAlarmReportingObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the alarm reporting object according 
+to the SNMP object model defined for the NE."
+  3: tiAlarmFaultyObject
+     Syntax="Object Identifier"
+     Descr="Object Id of the faulty object according to the SNMP
+object model defined for the NE. Could be identical 
+with the Object Id of the alarm reporting object."
+  4: tiAlarmEventTypeId
+     Syntax="Integer"
+     Descr="Event Type Id as integer. This field specifies the 
+type of the event being reported. In the scope of 
+alarm surveillance is only a subset of the possible 
+event types, the so-called error types with the value 
+labels communicationsAlarm, environmentalAlarm, 
+equipmentAlarm, processingErrorAlarm and 
+qualityOfServiceAlarm."
+  5: tiAlarmSeverity
+     Syntax="Integer"
+     Descr="The perceived severity of an alarm as integer with the 
+possible values labels critical, major, minor, warning, 
+normal and cleared. Alarm cleared messages must 
+always be sent with the value cleared."
+  6: tiAlarmErrorID
+     Syntax="Integer (1..4294967295)"
+     Descr="Error Id as integer. This Error Id is specific to 
+the general alarm source type (e.g. SCP, INC)."
+  7: tiAlarmEndKey
+     Syntax="Boolean  (Integer) "
+     Descr="End Key of an alarm as integer. It indicates whether 
+an alarm cleared message is expected ( value label 
+true ) or not ( value label false )."
+  8: tiAlarmDescription
+     Syntax="Octet String (SIZE(0..512))"
+     Descr="Represents the description of an alarm.
+Additional free form text as octett string
+in ISO Latin-1 format."
+  9: tiAlarmSequenceNumber
+     Syntax="Integer (1..2147483647)"
+     Descr="The unique event sequence number.
+Will be incremented by one for each new event.
+Could wrap from 2147483647 to 1.
+This field is provided for compatibility with the 
+IN V5.x NEs. INC uses always the value 1."
+ 10: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the separate EFD processing for each OS." 
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT INC_PeriodicalSumRep .1.3.6.1.4.1.231.7.99.4.0.2310 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"Periodical Alarm Summary Report for 
+a single host."
+Variables:
+  1: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  2: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  3: tiIsConnectionReliable
+     Syntax="Boolean  (Integer) "
+     Descr="Alarm Summary Report:
+Is the host responding to requests ?"
+  4: tiMaxSeverity
+     Syntax="Integer"
+     Descr="Alarm Summary Report:
+Highest alarm severity."
+  5: tiNumCriticalAlarms
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open critical alarms."
+  6: tiNumMajorAlarms
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open major alarms."
+  7: tiNumMinorAlarms
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open minor alarms."
+  8: tiNumWarnings
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open warnings."
+  9: tiNumNormalEvents
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open events with severity normal."
+EDESC
+#
+#
+#
+EVENT INC_SpontaneousSumRe .1.3.6.1.4.1.231.7.99.4.0.2311 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"Spontaneous Alarm Summary Report for 
+a single host.
+Will be issued if the value of the object
+tiMaxSeverity has changed."
+Variables:
+  1: tiAlarmSourceName
+     Syntax="Octet String"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  2: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  3: tiIsConnectionReliable
+     Syntax="Boolean  (Integer) "
+     Descr="Alarm Summary Report:
+Is the host responding to requests ?"
+  4: tiMaxSeverity
+     Syntax="Integer"
+     Descr="Alarm Summary Report:
+Highest alarm severity."
+  5: tiNumCriticalAlarms
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open critical alarms."
+  6: tiNumMajorAlarms
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open major alarms."
+  7: tiNumMinorAlarms
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open minor alarms."
+  8: tiNumWarnings
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open warnings."
+  9: tiNumNormalEvents
+     Syntax="Integer (1..4294967295)"
+     Descr="Alarm Summary Report:
+Number of open events with severity normal."
+EDESC
+#
+#
+EVENT brsTrapCritical .1.3.6.1.4.1.160.0.1001 "INXpress Events" Critical
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for a critical BRS alarm report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Critical 
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+"
+Variables:
+  1: brsAlarmText
+     Syntax="Display String (SIZE(0..255))"
+     Descr="The alarm text."
+  2: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  3: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  4: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+  5: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT brsTrapMajor .1.3.6.1.4.1.160.0.1002 "INXpress Events" Major
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for a major BRS alarm report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Major
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+"
+Variables:
+  1: brsAlarmText
+     Syntax="Display String (SIZE(0..255))"
+     Descr="The alarm text."
+  2: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  3: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  4: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+  5: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT brsTrapMinor .1.3.6.1.4.1.160.0.1003 "INXpress Events" Minor
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for a minor BRS alarm report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Minor
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+"
+Variables:
+  1: brsAlarmText
+     Syntax="Display String (SIZE(0..255))"
+     Descr="The alarm text."
+  2: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  3: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  4: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 4294967295 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+  5: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT brsTrapWarning .1.3.6.1.4.1.160.0.1004 "INXpress Events" Warning
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for a warning BRS alarm report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Warning
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+"
+Variables:
+  1: brsAlarmText
+     Syntax="Display String (SIZE(0..255))"
+     Descr="The alarm text."
+  2: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  3: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  4: tiAlarmNotificationID
+     Syntax="Integer (1..2147483647)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+  5: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+EVENT rpAlarmOnTrap .1.3.6.1.4.1.2451.0.7 "INXpress Events" Major
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for alarm on report for 
+the Siemens INCommander.
+SEVERITY-VARIABLE: rpPerceivedSeverity
+NOTIFICATIONID-VARIABLE: rpNotificationIdentifier
+"
+Variables:
+  1: rpNotificationIdentifier
+     Syntax="Integer (0..2147483647)"
+     Descr="rpNotificationIdentifier provides, if present , 
+an identifier for the notification.
+Notification identifiers must be chosen to be unique 
+across all notifications of a particular managed object 
+throughout the time that the correlation is significant."
+  2: rpModuleNumber
+     Syntax="Integer (0..2147483647)"
+     Descr="Module number. The alarm code is unique within one 
+module (also called component in OMC)."
+  3: rpAlarmCode
+     Syntax="Integer (0..2147483647)"
+     Descr="Alarm code (unique inside one module)."
+  4: rpSubscriberNumber
+     Syntax="Display String (SIZE(0..20))"
+     Descr="Subscriber number. Available only in MMS alarms."
+  5: rpEventTimeOn
+     Syntax="Display String (SIZE(0..64))"
+     Descr="This is the time that the alarm was emitted. "
+  6: rpEventType
+     Syntax="Integer"
+     Descr="This parameter categorizes the alarm. 
+There are five basic categories: 
+1) Processing
+2) Communications
+3) Quality of service
+4) Environmental
+5) Equipment"
+  7: rpProbableCause
+     Syntax="Integer (0..2147483647)"
+     Descr="rpProbableCause defines further qualification as to 
+the probable cause of the alarm. "
+  8: rpPerceivedSeverity
+     Syntax="Integer"
+     Descr="rpPerceivedSeverity defines the severity of the alarm. 
+Possible values are:
+0)indeterminate
+1)critical/urgent
+2)major
+3)minor
+4)warning/notice"
+  9: rpProposedRepairAction
+     Syntax="Display String (SIZE(0..200))"
+     Descr="Proposed repair action, if present, provides a 
+suggested repair action for the alarm. "
+ 10: rpAlarmText
+     Syntax="Display String (SIZE(0..100))"
+     Descr="The alarm text."
+ 11: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 12: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 13: tiAlarmNotificationID
+     Syntax="Integer (1..4294967295)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 4294967295 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+ 14: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT rpAlarmOffTrap .1.3.6.1.4.1.2451.0.8 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for alarm off (cancel) report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Clear
+NOTIFICATIONID-VARIABLE: rpNotificationIdentifier
+"
+Variables:
+  1: rpNotificationIdentifier
+     Syntax="Integer (0..2147483647)"
+     Descr="rpNotificationIdentifier provides, if present , 
+an identifier for the notification.
+Notification identifiers must be chosen to be unique 
+across all notifications of a particular managed object 
+throughout the time that the correlation is significant."
+  2: rpModuleNumber
+     Syntax="Integer (0..2147483647)"
+     Descr="Module number. The alarm code is unique within one 
+module (also called component in OMC)."
+  3: rpAlarmCode
+     Syntax="Integer (0..2147483647)"
+     Descr="Alarm code (unique inside one module)."
+  4: rpSubscriberNumber
+     Syntax="Display String (SIZE(0..20))"
+     Descr="Subscriber number. Available only in MMS alarms."
+  5: rpEventTimeOn
+     Syntax="Display String (SIZE(0..64))"
+     Descr="This is the time that the alarm was emitted. "
+  6: rpEventType
+     Syntax="Integer"
+     Descr="This parameter categorizes the alarm. 
+There are five basic categories: 
+1) Processing
+2) Communications
+3) Quality of service
+4) Environmental
+5) Equipment"
+  7: rpProbableCause
+     Syntax="Integer (0..2147483647)"
+     Descr="rpProbableCause defines further qualification as to 
+the probable cause of the alarm. "
+  8: rpPerceivedSeverity
+     Syntax="Integer"
+     Descr="rpPerceivedSeverity defines the severity of the alarm. 
+Possible values are:
+0)indeterminate
+1)critical/urgent
+2)major
+3)minor
+4)warning/notice"
+  9: rpAlarmText
+     Syntax="Display String (SIZE(0..100))"
+     Descr="The alarm text."
+ 10: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+ 11: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+ 12: tiAlarmNotificationID
+     Syntax="Integer (1..4294967295)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 2147483647 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+ 13: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT brsTrapNormal .1.3.6.1.4.1.160.0.1005 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for a BRS information report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Indeterminate
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+"
+Variables:
+  1: brsAlarmText
+     Syntax="Display String (SIZE(0..255))"
+     Descr="The alarm text."
+  2: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  3: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  4: tiAlarmNotificationID
+     Syntax="Integer (1..4294967295)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 4294967295 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+  5: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+#
+EVENT brsTrapReset .1.3.6.1.4.1.160.0.1006 "INXpress Events" Normal
+FORMAT \$*
+SDESC
+Long Descr.:
+"A format for a BRS alarm reset report for 
+the Siemens INCommander.
+SEVERITY-DEFAULT: Clear
+NOTIFICATIONID-VARIABLE: tiAlarmNotificationID
+"
+Variables:
+  1: brsAlarmText
+     Syntax="Display String (SIZE(0..255))"
+     Descr="The alarm text."
+  2: tiAlarmSourceName
+     Syntax="Octet String (SIZE(0..255))"
+     Descr="The source of the event (may not be the machine upon
+which the event was generated)."
+  3: tiAlarmSymbNEname
+     Syntax="Display String"
+     Descr="The symbolic Network Element ( NE ) name.
+Normally it is different from the source name."
+  4: tiAlarmNotificationID
+     Syntax="Integer (1..4294967295)"
+     Descr="The notification id unique for a whole INCommander
+management area and is common for all configured OS's.
+
+It will be incremented by one for each new event
+received from any configured network element ( 
+including the INCommander itself ) and could wrap 
+from 4294967295 to 1.
+
+Gaps in the notification identifier of consecutive
+alarm SNMP traps received at the OS site are normal
+because of the EFD processing for an OS."
+  5: tiAlarmTransferID
+     Syntax="Integer (1..2147483647)"
+     Descr="The OS specific unique transfer identifier.
+Will be incremented by one for each new event
+sent to an OS.
+Could wrap from 2147483647 to 1.
+
+Gaps in the transfer identifier of consecutive
+alarm SNMP traps received at the OS site indicates 
+the lost of SNMP traps sent from the INCommander to 
+the OS."
+EDESC
+#
+#
+# End of configuration for event formats and actions
+#
+__END__
+
+# load event configuration file :
+
+$OV_BIN/xnmevents -replace $tmpFile
+[ $? -eq 0 ] && /bin/rm -f $tmpFile
+$OV_BIN/xnmevents -event
+
+exit 0
+

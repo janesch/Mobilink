@@ -1,0 +1,417 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-MPLS-LDP-MIB.include.snmptrap.rules 2.2 
+#    2006/03/06 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  MPLS-LDP-MIB
+#
+###############################################################################
+#
+# 2.2 - Added logic to handle additional varbinds added to specific-traps 3 and
+#       4.
+#
+#     - Used switch statement to handle different states of mplsLdpSessionState
+#       and mplsLdpLibOperationStatus
+#
+#     - @Summary is modified for the specific-trap 1.
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Initial Release.  Complies with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.65.2": ### Cisco MPLS Label Distribution Protocol - Notifications from MPLS-LDP-MIB (V1 & V8)
+
+    log(DEBUG, "<<<<< Entering... cisco-MPLS-LDP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-MPLS LDP"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### mplsLdpFailedInitSessionThresholdExceeded
+
+            ##########
+            # $1 = mplsLdpEntityFailedInitSessionThreshold 
+            ##########
+
+            $mplsLdpEntityFailedInitSessionThreshold = $1
+            $mplsLdpEntityLdpId = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+$")
+            $mplsLdpEntityIndex = extract($OID1, "\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+            $LsrIpAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $LsrLabelSpace = extract($OID1, "\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+)\.[0-9]+$")
+
+            $OS_EventId = "SNMPTRAP-cisco-MPLS-LDP-MIB-mplsLdpFailedInitSessionThresholdExceeded"
+            
+            @AlertGroup = "MPLS LDP Session Status"
+            @AlertKey = "mplsLdpEntityEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex
+            @Summary = "MPLS LDP Initialization Session Messages Sent Exceeds Threshold, " + $1 + "  ( LSR: " + $LsrIpAddr + ", Label Space: " + $LsrLabelSpace + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($mplsLdpEntityFailedInitSessionThreshold,$mplsLdpEntityLdpId,$mplsLdpEntityIndex,$LsrIpAddr,$LsrLabelSpace)
+
+        case "2": ### mplsLdpPathVectorLimitMismatch
+
+            ##########
+            # $1 = mplsLdpEntityPathVectorLimit
+            # $2 = mplsLdpPeerPathVectorLimit 
+            ##########
+
+            $mplsLdpEntityPathVectorLimit = $1
+            $mplsLdpPeerPathVectorLimit = $2
+            $mplsLdpEntityLdpId = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+$")
+            $mplsLdpEntityIndex = extract($OID1, "\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)$")
+            $LsrIpAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $LsrLabelSpace = extract($OID1, "\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+\.[0-9]+)\.[0-9]+$")
+            $mplsLdpPeerLdpId = extract($OID2, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            $PeerLsrIpAddr = extract($OID2, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+$")
+            $PeerLsrLabelSpace = extract($OID2, "\.([0-9]+\.[0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-MPLS-LDP-MIB-mplsLdpPathVectorLimitMismatch"
+            
+            @AlertGroup = "MPLS LDP Path Vector Limit Status"
+            @AlertKey = "mplsLdpSessionEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex + "." + $mplsLdpPeerLdpId
+            @Summary = "MPLS LDP Path Vector Limit Mismatch  ( LSR: " + $LsrIpAddr + ", Label Space: " + $LsrLabelSpace + ", Peer LSR: " + $PeerLsrIpAddr + ", Peer Label Space: " + $PeerLsrLabelSpace + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($mplsLdpEntityPathVectorLimit,$mplsLdpPeerPathVectorLimit,$mplsLdpEntityLdpId,$mplsLdpEntityIndex,$LsrIpAddr,$LsrLabelSpace,$mplsLdpPeerLdpId,$PeerLsrIpAddr,$PeerLsrLabelSpace)
+
+        case "3": ### mplsLdpSessionUp
+
+            ##########
+            # $1 = mplsLdpSessionState
+            # $2 = mplsLdpSesDiscontinuityTime
+            # $3 = mplsLdpSesStatsUnkMesTypeErrors
+            # $4 = mplsLdpSesStatsUnkTlvErrors
+            ##########
+
+            $mplsLdpSessionState = lookup($1, ciscoMplsLdpSessionState) + " ( " + $1 + " )"
+            $mplsLdpSesDiscontinuityTime = $2
+            $mplsLdpSesStatsUnkMesTypeErrors = $3
+            $mplsLdpSesStatsUnkTlvErrors = $4
+            $mplsLdpEntityLdpId = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $mplsLdpEntityIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $LsrIpAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $LsrLabelSpace = extract($OID1, "\.([0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $mplsLdpPeerLdpId = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            $PeerLsrIpAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+$")
+            $PeerLsrLabelSpace = extract($OID1, "\.([0-9]+\.[0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-cisco-MPLS-LDP-MIB-mplsLdpSessionUp"
+            
+            @AlertGroup = "MPLS LDP Session Status"
+            @AlertKey = "mplsLdpSessionEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex + "." + $mplsLdpPeerLdpId
+            switch($1)
+            {
+                case "1": ### nonexistent 
+                    $SEV_KEY = $OS_EventId + "_nonexistent"
+                    @Summary = "MPLS LDP Session Non-Existent" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### initialized 
+                    $SEV_KEY = $OS_EventId + "_initialized"
+                    @Summary = "MPLS LDP Session Initialized" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### openrec 
+                    $SEV_KEY = $OS_EventId + "_openrec"
+                    @Summary = "MPLS LDP Session Open Received" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### opensent 
+                    $SEV_KEY = $OS_EventId + "_opensent"
+                    @Summary = "MPLS LDP Session Open Sent" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### operational 
+                    $SEV_KEY = $OS_EventId + "_operational"
+                    @Summary = "MPLS LDP Session Operational" 
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default: 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MPLS LDP Session Status Unknown" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }  
+            @Summary = @Summary + "  ( LSR: " + $LsrIpAddr + ", Label Space: " + $LsrLabelSpace + ", Peer LSR: " + $PeerLsrIpAddr + ", Peer Label Space: " + $PeerLsrLabelSpace + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            if(exists($2) && exists($3) && exists($4))
+            {
+               details($mplsLdpSessionState,$mplsLdpSesDiscontinuityTime,$mplsLdpSesStatsUnkMesTypeErrors,$mplsLdpSesStatsUnkTlvErrors,$mplsLdpEntityLdpId,$mplsLdpEntityIndex,$LsrIpAddr,$LsrLabelSpace,$mplsLdpPeerLdpId,$PeerLsrIpAddr,$PeerLsrLabelSpace)
+            }
+            else
+            {
+               details($mplsLdpSessionState,$mplsLdpEntityLdpId,$mplsLdpEntityIndex,$LsrIpAddr,$LsrLabelSpace,$mplsLdpPeerLdpId,$PeerLsrIpAddr,$PeerLsrLabelSpace)
+            }
+
+        case "4": ### mplsLdpSessionDown
+
+            ##########
+            # $1 = mplsLdpSessionState
+            # $2 = mplsLdpSesDiscontinuityTime 
+            # $3 = mplsLdpSesStatsUnkMesTypeErrors 
+            # $4 = mplsLdpSesStatsUnkTlvErrors 
+            ##########
+
+            $mplsLdpSessionState = lookup($1, ciscoMplsLdpSessionState) + " ( " + $1 + " )"
+            $mplsLdpSesDiscontinuityTime = $2
+            $mplsLdpSesStatsUnkMesTypeErrors = $3
+            $mplsLdpSesStatsUnkTlvErrors = $4
+            $mplsLdpEntityLdpId = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $mplsLdpEntityIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $LsrIpAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $LsrLabelSpace = extract($OID1, "\.([0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $mplsLdpPeerLdpId = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            $PeerLsrIpAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+$")
+            $PeerLsrLabelSpace = extract($OID1, "\.([0-9]+\.[0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-cisco-MPLS-LDP-MIB-mplsLdpSessionDown"
+            
+            @AlertGroup = "MPLS LDP Session Status"
+            @AlertKey = "mplsLdpSessionEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex + "." + $mplsLdpPeerLdpId
+            switch($1)
+            {
+                case "1": ### nonexistent
+                    $SEV_KEY = $OS_EventId + "_nonexistent"
+                    @Summary = "MPLS LDP Session Non-Existent"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### initialized
+                    $SEV_KEY = $OS_EventId + "_initialized"
+                    @Summary = "MPLS LDP Session Initialized"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### openrec
+                    $SEV_KEY = $OS_EventId + "_openrec"
+                    @Summary = "MPLS LDP Session Open Received"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### opensent
+                    $SEV_KEY = $OS_EventId + "_opensent"
+                    @Summary = "MPLS LDP Session Open Sent"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### operational 
+                    $SEV_KEY = $OS_EventId + "_operational"
+                    @Summary = "MPLS LDP Session Operational"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MPLS LDP Session Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( LSR: " + $LsrIpAddr + ", Label Space: " + $LsrLabelSpace + ", Peer LSR: " + $PeerLsrIpAddr + ", Peer Label Space: " + $PeerLsrLabelSpace + " )"
+ 
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            if(exists($2) && exists($3) && exists($4))
+            {
+               details($mplsLdpSessionState,$mplsLdpSesDiscontinuityTime,$mplsLdpSesStatsUnkMesTypeErrors,$mplsLdpSesStatsUnkTlvErrors,$mplsLdpEntityLdpId,$mplsLdpEntityIndex,$LsrIpAddr,$LsrLabelSpace,$mplsLdpPeerLdpId,$PeerLsrIpAddr,$PeerLsrLabelSpace)
+            }
+            else
+            {
+               details($mplsLdpSessionState,$mplsLdpEntityLdpId,$mplsLdpEntityIndex,$LsrIpAddr,$LsrLabelSpace,$mplsLdpPeerLdpId,$PeerLsrIpAddr,$PeerLsrLabelSpace)
+            }
+
+        case "5": ### mplsLdpLibLspUp
+
+            ##########
+            # $1 = mplsLdpLibOperationStatus
+            ##########
+
+            $mplsLdpLibOperationStatus = lookup($1, ciscoMplsLdpLibOperationStatus) + " ( " + $1 + " )"
+            $mplsLdpLibLspId = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-MPLS-LDP-MIB-mplsLdpLibLspUp"
+            
+            @AlertGroup = "MPLS LSP Status"
+            @AlertKey = "mplsLdpLibEntry." + $mplsLdpLibLspId
+            switch($1)
+            {
+                case "1": ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MPLS Label Switched Path Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### up 
+                    $SEV_KEY = $OS_EventId + "_up"
+                    @Summary = "MPLS Label Switched Path Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### down 
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = "MPLS Label Switched Path Down"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MPLS Label Switched Path Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($mplsLdpLibOperationStatus,$mplsLdpLibLspId)
+
+        case "6": ### mplsLdpLibLspDown
+
+            ##########
+            # $1 = mplsLdpLibOperationStatus 
+            ##########
+
+            $mplsLdpLibOperationStatus = lookup($1, ciscoMplsLdpLibOperationStatus) + " ( " + $1 + " )"
+            $mplsLdpLibLspId = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-MPLS-LDP-MIB-mplsLdpLibLspDown"
+            
+            @AlertGroup = "MPLS LSP Status"
+            @AlertKey = "mplsLdpLibEntry." + $mplsLdpLibLspId
+            switch($1)
+            {
+                case "1": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MPLS Label Switched Path Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### up
+                    $SEV_KEY = $OS_EventId + "_up"
+                    @Summary = "MPLS Label Switched Path Up"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### down
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = "MPLS Label Switched Path Down"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MPLS Label Switched Path Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($mplsLdpLibOperationStatus,$mplsLdpLibLspId)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-MPLS-LDP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-MPLS-LDP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-MPLS-LDP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-MPLS-LDP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-MPLS-LDP-MIB.include.snmptrap.rules >>>>>")

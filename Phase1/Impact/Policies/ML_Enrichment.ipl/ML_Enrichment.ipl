@@ -1,0 +1,299 @@
+/*            ML_Enrichment Policy
+    This Policy is used to enrich ML Events with Domain
+    Region, ManCity and CovCity
+     EventReader Filter:
+    ImpactFlag = 1 and probably something else (To be set)
+    V 1.0    29-07-2010    Alex Silva
+    
+*/
+log("ML_Enrichment: start...............alarm Serial = " + @Serial);
+@ImpactFlag = 1; // Waiting Enrichment
+ReturnEvent(EventContainer); 
+/*
+    01-Sep-2010    : Nitesh Patel    
+    Add code for enrich Motorola events .
+*/
+UseSourceNode = false;
+if(@Class == 2057)
+{
+    /*
+        ######################################################################
+        ########### Motorola friendly name stuff ##########################################
+        ######################################################################
+    */
+    UseSourceNode = true;
+    // check identifier for the Cell info
+    log("Got Motorola Event, Identifier= " + @Identifier);
+    IdentifierArray = split(@Identifier, ",");
+    InputArray = split(@Node,":");
+    EMS= @OmcEms;
+    BSCrdninstance = InputArray[0];
+    BTSrdninstance = InputArray[1];
+    ArrayLength = length(IdentifierArray );
+    log("EMS = " + EMS + " BSCrdninstance = " + BSCrdninstance + "BTSrdninstance = " + BTSrdninstance );
+
+    // is it a transcoder alarm
+    CheckNodeAlias = Substring(@NodeAlias,0,10);
+   
+    if (CheckNodeAlias = "vsMotRXCDR") {
+        //###########################################################################
+        //transcoder alarm, get the details from motorola loookup 
+        //###########################################################################
+        transcoderToken3 = IdentifierArray[2]; 
+        transcoderToken4 = IdentifierArray[3]; 
+
+        Token3Lookup = RExtract(transcoderToken3 ,"=(\d*)");
+        Token4Lookup = RExtract(transcoderToken4 ,"=(\d*)");
+        log("XX1 " + @Serial + "~TOKEN1~" + Token1 + "~TOKEN2~" + Token2 + "~TOKEN3~" + Token3 + "~TOKEN4~" + Token4 + "~TOKEN5~" + Token5 + "~TOKEN6~" + Token6);
+        log ("XX2" + @Serial + " " + Token3Lookup + "~~" + Token4Lookup);
+        
+        // get the transcoder name...
+        DataType = "motorola_name";  
+        TransFilter = "omc = '" + EMS + "' and id = " + Token3Lookup + " and device_type = 'RXCDR'" +" and container = '' " ;  
+        TransQuery= GetByFilter(DataType, TransFilter , False);
+        NumTrans= length(TransQuery);
+        if (NumTrans> 0) {
+              TransName = TransQuery[0].DEVICE_NAME;
+              log ("ML_Enrichment  TransName is.......................... " + TransName );
+        } else {
+              log ("ML_Enrichment:  returned 0 rows from TRANS query " + TransQuery);
+              //When no match found set value to the lookup code        
+              TransName = Token3Lookup ; 
+        }
+        
+            // look up BTS also?  Code is below
+            // #################### Get BTS Name ################################
+         DataType = "motorola_name";  
+         TransBTSFilter = "omc = '" + EMS + "' and id = " + Token4Lookup + " and container = '" +  TransName + "'";  
+         TransBTSQuery= GetByFilter(DataType, TransBTSFilter , False);
+         TransNumBTS= length(TransBTSQuery);
+         if (TransNumBTS> 0) {
+              log ("ML_Enrichment:  returned a row from TransBTSquery " + TransBTSFilter );
+              TransBTSName = TransBTSQuery[0].DEVICE_NAME;
+              log ("ML_Enrichment:  TransBTSName is............................... " + TransBTSName );
+         } else {
+              log ("ML_Enrichment:  returned 0 rows from queryBTSFilter " + TransBTSFilter );
+              //When no match found set lookupvalue of @Node
+              TransBTSName = Token4Lookup ;
+         }
+         //set source node to BTS name now, BTS supercedes BSC
+         @SourceNode = TransBTSName;
+        friendlyName = TransName + ":" + TransBTSName;
+
+            
+    } else {
+  
+         //###########################################################################
+        //NOT transcoder alarm, get the details and check if card alarm 
+        //###########################################################################
+         DataType = "motorola_name";  
+         BSCFilter = "omc = '" + EMS + "' and id = " + BSCrdninstance + " and device_type = 'BSC'" +" and container = '' " ;  
+         BSCQuery= GetByFilter(DataType, BSCFilter , False);
+         NumBSC= length(BSCQuery);
+         if (NumBSC > 0) {
+              BSCName = BSCQuery[0].DEVICE_NAME;
+              log ("ML_Enrichment  BSCName is.......................... " + BSCName );
+         } else {
+              log ("ML_Enrichment:  returned 0 rows from BSC query " + BSCFilter);
+              //When no match found set value to the lookup code        
+              BSCName = BSCrdninstance ; 
+         }
+         //set source node to BSC name for now
+         @SourceNode = BSCName;
+     
+        // #################### Get BTS Name ################################
+         DataType = "motorola_name";  
+         BTSFilter = "omc = '" + EMS + "' and id = " + BTSrdninstance + " and container = '" +  BSCName  + "'";  
+         BTSQuery= GetByFilter(DataType, BTSFilter , False);
+         NumBTS= length(BTSQuery);
+         if (NumBTS> 0) {
+              log ("ML_Enrichment:  returned a row from BTSquery " + BTSQuery);
+              BTSName = BTSQuery[0].DEVICE_NAME;
+              log ("ML_Enrichment  BTSName is............................... " + BTSName );
+         } else {
+              log ("ML_Enrichment:  returned 0 rows from queryBTSFilter " + BTSFilter );
+              //When no match found set lookupvalue of @Node
+              BTSName = BTSrdninstance ;
+         }
+         //set source node to BTS name now, BTS supercedes BSC
+         @SourceNode = BTSName;
+         // check if the Identifier contains a cell...
+         Token2 = IdentifierArray[2]; 
+         Token5 = IdentifierArray[5]; 
+         Log("Token5= " + Token5 );
+         CheckCell = Substring(Token5,0,6);
+         Log("ArrayLength:"+ArrayLength);
+         if (ArrayLength == 6) { 
+              // card level alarm.  Add the 3rd and 4th tokens to the Node field
+              friendlyName = BSCName + ":" + BTSName + ":" + InputArray[2] + ":" + InputArray[3];
+              Token4 = IdentifierArray[4];
+              Token4_a = RExtract(Token4,"=(\d*)");
+              Token4_b = RExtract(Token4,"(_.*\.).*");
+              Token4_final = Substring(Token4_b,1,Length(Token4_b)-1)+"="+Token4_a;
+              Log("Token4:"+Token4);
+              Log("Token4a:"+Token4_a);
+              Log("Token4b:"+Token4_b);
+              Log("Token4b_final:"+Token4_final);
+              Token5 =IdentifierArray[5];
+              Token5_a = RExtract(Token5,"=(\d*)\s");
+              Token5_b = RExtract(Token5,"(_.*\.).*");
+              Log("Token5"+Token5);
+              Log("Token5_a"+Token5_a);
+              Log("Token5_b"+Token5_b);
+              Token5_final = Substring(Token5_b,1,Length(Token5_b)-1) + "="+Token5_a;
+              Log("Token5b_final:"+Token5_final);
+              friendlyName = BSCName + ":" + BTSName+":"+Token4_final+":"+Token5_final;     
+
+     } elseif (ArrayLength == 5) {
+          Token4 = IdentifierArray[4];
+          Token4_a = RExtract(Token4,".*=(\d*)\s");
+          Token4_b = RExtract(Token4,"^(.*)=");
+          Token4_final = Token4_b+"="+Token4_a;
+          Log("Token4:"+Token4);
+          Log("Token4a:"+Token4_a);
+          Log("Token4b:"+Token4_b);
+          Log("Token4b_final:"+Token4_final);
+          // cell level alarm.  Lookup the cell name and concat to friendly name
+          cellId = Token4_a;
+          DataType = "motorola_name";  
+          cellFilter = "omc = '" + EMS + "' and id = " + cellId + " and container = '" + BTSName + "'" ;  
+          Log("cellFilter = " + cellFilter );
+          //Avoid filter exeception
+          if(BTSName != 'Not found'){
+              cellQry= GetByFilter(DataType, cellFilter , False);
+              numCellQry= length(cellQry);
+              if (numCellQry> 0) {
+                   CellName = cellQry[0].DEVICE_NAME;
+              } else {
+                   log ("XXXML_Enrich:  returned 0 rows from query cellFilter:" + cellFilter );
+                   //When no match found set lookupvalue itself
+                   CellName = cellId;
+              }
+          }else{
+              //When no match found set lookupvalue itself
+              CellName =cellId;
+          }
+          friendlyName = BSCName + ":" + BTSName + ":" + CellName;
+     } else {
+        friendlyName = BSCName + ":" + BTSName;     
+     }
+    Log("Node:"+@Node); 
+    Log("friendlyName:"+friendlyName); 
+     ReturnEvent(EventContainer);
+     }
+    // set the @Node field as calculated above
+    @Node = friendlyName;
+
+}
+/*
+    23-Aug-2010    : Nitesh Patel    
+    Add code for enrich Nokia events with NSN_NAME.NAME field.
+*/
+Log("Node #:"+@Node+"Class#"+@Class);
+if(@Class == 600)
+{
+     
+    /*
+        ######################################################################
+        ########### Nokia friendly name stuff ##########################################
+        ######################################################################
+    */
+    Log("Nokia Node :"+@Node);
+    DataType = "Nokia_Node";  
+    NokiaFilter = "obj_inst =  "+ @Node;
+    Log("NokiaNode Filter = " + NokiaFilter );
+    CountOnly = False;
+    NokiaNodeOutput = GetByFilter(DataType, NokiaFilter , CountOnly);
+    NumNokiaNodeOutput = Length(NokiaNodeOutput);
+    if(NumNokiaNodeOutput >0)
+    {
+        Log("NewNode:"+NokiaNodeOutput[0].Name);
+        Log("Node:"+@Node+"NewNode:"+NokiaNodeOutput[0].Name+"@Identifier:"+@Identifier);
+        @Node = NokiaNodeOutput[0].Name; 
+        ReturnEvent(EventContainer);
+    }
+    else
+    {
+        Log("Nokia Node name does not exist.");
+    }
+}
+
+log("ML_Enrichment: UseSourceNode = " + UseSourceNode);
+if (UseSourceNode)  {
+    site_name = Substring(@SourceNode, 0,7);
+} else {
+    site_name = Substring(@Node, 0,7);
+}
+domain = "N/A";
+region = "N/A";
+man_city = "N/A";
+cov_city = "N/A";
+ne_priority = "N/A";
+oc_name = "N/A";
+outsource_contractor = "N/A";
+//log("Lookup for Node details :"+@Node+"@Indentifier:"+@Identifier);
+log("Lookup for Node details AAA "+site_name);
+NodeEntriesDataType = "CIINFO";
+//NodeEntriesFilter = "NAME = '"+@Node+"'";
+// JL use site name for look up
+NodeEntriesFilter = "NAME = '"+site_name +"'";
+NodeEntries = GetByFilter(NodeEntriesDataType, NodeEntriesFilter,False);
+NumNodeEntries = Length(NodeEntries);
+if (NumNodeEntries > 0)
+{
+    log("The Node exists on the database");
+    domain = NodeEntries[0].DOMAIN;
+    region = NodeEntries[0].REGION;    
+    man_city = NodeEntries[0].MANAGING_CITY;
+    cov_city = NodeEntries[0].COVERAGE_CITY;
+    ne_priority = NodeEntries[0].PRIORITY;
+    outsource_contractor = NodeEntries[0].OUTSOURCE_CONTRACTOR;
+}
+@ImpactFlag = 2; //Enriched
+@Domain= domain;
+@Region= region;
+@ManCity= man_city;
+@CovCity= cov_city;
+@NePriority = ne_priority;
+@OutsourceContractor = outsource_contractor;
+@Site = site_name;
+//@EventId = "Testing2" + Substring(@Node, 0,7);
+
+ReturnEvent(EventContainer);
+/* Code to set the EventId for cell outage alarms*/
+if((@AlertGroup == 'Cell Out of Service' || @AlertGroup == 'LOSS_OF_ALL_CHAN')  and @Agent != 'Netcool Impact')
+{
+    @EventId = "MSD_001";
+    log("MSD_001 Node:"+@Node);
+    ReturnEvent(EventContainer);
+}
+/* Code to set the EventId for Site outage alarms*/
+if(( @AlertGroup = 'ast RSL Link Failure' OR @AlertGroup = 'LAPD OML Fault')  and @Agent != 'Netcool Impact')
+{
+    @EventId = "MSD_002";
+    log("MSD_002 Node:"+@Node);
+    ReturnEvent(EventContainer);
+}
+
+if(@Domain like 'BSS' and @EventType like 'Environmental Alarm' and @HibernateFlag = 0 and @Agent <> 'Netcool Impact' )
+{
+    @EventId = "BSSE_001";
+    log("BSSE_001 Node:"+@Node);
+    ReturnEvent(EventContainer);
+}
+
+// Cell Performance for Huawei events
+if(@Class = 8891 and @HibernateFlag = 0 and  @Summary like 'Cell long time no access'   )
+{
+    @EventId = "CellPer_001";
+    log("CellPer_001 Huawei Node:"+@Node);
+    ReturnEvent(EventContainer);
+}
+
+// Cell Performance for Motorola events
+if(@Class = 2057 and @HibernateFlag = 0 and  ( @Summary like 'No calls on cell' or @Summary like 'CSR below threshold' )   )
+{
+    @EventId = "CellPer_001";
+    log("CellPer_001 Motorola Node:"+@Node);
+    ReturnEvent(EventContainer);
+}

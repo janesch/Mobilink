@@ -1,0 +1,102 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-PORT-SECURITY-MIB.include.snmptrap.rules 1.0
+#    2006/03/30 Rajyalakshmi Reddy    
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-PORT-SECURITY-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.315.0": ### Cisco Port Security - Notifications from CISCO-PORT-SECURITY-MIB (20040308)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-PORT-SECURITY-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Port Security"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cpsSecureMacAddrViolation
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = ifName 
+            # $3 = cpsIfSecureLastMacAddress 
+            ##########
+
+            $ifIndex = $1
+            $ifName = $2
+            $cpsIfSecureLastMacAddress = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PORT-SECURITY-MIB-cpsSecureMacAddrViolation"
+
+            @AlertGroup = "Port Security Status"
+            @AlertKey = "cpsIfConfigEntry." + $1 + ", Violating MAC: " + $3
+            @Summary = "Port Security MAC Address Violation  ( Interface: " + $2 + ", Violating MAC: " + $3 + " )"
+ 
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifIndex,$ifName,$cpsIfSecureLastMacAddress)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-PORT-SECURITY-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-PORT-SECURITY-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-PORT-SECURITY-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-PORT-SECURITY-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-PORT-SECURITY-MIB.include.snmptrap.rules >>>>>")

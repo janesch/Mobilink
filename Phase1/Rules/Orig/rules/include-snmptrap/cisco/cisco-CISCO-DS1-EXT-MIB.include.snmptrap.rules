@@ -1,0 +1,281 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-DS1-EXT-MIB.include.snmptrap.rules 1.0
+#    2006/03/23 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DS1-EXT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.229.1.4": ### Cisco DS1/E1 Interface Objects - Notifications from CISCO-DS1-EXT-MIB (20030225)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-DS1-EXT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-DS1/E1 Interface"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cds1StatThresholdAlarm
+
+            ##########
+            # $1 = cds1StatisticalAlarmState
+            ##########
+
+            $cds1StatisticalAlarmState = lookup($1, cds1StatisticalAlarmState) + " ( " + $1 + " )"
+            $dsx1LineIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DS1-EXT-MIB-cds1StatThresholdAlarm"
+
+            @AlertGroup = "DS1 Line Threshold"
+            @AlertKey = "cds1AlarmConfigEntry." + $dsx1LineIndex                      
+            switch($1)
+            {
+                case "0": ### cds1NoAlarm
+                    $SEV_KEY = $OS_EventId + "_cds1NoAlarm"
+                    @Summary = "DS1 Line Normal"
+               
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "1": ### cds1BES15Min
+                    $SEV_KEY = $OS_EventId + "_cds1BES15Min"
+                    @Summary = "DS1 BES Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### cds1BES24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1BES24Hr"
+                    @Summary = "DS1 BES 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### cds1CSS15Min
+                    $SEV_KEY = $OS_EventId + "_cds1CSS15Min"
+                    @Summary = "DS1 CSS Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### cds1CSS24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1CSS24Hr"
+                    @Summary = "DS1 CSS 24 Hour threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16": ### cds1DM15Min
+                    $SEV_KEY = $OS_EventId + "_cds1DM15Min"
+                    @Summary = "DS1 DM Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "32": ### cds1DM24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1DM24Hr"
+                    @Summary = "DS1 DM 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "64": ### cds1ES15Min
+                    $SEV_KEY = $OS_EventId + "_cds1ES15Min"
+                    @Summary = "ES Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "128": ### cds1ES24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1ES24Hr"
+                    @Summary = "ES 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "256": ### cds1PCV15Min
+                    $SEV_KEY = $OS_EventId + "_cds1PCV15Min"
+                    @Summary = "PCV Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "512": ### cds1PCV24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1PCV24Hr"
+                    @Summary = "PCV 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "1024": ### cds1LCV15Min
+                    $SEV_KEY = $OS_EventId + "_cds1LCV15Min"
+                    @Summary = "LCV Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2048": ### cds1LCV24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1LCV24Hr"
+                    @Summary = "LCV 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4096": ### cds1LES15Min
+                    $SEV_KEY = $OS_EventId + "_cds1LES15Min"
+                    @Summary = "LES Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8192": ### cds1LES24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1LES24Hr"
+                    @Summary = "LES 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16384": ### cds1LSES15Min
+                    $SEV_KEY = $OS_EventId + "_cds1LSES15Min"
+                    @Summary = "LSES Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "32768": ### cds1LSES24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1LSES24Hr"
+                    @Summary = "LSES 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "65536": ### cds1PSAS15Min
+                    $SEV_KEY = $OS_EventId + "_cds1PSAS15Min"
+                    @Summary = "PSAS Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "131072": ### cds1PSAS24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1PSAS24Hr"
+                    @Summary = "PSAS 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "262144": ### cds1SES15Min
+                    $SEV_KEY = $OS_EventId + "_cds1SES15Min"
+                    @Summary = "SES Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "524288": ### cds1SES24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1SES24Hr"
+                    @Summary = "SES 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "1048576": ### cds1SEFS15Min
+                    $SEV_KEY = $OS_EventId + "_cds1SEFS15Min"
+                    @Summary = "SEFS Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+               case "2097152": ### cds1SEFS24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1SEFS24Hr"
+                    @Summary = "SEFS 24 Hour  Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+               case "4194304": ### cds1UAS15Min
+                    $SEV_KEY = $OS_EventId + "_cds1UAS15Min"
+                    @Summary = "UAS Current 15 Minute Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+               case "8388608": ### cds1UAS24Hr
+                    $SEV_KEY = $OS_EventId + "_cds1UAS24Hr"
+                    @Summary = "UAS 24 Hour Threshold Exceeded"
+               
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+               default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "DS1 Line Status Unknown"
+               
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0                
+             } 
+
+             @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+             @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap +  " " + $1
+
+             details($cds1StatisticalAlarmState,$dsx1LineIndex)
+
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-DS1-EXT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-DS1-EXT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DS1-EXT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DS1-EXT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DS1-EXT-MIB.include.snmptrap.rules >>>>>")

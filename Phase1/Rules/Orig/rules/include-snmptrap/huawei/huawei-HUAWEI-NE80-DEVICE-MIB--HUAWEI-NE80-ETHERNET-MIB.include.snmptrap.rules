@@ -1,0 +1,5270 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  HUAWEI-NE80-DEVICE-MIB release V1.0
+#          -  HUAWEI-NE80-ETHERNET-MIB release V1.0
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  HUAWEI-NE80-DEVICE-MIB release V1.0
+#          -  HUAWEI-NE80-ETHERNET-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.2.17": ### Huawei - Traps from HUAWEI-NE80-DEVICE-MIB (200004)
+                               ### Huawei NE80 Private Ethernet Data - Notifications from HUAWEI-NE80-ETHERNET-MIB (200010) 
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### coldStartNe80
+
+            ##########
+            # System cold start!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-coldStartNe80"
+
+            @AlertGroup = "Cold Start"
+            @Summary = "NE80 Cold Start"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### warmStartNe80
+
+            ##########
+            # System Warm start!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-warmStartNe80"
+
+            @AlertGroup = "Warm Start"
+            @Summary = "NE80 Warm Start"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### shutDown
+
+            ##########
+            # Link shut down!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-shutDown"
+
+            @AlertGroup = "Link Shutdown"
+            @Summary = "Link Shutdown"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### noShutDown
+
+            ##########
+            # Link shut down recover!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-noShutDown"
+
+            @AlertGroup = "Link Shutdown"
+            @Summary = "End of Link Shutdown"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### snmpFail
+
+            ##########
+            # SNMP verify failed!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-snmpFail"
+
+            @AlertGroup = "SNMP Verify"
+            @Summary = "SNMP Verify Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### eGPWarn
+
+            ##########
+            # EGP Warning
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-eGPWarn"
+
+            @AlertGroup = "EGP"
+            @Summary = "EGP Warning"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### pwrFail
+
+            ##########
+            # Power invalid or pulled out!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pwrFail"
+
+            @AlertGroup = "Power Status"
+            @Summary = "Power Failure"
+
+            $DEFAULT_Severity = 5
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### pwrOk
+
+            ##########
+            # Power pull in correctly!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pwrOk"
+
+            @AlertGroup = "Power Status"
+            @Summary = "End of Power Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### mssFail
+
+            ##########
+            # Master slave switch failed!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mssFail"
+
+            @AlertGroup = "Master Slave Switch"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Master Slave Switch Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### no
+
+            ##########
+            # Power present alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-no"
+
+            @AlertGroup = "Power Present"
+            @Summary = "Power Present alarm"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "11": ### have
+
+            ##########
+            # Power present alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-have"
+
+            @AlertGroup = "Power Present"
+            @Summary = "End of Power Present Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "12": ### pVOLTHL
+
+            ##########
+            # Power over/low voltage alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pVOLTHL"
+
+            @AlertGroup = "Power Voltage"
+            @Summary = "Power Over/Low Voltage Alarm" 
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### pVOLTNOR
+
+            ##########
+            # Power over/low voltage alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pVOLTNOR"
+
+            @AlertGroup = "Power Voltage"
+            @Summary = "End of Power Over/Low Voltage Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "14": ### mVOLTHL
+
+            ##########
+            # Busbar over/low voltage alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mVOLTHL"
+
+            @AlertGroup = "Busbar Voltage"
+            @Summary = "Busbar Over/Low Voltage Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "15": ### mVOLTNOR
+
+            ##########
+            # Busbar over/low voltage alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mVOLTNOR"
+
+            @AlertGroup = "Busbar Voltage"
+            @Summary = "End of Busbar Over/Low Voltage Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "16": ### fuseBREAK
+
+            ##########
+            # Load fuse breaks!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-fuseBREAK"
+
+            @AlertGroup = "Load Fuse"
+            @Summary = "Load Fuse Break"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "17": ### fuseTHRGH
+
+            ##########
+            # Load fuse through!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-fuseTHRGH"
+
+            @AlertGroup = "Load Fuse"
+            @Summary = "End of Load Fuse Break"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "18": ### secfBREAK
+
+            ##########
+            # Auxilliary load fuse breaks!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-secfBREAK"
+
+            @AlertGroup = "Aux Load Fuse"
+            @Summary = "Auxiliary Load Fuse Break"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "19": ### secfTHRGH
+
+            ##########
+            # Auxilliary load fuse through!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-secfTHRGH"
+
+            @AlertGroup = "Aux Load Fuse"
+            @Summary = "End of Auxiliary Load Fuse Break"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "20": ### ldLVD
+
+            ##########
+            # Load LVD!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-ldLVD"
+
+            @AlertGroup = "Load"
+            @Summary = "Load LVD"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "21": ### ldON
+
+            ##########
+            # Load on!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-ldON"
+
+            @AlertGroup = "Load"
+            @Summary = "End of Load LVD"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "22": ### battOFF
+
+            ##########
+            # Battery LVD!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-battOFF"
+
+            @AlertGroup = "Battery Status"
+            @Summary = "Battery Off"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "23": ### battON
+
+            ##########
+            # Battery on!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-battON"
+
+            @AlertGroup = "Battery Status"
+            @Summary = "Battery On"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "24": ### battBREAK
+
+            ##########
+            # Battery loop breaks!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-battBREAK"
+
+            @AlertGroup = "Battery Loop"
+            @Summary = "Battery Loop Break"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "25": ### battTHRGH
+
+            ##########
+            # Battery loop through!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-battTHRGH"
+
+            @AlertGroup = "Battery Loop"
+            @Summary = "End of Battery Loop Break"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "26": ### entMPWARN
+
+            ##########
+            # Environment temperature alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-entMPWARN"
+
+            @AlertGroup = "Environment Temperature"
+            @Summary = "Environment Temperature Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "27": ### entMPOK
+
+            ##########
+            # Environment temperature alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-entMPOK"
+
+            @AlertGroup = "Environment Temperature"
+            @Summary = "End of Environment Temperature Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "28": ### enhMDWARN
+
+            ##########
+            # Environment humidity alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-enhMDWARN"
+
+            @AlertGroup = "Environment Humidity"
+            @Summary = "Environment Humidity Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "29": ### enhMDOK
+
+            ##########
+            # Environment humidity alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-enhMDOK"
+
+            @AlertGroup = "Environment Humidity"
+            @Summary = "End of Environment Humidity Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "30": ### drWARN
+
+            ##########
+            # Door magnet Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-drWARN"
+
+            @AlertGroup = "Door Magnet"
+            @Summary = "Door Magnet Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "31": ### dpWARNCLR
+
+            ##########
+            # Door magnet alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dpWARNCLR"
+
+            @AlertGroup = "Door Magnet"
+            @Summary = "End of Door Magnet Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "32": ### wtrWARN
+
+            ##########
+            # Water Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-wtrWARN"
+
+            @AlertGroup = "Water"
+            @Summary = "Water Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "33": ### wtrWARNCLR
+
+            ##########
+            # Water alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-wtrWARNCLR"
+
+            @AlertGroup = "Water"
+            @Summary = "End of Water Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "34": ### smkWARN
+
+            ##########
+            # Smoke alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-smkWARN"
+
+            @AlertGroup = "Smoke"
+            @Summary = "Smoke Alarm"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "35": ### smkWARNCLR
+
+            ##########
+            # Smoke alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-smkWARNCLR"
+
+            @AlertGroup = "Smoke"
+            @Summary = "End of Smoke Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "36": ### mdlWARN1
+
+            ##########
+            # Rectifier1 Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARN1"
+
+            @AlertGroup = "Rectifier 1"
+            @Summary = "Rectifier 1 Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "37": ### mdlWARNCLR1
+
+            ##########
+            # Rectifier1 alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARNCLR1"
+
+            @AlertGroup = "Rectifier 1"
+            @Summary = "End of Rectifier 1 Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "38": ### mdlWARN2
+
+            ##########
+            # Rectifier2 Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARN2"
+
+            @AlertGroup = "Rectifier 2"
+            @Summary = "Rectifier 2 Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "39": ### mdlWARNCLR2
+
+            ##########
+            # Rectifier2 alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARNCLR2"
+
+            @AlertGroup = "Rectifier 2"
+            @Summary = "End of Rectifier 2 Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "40": ### mdlWARN3
+
+            ##########
+            # Rectifier3 Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARN3"
+
+            @AlertGroup = "Rectifier 3"
+            @Summary = "Rectifier 3 Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "41": ### mdlWARNCLR3
+
+            ##########
+            # Rectifier3 alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARNCLR3"
+
+            @AlertGroup = "Rectifier 3"
+            @Summary = "End of Rectifier 3 Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "42": ### mdlWARN4
+
+            ##########
+            # Rectifier4 Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARN4"
+
+            @AlertGroup = "Rectifier 4"
+            @Summary = "Rectifier 4 Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "43": ### mdlWARNCLR4
+
+            ##########
+            # Rectifier4 alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARNCLR4"
+
+            @AlertGroup = "Rectifier 4"
+            @Summary = "End of Rectifier 4 Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "44": ### mdlWARN5
+
+            ##########
+            # Rectifier5 Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARN5"
+
+            @AlertGroup = "Rectifier 5"
+            @Summary = "Rectifier 5 Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "45": ### mdlWARNCLR5
+
+            ##########
+            # Rectifier5 alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mdlWARNCLR5"
+
+            @AlertGroup = "Rectifier 5"
+            @Summary = "End of Rectifier 5 Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "46": ### bakANWARN
+
+            ##########
+            # Backup analog Alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-bakANWARN"
+
+            @AlertGroup = "Backup Analog"
+            @Summary = "Backup Analog Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "47": ### bakANWARNCLR
+
+            ##########
+            # Backup analog alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-bakANWARNCLR"
+
+            @AlertGroup = "Backup Analog"
+            @Summary = "End of Backup Analog Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "48": ### bakSWWARN
+
+            ##########
+            # Backup switch alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-bakSWWARN"
+
+            @AlertGroup = "Backup Switch"
+            @Summary = "Backup Switch Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "49": ### bakSWWARNCLR
+
+            ##########
+            # Backup switch alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-bakSWWARNCLR"
+
+            @AlertGroup = "Backup Switch"
+            @Summary = "End of Backup Switch Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "50": ### inVERR
+
+            ##########
+            # -48V input alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-inVERR"
+
+            @AlertGroup = "-48V input"
+            @Summary = "-48V Input Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "51": ### inVOK
+
+            ##########
+            # -48V input alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-inVOK"
+
+            @AlertGroup = "-48V input"
+            @Summary = "End of -48V Input Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "52": ### tsERR
+
+            ##########
+            # Dpr temperature sensor alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tsERR"
+
+            @AlertGroup = "DPR Temperature Sensor"
+            @Summary = "DPR Temperature Sensor Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "53": ### tsOK
+
+            ##########
+            # Dpr temperature sensor alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tsOK"
+
+            @AlertGroup = "DPR Temperature Sensor"
+            @Summary = "End of DPR Temperature Sensor Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "54": ### hsERR
+
+            ##########
+            # Dpr humidity sensor alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hsERR"
+
+            @AlertGroup = "DPR Humidity Sensor"
+            @Summary = "DPR Humidity Sensor Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "55": ### hsOK
+
+            ##########
+            # Dpr humidity sensor alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hsOK"
+
+            @AlertGroup = "DPR Humidity Sensor"
+            @Summary = "End of DPR Humidity Sensor Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "56": ### dprERR
+
+            ##########
+            # Dpr internal component alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dprERR"
+
+            @AlertGroup = "DPR Internal Component"
+            @Summary = "DPR Internal Component Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "57": ### dprOK
+
+            ##########
+            # Dpr component alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dprOK"
+
+            @AlertGroup = "DPR Internal Component"
+            @Summary = "End of DPR Internal Component Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "58": ### swERR
+
+            ##########
+            # External sensor alarm!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-swERR"
+
+            @AlertGroup = "External Sensor"
+            @Summary = "External Sensor Alarm"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "59": ### swOK
+
+            ##########
+            # External sensor alarm cleared!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-swOK"
+
+            @AlertGroup = "External Sensor"
+            @Summary = "End of External Sensor Alarm"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "60": ### overTEMP
+
+            ##########
+            # Net over temperature warning!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-overTEMP"
+
+            @AlertGroup = "Net Overtemp"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Overtemp Alarm  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "61": ### normTEMP
+
+            ##########
+            # Net over temperature warning cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-normTEMP"
+
+            @AlertGroup = "Net Overtemp"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Overtemp Alarm  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "62": ### interERR
+
+            ##########
+            # Net intermitent error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-interERR"
+
+            @AlertGroup = "Net Intermitent Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Intermittent Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "63": ### interCLR
+
+            ##########
+            # Net intermitent error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-interCLR"
+
+            @AlertGroup = "Net Intermitent Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Intermittent Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "64": ### sldERR
+
+            ##########
+            # Net solid error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-sldERR"
+
+            @AlertGroup = "Net Solid Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Solid Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "65": ### sldOK
+
+            ##########
+            # Net solid error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-sldOK"
+
+            @AlertGroup = "Net Solid Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Solid Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "66": ### poCRCERR
+
+            ##########
+            # Net Pz0 CRC error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-poCRCERR"
+
+            @AlertGroup = "Net Pz0 CRC Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Pz0 CRC Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "67": ### poCRCOK
+
+            ##########
+            # Net Pz0 CRC error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-poCRCOK"
+
+            @AlertGroup = "Net Pz0 CRC Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Pz0 CRC Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "68": ### p1CRCERR
+
+            ##########
+            # Net Pz1 CRC error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-p1CRCERR"
+
+            @AlertGroup = "Net Pz1 CRC Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Pz1 CRC Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "69": ### p1CRCOK
+
+            ##########
+            # Net Pz1 CRC error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-p1CRCOK"
+
+            @AlertGroup = "Net Pz1 CRC Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Pz1 CRC Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "70": ### hscxMERR
+
+            ##########
+            # Net HSCX main channel error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxMERR"
+
+            @AlertGroup = "Net HSCX Main Channel Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net HSCX Main Channel Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "71": ### hscxMOK
+
+            ##########
+            # Net HSCX main channel error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxMOK"
+
+            @AlertGroup = "Net HSCX Main Channel Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net HSCX Main Channel Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "72": ### hscxS1ERR
+
+            ##########
+            # Net HSCX slave1 channel error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxS1ERR"
+
+            @AlertGroup = "Net HSCX Slave1 Channel Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net HSCX Slave1 Channel Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "73": ### hscxS1OK
+
+            ##########
+            # NetHSCX slave1 channel error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxS1OK"
+
+            @AlertGroup = "Net HSCX Slave1 Channel Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net HSCX Slave1 Channel Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "74": ### hscxS2ERR
+
+            ##########
+            # Net HSCX slave2 channel error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxS2ERR"
+
+            @AlertGroup = "Net HSCX Slave2 Channel Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net HSCX Slave2 Channel Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "75": ### hscxS2OK
+
+            ##########
+            # Net HSCX slave2 channel error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxS2OK"
+
+            @AlertGroup = "Net HSCX Slave2 Channel Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net HSCX Slave2 Channel Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "76": ### hscxAERR
+
+            ##########
+            # Net HSCX channel A error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxAERR"
+
+            @AlertGroup = "Net HSCX Channel A Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net HSCX Channel A Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "77": ### hscxAOK
+
+            ##########
+            # Net HSCX channel A error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxAOK"
+
+            @AlertGroup = "Net HSCX Channel A Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net HSCX Channel A Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "78": ### hscxBERR
+
+            ##########
+            # Net HSCX channel B error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxBERR"
+
+            @AlertGroup = "Net HSCX Channel B Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net HSCX Channel B Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "79": ### hscxBOK
+
+            ##########
+            # Net HSCX channel B error cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hscxBOK"
+
+            @AlertGroup = "Net HSCX Channel B Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net HSCX Channel B Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "80": ### netFAIL
+
+            ##########
+            # Net failed!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netFAIL"
+
+            @AlertGroup = "Net Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "81": ### netINURE
+
+            ##########
+            # Net inures!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netINURE"
+
+            @AlertGroup = "Net Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "82": ### netCHANNELWARN
+
+            ##########
+            # HDLC channel warning!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netCHANNELWARN"
+
+            @AlertGroup = "HDLC Channel Warning"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "HDLC Channel Warning  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "83": ### netCHANNELOK
+
+            ##########
+            # HDLC channel ok!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netCHANNELOK"
+
+            @AlertGroup = "HDLC Channel Warning"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of HDLC Channel Warning  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "84": ### tstWN
+
+            ##########
+            # Net channel ok!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tstWN"
+
+            @AlertGroup = "Net Channel"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Channel OK  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "85": ### tstWNCLR
+
+            ##########
+            # Lpu net circle test warn cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tstWNCLR"
+
+            @AlertGroup = "LPU Net Circle Test Warning"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of LPU Net Circle Test Warning  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "86": ### tempWN
+
+            ##########
+            # Lpu temperature warn!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tempWN"
+
+            @AlertGroup = "LPU Temperature Warning"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "LPU Temperature Warning  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "87": ### tempWNCLR
+
+            ##########
+            # Lpu temperature warn cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tempWNCLR"
+
+            @AlertGroup = "LPU Temperature Warning"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of LPU Temperature Warning  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "88": ### mngERR
+
+            ##########
+            # Lpu temperature too low!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mngERR"
+
+            @AlertGroup = "LPU Temperature Low"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "LPU Temperature Low  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "89": ### mngOK
+
+            ##########
+            # Lpu temperature too low cleared!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mngOK"
+
+            @AlertGroup = "LPU Temperature Low"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of LPU Temperature Low  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "90": ### noRESP
+
+            ##########
+            # Slave MPU has no reply!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwCardHardVersion - the version of hardware of the card
+            ##########
+
+            $hwCardIndex = $1
+            $hwCardHardVersion = $2
+            details($hwCardIndex,$hwCardHardVersion)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-noRESP"
+
+            @AlertGroup = "Slave MPU Reply"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Slave MPU Has No Reply  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "91": ### resp
+
+            ##########
+            # Slave MPU has reply!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwCardHardVersion - the version of hardware of the card
+            ##########
+
+            $hwCardIndex = $1
+            $hwCardHardVersion = $2
+            details($hwCardIndex,$hwCardHardVersion)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-resp"
+
+            @AlertGroup = "Slave MPU Reply"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Slave MPU Has No Reply  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "92": ### softABNORMA
+
+            ##########
+            # Rps software abnormal!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-softABNORMA"
+
+            @AlertGroup = "RPS Software Abnormal"
+            @Summary = "RPS Software Abnormal"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "93": ### fanFAIL
+
+            ##########
+            # Fan invalid or pulled out!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-fanFAIL"
+
+            @AlertGroup = "Fan Status"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "Fan Invalid or Pulled Out  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "94": ### fanOK
+
+            ##########
+            # Fan start up correctly!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-fanOK"
+
+            @AlertGroup = "Fan Status"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "End of Fan Invalid or Pulled Out  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "95": ### comERR
+
+            ##########
+            # Fan communication failed!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-comERR"
+
+            @AlertGroup = "Fan Communication Failure"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "Fan Communication Failure  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "96": ### comOK
+
+            ##########
+            # Fan communication ok!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-comOK"
+
+            @AlertGroup = "Fan Communication Failure"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "End of Fan Communication Failure  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "97": ### rdERR
+
+            ##########
+            # Read temperature sensor failed!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-rdERR"
+
+            @AlertGroup = "Read Temperature Sensor"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "Read Temperature Sensor Failure  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "98": ### rdOK
+
+            ##########
+            # Read temperature sensor ok!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-rdOK"
+
+            @AlertGroup = "Read Temperature Sensor"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "End of Read Temperature Sensor Failure  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "99": ### rotateERR
+
+            ##########
+            # Fan stem warning!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-rotateERR"
+
+            @AlertGroup = "Fan Stem Warning"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "Fan Stem Warning  ( Fan Slot:" + $1 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "100": ### rotateOK
+
+            ##########
+            # Fan stem warning cleared!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-rotateOK"
+
+            @AlertGroup = "Fan Stem Warning"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "End of Fan Stem Warning  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "101": ### tempERR
+
+            ##########
+            # Fan over temperature warning!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tempERR"
+
+            @AlertGroup = "Fan Temperature Warning"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "Fan Temperature Warning  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "102": ### tempOK
+
+            ##########
+            # Fan temperature warning cleared!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tempOK"
+
+            @AlertGroup = "Fan Temperature Warning"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "End of Fan Temperature Warning  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "103": ### dwERR
+
+            ##########
+            # Fan component warning!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dwERR"
+
+            @AlertGroup = "Fan Component Warning"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "Fan Component Warning  ( Fan Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "104": ### dwOK
+
+            ##########
+            # Fan component warning cleared!
+            #
+            # $1 = hwFanSlotNum - the slot number showing the location of the
+            #        fan, the value which is index of the table
+            ##########
+
+            $hwFanSlotNum = $1
+            details($hwFanSlotNum)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dwOK"
+
+            @AlertGroup = "Fan Component Warning"
+            @AlertKey = "fanEntry." + $1
+            @Summary = "End of Fan Component Warning  ( Fan Slot:  " + $1 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "105": ### srcLOS
+
+            ##########
+            # CLK source Loss Of Signal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            details($hwCardIndex,$hwClockSrcIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-srcLOS"
+
+            @AlertGroup = "Clock Source LOS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Clock Source Loss of Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "106": ### srcREC
+
+            ##########
+            # CLK source Loss Of Singal clear!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            details($hwCardIndex,$hwClockSrcIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-srcREC"
+
+            @AlertGroup = "Clock Source LOS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Clock Source Loss of Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "107": ### allSRCLOS
+
+            ##########
+            # CLK all source lost!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-allSRCLOS"
+
+            @AlertGroup = "Clock All Source Lost"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Clock All Source Lost  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "108": ### allSRCLOSREC
+
+            ##########
+            # CLK all source lost clear!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-allSRCLOSREC"
+
+            @AlertGroup = "Clock All Source Lost"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Clock All Source Lost  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "109": ### clkFAIL
+
+            ##########
+            # CLK hardware failed!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkFAIL"
+
+            @AlertGroup = "Clock Hardware Fail"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Clock Hardware Fail  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "110": ### clkFAILREC
+
+            ##########
+            # CLK hardware fail clear!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkFAILREC"
+
+            @AlertGroup = "Clock Hardware Fail"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Clock Hardware Fail  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "111": ### outRANGE
+
+            ##########
+            # CLK source out of Pull-in Range!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-outRANGE"
+
+            @AlertGroup = "Clock Source Out of Range"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Clock Source Out of Range  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "112": ### inTORANGE
+
+            ##########
+            # CLK source step into Pull-in Range!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-inTORANGE"
+
+            @AlertGroup = "Clock Source Out of Range"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Clock Source Out of Range  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "113": ### noHEART
+
+            ##########
+            # CLK No Heartbeat!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-noHEART"
+
+            @AlertGroup = "Clock No HeartBeat"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Clock No HeartBeat  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "114": ### heartBEATREC
+
+            ##########
+            # CLK Heartbeat recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-heartBEATREC"
+
+            @AlertGroup = "Clock No HeartBeat"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Clock No HeartBeat  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "115": ### ais
+
+            ##########
+            # vc AIS state declare!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-ais"
+
+            @AlertGroup = "VC AIS State"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "VC AIS State Declared  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "116": ### aisno
+
+            ##########
+            # vc AIS state release!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-aisno"
+
+            @AlertGroup = "VC AIS State"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of VC AIS State Declared ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "117": ### rdi
+
+            ##########
+            # vc RDI state declare!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-rdi"
+
+            @AlertGroup = "VC RDI State"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "VC RDI State Declared  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "118": ### rdino
+
+            ##########
+            # vc RDI state release!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-rdino"
+
+            @AlertGroup = "VC RDI State"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of VC RDI State Declared  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "119": ### signalLOSS
+
+            ##########
+            # Interface loss of signal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-signalLOSS"
+
+            @AlertGroup = "Interface LOS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Loss of Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "120": ### sigalOK
+
+            ##########
+            # Interface loss of signal recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-sigalOK"
+
+            @AlertGroup = "Interface LOS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Loss of Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "121": ### frameLOSS
+
+            ##########
+            # Interface loss of frame!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-frameLOSS"
+
+            @AlertGroup = "Interface Frame LOS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Frame Loss of Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "122": ### frameOK
+
+            ##########
+            # Interface loss of frame recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-frameOK"
+
+            @AlertGroup = "Interface Frame LOS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Frame Loss of Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "123": ### outFRAME
+
+            ##########
+            # Interface out of frame!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-outFRAME"
+
+            @AlertGroup = "Interface Out of Frame"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Out of Frame  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "124": ### outFRAMEOK
+
+            ##########
+            # Interface out of frame recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-outFRAMEOK"
+
+            @AlertGroup = "Interface Out of Frame"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Out of Frame  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "125": ### lineALARM
+
+            ##########
+            # Interface line alarm indication signal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-lineALARM"
+
+            @AlertGroup = "Interface Line AIS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Line Alarm Indication Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "126": ### lineALARMOK
+
+            ##########
+            # Interface line alarm indication signal recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-lineALARMOK"
+
+            @AlertGroup = "Interface Line AIS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Line Alarm Indication Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "127": ### defectERR
+
+            ##########
+            # Interface line remote defect indication!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-defectERR"
+
+            @AlertGroup = "Interface Line RDI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Line Remote Defect Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "128": ### defectOK
+
+            ##########
+            # Interface line remote defect indication recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-defectOK"
+
+            @AlertGroup = "Interface Line RDI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Line Remote Defect Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "129": ### remoteERR
+
+            ##########
+            # Interface line remote error indication!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-remoteERR"
+
+            @AlertGroup = "Interface Line REI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Line Remote Error Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "130": ### remoteOK
+
+            ##########
+            # Interface line remote error indication recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-remoteOK"
+
+            @AlertGroup = "Interface Line REI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Line Remote Error Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "131": ### pathERR
+
+            ##########
+            # Interface path alarm indication signal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pathERR"
+
+            @AlertGroup = "Interface Path AIS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Path Alarm Indication Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "132": ### pathOK
+
+            ##########
+            # Interface path alarm indication signal recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pathOK"
+
+            @AlertGroup = "Interface Path AIS"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Path Alarm Indication Signal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "133": ### pathDFTERR
+
+            ##########
+            # Interface path remote defect indication!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pathDFTERR"
+
+            @AlertGroup = "Interface Path RDI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Path Remote Defect Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "134": ### pathDFTOK
+
+            ##########
+            # Interface path remote defect indication recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pathDFTOK"
+
+            @AlertGroup = "Interface Path RDI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Path Remote Defect Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "135": ### pathREMOTEERR
+
+            ##########
+            # Interface path remote error indication!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pathREMOTEERR"
+
+            @AlertGroup = "Interface Path REI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Path Remote Error Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "136": ### pathREMOTEOK
+
+            ##########
+            # Interface path remote error indication recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-pathREMOTEOK"
+
+            @AlertGroup = "Interface Path REI"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Path Remote Error Indication  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "137": ### ptrLOSS
+
+            ##########
+            # Interface loss of pointer!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-ptrLOSS"
+
+            @AlertGroup = "Interface LOP"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Loss Of Pointer  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "138": ### ptrOK
+
+            ##########
+            # Interface loss of pointer recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-ptrOK"
+
+            @AlertGroup = "Interface LOP"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Loss Of Pointer  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "139": ### dataOUTLOCK
+
+            ##########
+            # Interface receive data out of lock!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dataOUTLOCK"
+
+            @AlertGroup = "Interface Receive Data Out of Lock"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Receive Data Out of Lock  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "140": ### dataOUTLOCKOK
+
+            ##########
+            # Interface receive data out of lock recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dataOUTLOCKOK"
+
+            @AlertGroup = "Interface Receive Data Out of Lock"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Receive Data Out of Lock  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "141": ### clkOUTLOCK
+
+            ##########
+            # Interface receive reference clock out of lock!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkOUTLOCK"
+
+            @AlertGroup = "Interface Receive Reference Clock Out of Lock"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Receive Reference Clock Out of Lock  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "142": ### clkOUTLOCKOK
+
+            ##########
+            # Interface receive reference clock out of lock recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkOUTLOCKOK"
+
+            @AlertGroup = "Interface Receive Reference Clock Out of Lock"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Receive Reference Clock Out of Lock  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "143": ### sendCLKERR
+
+            ##########
+            # Interface send reference clock out of lock!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-sendCLKERR"
+
+            @AlertGroup = "Interface Send Receive Reference Clock Out of Lock"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Send Reference Clock Out of Lock  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "144": ### senfCLKOK
+
+            ##########
+            # Interface send reference clock out of lock recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-senfCLKOK"
+
+            @AlertGroup = "Interface Send Receive Reference Clock Out of Lock"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Send Reference Clock Out of Lock  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "145": ### labelMISMTCH
+
+            ##########
+            # Interface receive path signal label mismatch!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-labelMISMTCH"
+
+            @AlertGroup = "Interface Receive Path Signal Label Mismatch"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Receive Path Signal Label Mismatch  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "146": ### labelMTCH
+
+            ##########
+            # Interface receive path signal label mismatch recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-labelMTCH"
+
+            @AlertGroup = "Interface Receive Path Signal Label Mismatch"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Receive Path Signal Label Mismatch  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "147": ### b2DFTERR
+
+            ##########
+            # Interface signal defect bit error rate!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-b2DFTERR"
+
+            @AlertGroup = "Interface Signal Defect Bit Error Rate"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Signal Defect Bit Error Rate  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "148": ### b2DFTOK
+
+            ##########
+            # Interface signal defect bit error rate recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-b2DFTOK"
+
+            @AlertGroup = "Interface Signal Defect Bit Error Rate"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Signal Defect Bit Error Rate  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "149": ### b2FAILERR
+
+            ##########
+            # Interface signal failure bit error rate!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-b2FAILERR"
+
+            @AlertGroup = "Interface Signal Failure Bit Error Rate"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface Failure Defect Bit Error Rate  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "150": ### b2FAILOK
+
+            ##########
+            # Interface signal failure bit error rate recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-b2FAILOK"
+
+            @AlertGroup = "Interface Signal Failure Bit Error Rate"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface Failure Defect Bit Error Rate  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "151": ### k1k2CHANGEERR
+
+            ##########
+            # Interface K1/K2 Change!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-k1k2CHANGEERR"
+
+            @AlertGroup = "Interface K1/K2 Change"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface K1/K2 Change  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "152": ### k1k2CHANGEOK
+
+            ##########
+            # Interface K1/K2 change recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-k1k2CHANGEOK"
+
+            @AlertGroup = "Interface K1/K2 Change"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface K1/K2 Change  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "153": ### k1k2FAILERR
+
+            ##########
+            # Interface K1/K2 failure!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-k1k2FAILERR"
+
+            @AlertGroup = "Interface K1/K2 Failure"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Interface K1/K2 Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "154": ### k1k2FAILOK
+
+            ##########
+            # Interface K1/K2 failure recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-k1k2FAILOK"
+
+            @AlertGroup = "Interface K1/K2 Failure"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Interface K1/K2 Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "155": ### phyDOWN
+
+            ##########
+            # Physical line down!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-phyDOWN"
+
+            @AlertGroup = "Physical Line Status"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Physical Line Down  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "156": ### phyUP
+
+            ##########
+            # Physical line up!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-phyUP"
+
+            @AlertGroup = "Physical Line Status"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Physical Line Down  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "157": ### lpuSELFTEST
+
+            ##########
+            # Lpu selftest failure!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-lpuSELFTEST"
+
+            @AlertGroup = "LPU Selftest Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "LPU Selftest Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "158": ### mssARP
+
+            ##########
+            # Main slave convert!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-mssARP"
+
+            @AlertGroup = "Main Slave Convert"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Main Slave Convert  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "159": ### twoNETMSERR
+
+            ##########
+            # Net card master and slave status fail!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-twoNETMSERR"
+
+            @AlertGroup = "Net Card Master and Slave Status"
+            @Summary = "Net Card Master and Slave Status Failure"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "160": ### twoNETMSOK
+
+            ##########
+            # Net card master and slave status recover !
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-twoNETMSOK"
+
+            @AlertGroup = "Net Card Master and Slave Status"
+            @Summary = "End of Net Card Master and Slave Status Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "161": ### twoCLKMSERR
+
+            ##########
+            # clk card master and slave status fail!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-twoCLKMSERR"
+
+            @AlertGroup = "Clock Card Master and Slave Status"
+            @Summary = "Clock Card Master and Slave Status Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "162": ### twoCLKMSOK
+
+            ##########
+            # clk card master and slave status recover!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-twoCLKMSOK"
+
+            @AlertGroup = "Clock Card Master and Slave Status"
+            @Summary = "End of Clock Card Master and Slave Status Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "163": ### twoMPUMSERR
+
+            ##########
+            # mpu card master and slave status fail!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-twoMPUMSERR"
+
+            @AlertGroup = "MPU Card Master and Slave Status"
+            @Summary = "MPU Card Master and Slave Status Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "164": ### twoMPUMSOK
+
+            ##########
+            # mpu card master and slave status recover!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-twoMPUMSOK"
+
+            @AlertGroup = "MPU Card Master and Slave Status"
+            @Summary = "End of MPU Card Master and Slave Status Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "165": ### tmpNPERR
+
+            ##########
+            # reading lpu temperature fail !
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tmpNPERR"
+
+            @AlertGroup = "Reading LPU Temperature"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Reading LPU Temperature Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "166": ### tmpNPOK
+
+            ##########
+            # reading lpu temperature recover !
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-tmpNPOK"
+
+            @AlertGroup = "Reading LPU Temperature"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Reading LPU Temperature Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "167": ### faniSNOTENOUGH
+
+            ##########
+            # the number of fan is not enough !
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex  - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex  = $2
+            $hwClockSrcInputSSMlevel = $3
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-faniSNOTENOUGH"
+
+            @AlertGroup = "Number of Fans"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Insufficient Number of Fans  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "168": ### faniSENOUGH
+
+            ##########
+            # the number of fan is enough !
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-faniSENOUGH"
+
+            @AlertGroup = "Number of Fans"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Insufficient Number of Fans  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "169": ### faniSABSENT
+
+            ##########
+            # the fan is absent!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-faniSABSENT"
+
+            @AlertGroup = "Fan Absent"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Fan Absent  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "170": ### faniSPRESENT
+
+            ##########
+            # the fan is present!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-faniSPRESENT"
+
+            @AlertGroup = "Fan Absent"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Fan Absent  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "171": ### clkNOSIGNALERR
+
+            ##########
+            # clock no signal fail!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkNOSIGNALERR"
+
+            @AlertGroup = "Clock No Signal Failure"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Clock No Signal Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "172": ### clkNOSIGNALOK
+
+            ##########
+            # clock card no sigal recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkNOSIGNALOK"
+
+            @AlertGroup = "Clock No Signal Failure"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "End of Clock No Signal Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "173": ### moduleINSERT
+
+            ##########
+            # module inserted warn!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-moduleINSERT"
+
+            @AlertGroup = "Module In/Out"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Module Inserted  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "174": ### moduleDRAPOUT
+
+            ##########
+            # module pulled out warn!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            # $2 = hwClockSrcIndex - the value which is index of the table
+            # $3 = hwClockSrcInputSSMlevel - the value indicated the level of SSM
+            # $4 = hwClockSrcPriority - the variable of priority of the source clock
+            ##########
+
+            $hwCardIndex = $1
+            $hwClockSrcIndex = $2
+            $hwClockSrcInputSSMlevel = $3
+            $hwClockSrcPriority = $4
+            details($hwCardIndex,$hwClockSrcIndex,
+                    $hwClockSrcInputSSMlevel,$hwClockSrcPriority)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-moduleDRAPOUT"
+
+            @AlertGroup = "Module In/Out"
+            @AlertKey = "cardEntry." + $1 + ", clockSrcEntry." + $2
+            @Summary = "Module Pulled Out  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "175": ### netAPERR
+
+            ##########
+            # Net clock error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netAPERR"
+
+            @AlertGroup = "Net Clock Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Clock Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "176": ### drypwrERR
+
+            ##########
+            # pwr status error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-drypwrERR"
+
+            @AlertGroup = "Power Status Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "177": ### drypwrCLR
+
+            ##########
+            # pwr status ok!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-drypwrCLR"
+
+            @AlertGroup = "Power Status Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "178": ### dryfanERR
+
+            ##########
+            # fan status error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dryfanERR"
+
+            @AlertGroup = "Fan Status Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Fan Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "179": ### dryfanCLR
+
+            ##########
+            # fan status ok!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-dryfanCLR"
+
+            @AlertGroup = "Fan Status Error"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Fan Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "180": ### opmSWFAIL
+
+            ##########
+            # OPM optic swith status error!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-opmSWFAIL"
+
+            @AlertGroup = "OPM Optic Switch Status"
+            @Summary = "OPM Optic Switch Status Error"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "181": ### opmSWOK
+
+            ##########
+            # OPM optic swith status OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-opmSWOK"
+
+            @AlertGroup = "OPM Optic Switch Status"
+            @Summary = "End of OPM Optic Switch Status Error"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "182": ### opmPINFAIL
+
+            ##########
+            # OPM pin status fail!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-opmPINFAIL"
+
+            @AlertGroup = "OPM Pin Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "OPM Pin Status Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "183": ### opmPINOK
+
+            ##########
+            # OPM pin status ok!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-opmPINOK"
+
+            @AlertGroup = "OPM Pin Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of OPM Pin Status Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "184": ### opmPOWFAIL
+
+            ##########
+            # OPM power status FAIL!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-opmPOWFAIL"
+
+            @AlertGroup = "OPM Power Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "OPM Power Status Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "185": ### opmPOWOK
+
+            ##########
+            # OPM power status ok!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-opmPOWOK"
+
+            @AlertGroup = "OPM Power Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of OPM Power Status Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "186": ### fsHDSPACE
+
+            ##########
+            # Free space of hard disk is less than 10%!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-fsHDSPACE"
+
+            @AlertGroup = "Harddisk Free Space"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Harddisk Free Space is Less Than 10%  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "187": ### volFAIL
+
+            ##########
+            # Sru's voltage failed
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-volFAIL"
+
+            @AlertGroup = "SRU Voltage Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "SRU Voltage Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "188": ### clkmsstateFAIL
+
+            ##########
+            # Clock master or slave status invalid!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkmsstateFAIL"
+
+            @AlertGroup = "Clock Master or Slave Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Clock Master or Slave Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "189": ### clkmsstateOK
+
+            ##########
+            # Clock master or slave status recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-clkmsstateOK"
+
+            @AlertGroup = "Clock Master or Slave Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Clock Master or Slave Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "190": ### netmsstateFAIL
+
+            ##########
+            # Net master or slave status invalid!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netmsstateFAIL"
+
+            @AlertGroup = "Net Master or Slave Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Net Master or Slave Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "191": ### netmsstateOK
+
+            ##########
+            # Net master or slave status recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-netmsstateOK"
+
+            @AlertGroup = "Net Master or Slave Status"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Net Master or Slave Status Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "192": ### sru82559clkFAIL
+
+            ##########
+            # The 82559's clock of sru error!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-sru82559clkFAIL"
+
+            @AlertGroup = "SRU 82559 Clock Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "SRU 82559 Clock Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "193": ### sru82559clkOK
+
+            ##########
+            # The 82559's clock of sru recover!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-sru82559clkOK"
+
+            @AlertGroup = "SRU 82559 Clock Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of SRU 82559 Clock Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "194": ### fsHDFAIL
+
+            ##########
+            # The harddisk is unregistered by system because of
+            # unrecoverable errors!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-fsHDFAIL"
+
+            @AlertGroup = "Harddisk Registration Failure"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Harddisk Registration Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "195": ### hwInputVoltageOK
+
+            ##########
+            # Power module input voltage is normal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwInputVoltageOK"
+
+            @AlertGroup = "Power Module Input Voltage"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Input Voltage Normal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "196": ### hwLowInputVoltage
+
+            ##########
+            # power module input voltage is abnormal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwLowInputVoltage"
+
+            @AlertGroup = "Power Module Input Voltage"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Input Voltage Abnormal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "197": ### hwCurrentLimitOK
+
+            ##########
+            # Power module current limit OK!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwCurrentLimitOK"
+
+            @AlertGroup = "Power Module Current Limit"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Module Input Voltage Reduced ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "198": ### hwCurrentLimitReduced
+
+            ##########
+            # Power module current limit reduced!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwCurrentLimitReduced"
+
+            @AlertGroup = "Power Module Current Limit"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Input Voltage Reduced  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "199": ### hwPowerFanOK
+
+            ##########
+            # Power module fan OK!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerFanOK"
+
+            @AlertGroup = "Power Module Fan"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Module Fan Failure or Shutdown  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "200": ### hwPowerFanShutdown
+
+            ##########
+            # Power module fan failure or shutdown!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerFanShutdown"
+
+            @AlertGroup = "Power Module Fan"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Fan Failure or Shutdown  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "201": ### hwCurrentSharingOK
+
+            ##########
+            # Power module current sharing OK!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwCurrentSharingOK"
+
+            @AlertGroup = "Power Module Current Sharing"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Module Current Sharing Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "202": ### hwCurrentSharingFault
+
+            ##########
+            # Power module current sharing fault!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwCurrentSharingFault"
+
+            @AlertGroup = "Power Module Current Sharing"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Current Sharing Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "203": ### hwTemperatureOK
+
+            ##########
+            # Power module temperature is normal!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwTemperatureOK"
+
+            @AlertGroup = "Power Module Temperature"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Module Temperature Alarm  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "204": ### hwTemperatureAlarm
+
+            ##########
+            # Power module temperature alarm!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwTemperatureAlarm"
+
+            @AlertGroup = "Power Module Temperature"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Temperature Alarm  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "205": ### hwPhaseOK
+
+            ##########
+            # Power module phase OK!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPhaseOK"
+
+            @AlertGroup = "Power Module Phase"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Module Phase Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "206": ### hwPhaseFailure
+
+            ##########
+            # Power module phase failure!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPhaseFailure"
+
+            @AlertGroup = "Power Module Phase"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Phase Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "207": ### hwTemperatureNotShutdown
+
+            ##########
+            # Power module temperature is away from shutdown!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwTemperatureNotShutdown"
+
+            @AlertGroup = "Power Module Temperature Shutdown"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "End of Power Module Temperature Shutdown  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "208": ### hwTemperatureShutdown
+
+            ##########
+            # Power module temperature shutdown!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwTemperatureShutdown"
+
+            @AlertGroup = "Power Module Temperature Shutdown"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Power Module Temperature Shutdown  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "209": ### hwPowerInput1Loss
+
+            ##########
+            # Power input 1 loss!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerInput1Loss"
+
+            @AlertGroup = "Power Input 1 Loss"
+            @Summary = "Power Input 1 Loss"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "210": ### hwPowerInput1Found
+
+            ##########
+            # Power input 1 OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerInput1Found"
+
+            @AlertGroup = "Power Input 1 Loss"
+            @Summary = "End of Power Input 1 Loss"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "211": ### hwPowerInput2Loss
+
+            ##########
+            # Power input 2 loss!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerInput2Loss"
+
+            @AlertGroup = "Power Input 2 Loss"
+            @Summary = "Power Input 2 Loss"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "212": ### hwPowerInput2Found
+
+            ##########
+            # Power input 2 OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerInput2Found"
+
+            @AlertGroup = "Power Input 2 Loss"
+            @Summary = "End of Power Input 2 Loss"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "213": ### hwPowerCommunicationFail
+
+            ##########
+            # Power communication failed!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerCommunicationFail"
+
+            @AlertGroup = "Power Communication"
+            @Summary = "Power Communication Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "214": ### hwPowerCommunicationOK
+
+            ##########
+            # Power communication OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerCommunicationOK"
+
+            @AlertGroup = "Power Communication"
+            @Summary = "End of Power Communication"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "215": ### hwPowerMod1Fail
+
+            ##########
+            # Power module1 failed!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod1Fail"
+
+            @AlertGroup = "Power Module 1"
+            @Summary = "Power Module 1 Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "216": ### hwPowerMod1OK
+
+            ##########
+            # Power module1 OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod1OK"
+
+            @AlertGroup = "Power Module 1"
+            @Summary = "End of Power Module 1 Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "217": ### hwPowerMod2Fail
+
+            ##########
+            # Power module2 failed!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod2Fail"
+
+            @AlertGroup = "Power Module 2"
+            @Summary = "Power Module 2 Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "218": ### hwPowerMod2OK
+
+            ##########
+            # Power module2 OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod2OK"
+
+            @AlertGroup = "Power Module 2"
+            @Summary = "End of Power Module 2 Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "219": ### hwPowerMod3Fail
+
+            ##########
+            # Power module3 failed!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod3Fail"
+
+            @AlertGroup = "Power Module 3"
+            @Summary = "Power Module 3 Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "220": ### hwPowerMod3OK
+
+            ##########
+            # Power module3 OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod3OK"
+
+            @AlertGroup = "Power Module 3"
+            @Summary = "End of Power Module 3 Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "221": ### hwPowerMod4Fail
+
+            ##########
+            # Power module4 failed!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod4Fail"
+
+            @AlertGroup = "Power Module 4"
+            @Summary = "Power Module 4 Failure"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "222": ### hwPowerMod4OK
+
+            ##########
+            # Power module4 OK!
+            #
+            ##########
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwPowerMod4OK"
+
+            @AlertGroup = "Power Module 4"
+            @Summary = "End of Power Module 4 Failure"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "223": ### hwCardIn
+
+            ##########
+            # Board pulled in!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwCardIn"
+
+            @AlertGroup = "Card In/Out"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Board Inserted  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "224": ### hwCardOut
+
+            ##########
+            # Board pulled out!
+            #
+            # $1 = hwCardIndex - the value which is index of the table
+            ##########
+
+            $hwCardIndex = $1
+            details($hwCardIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-hwCardOut"
+
+            @AlertGroup = "Card In/Out"
+            @AlertKey = "cardEntry." + $1
+            @Summary = "Board Pulled Out  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "433": ### ethernetTrunkMembershipChangeTrap
+
+            ##########
+            # $1 = ethernetTrunkId
+            # $2 = hwCardIndex
+            # $3 = hwClockSrcIndex
+            # $4 = hwClockSrcInputSSMlevel
+            # $5 = hwClockSrcPriority
+            # $6 = ethernetPortLacpSuccess
+            # $7 = ethernetTrunkPortRowStatus
+            ##########
+
+            $ethernetTrunkId = $1
+            $hwCardIndex = $2
+            $hwClockSrcIndex = $3
+            $hwClockSrcInputSSMlevel = $4
+            $hwClockSrcPriority = $5
+            $ethernetPortLacpSuccess = $6
+            $ethernetTrunkPortRowStatus = $7
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-ethernetTrunkMembershipChangeTrap"
+
+            @AlertGroup = "Ethernet Trunk Membership Status"
+            @AlertKey = "ethernetTrunkPortEntry." + $1 + "." + $ifIndex + ", cardEntry." + $2 + ", clockSrcEntry." + $3
+            @Summary = "Ethernet Trunk Membership Altered" + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ethernetTrunkId,$hwCardIndex,$hwClockSrcIndex,$hwClockSrcInputSSMlevel,$hwClockSrcPriority,$ethernetPortLacpSuccess,$ethernetTrunkPortRowStatus,$ifIndex)
+
+        case "434": ### logicInterfacecreate
+
+            ##########
+            # $1 = ifIndex
+            # $2 = ifDescr
+            ##########
+
+            $ifIndex = $1
+            $ifDescr = $2
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-logicInterfacecreate"
+
+            @AlertGroup = "Logical Interface Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Logical Interface Created, Interface: " + $1 + ", Description: " + $2
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifIndex,$ifDescr)
+
+        case "435": ### logicInterfaceDelete
+
+            ##########
+            # $1 = ifDescr
+            ##########
+
+            $ifDescr = $1
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB-logicInterfaceDelete"
+
+            @AlertGroup = "Logical Interface Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Logical Interface Deleted, Interface: " + $1
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifDescr)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-NE80-DEVICE-MIB--HUAWEI-NE80-ETHERNET-MIB.include.snmptrap.rules >>>>>")

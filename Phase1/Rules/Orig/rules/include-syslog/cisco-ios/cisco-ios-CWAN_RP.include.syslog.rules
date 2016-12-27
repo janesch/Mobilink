@@ -1,0 +1,308 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CWAN_RP.include.syslog.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+# 1.0 - Initial Release.
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CWAN_RP": ### The following are Constellation WAN ATM route processor driver messages.
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CWAN_RP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BAD_IFCOMTYPE":
+        
+            ##########
+            # A line card has forwarded a message that the Draco software could
+            # not process.
+            #
+            # %CWAN_RP-3-BAD_IFCOMTYPE: Bad ifcom message type=[int]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "message type=([0-9/]+)")
+        
+        case "BOOTFAIL":
+        
+            ##########
+            # The line card that was booting either has reset or has failed.
+            #
+            # %CWAN_RP-3-BOOTFAIL: The CWAN-LC in slot [int]/[int] failed to
+            # boot
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CWAN_RP-Linecard Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "CARDRELOAD":
+        
+            ##########
+            # A Find Master SCP message has been recovered on the RP. The line
+            # card was either inserted or reset from the NMP. The inserted
+            # interface shuts down until it is configured by the user or, if an
+            # interface of the same type was previously configured, it is
+            # restored to its previous state.
+            #
+            # %CWAN_RP-6-CARDRELOAD: Card reloaded on slot [int]/[int]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CWAN_RP-Linecard Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+        
+        case "ERROR":
+        
+            ##########
+            # A software error has occurred.
+            #
+            # %CWAN_RP-3-ERROR: NULL
+            ##########
+            
+            @AlertKey = ""
+        
+        case "FOREVER":
+        
+            ##########
+            # A CCB command from Draco to a line card took longer than
+            # expected.
+            #
+            # %CWAN_RP-3-FOREVER: cmd [int] to [chars] (slot [int]/[int]) took
+            # [int] usecs, done [hex]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "HV_ALLOCFAIL":
+        
+            ##########
+            # The NMP has returned a failure for the VLAN allocation request.
+            #
+            # %CWAN_RP-3-HV_ALLOCFAIL: Draco failed to allocate a VLAN for a
+            # WAN interface, status=[int]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "status=([0-9]+)")
+        
+        case "IMAGE_UPGRADE":
+        
+            ##########
+            # The bootflash image on the CWAN line card has been automatically
+            # upgraded.
+            #
+            # %CWAN_RP-6-IMAGE_UPGRADE: Bootflash image upgrade [chars] for
+            # slot [int]/[int][chars]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "upgrade (.*) for slot")
+        
+        case "IPCALLOCFAIL":
+        
+            ##########
+            # The Draco software has failed to allocate a buffer for
+            # communication with a line card.
+            #
+            # %CWAN_RP-3-IPCALLOCFAIL: Failed to allocate IPC buffer [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "upgrade (.*) for slot")
+        
+        case "IPCPORTFAIL":
+        
+            ##########
+            # The Draco software has failed to open a port for communication
+            # with a line card.
+            #
+            # %CWAN_RP-3-IPCPORTFAIL: Failed to open IPC port .[chars]. [chars]
+            ##########
+            
+            @AlertKey = "IPC Port: " + extract($Message, "IPC Port \'(.*)\' .*")
+            
+            $CLARIFIER = rtrim(extract($Message, "IPC Port \'(.*)\' (.*)"))
+        
+        case "IPCSENDFAIL":
+        
+            ##########
+            # The Draco software has failed to send a message to a line card.
+            #
+            # %CWAN_RP-3-IPCSENDFAIL: Failed to send IPC message [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = rtrim(extract($Message, "IPC message (.*)$"))
+        
+        case "KEEPFAIL":
+        
+            ##########
+            # The line card either has been reset or has failed.
+            #
+            # %CWAN_RP-3-KEEPFAIL: The CWAN-LC in slot [int]/[int] is not
+            # responding to keepalives
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CWAN_RP-Linecard Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "LC_CRASHINFO":
+        
+            ##########
+            # The line card has failed.
+            #
+            # %CWAN_RP-3-LC_CRASHINFO: The CWAN_LC in slot [int]/[int] copied
+            # [chars] on to RP bootflash
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CWAN_RP-Linecard Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "copied (.*) on to")
+        
+        case "LC_PRESENT":
+        
+            ##########
+            # A CWAN line card has been detected by the hardware.
+            #
+            # %CWAN_RP-6-LC_PRESENT: [chars] in slot [int]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "^(.*) in slot")
+        
+        case "LCLOG_BADSEV":
+        
+            ##########
+            # The line card has forwarded a logger message that has an invalid
+            # severity code. The MSFC Route Processor cannot process the
+            # message.
+            #
+            # %CWAN_RP-3-LCLOG_BADSEV: Linecard [int]/[int] invalid message
+            # severity [int]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ll]inecard ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CWAN_RP-Linecard Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "message severity ([0-9]+)")
+        
+        case "LCLOG_TOOLONG":
+        
+            ##########
+            # The line card has forwarded a logger message that is too long for
+            # the MSFC Route Processor to process.
+            #
+            # %CWAN_RP-4-LCLOG_TOOLONG: Linecard [int]/[int] message too long,
+            # [int] bytes
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ll]inecard ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CWAN_RP-Linecard Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "QUIESCE_FAIL":
+        
+            ##########
+            # The Draco software has failed to contact the CWAN line card
+            # during the specified failover, and the line card is reset.
+            #
+            # %CWAN_RP-6-QUIESCE_FAIL: Quiesce failed for slot [int]/[int]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9/]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "RESET_FAIL":
+        
+            ##########
+            # The line card has failed.
+            #
+            # %CWAN_RP-3-RESET_FAIL: The CWAN-LC in slot [int] failed even
+            # after several resets
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9/]+) ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "SCPALLOCFAIL":
+        
+            ##########
+            # The Draco software has failed to allocate a packet for
+            # communication with other slots in the chassis.
+            #
+            # %CWAN_RP-3-SCPALLOCFAIL: Failed to allocate SCP packet [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = rtrim(extract($Message, "SCP packet (.*)"))
+        
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CWAN_RP.include.syslog.rules >>>>>")

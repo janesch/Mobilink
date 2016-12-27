@@ -1,0 +1,106 @@
+#######################################################################
+#
+# Licensed Materials - Property of IBM
+#
+# 5724-P09
+#
+# (C) Copyright IBM Corp. 1994 - 2006, 2007, 2008 . All Rights Reserved
+#
+# US Government Users Restricted Rights - Use, duplication
+# or disclosure restricted by GSA ADP Schedule Contract
+# with IBM Corp.
+#
+# Ident: $Id$
+#
+#######################################################################
+#
+# This rulesfile has been developed in accordance to the IBM Netcool
+# Rules Files Best Practices to perform the following functionality
+#
+# 1. De-duplicate events
+# 2. Generic-Clear to correlate Problems/Resolutions
+# 3. Readable alarm summaries
+#
+#######################################################################
+#
+#    tivoli_eif_tsm.rules 1.0 
+#    2008/07/22 Anchala Bansal
+#
+#######################################################################
+
+case "TSM":
+
+    log(DEBUG, "<<<<< Entering... tivoli_eif_tsm.rules >>>>>")
+
+    @Agent = "ITM"
+    #@Agent = "Tsm-TSM SERVER"
+    @Class = "87720"
+ 
+    $OPTION_TypeFieldUsage = "3.6"
+
+                    @Node = hostname()
+                    @Manager = $hostname
+
+                    if (exists($ClassName))
+                    {
+                    @AlertGroup = $ClassName
+                    }
+
+                    if (exists($source))
+                    {
+                    	$AlertKey = "Source:" + $source
+                    }
+                    if(exists($sub_source) && exists($AlertKey))          
+                    {   
+                    	$AlertKey = $AlertKey + " " + "Sub Source:" + $sub_source  
+                    }
+                    else if(exists($sub_source))
+                    {                  
+                    	$AlertKey = "Sub Source:" + $sub_source
+                    }
+                    if(exists($sub_origin) && exists($AlertKey))          
+                    {   
+                    	$AlertKey = $AlertKey + " " + "Sub Origin:" + $sub_origin  
+                    }
+                    else if(exists($sub_origin))
+                    { 
+                    	$AlertKey = "Sub Origin:" + $sub_origin
+                    }
+                    
+		    if(!match ($AlertKey, ""))
+		    {
+			@AlertKey = $AlertKey
+		    }
+		    else
+                    {
+                    	@AlertKey = "Unknown Alarm Location"                    
+                    }
+
+                    if (exists($msg))
+                    { 
+                    	@Summary = $msg
+                    }
+                    
+                    if (exists($severity))
+                    { 
+                    	@Severity = $severity
+                    }
+ 
+                    if (match(@Severity, "2"))
+	            { 
+	            	@Type = 13
+                    }
+                    else if (match(@Severity, "1"))
+                    { 
+	            	@Type = 2
+                    }   
+                    else 
+                    {
+      	            	@Type = 1
+                    }
+                     
+                    @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager
+
+                    details($*)
+
+    log(DEBUG, "<<<<< Leaving... tivoli_eif_tsm.rules >>>>>")

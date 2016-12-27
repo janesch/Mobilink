@@ -1,0 +1,415 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       5724-P18 
+#       
+#       (C) Copyright IBM Corp. 2005, 2007. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#
+# Ident: $Id: nokia_netact_3gpp.rules 1.4 2004/05/21 10:51:47 smilne Development $
+#
+#######################################################################
+#  This rulesfile has been developed in accordance to the IBM Netcool Rules 
+#  Files Best Practices to perform the following functionality
+#
+#	1. De-duplicate events
+#	2. Generic-Clear  to correlate Problems/Resolutions
+#	3. Readable alarm summaries
+#######################################################################
+
+#######################################################################
+#
+# This lookup will only work if the probe is run from $OMNIHOME/probes
+# If the probe is run elsewhere this path will need to be customised.
+  include "../includes/Corba_3gpp_V430.lookup"
+  include "../includes/nokia-node.lookup"
+#
+# The following variable should be modified to meet your requirements.
+# It can take two values : "OSS4" (if the probe is running against OSS4
+# 			or "OSS3" (all versions prior to OSS4)
+$Version = "OSS4"
+#######################################################################
+#table NodeLookup="$OMNIHOME/probes/solaris2/nokia_node.lookup"
+#default = "Unknown ID: "
+
+#@Node=lookup(@Node,NodeLookup)
+
+# Setting of class field for Nokia events
+#@LastOccurrence = getdate
+#@FirstOccurrence = getdate
+
+if(match(@Manager,"ProbeWatch"))
+{
+#
+# This section deals with internal probe events
+#
+
+	switch(@Summary)
+	{
+	case "Running ...":
+		@Severity = 0
+		@AlertGroup = "probestat"
+		@Type = 2
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+	case "Unable to get events":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@AlertKey = @Agent
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@Type = 1
+	case "Going Down ...":
+		@Severity = 5
+		@AlertGroup = "probestat"
+		@Type = 1
+		@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+		@AlertKey = @Agent
+	case "START SYNCHRONIZATION":
+		@Type = 2
+		@Severity = 1
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+		@Summary = @Agent + " probe on " + @Node + ": Resync"
+	case "END SYNCHRONIZATION":
+		@Type = 2
+		@Severity = 1
+		@Summary = @Agent + " probe on " + @Node + ": Resync"
+		@AlertGroup = "Resync"
+		@AlertKey = "Resync"
+	default:
+		@Severity = 1
+		if ( regmatch(@Summary, "SYNCHRONIZATION FAILED.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "Resync"
+			@AlertKey = "Resync"
+		}
+		if ( regmatch(@Summary, "Failed to listen for commands on port number.*"))
+		{
+			@Type = 1
+			@Severity = 4
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "CommandPort"
+			@AlertKey = "CommandPort"
+		}
+		if ( regmatch(@Summary, "Will listen for commands on port number.*"))
+		{
+			@Type = 2
+			@Severity = 1
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "CommandPort"
+			@AlertKey = "CommandPort"
+		}
+		if ( regmatch(@Summary, "Connection to NotificationIRP server has been established.*"))
+		{
+			@Type = 2
+			@Severity = 1
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "Failed to get subscripton status.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "CORBA TIMEOUT Exception while trying to get subscription status from NotificationIRP.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "Communication failure - lost connection to NoticiationIRP.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "CORBA.TRANSIENT Exception: Lost connection to NotificationIRP.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "CORBA.OBJECT_NOT_EXIST Exception: Lost connection to NotificationIRP.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "Detaching subscription.*"))
+		{
+			@Type = 1
+			@Severity = 1
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "SubscriptionStatus"
+			@AlertKey = "SubscriptionStatus"
+		}
+		if ( regmatch(@Summary, "Inactivity: No events received for.*"))
+		{
+			@Type = 1
+			@Severity = 1
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "InactivityTimeout"
+			@AlertKey = "InactivityTimeout"
+		}
+		if ( regmatch(@Summary, "NetcoolIRPManager: Failed to find IOR file.*"))
+		{
+			@Type = 1
+			@Severity = 5
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertGroup = "probestat"
+			@AlertKey = "IORFileIssue"
+		}
+	}
+} 
+else 
+{
+	@Class=600
+	@FirstOccurrence = DateToTime($NV_EVENT_TIME,"%m/%d/%y%n%T%n%p")
+	@Manager = @Manager + " probe running on " + hostname()
+	@Agent = $NV_SYSTEM_DN
+	if( exists( $NV_ACK_STATE))
+	{
+		switch($NV_ACK_STATE)
+		{
+                	case "2":
+                        	@Acknowledged = 0
+                	case "1":
+                        	@Acknowledged = 1
+                	default:
+               			@Acknowledged = 0         
+		}
+       	}
+	@Type = 1
+	#if( regmatch( $FullDN, ".*INode.*"))
+	#{
+	#	@Node = extract($FullDN, ".*\(INode.neId\,(.*)\)")
+
+	#}
+	#else
+	#{
+	#	@Node = "Unknown Node"	
+	#}
+	#@Node=lookup(@Node,NodeLookup)
+	
+	#$node_lookup=lookup($key,NodeLookup)
+        #if (match($node_lookup, "Unknown ID: "))
+        #{
+        #        $node_lookup=$node_lookup + $key
+        #}
+        #@Node = @Node + ": " + $node_lookup
+
+###################################################################################
+#Extract Node and Include from table NodeLookup: Modified by FF Innovise Aug 2010
+###################################################################################
+	if( regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagedElement.*"))
+	{
+		$node = extract($NV_MANAGED_OBJECT_INSTANCE,".*,ManagedElement=[a-zA-Z0-9]+-([a-zA-Z0-9]+)")
+		@Node = $node
+		#@Node = lookup($node,NodeLookup)
+        }
+	else
+	{
+		@Node = $node + ": " + "Unknown ID" 	
+	}
+	
+	if( exists( $UserLabel))
+	{
+		@NodeAlias = $UserLabel
+	}
+	
+	if (regmatch( $NV_SYSTEM_DN, ".*IRPAgent.*"))
+	{
+	 	@Agent = "Nokia " + " : " + extract($NV_SYSTEM_DN, ".*IRPAgent=(.*)")
+	}
+	else
+	{
+		@Agent = "Nokia " + $NV_SYSTEM_DN
+	}
+
+	$EVENT_TYPE = lookup($EVENT_TYPE,EventType_t)
+        $EVENT_NAME = lookup($EVENT_NAME,EventName_t)
+
+	if( exists( $NV_PROBABLE_CAUSE))
+	{
+		$ProbCause = lookup($NV_PROBABLE_CAUSE, ProbableCause_t)
+	}
+        @AlertGroup = $EVENT_TYPE + ":" + $ProbCause
+#	20100813	Addition by Chris Janes of Innovise
+	@EventType = $EVENT_TYPE
+
+#	20100813	End of Addition
+
+	if( exists( $NV_MANAGED_OBJECT_INSTANCE))
+	{
+	
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*SubNetwork.*"))
+		{
+			if (regmatch($NV_MANAGED_OBJECT_INSTANCE, ".*Root.*"))
+			{
+				$UmtsRoot = extract($NV_MANAGED_OBJECT_INSTANCE,"^Root\=([A-Za-z0-9]+)\,SubNetwork.*")
+			}
+		}
+		
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagedElement.*"))
+		{	
+			if (match($Version,"OSS4"))
+			{
+				$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\SubNetwork\=(.*)\,ManagedElement\=.*")
+			}
+			else
+			{
+				$SubNetwork = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,SubNetwork\=(.*)\,ManagedElement\=.*")
+			}
+			
+			if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*\,ManagedElement\=.*\,"))
+			{
+				$ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,ManagedElement\=(.*),.*")
+			}
+			else
+			{
+				$ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,ManagedElement\=(.*)")
+			}
+		}
+		
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*ManagementNode.*"))
+		{
+			$ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,ManagementNode\=(.*)")
+		}
+
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, ".*UtranCell.*"))
+                {
+			$ManElement = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,ManagedElement\=(.*)\,RncFunction\=.*")
+			$UCell = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,UtranCell\=(.*)")
+                        $ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,"ManagedElement=[a-zA-Z0-9]+-[a-zA-Z0-9]+") 
+                }
+
+		if (regmatch( $NV_MANAGED_OBJECT_INSTANCE, "NoMatch"))
+		{
+			$ManObj = extract($NV_MANAGED_OBJECT_INSTANCE,".*\,NoMatch\=(.*)")
+		}
+	}
+	
+	
+	
+	@AlertKey = $ManObj
+	if( exists( $NV_SYSTEM_DN))
+	{
+		$SysDn = $NV_SYSTEM_DN
+	}
+	if( exists( $NV_PERCEIVED_SEVERITY))
+	{
+		@Severity = lookup($NV_PERCEIVED_SEVERITY, PerceivedSeverity_t)
+	}
+	
+	switch ($SubNetwork)
+	{	
+	        case "NW UTRAN":
+	        
+			if ( regmatch($ManObj, "EM RNC.*"))
+	        	{
+	        		@AlertGroup = "RNC : " + @AlertGroup 
+	                	@NodeAlias = extract ($ManObj, "^EM RNC(.*)")
+			}	
+		  	else if ( regmatch($ManObj, "EM BTS.*"))
+		    {
+	            	       	@NodeAlias = extract ($ManObj, "^EM BTSEquipment(.*)")	
+	            		@AlertGroup = "BTS : " + @AlertGroup
+	         }
+	
+	     	case "NW CN":
+	              @NodeAlias = extract ($ManObj, "^EM (.*)")
+	              @AlertGroup = "EM : " + @AlertGroup
+	        default: @NodeAlias = $NV_ALARM_ID
+	}
+	
+	# convert integer enumerated types into text via lookup tables
+	if (exists($NV_TREND_INDICATION))
+	{
+        	$NV_TREND_INDICATION = lookup($NV_TREND_INDICATION, TrendIndicationType_t)
+	}
+	if (exists($NV_THRESHOLD_INFO))
+	{
+        	$NV_THRESHOLD_INFO = lookup($NV_THRESHOLD_INFO, ThresholdIndicationType_t)
+	}
+	if (exists($NV_ACK_STATE))
+	{
+        	$NV_ACK_STATE = lookup($NV_ACK_STATE, Ack_t)
+	}
+ 
+	switch($EVENT_TYPE)
+	{
+		case "Heartbeat":
+			@Summary = "Heartbeat from " + @Node
+			@Severity = 2	
+			@Identifier = @Node + ":" + @Summary
+		default:
+			if( exists($ManObj))
+			{
+				if (match(@Node,"Unknown Node"))
+				{
+					#@Node = $NV_MANAGED_OBJECT_INSTANCE
+					#@Node = $ManObj
+				}
+				else
+				{
+					#@Node = @Node + ":" + $ManObj
+				}
+			}
+		 	@Identifier = @Node +" "+ @AlertKey + " " + @AlertGroup + " " + @Type + " "  + @Agent + " " + @Manager + $NV_SPECIFIC_PROBLEM + ":"+ $NV_PROBABLE_CAUSE
+	}
+
+	@Summary = @Node + " : " + $NV_SPECIFIC_PROBLEM + ":"+ $ProbCause + ":"+ $additionalInformation 
+	
+	switch(@Severity)
+	{
+		case "1":
+			@Type = 2
+		default:
+			@Type = 1
+	}
+	
+
+	# If unknown then use the Additional text
+
+
+	if( (regmatch( @Summary, ".*INDETERMINATE.*")) || (regmatch( @Summary, ".*DATA_SET_PROBLEM.*")) )
+	{
+		if( match( $AdditionalText_Field00, ""))
+		{
+			@Summary = @Node + " : " + $NV_SPECIFIC_PROBLEM + ":"+ $ProbCause + ":"+ $additionalInformation
+		}
+		else
+		{
+			@Summary = $AdditionalText_Field00 + " " + $AdditionalText_Field01 + " " + $AdditionalText_Field02
+		}
+	}
+	
+	# The following optional Identifier values were used during on site testing 
+	#@Identifier = @Identifier + @Serial + $NV_ALARM_ID + $NV_EVENT_TIME
+	#@Identifier = @Identifier + $NV_ALARM_ID + $NV_MANAGED_OBJECT_CLASS + $NV_ACK_STATE
+	#@Identifier = @Identifier + $NV_ALARM_ID + $NV_MANAGED_OBJECT_CLASS
+	#@NodeAlias = $NV_ALARM_ID
+
+
+}
+#details($*)

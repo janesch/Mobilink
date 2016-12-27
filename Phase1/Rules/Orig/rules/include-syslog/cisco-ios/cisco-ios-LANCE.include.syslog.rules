@@ -1,0 +1,59 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-LANCE.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "LANCE": ### Local Area Network Controller Ethernet
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-LANCE.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADCABLE":
+            
+            ##########
+            # Explanation The Ethernet cable is not connected.
+            #
+            # %LANCE-3-BADCABLE : Unit [dec], Transmits stalled. Check
+            # ethernet cable connection
+            ##########
+            
+            @AlertKey = "Unit: " + extract($Message, "Unit ([0-9]+),? Transmits")
+        
+        case "UNDERFLO":
+            
+            ##########
+            # The Ethernet hardware is requesting data faster than the
+            # system can supply it. This condition might indicate that
+            # the system is at the limit of its performance.
+            #
+            # %LANCE-3-UNDERFLO : Unit [dec], underflow error
+            ##########
+            
+            @AlertKey = "Unit: " + extract($Message, "Unit ([0-9]+),? underflow")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-LANCE.include.syslog.rules >>>>>")

@@ -1,0 +1,128 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CAT6K-CROSSBAR-MIB.include.snmptrap.rules 1.0
+#    2006/05/08 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CAT6K-CROSSBAR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.217": ### Cisco Catalyst 6000 Crossbar Switch - Notifications from CISCO-CAT6K-CROSSBAR-MIB (20030929)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CAT6K-CROSSBAR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Catalyst 6000 Crossbar Switch"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cc6kxbarSwBusStatusChangeNotif
+
+            ##########
+            # $1 = cc6kxbarSwBusSwitchingStatus 
+            # $2 = cc6kxbarSwBusFailureDuration 
+            ##########
+
+            $cc6kxbarSwBusSwitchingStatus = lookup($1, cc6kxbarSwBusSwitchingStatus) + " ( " + $1 + " )"
+            $cc6kxbarSwBusFailureDuration = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CAT6K-CROSSBAR-MIB-cc6kxbarSwBusStatusChangeNotif"
+
+            @AlertGroup = "Catalyst 6000 Crossbar Switching Bus Status"
+            @AlertKey = ""
+	    switch($1)
+	    {
+	        case "1": ### normal
+                    $SEV_KEY = $OS_EventId + "_normal"
+                    @Summary = "Catalyst 6000 Crossbar Switching Bus Normal"
+            
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+	
+                case "2": ### stalled
+                    $SEV_KEY = $OS_EventId + "_stalled"
+                    @Summary = "Catalyst 6000 Crossbar Switching Bus Stalled"
+            	    
+                    $DEFAULT_Severity = 2
+         	    $DEFAULT_Type = 1
+            	    $DEFAULT_ExpireTime = 0
+
+     		case "3": ### isolated
+                    $SEV_KEY = $OS_EventId + "_isolated"
+                    @Summary = "Catalyst 6000 Crossbar Switching Bus Isolated"
+            	    
+                    $DEFAULT_Severity = 3
+               	    $DEFAULT_Type = 1
+            	    $DEFAULT_ExpireTime = 0
+		  
+	        default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Catalyst 6000 Crossbar Switching Bus Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+	      }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cc6kxbarSwBusSwitchingStatus,$cc6kxbarSwBusFailureDuration)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CAT6K-CROSSBAR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CAT6K-CROSSBAR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CAT6K-CROSSBAR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CAT6K-CROSSBAR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CAT6K-CROSSBAR-MIB.include.snmptrap.rules >>>>>")

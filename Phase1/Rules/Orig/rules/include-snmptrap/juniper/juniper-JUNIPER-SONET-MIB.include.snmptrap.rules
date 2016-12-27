@@ -1,0 +1,707 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-SONET-MIB.include.snmptrap.rules 6.0
+#    2008/04/09 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-SONET-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.6": ### Juniper SONET - Notifications from JUNIPER-SONET-MIB    
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-SONET-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-SONET"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxSonetAlarmSet
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxSonetLastAlarmId
+            # $3 = jnxSonetCurrentAlarms
+            # $4 = jnxSonetLastAlarmDate
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxSonetLastAlarmId = lookup($2, JnxSonetAlarmId) + " ( " + $2 + " )"
+            $jnxSonetCurrentAlarms = $3
+            $jnxSonetLastAlarmDate = $4
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ifDescr,$jnxSonetLastAlarmId,$jnxSonetCurrentAlarms,$jnxSonetLastAlarmDate,$ifIndex)
+            }
+            else
+            {
+                details($ifDescr,$jnxSonetLastAlarmId,$jnxSonetCurrentAlarms,$jnxSonetLastAlarmDate,$ifIndex)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-SONET-MIB-jnxSonetAlarmSet"
+
+            @AlertKey = "ifEntry." + $ifIndex
+            
+            switch($2)
+            {
+                case "1": ### sonetLolAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLolAlarm"
+                    
+                    @AlertGroup = "SONET Light Status"
+                    @Summary = "SONET Loss of Light"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### sonetPllAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPllAlarm"
+                    
+                    @AlertGroup = "SONET PLL Lock Status"
+                    @Summary = "SONET PLL Lock Alarm"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### sonetLofAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLofAlarm"
+                    
+                    @AlertGroup = "SONET Frame Status"
+                    @Summary = "SONET Loss of Frame"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### sonetLosAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLosAlarm"
+                    
+                    @AlertGroup = "SONET Signal Status"
+                    @Summary = "SONET Loss of Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16": ### sonetSefAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetSefAlarm"
+                    
+                    @AlertGroup = "SONET Frame Error Status"
+                    @Summary = "SONET Severely Errored Frame"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "32": ### sonetLaisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLaisAlarm"
+                    
+                    @AlertGroup = "SONET Line AIS Status"
+                    @Summary = "SONET Line Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "64": ### sonetPaisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPaisAlarm"
+                    
+                    @AlertGroup = "SONET Path AIS Status"
+                    @Summary = "SONET Path Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "128": ### sonetLopAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLopAlarm"
+                    
+                    @AlertGroup = "SONET Pointer Status"
+                    @Summary = "SONET Loss of Pointer"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "256": ### sonetBerrSdAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetBerrSdAlarm"
+                    
+                    @AlertGroup = "SONET BER Defect Status"
+                    @Summary = "SONET Bit Error Rate Defect"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "512": ### sonetBerrSfAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetBerrSfAlarm"
+                    
+                    @AlertGroup = "SONET BER Fault Status"
+                    @Summary = "SONET Bit Error Rate Fault"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "1024": ### sonetLrdiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLrdiAlarm"
+                    
+                    @AlertGroup = "SONET Line RDI Status"
+                    @Summary = "SONET Line Remote Defect Indication"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2048": ### sonetPrdiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPrdiAlarm"
+                    
+                    @AlertGroup = "SONET Path RDI Status"
+                    @Summary = "SONET Path Remote Defect Indication"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4096": ### sonetReiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetReiAlarm"
+                    
+                    @AlertGroup = "SONET REI Status"
+                    @Summary = "SONET Remote Error Indication"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8192": ### sonetUneqAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetUneqAlarm"
+                    
+                    @AlertGroup = "SONET Equipment Status"
+                    @Summary = "SONET Unequipped"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16384": ### sonetPmisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPmisAlarm"
+                    
+                    @AlertGroup = "SONET Path Match Status"
+                    @Summary = "SONET Path Mismatch"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "32768": ### sonetLocAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLocAlarm"
+                    
+                    @AlertGroup = "SONET Cell Delineation Status"
+                    @Summary = "SONET Loss of Cell Delineation"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "65536": ### sonetVaisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVaisAlarm"
+                    
+                    @AlertGroup = "SONET VT AIS Status"
+                    @Summary = "SONET VT Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "131072": ### sonetVlopAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVlopAlarm"
+                    
+                    @AlertGroup = "SONET VT Pointer Status"
+                    @Summary = "SONET VT Loss Of Pointer"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "262144": ### sonetVrdiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVrdiAlarm"
+                    
+                    @AlertGroup = "SONET VT RDI Status"
+                    @Summary = "SONET VT Remote Defect Indication"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "524288": ### sonetVuneqAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVuneqAlarm"
+                    
+                    @AlertGroup = "SONET VT Equipment Status"
+                    @Summary = "SONET VT Unequipped"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "1048576": ### sonetVmisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVmisAlarm"
+                    
+                    @AlertGroup = "SONET VT Label Match Status"
+                    @Summary = "SONET VT Label Mismatch"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2097152": ### sonetVlocAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVlocAlarm"
+                    
+                    @AlertGroup = "SONET VT Cell Status"
+                    @Summary = "SONET VT Loss of Cell"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4194304": ### sdhLolAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLolAlarm"
+                    
+                    @AlertGroup = "SDH Light Status"
+                    @Summary = "SDH Loss of Light"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8388608": ### sdhPllAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhPllAlarm"
+                    
+                    @AlertGroup = "SDH PLL Lock Status"
+                    @Summary = "SDH PLL Lock Alarm"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16777216": ### sdhLofAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLofAlarm"
+                    
+                    @AlertGroup = "SDH Frame Status"
+                    @Summary = "SDH Loss of Frame"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "33554432": ### sdhLosAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLosAlarm"
+                    
+                    @AlertGroup = "SDH Signal Status"
+                    @Summary = "SDH Loss of Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "67108864": ### sdhOofAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhOofAlarm"
+                    
+                    @AlertGroup = "SDH Frame Status"
+                    @Summary = "SDH Out of Frame"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "134217728": ### sdhMsAisAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhMsAisAlarm"
+                    
+                    @AlertGroup = "SDH Multiplex Section AIS Status"
+                    @Summary = "SDH Multiplex Section Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "268435456": ### sdhHpAisAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpAisAlarm"
+                    
+                    @AlertGroup = "SDH HP AIS Status"
+                    @Summary = "SDH HP Alarm Indication Signal"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "536870912": ### sdhLopAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLopAlarm"
+                    
+                    @AlertGroup = "SDH Pointer Status"
+                    @Summary = "SDH Loss of Pointer"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "1073741824": ### sdhBerrSdAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhBerrSdAlarm"
+                    
+                    @AlertGroup = "SDH BER Defect Status"
+                    @Summary = "SDH Bit Error Rate Defect"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2147483648": ### sdhBerrSfAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhBerrSfAlarm"
+                    
+                    @AlertGroup = "SDH BER Fault Status"
+                    @Summary = "SDH Bit Error Rate Fault"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4294967296": ### sdhMsFerfAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhMsFerfAlarm"
+                    
+                    @AlertGroup = "SDH Multiplex Section FERF Status"
+                    @Summary = "SDH Multiplex Section Far-End Receive Failure"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8589934592": ### sdhHpFerfAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpFerfAlarm"
+                    
+                    @AlertGroup = "SDH HP FERF Status"
+                    @Summary = "SDH HP Far-End Receive Failure"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "17179869184": ### sdhMsFebeAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhMsFebeAlarm"
+                    
+                    @AlertGroup = "SDH Multiplex Section FEBE Status"
+                    @Summary = "SDH Multiplex Section Far-End Block Error"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "34359738368": ### sdhHpUneqAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpUneqAlarm"
+                    
+                    @AlertGroup = "SDH HP Equipment Status"
+                    @Summary = "SDH HP Unequipped"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "68719476736": ### sdhHpMisAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpMisAlarm"
+                    
+                    @AlertGroup = "SDH HP Match Status"
+                    @Summary = "SDH HP Mismatch"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "137438953472": ### sdhLocAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLocAlarm"
+                    
+                    @AlertGroup = "SDH Cell Delineation Status"
+                    @Summary = "SDH Loss of Cell Delineation"
+    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    
+                    @AlertGroup = "SONET Alarm ( " + $2 + " )Status"
+                    @Summary = "Unknown SONET Alarm: " + $2
+    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + $1 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "2": ### jnxSonetAlarmCleared
+
+            ##########
+            # $1 = ifDescr
+            # $2 = jnxSonetLastAlarmId
+            # $3 = jnxSonetCurrentAlarms
+            # $4 = jnxSonetLastAlarmDate
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $ifDescr = $1
+            $jnxSonetLastAlarmId = lookup($2, JnxSonetAlarmId) + " ( " + $2 + " )"
+            $jnxSonetCurrentAlarms = $3
+            $jnxSonetLastAlarmDate = $4
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$ifDescr,$jnxSonetLastAlarmId,$jnxSonetCurrentAlarms,$jnxSonetLastAlarmDate,$ifIndex)
+            }
+            else
+            {
+                details($ifDescr,$jnxSonetLastAlarmId,$jnxSonetCurrentAlarms,$jnxSonetLastAlarmDate,$ifIndex)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-SONET-MIB-jnxSonetAlarmCleared"
+
+            @AlertKey = "ifEntry." + $ifIndex
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+            
+            switch($2)
+            {
+                case "1": ### sonetLolAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLolAlarm"
+                    
+                    @AlertGroup = "SONET Light Status"
+                    @Summary = "End of SONET Loss of Light"
+                case "2": ### sonetPllAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPllAlarm"
+                    
+                    @AlertGroup = "SONET PLL Lock Status"
+                    @Summary = "End of SONET PLL Lock Alarm"
+                case "4": ### sonetLofAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLofAlarm"
+                    
+                    @AlertGroup = "SONET Frame Status"
+                    @Summary = "End of SONET Loss of Frame"
+                case "8": ### sonetLosAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLosAlarm"
+                    
+                    @AlertGroup = "SONET Signal Status"
+                    @Summary = "End of SONET Loss of Signal"
+                case "16": ### sonetSefAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetSefAlarm"
+                    
+                    @AlertGroup = "SONET Frame Error Status"
+                    @Summary = "End of SONET Severely Errored Frame"
+                case "32": ### sonetLaisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLaisAlarm"
+                    
+                    @AlertGroup = "SONET Line AIS Status"
+                    @Summary = "End of SONET Line Alarm Indication Signal"
+                case "64": ### sonetPaisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPaisAlarm"
+                    
+                    @AlertGroup = "SONET Path AIS Status"
+                    @Summary = "End of SONET Path Alarm Indication Signal"
+                case "128": ### sonetLopAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLopAlarm"
+                    
+                    @AlertGroup = "SONET Pointer Status"
+                    @Summary = "End of SONET Loss of Pointer"
+                case "256": ### sonetBerrSdAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetBerrSdAlarm"
+                    
+                    @AlertGroup = "SONET BER Defect Status"
+                    @Summary = "End of SONET Bit Error Rate Defect"
+                case "512": ### sonetBerrSfAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetBerrSfAlarm"
+                    
+                    @AlertGroup = "SONET BER Fault Status"
+                    @Summary = "End of SONET Bit Error Rate Fault"
+                case "1024": ### sonetLrdiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLrdiAlarm"
+                    
+                    @AlertGroup = "SONET Line RDI Status"
+                    @Summary = "End of SONET Line Remote Defect Indication"
+                case "2048": ### sonetPrdiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPrdiAlarm"
+                    
+                    @AlertGroup = "SONET Path RDI Status"
+                    @Summary = "End of SONET Path Remote Defect Indication"
+                case "4096": ### sonetReiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetReiAlarm"
+                    
+                    @AlertGroup = "SONET REI Status"
+                    @Summary = "End of SONET Remote Error Indication"
+                case "8192": ### sonetUneqAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetUneqAlarm"
+                    
+                    @AlertGroup = "SONET Equipment Status"
+                    @Summary = "End of SONET Unequipped"
+                case "16384": ### sonetPmisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetPmisAlarm"
+                    
+                    @AlertGroup = "SONET Path Match Status"
+                    @Summary = "End of SONET Path Mismatch"
+                case "32768": ### sonetLocAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetLocAlarm"
+                    
+                    @AlertGroup = "SONET Cell Delineation Status"
+                    @Summary = "End of SONET Loss of Cell Delineation"
+                case "65536": ### sonetVaisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVaisAlarm"
+                    
+                    @AlertGroup = "SONET VT AIS Status"
+                    @Summary = "End of SONET VT Alarm Indication Signal"
+                case "131072": ### sonetVlopAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVlopAlarm"
+                    
+                    @AlertGroup = "SONET VT Pointer Status"
+                    @Summary = "End of SONET VT Loss Of Pointer"
+                case "262144": ### sonetVrdiAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVrdiAlarm"
+                    
+                    @AlertGroup = "SONET VT RDI Status"
+                    @Summary = "End of SONET VT Remote Defect Indication"
+                case "524288": ### sonetVuneqAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVuneqAlarm"
+                    
+                    @AlertGroup = "SONET VT Equipment Status"
+                    @Summary = "End of SONET VT Unequipped"
+                case "1048576": ### sonetVmisAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVmisAlarm"
+                    
+                    @AlertGroup = "SONET VT Label Match Status"
+                    @Summary = "End of SONET VT Label Mismatch"
+                case "2097152": ### sonetVlocAlarm
+                    $SEV_KEY = $OS_EventId + "_sonetVlocAlarm"
+                    
+                    @AlertGroup = "SONET VT Cell Status"
+                    @Summary = "End of SONET VT Loss of Cell"
+                case "4194304": ### sdhLolAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLolAlarm"
+                    
+                    @AlertGroup = "SDH Light Status"
+                    @Summary = "End of SDH Loss of Light"
+                case "8388608": ### sdhPllAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhPllAlarm"
+                    
+                    @AlertGroup = "SDH PLL Lock Status"
+                    @Summary = "End of SDH PLL Lock Alarm"
+                case "16777216": ### sdhLofAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLofAlarm"
+                    
+                    @AlertGroup = "SDH Frame Status"
+                    @Summary = "End of SDH Loss of Frame"
+                case "33554432": ### sdhLosAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLosAlarm"
+                    
+                    @AlertGroup = "SDH Signal Status"
+                    @Summary = "End of SDH Loss of Signal"
+                case "67108864": ### sdhOofAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhOofAlarm"
+                    
+                    @AlertGroup = "SDH Frame Status"
+                    @Summary = "End of SDH Out of Frame"
+                case "134217728": ### sdhMsAisAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhMsAisAlarm"
+                    
+                    @AlertGroup = "SDH Multiplex Section AIS Status"
+                    @Summary = "End of SDH Multiplex Section Alarm Indication Signal"
+                case "268435456": ### sdhHpAisAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpAisAlarm"
+                    
+                    @AlertGroup = "SDH HP AIS Status"
+                    @Summary = "End of SDH HP Alarm Indication Signal"
+                case "536870912": ### sdhLopAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLopAlarm"
+                    
+                    @AlertGroup = "SDH Pointer Status"
+                    @Summary = "End of SDH Loss of Pointer"
+                case "1073741824": ### sdhBerrSdAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhBerrSdAlarm"
+                    
+                    @AlertGroup = "SDH BER Defect Status"
+                    @Summary = "End of SDH Bit Error Rate Defect"
+                case "2147483648": ### sdhBerrSfAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhBerrSfAlarm"
+                    
+                    @AlertGroup = "SDH BER Fault Status"
+                    @Summary = "End of SDH Bit Error Rate Fault"
+                case "4294967296": ### sdhMsFerfAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhMsFerfAlarm"
+                    
+                    @AlertGroup = "SDH Multiplex Section FERF Status"
+                    @Summary = "End of SDH Multiplex Section Far-End Receive Failure"
+                case "8589934592": ### sdhHpFerfAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpFerfAlarm"
+                    
+                    @AlertGroup = "SDH HP FERF Status"
+                    @Summary = "End of SDH HP Far-End Receive Failure"
+                case "17179869184": ### sdhMsFebeAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhMsFebeAlarm"
+                    
+                    @AlertGroup = "SDH Multiplex Section FEBE Status"
+                    @Summary = "End of SDH Multiplex Section Far-End Block Error"
+                case "34359738368": ### sdhHpUneqAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpUneqAlarm"
+                    
+                    @AlertGroup = "SDH HP Equipment Status"
+                    @Summary = "End of SDH HP Unequipped"
+                case "68719476736": ### sdhHpMisAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhHpMisAlarm"
+                    
+                    @AlertGroup = "SDH HP Match Status"
+                    @Summary = "End of SDH HP Mismatch"
+                case "137438953472": ### sdhLocAlarm
+                    $SEV_KEY = $OS_EventId + "_sdhLocAlarm"
+                    
+                    @AlertGroup = "SDH Cell Delineation Status"
+                    @Summary = "End of SDH Loss of Cell Delineation"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    
+                    @AlertGroup = "SONET Alarm ( " + $2 + " )Status"
+                    @Summary = "End of Unknown SONET Alarm: " + $2
+            }
+            @Summary = @Summary + "  ( " + $1 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-SONET-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-SONET-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-SONET-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-SONET-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-SONET-MIB.include.snmptrap.rules >>>>>")

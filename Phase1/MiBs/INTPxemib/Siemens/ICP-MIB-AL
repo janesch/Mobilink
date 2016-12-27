@@ -1,0 +1,148 @@
+
+ICP-MIB-AL DEFINITIONS ::= BEGIN 
+
+          IMPORTS
+                  MODULE-IDENTITY, OBJECT-TYPE,
+                  NOTIFICATION-TYPE                    FROM SNMPv2-SMI
+
+                  TEXTUAL-CONVENTION, DisplayString    FROM SNMPv2-TC
+
+                  enterprises                          FROM RFC1155-SMI
+
+                  in, inModules                        FROM INC-MIB-C
+
+                  openViewSourceName                   FROM INC-MIB-AL;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        --
+        -- Module Identity :
+        --
+        inIcpMibAL  MODULE-IDENTITY
+                 LAST-UPDATED "0012181400Z"
+                 ORGANIZATION "Siemens AG"
+                 CONTACT-INFO
+                         "        TMN/IN-Team
+                                  K.Schmidtke
+                          Postal: Siemens AG
+                                  Information and Communication Mobile
+                                  Otto-Hahn-Ring 6
+                                  D-81739 Muenchen
+                                  Germany
+                          E-mail: Klaus.Schmidtke@icn.siemens.de"
+        
+                DESCRIPTION "This MIB module describes the managed 
+                             objecttypes of the Siemens IN ICP NEs."
+
+                REVISION    "0012181400Z"
+                DESCRIPTION "Reduced size of icpEtText and icpEtParams."
+
+                REVISION    "9910201600Z"
+                DESCRIPTION "Shortened some identifier names."
+
+                REVISION "9810161200Z"
+                DESCRIPTION "using inModules"
+
+                REVISION "9810011200Z"
+                DESCRIPTION "Added object type for the APS version."
+
+        ::= { inModules 9 } 
+
+        icp OBJECT IDENTIFIER ::= { in 4 }
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        --
+        -- Textual conventions :
+        --
+
+        SequenceNumber ::= TEXTUAL-CONVENTION
+             STATUS       current
+             DESCRIPTION
+                     "The event sequence number type."
+             SYNTAX       INTEGER (1..2147483647)
+
+
+
+        -- Traps/Notifications in ICP-MIB
+
+        icpTraps OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                   "Base OID for the notification OIDs
+                    of the IN ICP NEs."
+
+                ::= { icp 0 }
+
+        -- groups in ICP-MIB :
+
+        icp99 OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                        "The authoritative identity of Siemens AG,
+                         ICN IN for IN ICP NEs."
+
+                ::= { icp 99 }
+
+
+          -- the icp99 group :
+
+          icpProcessTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF ProcessTableEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The processTable represents the ICP entities that 
+                       created the events."
+              ::= { icp99 1 }
+
+          icpProcessTableEntry OBJECT-TYPE
+              SYNTAX  ProcessTableEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A processTable entry - processIDIndex and cloneIDIndex 
+                       serve as indices to the processTable." 
+              INDEX   { icpPtProcessIDIndex , icpPtCloneIDIndex }
+              ::= { icpProcessTable 1 }
+
+          ProcessTableEntry ::=
+              SEQUENCE {
+                  icpPtProcessIDIndex
+                      INTEGER,
+                  icpPtCloneIDIndex
+                      INTEGER,
+                  icpPtName 
+                      DisplayString  
+              }
+
+          icpPtProcessIDIndex OBJECT-TYPE
+              SYNTAX  INTEGER ( 1..65535)
+              MAX-ACCESS  read-only
+              STATUS  current
+
+              DESCRIPTION 
+                      "Identifier of the ICP process that caused the event."
+              ::= { icpProcessTableEntry 1 }
+
+          icpPtCloneIDIndex OBJECT-TYPE
+              SYNTAX  INTEGER ( 1..65535)
+              MAX-ACCESS  read-only
+              STATUS  current
+
+              DESCRIPTION 
+                      "Identifier to distinguish multiple instances of 
+                       the same program."
+              ::= { icpProcessTableEntry 2 }
+
+          icpPtName OBJECT-TYPE
+
+              SYNTAX DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+
+              DESCRIPTION 
+                      "Name of the process that caused the event." 
+              ::= { icpProcessTableEntry 3 }
+
+
+END -- ICP-MIB-AL
+

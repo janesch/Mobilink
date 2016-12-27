@@ -1,0 +1,72 @@
+////////////////////////////////////////////////
+//
+//	CriticalHardware.ipl
+//
+//	Impact policy for Mobilink - Critical Hardware Alarm Handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100525	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+Log("CriticalHardware");
+if(EventContainer.ImpactFlag == 0)
+{
+
+	//Set Default Sleeptime
+	Default_SleepTime = 60;
+
+	// Is this a critical Alarm
+
+	DataType = "CMDB_Critical";		// this needs to be setup
+	Filter = "Node = '" + EventContainer.Node + "' and CriticalAlarm = 1";		// this needs to be setup
+	Log("Filter = " + Filter );
+	CountOnly = False;
+	Critical = GetByFilter(DataType, Filter, CountOnly);
+	Num_Critical  = Num;
+	Log("Num_Critical = " + Num_Critical);
+
+	if(Num_Critical == 1)
+	{
+
+
+		EventContainer.ImpactFlag = 1;
+		ReturnEvent(EventContainer);
+
+		ActionKey = "CriticalHardware" + @ServerSerial + @ServerName;
+		SleepTime = Default_SleepTime;
+		Log("Going To Sleep "  + ActionKey + "for " + SleepTime  );
+		Hibernate(ActionKey , wait, SleepTime);
+	
+		RemoveHibernation(ActionKey);	
+		EventContainer.ImpactFlag = 2;
+		ReturnEvent(EventContainer);
+		Log ("Wake Up " + ActionKey );
+
+		// Does the event still exist?
+		DataType = "Status";		// this needs to be setup
+		Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+		Log("Filter = " + Filter );
+		CountOnly = False;
+		Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+		Num_Existing_Event = Num;
+		Log("Num_Existing_Event = " + Num_Existing_Event);
+		if (Num_Existing_Event == 0)
+		{
+			// Event has Cleared
+			Log("Event Has Cleared, ServerSerial = " + @ServerSerial);
+		}
+		else
+		{
+			// Enrich Event
+			log("Enriching event");
+			EventContainer.MaximoStatus = 1;
+			ReturnEvent(EventContainer);
+		}
+	}
+
+	else
+	{
+		Log("Not Critical Event");
+	}
+}

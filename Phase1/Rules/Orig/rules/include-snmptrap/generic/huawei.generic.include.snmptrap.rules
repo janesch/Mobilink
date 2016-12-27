@@ -1,0 +1,70 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei.generic.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+###############################################################################
+
+else if (nmatch($enterprise, ".1.3.6.1.4.1.2011."))
+{
+    log(DEBUG, "<<<<< Entering... huawei.generic.include.snmptrap.rules >>>>>")
+
+    @Agent = "Generic-Huawei"
+    @Class = "40579"
+    
+    ### The following statements add the Huawei Model information to the Agent Field
+
+    switch(extract($enterprise, "\.1\.3\.6\.1\.4\.1\.2011\.2\.([0-9]+)\.[0-9]+.*"))
+    {
+        case "23": ### from HUAWEI-3COM-OID-MIB
+            @Agent = @Agent + " " + lookup(extract($enterprise, "\.1\.3\.6\.1\.4\.1\.2011\.2\.23\.([0-9]+).*"), huaweiproductslanSw)
+        default:
+    }
+    
+    switch(extract($enterprise, "\.1\.3\.6\.1\.4\.1\.2011\.1\.1\.([0-9]+)\.[0-9]+.*"))
+    {
+        case "1": ### from HUAWEI-3COM-OID-MIB
+            @Agent = @Agent + " " + lookup(extract($enterprise, "\.1\.3\.6\.1\.4\.1\.2011\.1\.1\.1\.([0-9]+).*"), huaweihwLocalquidway)
+        default:
+    }
+
+    switch(extract($enterprise, "\.1\.3\.6\.1\.4\.1\.2011\.10\.([0-9]+)\.[0-9]+.*"))
+    {
+        case "1": ### from HUAWEI-3COM-OID-MIB
+            @Agent = @Agent + " " + lookup(extract($enterprise, "\.1\.3\.6\.1\.4\.1\.2011\.10\.1\.([0-9]+).*"), huaweih3cproductId)
+        default:
+    }
+    log(DEBUG, "<<<<< Leaving... huawei.generic.include.snmptrap.rules >>>>>")
+}
+

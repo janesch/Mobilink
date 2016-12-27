@@ -1,0 +1,103 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-L2-DEV-MONITORING-MIB.include.snmptrap.rules 1.0
+#    2006/04/28 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-L2-DEV-MONITORING-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.271": ### Cisco Monitoring of Active Layer 2 Devices by Hot Standby Layer 2 Devices - Notifications from CISCO-L2-DEV-MONITORING-MIB (20030722)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-L2-DEV-MONITORING-MIB.include.snmptrap.rules >>>>>")
+
+     @Agent = "Cisco-Layer 2 Device Monitoring"
+     @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cl2DevMonSwitchover
+
+            ##########
+            # $1 = cl2DevMonActivePollingFrequency 
+            # $2 = cl2DevMonActivePollingTimeOut 
+            ##########
+
+            $cl2DevMonActivePollingFrequency = $1
+            $cl2DevMonActivePollingTimeOut = $2
+            $cl2DevMonActiveMacAddress_raw = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+            $MacAddrOid = $cl2DevMonActiveMacAddress_raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOid2MacAddr.include.snmptrap.rules"
+            $cl2DevMonActiveMacAddress = $MacAddrHex 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-L2-DEV-MONITORING-MIB-cl2DevMonSwitchover"
+
+            @AlertGroup = "Layer 2 Device Status"
+            @AlertKey = "cl2DevMonActiveEntry." + $cl2DevMonActiveMacAddress_raw
+            @Summary = "Layer 2 Device Switched to Active State  ( MAC Address: " + $cl2DevMonActiveMacAddress + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 13 
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cl2DevMonActivePollingFrequency,$cl2DevMonActivePollingTimeOut,$cl2DevMonActiveMacAddress)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-L2-DEV-MONITORING-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-L2-DEV-MONITORING-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-L2-DEV-MONITORING-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-L2-DEV-MONITORING-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-L2-DEV-MONITORING-MIB.include.snmptrap.rules >>>>>")

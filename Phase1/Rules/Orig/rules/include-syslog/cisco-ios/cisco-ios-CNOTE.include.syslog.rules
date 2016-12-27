@@ -1,0 +1,99 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CNOTE.include.syslog.rules 1.0
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.  
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CNOTE": ### Cisco CNS Notification Engine (CNOTE)
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CNOTE.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CLEAR_HEALTH":
+        
+            ##########
+            # %CNOTE-[dec]-CLEAR_HEALTH: [chars]
+            ##########
+            
+            @AlertKey = ""
+            @Severity = 1
+            @Type = 2
+        
+        case "INFORMATIONAL_HEALTH":
+        
+            ##########
+            # %CNOTE-[dec]-INFORMATIONAL_HEALTH: [chars]
+            ##########
+            
+            @AlertKey = ""
+            @Severity = 2
+            @Type = 1
+            
+            $CLARIFIER = $Message
+        
+        case "MAJOR_HEALTH":
+        
+            ##########
+            # %CNOTE-[dec]-MAJOR_HEALTH: [chars]
+            ##########
+            
+            @AlertKey = ""
+            @Severity = 4
+            @Type = 1
+            
+            $CLARIFIER = $Message
+        
+        case "NODE_REACHABLE":
+        
+            ##########
+            # %CNOTE-[dec]-NODE_REACHABLE: [chars], [IP_address] is reachable
+            ##########
+            
+            $MOI_Remote = $IPaddress
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CNOTE-NODE_Reachability"
+            @AlertKey = ""
+            @Severity = 1
+            @Type = 2
+            
+            $CLARIFIER = $MOI_Remote
+        
+        case "NODE_UNREACHABLE":
+        
+            ##########
+            # %CNOTE-[dec]-NODE_UNREACHABLE: [chars], [IP_address] is not reachable
+            ##########
+            
+            $MOI_Remote = $IPaddress
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "CNOTE-NODE_Reachability"
+            @AlertKey = ""
+            @Severity = 4
+            @Type = 1
+            
+            $CLARIFIER = $MOI_Remote
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CNOTE.include.syslog.rules >>>>>")

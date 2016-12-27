@@ -1,0 +1,312 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CSM.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CSM": ### Call switching module
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CSM.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CAS_IPC_QUEUED":
+        
+            ##########
+            # A CAS IPC message has been queued because the mailbox is in use.
+            #
+            # %CSM-5-CAS_IPC_QUEUED: CAS mbox at [hex] in use - message has
+            # been [chars].
+            ##########
+            
+            $MOI_Local = extract($Message, "mbox at (.*) in")
+            
+            @AlertKey = "CAS Mailbox: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "has been (.*)\.?")
+        
+        case "CAS_MSG_DEPLETED":
+        
+            ##########
+            # The modem may no longer be operational because the amount of
+            # memory available in the router may not be sufficient.
+            #
+            # %CSM-1-CAS_MSG_DEPLETED: An error was encountered in enqueuing a
+            # CAS message - [chars].
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "CAS message - (.*)\.?")
+        
+        case "CSM_BAD_EVENT":
+        
+            ##########
+            # An invalid operation has been detected by the router.
+            #
+            # %CSM-1-CSM_BAD_EVENT: [chars]: [dec]/[dec] received invalid event
+            # [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "([0-9]+/[0-9]+) received ")
+            
+            @AlertKey = $MOI_Local
+            
+            $CLARIFIER = extract($Message, "^(.*):? [0-9]+/[0-9]+")
+        
+        case "CSM_MODEM_BAD":
+        
+            ##########
+            # The modem is no longer operational because of a run-time error.
+            #
+            # %CSM-1-CSM_MODEM_BAD: Modem [dec]/[dec] has been marked as bad by
+            # the router software.
+            ##########
+            
+            $MOI_Local = extract($Message, "Modem ([0-9]+/[0-9]+) has")
+            
+            @AlertKey = "Modem: " + $MOI_Local
+        
+        case "CSM_STRING_OVERRUN":
+        
+            ##########
+            # The string written into the allocated buffer exceeded the size of
+            # the buffer. This error can cause memory corruption.
+            #
+            # %CSM-1-CSM_STRING_OVERRUN: String copy exceeded buffer size
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CSM_UNKNOWN_FAIL_CODE":
+        
+            ##########
+            # The CSM attempted to process an unknown fail code.
+            #
+            # %CSM-1-CSM_UNKNOWN_FAIL_CODE: Unknown fail code [dec]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "fail code ([0-9]+)")
+        
+        case "HWIDB":
+        
+            ##########
+            # An invalid operation has been detected by the router.
+            #
+            # %CSM-1-HWIDB: [chars]: hwidb is NULL
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "(.*):? hwidb is")
+        
+        case "HWIDB_SUBBLOCK":
+        
+            ##########
+            # An internal software error has occurred.
+            #
+            # %CSM-1-HWIDB_SUBBLOCK: [chars]: hwidb subblock for b channel
+            # [dec] is in use
+            ##########
+            
+            $MOI_Local = extract($Message, "for b channel ([0-9]+) is")
+            
+            @AlertKey = "B-Channel: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "(.*):? hwidb ")
+        
+        case "HWREV":
+        
+            ##########
+            # The T1 or E1 network module cannot be used with digital modems.
+            #
+            # %CSM-1-HWREV: The T1 or E1 network module is incompatible with
+            # the digital modems: [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "digital modems:? (.*)")
+        
+        case "INITPORT":
+        
+            ##########
+            # An initialization error occurred on the specified port. The error
+            # message specifies more details.
+            #
+            # %CSM-1-INITPORT: [chars] at slot [dec], port [dec]
+            ##########
+            
+            $Slot = extract($Message, "[Ss]lot ([0-9]+),? ")
+            $Port = extract($Message, "[Pp]ort ([0-9]+)")
+            $MOI_Local = "Port" + $Slot + "/" + $Port
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $Slot + "Port: " + $Port
+            
+            $CLARIFIER = extract($Message, "(.*) at slot")
+        
+        case "INITSYS":
+        
+            ##########
+            # The modem signaling module failed initialization.
+            #
+            # %CSM-1-INITSYS: [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Details
+        
+        case "MBRI":
+        
+            ##########
+            # An ISDN MBRI interface has changed states. Details of the new
+            # state are shown in the error message.
+            #
+            # %CSM-5-MBRI: [chars] at slot [dec], unit [dec], with index [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local + ", Unit: " + extract($Message, "[Uu]nit ([0-9]+),? ")
+            
+            $CLARIFIER = extract($Message, "(.*) at slot")
+        
+        case "MODEM_INFO":
+        
+            ##########
+            # An internal software error has occurred.
+            #
+            # %CSM-1-MODEM_INFO: [chars]: modem_info is NULL
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "(.*):? modem_info")
+        
+        case "PRI":
+        
+            ##########
+            # An ISDN PRI interface has changed states. Details of the new
+            # state are shown in the error message.
+            #
+            # %CSM-5-PRI: [chars] at slot [dec], unit [dec], channel [dec] with
+            # index [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local + ", Unit: " + extract($Message, "unit ([0-9]+),? ") + ", Channel: " + extract($Message, "channel ([0-9]+) with")
+            
+            $CLARIFIER = extract($Message, "(.*) at slot")
+            
+            switch($CLARIFIER)
+            {
+                case "Add"|"ADD"|"add":
+                    @Severity = 1
+                    @Type = 2
+                case "Delete"|"DELETE"|"delete":
+                default:
+            }
+        
+        case "QUEUE_ERROR":
+        
+            ##########
+            # The modem may no longer be operational. The amount of memory
+            # available in the router may not be sufficient.
+            #
+            # %CSM-1-QUEUE_ERROR: An error was encountered in enqueuing a
+            # [chars] ([dec]) for slot/port [dec]/[dec].
+            ##########
+            
+            $Slot = extract($Message, "for slot/port ([0-9]+)/[0-9]+")
+            $Port = extract($Message, "for slot/port [0-9]+/([0-9]+)")
+            $MOI_Local = "Port" + $Slot + "/" + $Port
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $Slot + "Port: " + $Port
+            
+            $CLARIFIER = extract($Message, "enqueuing a (.*) for ")
+        
+        case "RBS":
+        
+            ##########
+            # An internal software error has occurred. An attempt was made to
+            # add a nonexistent CAS signaling interface.
+            #
+            # %CSM-1-RBS: [chars] at slot [dec], controller [dec], timeslot
+            # [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, " [Ss]lot ([0-9]+),? ")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local + ", Controller: " + extract($Message, ",? [Cc]ontroller ([0-9]+),? ") + ", Timeslot: " + extract($Message, ",? [Tt]imeslot ([0-9]+)")
+            
+            $CLARIFIER = extract($Message, "(.*) at slot")
+        
+        case "TGRM_UPDATE_FAILURE":
+        
+            ##########
+            # Unavailable.
+            #
+            # %CSM-3-TGRM_UPDATE_FAILURE: The trunk group resource manager
+            # failed to update channel status to [chars] for channel
+            # [chars]:[dec]:[dec]\n
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "for channel (.*)"))
+            
+            @AlertKey = "Channel: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "status to (.*) for")
+        
+        case "UNEXPECTEDEVENT":
+        
+            ##########
+            # An invalid operation was detected by the router.
+            #
+            # %CSM-1-UNEXPECTEDEVENT: An Unexpected event received by tone
+            # process - [dec] [dec].
+            ##########
+            
+            @AlertKey = ""
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CSM.include.syslog.rules >>>>>")

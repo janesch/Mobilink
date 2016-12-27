@@ -1,0 +1,155 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-PERFORMANCE-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  HUAWEI-PERFORMANCE-MIB release V1.0
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  HUAWEI-PERFORMANCE-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.1.3.4": ### Huawei Technologies - Notifications from HUAWEI-PERFORMANCE-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-PERFORMANCE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### pririsingAlarm
+
+            ##########
+            # $1 = prialarmIndex
+            # $2 = prialarmSympol
+            # $3 = prialarmSampleType
+            # $4 = prialarmValue
+            # $5 = prialarmRisingThreshold 
+            ##########
+
+            $prialarmIndex = $1
+            $prialarmSympol = $2
+            $prialarmSampleType = lookup($3,huawei-prialarmSampleType) + " ( " + $3 + " )"
+            $prialarmValue = $4
+            $prialarmRisingThreshold = $5
+            details($prialarmIndex,$prialarmSympol,
+                    $prialarmSampleType,$prialarmValue,
+                    $prialarmRisingThreshold)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-PERFORMANCE-MIB-pririsingAlarm"
+
+            @AlertGroup = "Performance HIGH Threshold"
+            @AlertKey = "prialarmEntry." + $1
+            @Summary = "Performance HIGH Threshold Exceeded  ( Threshold: " + $5 + ", Actual: " + $4 + " )"
+			update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### prifallingAlarm
+
+            ##########
+            # $1 = prialarmIndex
+            # $2 = prialarmSympol
+            # $3 = prialarmSampleType 
+            # $4 = prialarmValue
+            # $5 = prialarmFallingThreshold 
+            ##########
+
+            $prialarmIndex = $1
+            $prialarmSympol = $2
+            $prialarmSampleType = lookup($3,huawei-prialarmSampleType) + " ( " + $3 + " )"
+            $prialarmValue = $4
+            $prialarmFallingThreshold = $5
+            details($prialarmIndex,$prialarmSympol,
+                    $prialarmSampleType,$prialarmValue,
+                    $prialarmFallingThreshold)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-PERFORMANCE-MIB-prifallingAlarm"
+
+            @AlertGroup = "Performance LOW Threshold"
+            @AlertKey = "prialarmEntry." + $1
+            @Summary = "Performance LOW Threshold Exceeded  ( Threshold: " + $5 + ", Actual: " + $4 + " )"
+			update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-PERFORMANCE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-PERFORMANCE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-PERFORMANCE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-PERFORMANCE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-PERFORMANCE-MIB.include.snmptrap.rules >>>>>")

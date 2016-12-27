@@ -1,0 +1,155 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-DOT3-OAM-MIB.include.snmptrap.rules 1.0
+#    2007/01/17 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  DOT3-OAM-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.9999": ### IETF New Ethernet OAM features - Notifications from DOT3-OAM-MIB 
+    
+    log(DEBUG, "<<<<< Entering... IETF-DOT3-OAM-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-New Ethernet OAM features"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### dot3OamThresholdEvent
+
+            ##########
+            # $1 = dot3OamEventLogTimestamp 
+            # $2 = dot3OamEventLogOui 
+            # $3 = dot3OamEventLogType 
+            # $4 = dot3OamEventLogLocation 
+            # $5 = dot3OamEventLogWindowHi 
+            # $6 = dot3OamEventLogWindowLo 
+            # $7 = dot3OamEventLogThresholdHi 
+            # $8 = dot3OamEventLogThresholdLo 
+            # $9 = dot3OamEventLogValue 
+            # $10 = dot3OamEventLogRunningTotal 
+            # $11 = dot3OamEventLogEventTotal 
+            ##########
+
+            $dot3OamEventLogTimestamp = $1
+            $dot3OamEventLogOui = $2
+            $dot3OamEventLogType = lookup($3, dot3OamEventLogType) + " ( " + $3 + " )"
+            $dot3OamEventLogLocation = lookup($4, dot3OamEventLogLocation)
+            $dot3OamEventLogWindowHi = $5
+            $dot3OamEventLogWindowLo = $6
+            $dot3OamEventLogThresholdHi = $7
+            $dot3OamEventLogThresholdLo = $8
+            $dot3OamEventLogValue = $9
+            $dot3OamEventLogRunningTotal = $10
+            $dot3OamEventLogEventTotal = $11
+
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $dot3OamEventLogIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-DOT3-OAM-MIB-dot3OamThresholdEvent"
+
+            @AlertGroup = "Ethernet OAM Threshold Status"
+            @AlertKey = "dot3OamEventLogEntry." + $ifIndex + "." + $dot3OamEventLogIndex 
+            @Summary = $dot3OamEventLogLocation + " OAM Threshold Crossed"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+	    $dot3OamEventLogLocation = $dot3OamEventLogLocation + " ( " + $4 + " )"
+            details($dot3OamEventLogTimestamp,$dot3OamEventLogOui,$dot3OamEventLogType,$dot3OamEventLogLocation,$dot3OamEventLogWindowHi,$dot3OamEventLogWindowLo,$dot3OamEventLogThresholdHi,$dot3OamEventLogThresholdLo,$dot3OamEventLogValue,$dot3OamEventLogRunningTotal,$dot3OamEventLogEventTotal,$ifIndex,$dot3OamEventLogIndex)
+
+        case "2": ### dot3OamNonThresholdEvent
+
+            ##########
+            # $1 = dot3OamEventLogTimestamp 
+            # $2 = dot3OamEventLogOui 
+            # $3 = dot3OamEventLogType 
+            # $4 = dot3OamEventLogLocation 
+            # $5 = dot3OamEventLogEventTotal 
+            ##########
+
+            $dot3OamEventLogTimestamp = $1
+            $dot3OamEventLogOui = $2
+            $dot3OamEventLogType = lookup($3, dot3OamEventLogType) + " ( " + $3 + " )"
+            $dot3OamEventLogLocation = $4
+            $dot3OamEventLogEventTotal = $5
+
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $dot3OamEventLogIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-DOT3-OAM-MIB-dot3OamNonThresholdEvent"
+
+            @AlertGroup = "Ethernet OAM Threshold Status"
+            @AlertKey = "dot3OamEventLogEntry." + $ifIndex + "." + $dot3OamEventLogIndex
+            @Summary = $dot3OamEventLogLocation + " OAM Non-Threshold Crossed"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+	    $dot3OamEventLogLocation = $dot3OamEventLogLocation + " ( " + $4 + " )"
+            details($dot3OamEventLogTimestamp,$dot3OamEventLogOui,$dot3OamEventLogType,$dot3OamEventLogLocation,$dot3OamEventLogEventTotal,$ifIndex,$dot3OamEventLogIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-DOT3-OAM-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-DOT3-OAM-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-DOT3-OAM-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-DOT3-OAM-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-DOT3-OAM-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,240 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    ATMF-ATM-FORUM-MIB.include.snmptrap.rules 2.1 
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ATM-FORUM-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.2 - Assigned Class# 40088 - ATM Forum
+#
+# 1.1 - Enhanced for compliance with the Netcool Rules File Standards
+#       (MUSE-STD-RF-01, May 2002)
+#
+# 1.0 - Initial Release
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.353": ### ATM Forum - Traps from ATM-FORUM-MIB
+
+    log(DEBUG, "<<<<< Entering... ATMF-ATM-FORUM-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "ATMF-ATM-FORUM-MIB"
+    @Class = "40088"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### atmfVpcChange
+
+            ##########
+            # $1 = atmfVpcPortIndex 
+            # $2 = atmfVpcVpi 
+            # $3 = atmfVpcOperStatus 
+            ##########
+
+            $atmfVpcPortIndex = $1
+            $atmfVpcVpi = $2
+            $atmfVpcOperStatus = lookup($3, atmfVpcOperStatus) + " ( " + $3 + " )"
+            details($atmfVpcPortIndex,$atmfVpcVpi,$atmfVpcOperStatus)
+            
+            $OS_EventId = "SNMPTRAP-ATMF-ATM-FORUM-MIB-atmfVpcChange"
+
+            @AlertGroup = "ATM VPC Status"
+            @AlertKey = "atmfVpcEntry." + $1 + "." + $2
+            switch ($3)
+            {
+                case "1": ### unknown
+                    @Summary = "ATM Virtual Path Connection Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### end2endUp
+                    @Summary = "ATM Virtual Path Connection End-to-End Up"
+                    
+                    $SEV_KEY = $OS_EventId + "_end2endUp"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### end2endDown
+                    @Summary = "ATM Virtual Path Connection End-to-End Down"
+                    
+                    $SEV_KEY = $OS_EventId + "_end2endDown"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### localUpEnd2endUnknown
+                    @Summary = "ATM Virtual Path Connection Local Up, End-to-End Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_localUpEnd2endUnknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### localDown
+                    @Summary = "ATM Virtual Path Connection Local Down"
+                    
+                    $SEV_KEY = $OS_EventId + "_localDown"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "ATM Virtual Path Connection Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( UNI Port: " + $1 + ", VPI: " + $2 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+        case "2": ### atmfVccChange
+
+            ##########
+            # $1 = atmfVccPortIndex 
+            # $2 = atmfVccVci 
+            # $3 = atmfVccVpi 
+            # $4 = atmfVccOperStatus 
+            ##########
+
+            $atmfVccPortIndex = $1
+            $atmfVccVci = $2
+            $atmfVccVpi = $3
+            $atmfVccOperStatus = lookup($4, atmfVccOperStatus) + " ( " + $4 + " )"
+            details($atmfVccPortIndex,$atmfVccVci,$atmfVccVpi,$atmfVccOperStatus)
+            
+            $OS_EventId = "SNMPTRAP-ATMF-ATM-FORUM-MIB-atmfVccChange"
+
+            @AlertGroup = "ATM VCC Status"
+            @AlertKey = "atmfVccEntry." + $1 + "." + $3 + "." + $2
+            switch ($4)
+            {
+                case "1": ### unknown
+                    @Summary = "ATM Virtual Channel Connection Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### end2endUp
+                    @Summary = "ATM Virtual Channel Connection End-to-End Up"
+                    
+                    $SEV_KEY = $OS_EventId + "_end2endUp"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### end2endDown
+                    @Summary = "ATM Virtual Channel Connection End-to-End Down"
+                    
+                    $SEV_KEY = $OS_EventId + "_end2endDown"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### localUpEnd2endUnknown
+                    @Summary = "ATM Virtual Channel Connection Local Up, End-to-End Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_localUpEnd2endUnknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### localDown
+                    @Summary = "ATM Virtual Channel Connection Local Down"
+                    
+                    $SEV_KEY = $OS_EventId + "_localDown"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "ATM Virtual Channel Connection Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( UNI Port: " + $1 + ", VPI: " + $3 + ", VCI: " + $2 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, ATMF-ATM-FORUM-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, ATMF-ATM-FORUM-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/ATMF/ATMF-ATM-FORUM-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/ATMF/ATMF-ATM-FORUM-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... ATMF-ATM-FORUM-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,144 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-5800-HEALTH-MON-MIB.include.snmptrap.rules 2.1 
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#
+#          -  CISCO-5800-HEALTH-MON-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation. 
+#       Compatible with:
+#
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.28.3": ### Cisco Health Monitor - from CISCO-5800-HEALTH-MON-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-5800-HEALTH-MON-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Health Monitor"
+    @Class = "40057"
+    
+    $TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoHealthMonNotification
+
+            ##########
+            # $1 = ciscoHealthMonStatusType 
+            # $2 = ciscoHealthMonShelfId 
+            # $3 = ciscoHealthMonAddress 
+            # $4 = ciscoHealthMonDescr 
+            # $5 = ciscoHealthMonValue 
+            # $6 = ciscoHealthMonThreshold 
+            ##########
+            
+            $ciscoHealthMonStatusType = lookup($1, ciscoHealthMonStatusType)
+            $ciscoHealthMonShelfId = $2
+            $ciscoHealthMonAddress = $3
+            $ciscoHealthMonDescr = $4
+            $ciscoHealthMonValue = $5
+            $ciscoHealthMonThreshold = $6
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-5800-HEALTH-MON-MIB-ciscoHealthMonNotification"
+
+            @AlertGroup = $ciscoHealthMonStatusType
+            @AlertKey = "ciscoHealthMonStatusEntry." + extract($OID1, "\.([0-9]+\.[0-9]+)$")
+            @Summary =  $4 + ", " + $5 + ", Exceeds " + $6 + "  ( Shelf: " + $2 + ", IP Address: " + $3 + " )"
+            switch($1)
+            {
+                case "1": ### modemUtil
+                    $SEV_KEY = $OS_EventId + "_modemUtil"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### trunkUtil
+                    $SEV_KEY = $OS_EventId + "_trunkUtil"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### iomemUtil
+                    $SEV_KEY = $OS_EventId + "_iomemUtil"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Severity = 2
+            @Type = 1
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $ciscoHealthMonStatusType = $ciscoHealthMonStatusType + " ( " + $1 + " )"
+            details($ciscoHealthMonStatusType,$ciscoHealthMonShelfId,$ciscoHealthMonAddress,$ciscoHealthMonDescr,$ciscoHealthMonValue,$ciscoHealthMonThreshold)
+        
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-5800-HEALTH-MON-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-5800-HEALTH-MON-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-5800-HEALTH-MON-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-5800-HEALTH-MON-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-5800-HEALTH-MON-MIB.include.snmptrap.rules >>>>>")

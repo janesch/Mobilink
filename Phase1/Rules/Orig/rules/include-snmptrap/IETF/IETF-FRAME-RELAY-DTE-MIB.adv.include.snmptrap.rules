@@ -1,0 +1,45 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-FRAME-RELAY-DTE-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-FRAME-RELAY-DTE-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-FRAME-RELAY-DTE-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### frDLCIStatusChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1012
+        $OS_X733SpecificProb = "frDLCIStatusChange"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "frCircuitEntry." + $frCircuitIfIndex + "." + $frCircuitDlci
+        $OS_LocalRootObj = "ifEntry." + $frCircuitIfIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-FRAME-RELAY-DTE-MIB.adv.include.snmptrap.rules >>>>>")

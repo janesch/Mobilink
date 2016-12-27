@@ -1,0 +1,66 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-JS-SCREENING-MIB.adv.include.snmptrap.rules 6.0
+#    2008/03/10 Anchala Bansal
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-JS-SCREENING-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... juniper-JUNIPER-JS-SCREENING-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### jnxJsScreenAttack
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxJsScreenAttack"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "jnxJsScreenMonEntry." + $1 + ", " + "ifEntry." + $ifIndex
+        $OS_LocalRootObj = "jnxJsScreenMonEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### jnxJsScreenCfgChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "jnxJsScreenCfgChange"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "jnxJsScreenMonEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-JS-SCREENING-MIB.adv.include.snmptrap.rules >>>>>")

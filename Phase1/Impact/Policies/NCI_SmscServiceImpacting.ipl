@@ -1,0 +1,81 @@
+////////////////////////////////////////////////
+//
+//	SmscServiceImpacting.ipl
+//
+//	Impact policy for Mobilink - SMSC Service Impacting Alarm Handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100607	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+
+
+//Set Default Sleeptime
+Default_SleepTime = 180;
+
+// Is the incoming alarm a SMSC Node Down Alarm
+
+if(NodeDownAlarm)
+{
+	// Find Parent Alarm
+	
+	if(ParentEventHasTT)
+	{
+		//
+	}
+	else
+	{
+		//Raise TT against ParentEvent
+	}
+}
+else
+{
+	//Is ther an existing TT ( or one on the way)
+	if(EventContaineer.MaximoStatus <> 0)
+	{
+		//Ticket Exists (or will do soon)
+	}
+	elseif(EventContaineer.ImpactFlag <> 0)
+	{
+		//This Event is already in Hibernation
+	}
+	else
+	{
+		// Get Sleep Time
+		DataType = "CMDB_SleepTime";		// this needs to be setup
+		Filter = "Node = '" + @Node + "'";		// this needs to be setup
+		CountOnly = False;
+		CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+		Num_CMDB__SleepTime = Num;
+		if(Num_CMDB_SleepTime == 0)
+		{
+			//No record for this so set default Time 
+			SleepTime = Default_SleepTime ;
+		}
+		else
+		{
+			SleepTime = CMDB_SleepTime[0].SleepTime;
+			if (SleepTime == 0)
+			{
+				SleepTime = Default_SleepTime ;
+			}
+		}
+		Log("Going To Sleep "  + @ServerSerial);
+		EventContainer.ImpactFlag = 1;
+		ReturnEvent(EventContainer);
+
+		Hibernate(@ServerSerial, wait, SleepTime);
+
+		EventContainer.ImpactFlag = 2;
+		ReturnEvent(EventContainer);
+		Log ("Wake Up " + @ServerSerial);	
+		// Refresh EventContainer???
+		//Check if Event has cleared or now has a ticket
+		if((EventContainer.Severity <> 0) && (EventContainer.MaximoStatus = 0))
+		{
+			EventContainer.MaximoStatus = 1;
+			ReturnEvent(EventContainer)
+		}
+	}
+}

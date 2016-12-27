@@ -1,0 +1,227 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-PNNI.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "PNNI": ### Private Network-Network Interface
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-PNNI.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ADDRESS_EXIST":
+    
+            ##########
+            # A PVC port address assignment has collided with an existing
+            # address. An address that would have been assigned by this switch
+            # has already been assigned by another.
+            #
+            # %PNNI-4-ADDRESS_EXIST: Address derived from the switch's prefix
+            # by soft PVC manager [chars] clashes with existing address in
+            # prefix table
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-ADDRESS_EXIST"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "manager (.*) clashes")
+
+        case "ATM_SYS_ERROR":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %PNNI-4-ATM_SYS_ERROR: Error: [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-ATM_SYS_ERROR"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Error: (.*)$")
+    
+        case "BADPACKET":
+    
+            ##########
+            # An invalid packet has been received from a network peer.
+            #
+            # %PNNI-4-BADPACKET: Invalid [chars] pkt: [chars] [dec] [dec]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-BADPACKET"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Invalid (.*) pkt")
+    
+        case "BADROUTEREQ":
+    
+            ##########
+            # A source routing request by another network host has been
+            # corrupted.
+            #
+            # %PNNI-4-BADROUTEREQ: Bad Request from Signaling [hex]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-BADROUTEREQ"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Signaling (.*)$")
+    
+        case "CONFIG_ERROR":
+    
+            ##########
+            # A configuration error has occurred in the PNNI subsystem. The
+            # message will display more specific information about the cause of
+            # problem.
+            #
+            # %PNNI-4-CONFIG_ERROR: Configuration Error: [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-CONFIG_ERROR"
+            
+            switch(extract($Message, "([a-z]+) ?$"))
+            {
+                case "back":
+                    
+                    $MOI_Local = extract($Message, "Interfaces ([A-Za-z0-9/():]+) .* loop")
+                    $MOIType_Local = "interface"
+                    include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+                    
+                    @AlertKey = "Interfaces: " + extract($Message, "Interfaces (.*) loop")
+                
+                default:
+                    
+                    @AlertKey = extract($Message, "Error: (.*)$")
+            }
+                
+        case "DEBUG":
+    
+            ##########
+            # This is an informational message only. It is used by Cisco for
+            # testing.
+            #
+            # %PNNI-7-DEBUG: [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-DEBUG"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "DUPLICATE_NODE_ID":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %PNNI-4-DUPLICATE_NODE_ID: [chars] [chars] for node [dec] [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-DUPLICATE_NODE_ID"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "node (.*)$")
+
+        case "INFO":
+    
+            ##########
+            # This is an informational message only.
+            #
+            # %PNNI-6-INFO: [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-INFO"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "INTERNAL_ERROR":
+    
+            ##########
+            # An internal software error has occurred. The message contains
+            # more information that can be used to identify the problem.
+            #
+            # %PNNI-3-INTERNAL_ERROR: [chars][chars] [hex]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-INTERNAL_ERROR"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "INVALID_MEM":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %PNNI-3-INVALID_MEM: Bad address of [chars] [hex], please collect
+            # "show atm pnni trace error"
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-INVALID_MEM"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "of (.*),? please")
+    
+        case "NO_INTERNAL_NUMBER":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %PNNI-2-NO_INTERNAL_NUMBER: Empty Internal Number Stack: [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-NO_INTERNAL_NUMBER"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Stack: (.*)$")
+    
+        case "SPF_ERROR":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %PNNI-2-SPF_ERROR: Tent List Overflow in [chars]
+            ##########
+    
+            $OS_EventId = "SYSLOG-cisco-ios-PNNI-SPF_ERROR"
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Overflow in (.*)$")
+
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-PNNI.include.syslog.rules >>>>>")

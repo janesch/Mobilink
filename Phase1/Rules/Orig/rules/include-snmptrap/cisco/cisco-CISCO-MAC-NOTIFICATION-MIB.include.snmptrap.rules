@@ -1,0 +1,167 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-MAC-NOTIFICATION-MIB.include.snmptrap.rules 2.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-MAC-NOTIFICATION-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.215.2": ### Cisco MAC Notification - Notifications from CISCO-MAC-NOTIFICATION-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-MAC-NOTIFICATION-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-MAC Notification"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cmnMacChangedNotification
+
+            ##########
+            # $1 = cmnHistMacChangedMsg
+            # $2 = cmnHistTimestamp 
+            ##########
+
+            $cmnHistMacChangedMsg = $1
+            $cmnHistTimestamp = $2
+            details($cmnHistMacChangedMsg,$cmnHistTimestamp)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MAC-NOTIFICATION-MIB-cmnMacChangedNotification"
+
+            @AlertGroup = "MAC Address Change"
+            @AlertKey = ""
+            @Summary = "MAC Address Changed"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### cmnMacMoveNotification
+
+            ##########
+            # $1 = cmnMACMoveAddress
+            # $2 = cmnMACMoveVlanNumber 
+            # $3 = cmnMACMoveFromPortId
+            # $4 = cmnMACMoveToPortId
+            # $5 = cmnMACMoveTime
+            ##########
+
+            $cmnMACMoveAddress = $1
+            $cmnMACMoveVlanNumber = $2
+            $cmnMACMoveFromPortId = $3
+            $cmnMACMoveToPortId = $4
+            $cmnMACMoveTime = $5
+            details($cmnMACMoveAddress,$cmnMACMoveVlanNumber,$cmnMACMoveFromPortId,$cmnMACMoveToPortId,$cmnMACMoveTime)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MAC-NOTIFICATION-MIB-cmnMacMoveNotification"
+
+            @AlertGroup = "MAC Address Move"
+            @AlertKey = "dot1dBasePortEntry." + $4
+            @Summary = "MAC Address Moved  ( MAC: " + $1 + ", VLAN: " + $2 + ", From Port: dot1dBasePortEntry." + $3 + ", To Port: dot1dBasePortEntry." + $4 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### cmnMacThresholdExceedNotif
+
+            ##########
+            # $1 = cmnUtilizationUtilization 
+            # $2 = cmnMACThresholdLimit
+            # $3 = cmnUtilizationTimeStamp
+            ##########
+
+            $cmnUtilizationUtilization = $1 + "%"
+            $cmnMACThresholdLimit = $2
+            $cmnUtilizationTimeStamp = $3
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)$")
+            details($cmnUtilizationUtilization,$cmnMACThresholdLimit,$cmnUtilizationTimeStamp,$entPhysicalIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MAC-NOTIFICATION-MIB-cmnMacThresholdExceedNotif"
+
+            @AlertGroup = "Forwarding Table Utilization"
+            @AlertKey = "cmnUtilizationEntry." + $entPhysicalIndex
+            @Summary = "Forwarding Table MAC Threshold, " + $2 + ", Exceeded, Utilization: " + $cmnUtilizationUtilization + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-MAC-NOTIFICATION-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-MAC-NOTIFICATION-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-MAC-NOTIFICATION-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-MAC-NOTIFICATION-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-MAC-NOTIFICATION-MIB.include.snmptrap.rules >>>>>")

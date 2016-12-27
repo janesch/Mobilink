@@ -1,0 +1,235 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-MOBILE-IP-MIB.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-MOBILE-IP-MIB
+#
+###############################################################################
+#
+# 1.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.174": ### Cisco Mobile IP - Notifications from CISCO-MOBILE-IP-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-MOBILE-IP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Mobile IP"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cmiMrStateChange
+
+            ##########
+            # $1 = mnState
+            ##########
+
+            $mnState = lookup($1, mnState) + " ( " + $1 + " )"
+            details($mnState)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MOBILE-IP-MIB-cmiMrStateChange"
+
+            @AlertGroup = "Mobile Router Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### home
+                    @Summary = "Mobile Router Home"
+                    
+                    $SEV_KEY = $OS_EventId + "_home"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### registered
+                    @Summary = "Mobile Router Registered"
+                    
+                    $SEV_KEY = $OS_EventId + "_registered"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### pending
+                    @Summary = "Mobile Router Pending"
+                    
+                    $SEV_KEY = $OS_EventId + "_pending"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### isolated
+                    @Summary = "Mobile Router Isolated"
+                    
+                    $SEV_KEY = $OS_EventId + "_isolated"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### unknown
+                    @Summary = "Mobile Router Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Mobile Router Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "2": ### cmiMrCoaChange
+
+            ##########
+            # $1 = mnRegCOA 
+            # $2 = mnRegAgentAddress
+            ##########
+
+            $mnRegCOA = $1
+            $mnRegAgentAddress = $2
+            details($mnRegCOA,$mnRegAgentAddress)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MOBILE-IP-MIB-cmiMrCoaChange"
+
+            @AlertGroup = "Mobile Router CoA Change"
+            @AlertKey = "mnRegistrationEntry." + $mnRegAgentAddress + "." + $mnRegCOA
+            @Summary = "Mobile Router Care-of-Address Changed to " + $1 + "  ( MR Agent: " + $2 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### cmiMrNewMA
+
+            ##########
+            # $1 = cmiMrMaIsHa 
+            # $2 = cmiMrMaAdvFlags
+            # $3 = cmiMrMaAdvRcvIf
+            ##########
+
+            $cmiMrMaIsHa = $1
+            $cmiMrMaAdvFlags = $2
+            $cmiMrMaAdvRcvIf = $3
+            $cmiMrMaAddressType_Raw = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.174\.1\.5\.4\.1\.1\.3\.([0-9]+)\..*")
+            $cmiMrMaAddressType = lookup($cmiMrMaAddressType_Raw, InetAddressType) + " ( " + $cmiMrMaAddressType_Raw + " )"
+            $cmiMrMaAddress = extract($OID1, "3\.6\.1\.4\.1\.9\.9\.174\.1\.5\.4\.1\.1\.3\.[0-9]+\.(.*)")
+            details($cmiMrMaIsHa,$cmiMrMaAdvFlags,$cmiMrMaAdvRcvIf,$cmiMrMaAddressType,$cmiMrMaAddressType)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MOBILE-IP-MIB-cmiMrNewMA"
+
+            @AlertGroup = "Mobile Router Agent Discovery"
+            @AlertKey = "cmiMrMaAdvEntry." + $cmiMrMaAddressType_Raw + "." + $cmiMrMaAddress
+            @Summary = "Mobile Router Discovered New Mobile Agent  ( Mobile Agent: " + $cmiMrMaAddress + ", Interface: ifEntry." + $3 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### cmiHaMnRegReqFailed
+
+            ##########
+            # $1 = cmiNtRegCOAType
+            # $2 = cmiNtRegCOA
+            # $3 = cmiNtRegHAAddrType
+            # $4 = cmiNtRegHomeAgent 
+            # $5 = cmiNtRegHomeAddressType
+            # $6 = cmiNtRegHomeAddress
+            # $7 = cmiNtRegNAI 
+            # $8 = cmiNtRegDeniedCode
+            ##########
+
+            $cmiNtRegCOAType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $cmiNtRegCOA = $2
+            $cmiNtRegHAAddrType = lookup($3, InetAddressType) + " ( " + $3 + " )"
+            $cmiNtRegHomeAgent = $4
+            $cmiNtRegHomeAddressType = lookup($5, InetAddressType) + " ( " + $3 + " )"
+            $cmiNtRegHomeAddress = $6
+            $cmiNtRegNAI = $7
+            $cmiNtRegDeniedCode = lookup($8, cmiNtRegDeniedCode)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-MOBILE-IP-MIB-cmiHaMnRegReqFailed"
+
+            @AlertGroup = "Mobile Node Registration Status"
+            @AlertKey = "Network Access Identifier: " + $7
+            @Summary = "Mobile Node Registration Failed, " + $cmiNtRegDeniedCode + "  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $8
+            
+            $cmiNtRegDeniedCode = $cmiNtRegDeniedCode + " ( " + $8 + " )"
+            details($cmiNtRegCOAType,$cmiNtRegCOA,$cmiNtRegHAAddrType,$cmiNtRegHomeAgent,$cmiNtRegHomeAddressType,$cmiNtRegHomeAddress,$cmiNtRegNAI,$cmiNtRegDeniedCode)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-MOBILE-IP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-MOBILE-IP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-MOBILE-IP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-MOBILE-IP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-MOBILE-IP-MIB.include.snmptrap.rules >>>>>")

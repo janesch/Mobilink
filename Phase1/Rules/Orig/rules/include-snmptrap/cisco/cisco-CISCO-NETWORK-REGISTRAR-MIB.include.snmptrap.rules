@@ -1,0 +1,322 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-NETWORK-REGISTRAR-MIB.include.snmptrap.rules 1.0
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-NETWORK-REGISTRAR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.120.2": ### CISCO Network Registrar - Notifications from CISCO-NETWORK-REGISTRAR-MIB
+    
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-NETWORK-REGISTRAR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Network Registrar"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch ($specific-trap)
+    {
+        case "1": ### ciscoNetRegFreeAddressLow
+        
+            ##########
+            # $1 = cnrDHCPScopeFreeAddrLowThreshold
+            # $2 = cnrDHCPScopeFreeAddrValue 
+            # $3 = cnrDHCPScopeFreeAddrUnits 
+            ##########
+            
+            $cnrDHCPScopeFreeAddrLowThreshold = $1
+            $cnrDHCPScopeFreeAddrValue = $2
+            $cnrDHCPScopeFreeAddrUnits = $3 
+            $cnrDHCPScopeName = extract($OID1, "9\.120\.1\.1\.1\.1\.2\.(.*)$") 
+              
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegFreeAddressLow"
+
+            @AlertGroup = "NetReg Free Address"
+            @AlertKey = "cnrDHCPScopeEntry." + $cnrDHCPScopeName
+
+            switch ($3)
+            {
+                case "1": ### value
+                    @Summary = "Available IP Addresses ( " + $2 + " ) Below " + $1 + "  ( DHCPScopeName = " + @AlertKey + " )"
+                case "2": ### percent
+                    @Summary = "Available IP Addresses ( " + $2 + "% ) Below " + $1 + "%  ( DHCPScopeName = " + @AlertKey + " )"
+                default:
+            }
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap   
+     
+            details($cnrDHCPScopeFreeAddrLowThreshold,$cnrDHCPScopeFreeAddrValue,$cnrDHCPScopeFreeAddrUnits,$cnrDHCPScopeName)
+           
+        case "2": ### ciscoNetRegFreeAddressHigh
+        
+            ##########
+            # $1 = cnrDHCPScopeFreeAddrHighThreshold
+            # $2 = cnrDHCPScopeFreeAddrValue
+            # $3 = cnrDHCPScopeFreeAddrUnits
+            ##########
+           
+            $cnrDHCPScopeFreeAddrHighThreshold = $1
+            $cnrDHCPScopeFreeAddrValue = $2
+            $cnrDHCPScopeFreeAddrUnits = $3
+            $cnrDHCPScopeName = extract($OID1, "9\.120\.1\.1\.1\.1\.3\.(.*)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegFreeAddressHigh"           
+ 
+            @AlertGroup = "NetReg Free Address"
+            @AlertKey = "cnrDHCPScopeEntry." + $cnrDHCPScopeName
+
+            switch ($3)
+            {
+                case "1": ### value
+                    @Summary = "Available IP Addresses ( " + $2 + " ) Above " + $1 + "  ( DHCPScopeName = " + @AlertKey + " )"
+                case "2": ### percent
+                    @Summary = "Available IP Addresses ( " + $2 + "% ) Above " + $1 + "%  ( DHCPScopeName = " + @AlertKey + " )"
+                default:
+            }
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cnrDHCPScopeFreeAddrHighThreshold,$cnrDHCPScopeFreeAddrValue,$cnrDHCPScopeFreeAddrUnits,$cnrDHCPScopeName)
+      
+        case "3": ### ciscoNetRegServerStart
+        
+            ##########
+            # $1 = cnrNotifServerType
+            ##########
+
+            $cnrNotifServerType = $1  
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegServerStart"
+
+            @AlertGroup = "NetReg Server Status"
+            @AlertKey = $cnrNotifServerType
+            @Summary = lookup($1, cnrNotifServerType) + " Server started"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            details($cnrNotifServerType)
+      
+        case "4": ### ciscoNetRegServerStop
+        
+            ##########
+            # $1 - cnrNotifServerType 
+            ##########
+
+            $cnrNotifServerType = $1 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegServerStop"
+             
+            @AlertGroup = "NetReg Server Status"
+            @AlertKey = $cnrNotifServerType
+            @Summary = lookup($1, cnrNotifServerType) + " Server stopped"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cnrNotifServerType)
+      
+        case "5": ### ciscoNetRegDNSQueueTooBig
+        
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegDNSQueueTooBig"
+            
+            @AlertGroup = "NetReg DNS Queue Status"
+            @AlertKey = ""
+            @Summary = "DNS Queue Too Big, Pending DNS Updates Reached Limit"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### ciscoNetRegOtherServerNotResponding
+        
+            ##########
+            # $1 = cnrNotifServer
+            # $2 = cnrNotifServerType
+            ##########
+ 
+            $cnrNotifServer = $1
+            $cnrNotifServerType = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegOtherServerNotResponding"
+
+            @AlertGroup = "NetReg Other Server Status"
+            @AlertKey = $cnrNotifServer
+            @Summary = lookup($2, cnrNotifServerType) + " Server at " + $1 + " Not Responding to Updates from CNR server"
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + $specific-trap + " " + $2 + " " + @Agent + " " + @Manager
+            
+            details($cnrNotifServer,$cnrNotifServerType)
+      
+            case "7": ### ciscoNetRegDuplicateAddress
+        
+            ##########
+            # $1 = cnrNotifDupIpAddress 
+            # $2 = cnrNotifMACAddress
+            # $3 = cnrNotifDupIpAddressDetectedBy
+            ##########
+
+            $cnrNotifDupIpAddress = $1
+            $cnrNotifMACAddress = $2
+            $cnrNotifDupIpAddressDetectedBy = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegDuplicateAddress"
+
+            @AlertGroup = "NetReg Duplicate Address"
+            @AlertKey = $cnrNotifMACAddress
+            @Summary = "Duplicate IP Address ( " + $1 + " ) at MAC Address " + $2
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + $specific-trap + " " + $1 + " " + @Agent + " " + @Manager
+
+             details($cnrNotifDupIpAddress,$cnrNotifMACAddress,$cnrNotifDupIpAddressDetectedBy)
+      
+        case "8": ### ciscoNetRegAddressConflict
+        
+            ##########
+            # $1 = cnrNotifContestedIpAddress
+            # $2 = cnrNotifServer
+            ##########
+            
+            $cnrNotifContestedIpAddress = $1
+            $cnrNotifServer = $2
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegAddressConflict" 
+            
+            @AlertGroup = "NetReg Address Conflict"
+            @AlertKey = $cnrNotifContestedIpAddress
+            @Summary = "Ownership of IP Address " + $1 + " Claimed by Two or More DHCP Servers  ( cnrNotifServer = " + $2 + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cnrNotifContestedIpAddress,$cnrNotifServer)
+      
+        case "9": ### ciscoNetRegOtherServerResponding
+        
+            ##########
+            # $1 = cnrNotifServer
+            # $2 = cnrNotifServerType
+            ##########
+            
+            $cnrNotifServer = $1
+            $cnrNotifServerType = $2
+  
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegOtherServerResponding"
+            
+            @AlertGroup = "NetReg Other Server Status"
+            @AlertKey = $cnrNotifServer
+            @Summary = lookup($2, cnrNotifServerType) + " Server at " + $1 + " Responding to Updates from CNR server"
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + $specific-trap + " " + $2 + " " + @Agent + " " + @Manager
+
+            details($cnrNotifServer,$cnrNotifServerType)
+       
+        case "10": ### ciscoNetRegFailoverConfigMismatch
+        
+            ##########
+            # $1 = cnrNotifServer 
+            ##########
+ 
+            $cnrNotifServer = $1        
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-NETWORK-REGISTRAR-MIB-ciscoNetRegFailoverConfigMismatch"
+            
+            @AlertGroup = "NetReg Failover Config Mismatch"
+            @AlertKey = $cnrNotifServer
+            @Summary = "Server Configuration Does Not Match Failover Peer " + $1
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            details($cnrNotifServer)
+        
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+[$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-NETWORK-REGISTRAR-MIB_sev)
+}
+else
+{
+[$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId,cisco-CISCO-NETWORK-REGISTRAR-MIB_sev) 
+}
+
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-NETWORK-REGISTRAR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-NETWORK-REGISTRAR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-NETWORK-REGISTRAR-MIB.include.snmptrap.rules >>>>>")

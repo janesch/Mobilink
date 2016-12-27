@@ -1,0 +1,483 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-BGP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "BGP": ### Border Gateway Protocol
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-BGP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ADDROUTE":
+    
+            ##########
+            # An addition to the radix trie could not be completed because an
+            # error has occurred.
+            #
+            # %BGP-3-ADDROUTE: Unable to add route for [chars] to radix trie
+            ##########
+    
+            $MOI_Remote = extract($Message, "route for (.*) to")
+            $MOIType_Remote = "route"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Route: " + $MOI_Remote
+    
+        case "ADJCHANGE":
+    
+            ##########
+            # A BGP neighbor has either come up or gone down. The message
+            # describes the change that has occurred. This message appears only
+            # if the log-neighbor-changes command is configured for the BGP
+            # process.
+            #
+            # %BGP-5-ADJCHANGE: neighbor [IP_address] [chars] [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "neighbor ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            switch(extract($Message, " ([A-Za-z]+)$"))
+            {
+                case "Up"|"UP"|"up":
+                    $SEV_KEY = $OS_EventId + "__up"
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            
+            $CLARIFIER = rtrim(extract($Message, "neighbor [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ (.*)"))
+                
+        case "ASPATH":
+    
+            ##########
+            # The remote BGP peer has sent in an update with an invalid AS
+            # path.
+            #
+            # %BGP-6-ASPATH: [chars] AS path [chars] received from
+            # [IP_address]: [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " received from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote + ", Path: " + extract($Message, "path (.*) received")
+    
+        case "BADMASK":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %BGP-3-BADMASK: Attempt to install route for [IP_address] without
+            # valid mask in [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " route for (.*) without ")
+            $MOIType_Remote = "route"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Route: " + $MOI_Remote
+    
+        case "BADROUTEMAP":
+    
+            ##########
+            # The route map contains parameters that are incompatible with the
+            # intended operation.
+            #
+            # %BGP-3-BADROUTEMAP: Bad parameters in the route-map [chars]
+            # applied for [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "route-map (.*) applied")
+            
+            @AlertKey = "Route Map: " + $MOI_Local
+    
+        case "BGP_INCONSISTENT":
+    
+            ##########
+            # An inconsistency in the data structures has been detected.
+            #
+            # %BGP-3-BGP_INCONSISTENT: [IP_address] Inconsistent [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = $MOI_Remote
+    
+        case "BIGCHUNK":
+    
+            ##########
+            # A large chunk pool has been requested. If the static chunk pools
+            # size cannot service the request, it will be serviced with a
+            # memory allocation (malloc). This is an informational message
+            # only.
+            #
+            # %BGP-6-BIGCHUNK: Big chunk pool request ([dec]) for [chars].
+            # Replenishing with malloc
+            ##########
+    
+            $CLARIFIER = extract($Message, "for (.*)\.? Replenishing")
+            
+            @AlertKey = ""
+    
+        case "DAMPENING_LOW_MAX_PENALTY":
+    
+            ##########
+            # The configured dampening parameters may not be feasible. The
+            # maximum penalty time as specified in the error message is less
+            # than the configured suppress penalty time. Dampening will be
+            # turned off.
+            #
+            # %BGP-5-DAMPENING_LOW_MAX_PENALTY: Maximum penalty ([dec]) is less
+            # than suppress penalty ([dec]), Dampening is OFF
+            ##########
+    
+            @AlertKey = ""
+    
+        case "DAMPENING_DECAY_TIME":
+    
+            ##########
+            # The configured dampening parameters may not be feasible. The time
+            # interval between the maximum penalty and the suppress penalty may
+            # be short.
+            #
+            # %BGP-5-DAMPENING_DECAY_TIME: Decay time from maximum penalty to
+            # suppress penalty is [dec] secs. Maximum penalty: [dec], suppress
+            # penalty: [dec]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "DAMPENING_HIGH_MAX_PENALTY":
+    
+            ##########
+            # The configured dampening parameters may not be feasible. The
+            # maximum penalty time as specified in the error message is less
+            # than the maximum allowed penalty time. Dampening will be turned
+            # off.
+            #
+            # %BGP-5-DAMPENING_HIGH_MAX_PENALTY: Maximum penalty ([dec]) is
+            # more than allowed maximum ([dec]). Dampening is OFF
+            ##########
+    
+            @AlertKey = ""
+    
+        case "DELPATH":
+    
+            ##########
+            # A BGP path could not be deleted because an error was encountered.
+            #
+            # %BGP-3-DELPATH: Attempted to delete path from an empty net for
+            # [chars]
+            ##########
+    
+            $MOI_Remote = rtrim(extract($Message, " net for (.*)"))
+            $MOIType_Remote = "route"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Route: " + $MOI_Remote
+    
+        case "DELROUTE":
+    
+            ##########
+            # A deletion from the radix trie could not be completed because an
+            # error was encountered.
+            #
+            # %BGP-3-DELROUTE: Unable to remove route for [chars] from radix
+            # trie
+            ##########
+    
+            $MOI_Remote = extract($Message, " route for (.*) from ")
+            $MOIType_Remote = "route"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Route: " + $MOI_Remote
+    
+        case "INSUFCHUNKS":
+    
+            ##########
+            # The size of the static chunk pools is not defined correctly.
+            #
+            # %BGP-3-INSUFCHUNKS: Insufficient chunk pools for [chars],
+            # requested size [dec]
+            ##########
+    
+            $MOI_Local = extract($Message, " for (.*),? requested ")
+            
+            @AlertKey = $MOI_Local
+    
+        case "INSUFMEM":
+    
+            ##########
+            # The requested operation could not be accomplished because of a
+            # low memory condition.
+            #
+            # %BGP-2-INSUFMEM: Insufficient memory for [chars] entry
+            ##########
+    
+            $MOI_Local = extract($Message, " memory for (.*) entry")
+            
+            @AlertKey = $MOI_Local
+    
+        case "MARTIAN_IP":
+    
+            ##########
+            # An invalid IP address has been detected.
+            #
+            # %BGP-3-MARTIAN_IP: [IP_address] Martian prefix [chars] in [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) Martian ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+    
+        case "MAX_EXTCOMM_EXCEED":
+    
+            ##########
+            # An attempt was made to advertise a prefix with an extended
+            # community attribute that contained more extended communities than
+            # the allowed limit.
+            #
+            # %BGP-4-MAX_EXTCOMM_EXCEED: Exceeded limit of [dec] extended
+            # communities per advertised prefix
+            ##########
+    
+            @AlertKey = ""
+    
+        case "MAXPATHS":
+    
+            ##########
+            # The number of parallel paths has exceeded the configured limit.
+            #
+            # %BGP-3-MAXPATHS: Too many parallel paths for
+            # [IP_address][IP_netmask], maximum is [dec]
+            ##########
+    
+            $MOI_Remote = extract($Message, " paths for (.*),? maximum ")
+            $MOIType_Remote = "network"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Network: " + $MOI_Remote
+    
+        case "MAXPFX":
+    
+            ##########
+            # The number of prefixes received from a neighbor has reached the
+            # warning limit.
+            #
+            # %BGP-4-MAXPFX: No. of prefix received from [IP_address]
+            # (afi [dec]) reaches [dec], max [dec]
+            ##########
+    
+            $MOI_Remote = extract($Message, " received from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "MAXPFXEXCEED":
+    
+            ##########
+            # The number of prefixes received from a neighbor has exceeded the
+            # configured limit.
+            #
+            # %BGP-3-MAXPFXEXCEED: No. of prefix received from [IP_address]
+            # (afi [dec]): [dec] exceed limit [dec]
+            ##########
+    
+            $MOI_Remote = extract($Message, " received from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "NEGCOUNTER":
+    
+            ##########
+            # The counter value for accepted prefixes is incorrect and is less
+            # than zero.
+            #
+            # %BGP-3-NEGCOUNTER: Prefix-accepted counter negative for peer
+            # [IP_address], prefix [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " for peer (.*),? prefix ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "NEXTHOP":
+    
+            ##########
+            # The remote BGP peer has sent this peer a route with an illegal
+            # next hop. The given route was ignored.
+            #
+            # %BGP-6-NEXTHOP: Invalid next hop ([IP_address]) received from
+            # [IP_address]: [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " received from (.*):")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey =  "Peer: " + $MOI_Remote + ", Next Hop: " + extract($Message, " next hop \((.*)\) received ")
+    
+        case "NOBITFIELD":
+    
+            ##########
+            # The allocation of the neighbor index for this neighbor has failed
+            # because of a low memory condition.
+            #
+            # %BGP-3-NOBITFIELD: Could not allocate bitfield. Cannot open
+            # session to [chars]
+            ##########
+    
+            $MOI_Remote = rtrim(extract($Message, " session to (.*)"))
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "NOTIFICATION":
+    
+            ##########
+            # An error condition has been detected in the BGP session. A
+            # notification packet is being sent or received, and the session
+            # will be reset. This message appears only if the
+            # log-neighbor-changes command is configured for the BGP process.
+            #
+            # %BGP-3-NOTIFICATION: [chars] neighbor [IP_address] [dec]/[dec]
+            # ([chars]) [dec] bytes [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " neighbor ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = @AlertGroup + " ( " + extract($Message, " neighbor .* [0-9]+/[0-9]+ \((.*)\) [0-9]+ ") + " )"
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            $OS_ExpireTime = 1800
+    
+        case "ORF_PFXLIST":
+    
+            ##########
+            # The received prefix list ORF is misformatted.
+            #
+            # %BGP-3-ORF_PFXLIST: Received misformatted prefixlist ORF from
+            # [chars]
+            ##########
+    
+            $MOI_Remote = rtrim(extract($Message, " ORF from (.*)"))
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+    
+        case "RADIXINIT":
+    
+            ##########
+            # Initialization of the radix trie could not be accomplished
+            # because of a low memory condition.
+            #
+            # %BGP-3-RADIXINIT: Radix trie initialization failed
+            ##########
+    
+            @AlertKey = ""
+    
+        case "VERSION_WRAP":
+    
+            ##########
+            # The BGP table version has reached its maximum value and has
+            # wrapped around. The message describes this event.
+            #
+            # %BGP-5-VERSION_WRAP: bgp version wrapped of [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "VPNV4NH_IF":
+    
+            ##########
+            # A VPNv4 route is being sent to the IBGP neighbor indicated in the
+            # messages. The next hop is one of the directly connected physical
+            # interfaces. It is possible that the label for the address of the
+            # next hop is being removed in the MPLS cloud one hop too soon.
+            # Because the provider (P) routers do not store VPN information,
+            # they do not know where to forward packets that carry the BGP
+            # label. If the address is not available at the correct hop, it
+            # could break connectivity between VPN sites.
+            #
+            # %BGP-4-VPNV4NH_IF: Nexthop [IP_address] may not be reachable from
+            # neigbor [IP_address] - not a loopback
+            ##########
+    
+            $MOI_Remote = extract($Message, " from neigbor ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey =  "Peer: " + $MOI_Remote + ", Next Hop: " + extract($Message, "Nexthop ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) may not ")
+    
+        case "VPNV4NH_MASK":
+    
+            ##########
+            # A VPNv4 route is being sent to the IBGP neighbor. The address of
+            # the next hop is a loopback interface that does not have a /32
+            # mask defined. OSPF is being used on this loopback interface, and
+            # the OSPF network type of this interface is LOOPBACK. OSPF
+            # advertises this IP address as a host route (with mask /32),
+            # regardless of what mask is configured. This advertising conflicts
+            # with TDP, which uses configured masks, so the TDP neighbors may
+            # not receive a tag for the route indicated in this error message.
+            # This condition could break connectivity between sites that belong
+            # to the same VPN.
+            #
+            # %BGP-4-VPNV4NH_MASK: Nexthop [IP_address] may not be reachable
+            # from neigbor [IP_address] - not /32 mask
+            ##########
+    
+            $MOI_Remote = extract($Message, " from neigbor ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey =  "Peer: " + $MOI_Remote + ", Next Hop: " + extract($Message, "Nexthop ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) may not ")
+        
+        default:
+                    
+            $UseCiscoIosDefaults = 1
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-BGP.include.syslog.rules >>>>>")

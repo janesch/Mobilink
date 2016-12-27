@@ -1,0 +1,373 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-ACL.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "ACL": ### Access Control Lists (ACL) messages.
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-ACL.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "TASKFAIL":
+        
+            ##########
+            # This message indicates that the ACL task cannot be
+            # created, so no security or QoS functions are available.
+            #
+            # ACL-2-TASKFAIL: ACL task exits
+            ##########
+            
+            @AlertKey = ""
+            
+        case "VACLLOGTASKFAIL":
+        
+            ##########
+            # This message indicates that the VLAN Access Control List
+            # (VACL) logging task is ending. [dec] is the VLAN number.
+            #
+            # ACL-2-VACLLOGTASKFAIL: VACL Logging task exits: [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "exits: ([0-9]+)")
+        
+        case "NOLABEL":
+        
+            ##########
+            # This message indicates that the hardware cannot map an
+            # ACL to the VLAN or to the port.
+            #
+            # ACL-3-NOLABEL: acl engine is out of label
+            ##########
+            
+            @AlertKey = ""
+        
+        case "NOLOU":
+        
+            ##########
+            # This message indicates that the hardware is out of
+            # logical operation units, which process the TCP/UDP port
+            # number operations.
+            #
+            # ACL-3-NOLOU: acl engine is out of logical operation unit
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PVLAN_ADDPVLANFAIL":
+        
+            ##########
+            # This message is displayed when an existing VLAN becomes a
+            # secondary VLAN and there was an IOS ACL or dynamic ACE
+            # mapped to the existing VLAN. It can also occur when an
+            # existing VLAN becomes a secondary VLAN and the primary
+            # VLAN has a policy routing ACL configured (valid on
+            # Supervisor Engine 2 only). The first [dec] is the
+            # secondary VLAN number and the second [dec] is the primary
+            # VLAN number.
+            #
+            # ACL-3-PVLAN_ADDPVLANFAIL: Failed to add secondary VLAN
+            # [dec] to primary VLAN [dec]
+            ##########
+            
+            @AlertKey = "Pri. VLAN: " + extract($Message, "primary VLAN ([0-9]+)") + ", Sec. VLAN: " + extract($Message, "secondary VLAN ([0-9]+) to")
+        
+        case "PVLAN_ATTACHACLFAIL":
+        
+            ##########
+            # This message is displayed when the router tries to
+            # download an IOS ACL or dynamic ACEs on an existing
+            # secondary VLAN, or when a policy routing ACL is
+            # configured on a primary VLAN. [dec] is the VLAN number.
+            #
+            # ACL-3-PVLAN_ATTACHACLFAIL: Failed to map router ACL to
+            # private VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_DELETEACLFAIL":
+        
+            ##########
+            # This message indicates that an attempt was made to remove
+            # router ACLs from a secondary VLAN. [dec] is the secondary
+            # VLAN number.
+            #
+            # ACL-3-PVLAN_DELETEACLFAIL: Failed to delete router ACL
+            # from secondary VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_LDPGATEDLTACLFAIL":
+        
+            ##########
+            # This message indicates that an ACL created by the
+            # LocalDirector Accelerator (LDA) feature cannot be removed
+            # from a secondary VLAN. [dec] is the secondary VLAN
+            # number.
+            #
+            # ACL-3-PVLAN_LDPGATEDLTACLFAIL: Failed to delete LDA ACL
+            # from secondary VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_LDPGATEMAPFAIL":
+        
+            ##########
+            # This message indicates that an ACL created by the LDA
+            # feature cannot be mapped to a secondary VLAN. [dec] is
+            # the secondary VLAN number.
+            #
+            # ACL-3-PVLAN_LDPGATEMAPFAIL: Failed to propagate LDA ACL
+            # to secondary VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_PGATEDFLTACTION":
+        
+            ##########
+            # This message indicates that the router set a default
+            # action on a primary VLAN, but this action was not sent to
+            # the secondary VLANs. [dec] is the secondary VLAN number.
+            #
+            # ACL-3-PVLAN_PGATEDFLTACTION: Failed to propagate router
+            # default action to secondary to VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_PGATEDLTACLFAIL":
+        
+            ##########
+            # This message is displayed when a delete operation on a
+            # primary VLAN does not succeed in removing the mapping of
+            # the same ACL from the secondary VLANs. [dec] is the
+            # secondary VLAN number.
+            #
+            # ACL-3-PVLAN_PGATEDLTACLFAIL: Failed to propagate router
+            # ACL deletion to secondary VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_PGATEMAPFAIL":
+        
+            ##########
+            # This message indicates that an IOS ACL downloaded to a
+            # primary VLAN did not get propagated to the secondary
+            # VLANs. [dec] is the secondary VLAN number.
+            #
+            # ACL-3-PVLAN_PGATEMAPFAIL: Failed to propagate router ACL
+            # to secondary VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "PVLAN_SETDFLTFAIL":
+        
+            ##########
+            # This message is displayed when the router tries to set a
+            # default action on a secondary VLAN. [dec] is the
+            # secondary VLAN number.
+            #
+            # ACL-3-PVLAN_SETDFLTFAIL: Failed to set router default
+            # action on secondary VLAN [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "RACLMAPCOMMITFAIL":
+        
+            ##########
+            # This message indicates that the VLAN is configured with
+            # Private VLAN (PVLAN) and that the Router Access Control
+            # List (RACL) for this VLAN cannot be configured in the
+            # Policy Feature Card (PFC). The RACL is enforced in the
+            # Multilayer Switch Feature Card (MSFC) software. [dec] is
+            # the VLAN number.
+            #
+            # ACL-3-RACLMAPCOMMITFAIL: Failed to map Router ACL to VLAN
+            # [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+)")
+        
+        case "TCAMFULL":
+        
+            ##########
+            # This message indicates that the hardware ternary content
+            # addressable memory (TCAM) table was full when you
+            # attempted to configure a new ACL.
+            #
+            # ACL-3-TCAMFULL: acl engine TCAM table is full
+            ##########
+            
+            @AlertKey = ""
+        
+        case "VACLACLCOMMITFAIL":
+        
+            ##########
+            # This message indicates that the Access Control List (ACL)
+            # was not committed to the hardware. [chars] is the name of
+            # the Access Control List.
+            #
+            # ACL-3-VACLACLCOMMITFAIL: Failed to commit Security ACL
+            # [chars]
+            ##########
+            
+            @AlertKey = "ACL: " + extract($Message, "Security ACL (.*)")
+        
+        case "VACLACLNVRAMFAIL":
+        
+            ##########
+            # This message indicates that the NVRAM and hardware are
+            # not working together. The ACL configuration was saved to
+            # the hardware but was not saved to NVRAM. [chars] is the
+            # name of the Access Control List.
+            #
+            # ACL-3-VACLACLNVRAMFAIL: Failed to commit Security ACL
+            # [chars] to NVRAM
+            ##########
+            
+            @AlertKey = "ACL: " + extract($Message, "Security ACL (.*) to")
+        
+        case "VACLMAPCOMMITFAIL":
+        
+            ##########
+            # This message indicates that the mapping between the ACL
+            # and the VLAN has failed. [chars] is the Access Control
+            # List name and [dec] is the VLAN name.
+            #
+            # ACL-3-VACLMAPCOMMITFAIL: Failed to Map Security ACL
+            # [chars] to Vlan [dec]
+            ##########
+            
+            @AlertKey = "ACL: " + extract($Message, "Security ACL (.*) to") + ", VLAN: " + extract($Message, "Vlan ([0-9]+)")
+        
+        case "VACLMAPDELETEFAIL":
+        
+            ##########
+            # This message indicates that the VACL cannot be detached
+            # from the VLAN. [chars] is the VACL string and [dec] is
+            # the VLAN interface number.
+            #
+            # ACL-3-VACLMAPDELETEFAIL: Failed to remove map between ACL
+            # [chars] and Vlan [dec]
+            ##########
+            
+            @AlertKey = "ACL: " + extract($Message, "ACL (.*) and") + ", VLAN: " + extract($Message, "Vlan ([0-9]+)")
+        
+        case "ACLMERGE":
+        
+            ##########
+            # This message indicates that the ACL merge algorithm
+            # binary decision diagram (BDD) was not enabled because the
+            # supervisor engine has insufficient DRAM memory.
+            #
+            # ACL-4-ACLMERGE: Failed to enable bdd: not enough memory
+            ##########
+            
+            @AlertKey = ""
+        
+        case "RACLCONFLICTLDA":
+        
+            ##########
+            # This message indicates that you are trying to configure
+            # IOS ACL on a VLAN that has LocalDirector Accelerator
+            # (LDA) configured. The switch fails the IOS ACL
+            # configuration. Vlan [dec] is the VLAN number.
+            #
+            # ACL-5-RACLCONFLICTLDA: RACL conflicts with LDA on Vlan
+            # [dec]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "Vlan ([0-9]+)")
+        
+        case "LOUEXPANSION":
+        
+            ##########
+            # This message indicates that the ACL code is converting an
+            # access control entry (ACE) into a series of eqivalent
+            # ACEs to overcome an out of logical operator unit (LOU)
+            # condition.
+            #
+            # ACL-6-LOUEXPANSION: Acl engine is performing l4 operators
+            # expansion
+            ##########
+            
+            @AlertKey = ""
+        
+        case "VACLFINISHRESTORE":
+        
+            ##########
+            # This message is printed after the ACL configuration has
+            # been restored to the hardware. Traffic on VLANs with ACLs
+            # mapped to them follows the ACL configuration rules.
+            #
+            # ACL-6-VACLFINISHRESTORE: Finished restoring Security ACL
+            # configuration to hardware
+            ##########
+            
+            @AlertKey = ""
+        
+        case "VACLSTARTRESTORE":
+        
+            ##########
+            # This message is printed at startup to notify the user
+            # that the ACL configuration is being restored to hardware.
+            # All traffic is denied through VLANs that have ACLs mapped
+            # to them until the next message (VACLFINISHRESTORE) is
+            # printed.
+            #
+            # ACL-6-VACLSTARTRESTORE: Restoring Security ACL
+            # configuration to hardware
+            ##########
+            
+            @AlertKey = ""
+        
+        case "VACLLOG":
+        
+            ##########
+            # This message is generated when the VACL logging function
+            # is enabled. Logged denied-packet information is displayed
+            # on the console or forwarded to the syslog server in the
+            # VACLLOG message format. The first [dec] is the VLAN
+            # number, Port [dec][dec] is module number and port number,
+            # and [chars] contains the source IP address, TCP source
+            # port number, destination IP address, TCP destination port
+            # number, and number of packets.
+            #
+            # ACL-6-VACLLOG: VLAN [dec] (Port [dec][dec]) denied
+            # [chars]
+            ##########
+            
+            @AlertKey = "VLAN: " + extract($Message, "VLAN ([0-9]+) ") + "Module: " + extract($Message, "Port ([0-9]+) [0-9]+") + ", Port: " + extract($Message, "Port [0-9]+ ([0-9]+)")
+        
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-ACL.include.syslog.rules >>>>>")

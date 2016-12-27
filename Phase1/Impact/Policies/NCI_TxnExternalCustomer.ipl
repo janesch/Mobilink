@@ -1,0 +1,86 @@
+////////////////////////////////////////////////
+//
+//	TxnExternalCustomer.ipl
+//
+//	Impact policy for Mobilink - TxN External Customer Alarms
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100608	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+
+// is there  an existing TT for this Event?
+
+if (EventContainer.MaximoStatus <> 0)
+{
+	// There is already a TT for this Event
+	// Update TT - 	LastOccurrence
+	//			Tally
+}
+else
+{
+	// Create a new TT
+	EventContainer.MaximoStatus = 1;
+	ReturnEvent(EventContainer);
+}
+// The first time we see this event we need to set ImpactDate as if it's 0 we have an issue
+if(EventContainer.ImpactDate == 0)
+{
+	EventContainer.ImpactDate = EventContainer.FirstOccurrence
+}
+
+//Is there already a Intermittent Customer Alarm
+DataType = "Status";		// this needs to be setup
+Filter = "Class = 200005 EventType = '" + @EventType + "'";		// this needs to be setup
+CountOnly = False;
+ExistingEvent = GetByFilter(DataType, Filter, CountOnly);
+Num_ExistingEvent = Num;
+
+
+ElapsedTime = float(EventContainer.LastOccurrence) - float(EventContainer.ImpactDate)
+
+log("ImpactDate= " + EventContainer.ImpactDate);
+log("LastOccurrence = " + EventContainer.LastOccurrence);
+log("ElapsedTime = " + ElapsedTime );
+
+if(ExistingEvent == 0)
+{
+	//Create new Event
+	/ Create New Synthetic Event
+	Log("Create New Event");
+	NewEvent = NewEvent(DefaultEventReader);
+	NewEvent.EventReaderName = "DefaultEventReader";
+	NewEvent.Domain=EventContainer.Domain;
+	NewEvent.Region=EventContainer.Region;
+	NewEvent.ManCity=EventContainer.ManCity;
+	NewEvent.CovCity=EventContainer.CovCity;
+	NewEvent.Agent = "Impact";
+	NewEvent.MaximoStatus= 1;
+	NewEvent.AlertGroup = ExternalCustomer;
+	NewEvent.Identifier= "ExternalCustomer 20100608" + EventContainer.AlertGroup + EventContainer.AlertKey + ExternalCustomer;
+	NewEvent.Summary= "Core Hardware Alarm Handling for " + Assco_NE ;
+	NewEvent.Severity= 5;
+	NewEvent.Type= 1;
+	NewEvent.Tally= 1;
+	NewEvent.Node= "Impact";
+	NewEvent.FirstOccurrence = NowTime ;
+	NewEvent.LastOccurrence = NowTime ;
+	NewEvent.Class = 200005;
+	ReturnEvent(NewEvent);
+
+
+}
+else
+{
+	//Update Current Event
+	ExistingEvent.LastOccurrence = NowTime;
+	ExistingEvent.Tally = ExistingEvent.Tally + 1;
+	ReturnEvent(ExistingEvent);
+}
+
+
+
+
+
+

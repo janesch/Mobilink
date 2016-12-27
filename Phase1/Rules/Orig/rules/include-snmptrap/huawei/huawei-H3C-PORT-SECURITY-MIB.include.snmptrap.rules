@@ -1,0 +1,484 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-PORT-SECURITY-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-PORT-SECURITY-MIB release V1.5
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-PORT-SECURITY-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.2.26.1.3": ### Huawei Technologies - Notifications from H3C-PORT-SECURITY-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-PORT-SECURITY-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cSecureAddressLearned
+
+            ##########
+            # This trap is sent when a new station has been learned. The port
+            # on which the address was received is the first object, and the
+            # MAC address of the learned station is in the second object.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            details($ifIndex,
+                    $h3cSecureAddrMAC)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureAddressLearned"
+
+            @AlertGroup = "Secure Address Learned"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2
+            @Summary = "New Station Learned  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### h3cSecureViolation
+
+            ##########
+            # This trap is sent whenever a security violation has occurred.
+            # The port on which the violation occured is the first object, and
+            # the MAC address of the offending station is in the second object.
+            # ifAdminStatus indicates if the port has been disabled because of
+            # the violation. The implementation may not send violation traps
+            # from the same port at intervals of less than 5 seconds.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = ifAdminStatus - The desired state of the interface. The
+            #        testing(3) state indicates that no operational packets
+            #        can be passed.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $ifAdminStatus = lookup($3,ifAdminStatus) + " ( " + $3 + " )"
+            details($ifIndex,
+                    $h3cSecureAddrMAC,
+                    $ifAdminStatus)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureViolation"
+
+            @AlertGroup = "Security Violation"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2
+            @Summary = "Security Violation  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### h3cSecureLoginFailure
+
+            ##########
+            # This trap is sent whenever a user network access authorisation
+            # has failed. The port on which the violation occured is the first
+            # object, and the MAC address of the offending station is in the
+            # second object. The dot1xAuthSessionUserName is the identity
+            # supplied during the user authorisation.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = dot1xAuthSessionUserName - The User-Name representing the
+            #        identity of the Supplicant PAE.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $dot1xAuthSessionUserName = $3
+            $dot1xPaePortNumber = extract($OID3, "\.([0-9]+)$")
+            details($ifIndex,
+                    $h3cSecureAddrMAC,
+                    $dot1xAuthSessionUserName,
+                    $dot1xPaePortNumber)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureLoginFailure"
+
+            @AlertGroup = "Secure Login Failure"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2 + ", " + "dot1xAuthSessionStatsEntry." + $dot1xPaePortNumber 
+            @Summary = "Secure Login Failure  (  Interface: " + $1 + ", MAC-address: " + $2 + ", Username: " + $3 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### h3cSecureLogon
+
+            ##########
+            # This trap is sent when a new session is started for an authorised
+            # port user. The port on which the violation occured is the first
+            # object, and the MAC address of the offending station is in the
+            # second object. The dot1xAuthSessionUserName is the identity
+            # supplied during the user authorisation.
+            # The dot1xAuthSessionAuthenticMethod indicates how the user was
+            # authorised. The h3cSecurePortVlanMembershipList object identifies
+            # the VLAN membership assigned to the port on session activation.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = dot1xAuthSessionUserName - The User-Name representing the
+            #        identity of the Supplicant PAE.
+            # $4 = dot1xAuthSessionAuthenticMethod - The authentication method
+            #        used to establish the session.
+            # $5 = h3cSecurePortVlanMembershipList - This is a dummy MIB object
+            #        referenced by the h3csecureLogon and h3csecureLogoff traps.
+            #        This object contains a comma separated list of the VLAN
+            #        identifiers (0-4095) assigned to a port. A tagged VLAN has a
+            #        'T' suffix after the VLAN number and an untagged VLAN may
+            #        have an optional 'U' suffix.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $dot1xAuthSessionUserName = $3
+            $dot1xAuthSessionAuthenticMethod = lookup($4,huaweiSessionAuthenticMethod) 
+            $h3cSecurePortVlanMembershipList = $5
+            $dot1xPaePortNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureLogon"
+
+            @AlertGroup = "Secure Logon"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2 + ", " + "dot1xAuthSessionStatsEntry." + $dot1xPaePortNumber
+            @Summary = "Secure Logon, User: " + $3 + ", Method: " + $4 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime =1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $dot1xAuthSessionAuthenticMethod = $huaweiSessionAuthenticMethod + " ( " + $4 + " )"
+            details($ifIndex,$h3cSecureAddrMAC,
+                    $dot1xAuthSessionUserName,
+                    $dot1xAuthSessionAuthenticMethod,
+                    $h3cSecurePortVlanMembershipList,
+                    $dot1xPaePortNumber)
+
+        case "5": ### h3cSecureLogoff
+
+            ##########
+            # This trap is sent when a user session is terminated. The port
+            # on which the violation occured is the first object, and the MAC
+            # address of the offending station is in the second object.
+            # The dot1xAuthSessionUserName is the identity supplied during the
+            # user authorisation. The dot1xAuthSessionTerminateCause indicates
+            # the reason why the session was terminated.
+            # The h3cSecurePortVlanMembershipList object identifies the VLAN
+            # membership assigned to the port on session termination.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = dot1xAuthSessionUserName - The User-Name representing the
+            #        identity of the Supplicant PAE.
+            # $4 = dot1xAuthSessionTerminateCause - The reason for the session
+            #        termination.
+            # $5 = h3cSecurePortVlanMembershipList - This is a dummy MIB object
+            #        referenced by the h3csecureLogon and h3csecureLogoff traps.
+            #        This object contains a comma separated list of the VLAN
+            #        identifiers (0-4095) assigned to a port. A tagged VLAN has a
+            #        'T' suffix after the VLAN number and an untagged VLAN may
+            #        have an optional 'U' suffix.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $dot1xAuthSessionUserName = $3
+            $dot1xAuthSessionTerminateCause = lookup($4,huaweiSessionTerminateCause) 
+            $h3cSecurePortVlanMembershipList = $5
+            $dot1xPaePortNumber = extract($OID3, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureLogoff"
+
+            @AlertGroup = "Secure Logoff"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2 + ", " + "dot1xAuthSessionStatsEntry." + $dot1xPaePortNumber
+            @Summary = "Secure Logoff, User: " + $3 + ", Cause: " + $dot1xAuthSessionTerminateCause + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $dot1xAuthSessionTerminateCause = $huaweiSessionTerminateCause + " ( " + $4 + " )"
+            details($ifIndex,$h3cSecureAddrMAC,
+                    $dot1xAuthSessionUserName,
+                    $dot1xAuthSessionTerminateCause,
+                    $h3cSecurePortVlanMembershipList,
+                    $dot1xPaePortNumber)
+
+        case "6": ### h3cSecureRalmLoginFailure
+
+            ##########
+            # This trap is sent whenever a user network access authentication has
+            # failed. The port on which the violation occured is the first object,
+            # and the MAC address of the offending station is in the second object.
+            # The authentication mode indicates how the user was authorised.
+            # The h3cSecureRalmAuthUsername is the identity supplied during the
+            # user authentication.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = h3cSecureRalmAuthMode - This controls how MAC addresses are
+            #        authenticated.
+            # $4 = h3cSecureRalmAuthUsername - This is the username used for
+            #        authentication requests where h3cSecureRalmAuthMode is
+            #        papUsernameFixed. Default shall be 'mac'.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $h3cSecureRalmAuthMode = lookup($3,huaweiSecureRalmAuthMode)
+            $h3cSecureRalmAuthUsername = $4
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureRalmLoginFailure"
+
+            @AlertGroup = "Secure Ralm Login Failure"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2
+            @Summary = "Secure Ralm Login Failure, Username: " + $4 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $h3cSecureRalmAuthMode = $huaweiSecureRalmAuthMode + " ( " + $3 + " )"
+            details($ifIndex,$h3cSecureAddrMAC,
+                    $h3cSecureRalmAuthMode,
+                    $h3cSecureRalmAuthUsername)
+
+        case "7": ### h3cSecureRalmLogon
+
+            ##########
+            # This trap is sent when a new session is started for an authorised
+            # port user. The port on which the violation occured is the first
+            # object, and the MAC address of the offending station is in the
+            # second object. The authentication mode indicates how the user was
+            # authorised. The h3cSecureRalmAuthUsername is the identity supplied
+            # during the user authentication. The h3cSecurePortVlanMembershipList
+            # object identifies the VLAN membership assigned to the port on
+            # session activation.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = h3cSecureRalmAuthMode - This controls how MAC addresses are
+            #        authenticated.
+            # $4 = h3cSecureRalmAuthUsername - This is the username used for
+            #        authentication requests where h3cSecureRalmAuthMode is
+            #        papUsernameFixed. Default shall be 'mac'.
+            # $5 = h3cSecurePortVlanMembershipList - This is a dummy MIB object
+            #        referenced by the h3csecureLogon and h3csecureLogoff traps.
+            #        This object contains a comma separated list of the VLAN
+            #        identifiers (0-4095) assigned to a port. A tagged VLAN has
+            #        a 'T' suffix after the VLAN number and an untagged VLAN may
+            #        have an optional 'U' suffix.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $h3cSecureRalmAuthMode = lookup($3,huaweiSecureRalmAuthMode)
+            $h3cSecureRalmAuthUsername = $4
+            $h3cSecurePortVlanMembershipList = $5
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureRalmLogon"
+
+            @AlertGroup = "Secure Ralm Logon"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2
+            @Summary = "Secure Ralm Logon, User: " + $4 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $h3cSecureRalmAuthMode = $huaweiSecureRalmAuthMode + " ( " + $3 + " )"
+            details($ifIndex,$h3cSecureAddrMAC,
+                    $h3cSecureRalmAuthMode,
+                    $h3cSecureRalmAuthUsername,
+                    $h3cSecurePortVlanMembershipList)
+
+        case "8": ### h3cSecureRalmLogoff
+
+            ##########
+            # This trap is sent when a new session is started for an authorised
+            # port user. The port on which the violation occured is the first
+            # object, and the MAC address of the offending station is in the
+            # second object. The authentication mode indicates how the user was
+            # authorised. The h3cSecureRalmAuthUsername is the identity supplied
+            # during the user authentication. The h3cSecurePortVlanMembershipList
+            # object identifies the VLAN membership assigned to the port on
+            # session activation.
+            #
+            # $1 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $2 = h3cSecureAddrMAC - The MAC address of a station assigned
+            #        to this port. This is the second index into the
+            #        h3cSecureAddressTable.
+            # $3 = h3cSecureRalmAuthMode - This controls how MAC addresses are
+            #        authenticated.
+            # $4 = h3cSecureRalmAuthUsername - This is the username used for
+            #        authentication requests where h3cSecureRalmAuthMode is
+            #        papUsernameFixed. Default shall be 'mac'.
+            # $5 = h3cSecurePortVlanMembershipList - This is a dummy MIB object
+            #        referenced by the h3csecureLogon and h3csecureLogoff traps.
+            #        This object contains a comma separated list of the VLAN
+            #        identifiers (0-4095) assigned to a port. A tagged VLAN has
+            #        a 'T' suffix after the VLAN number and an untagged VLAN may
+            #        have an optional 'U' suffix.
+            ##########
+
+            $ifIndex = $1
+            $h3cSecureAddrMAC = $2
+            $h3cSecureRalmAuthMode = lookup($3,huaweiSecureRalmAuthMode)
+            $h3cSecureRalmAuthUsername = $4
+            $h3cSecurePortVlanMembershipList = $5
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-PORT-SECURITY-MIB-h3cSecureRalmLogoff"
+
+            @AlertGroup = "Secure Ralm Logoff"
+            @AlertKey = "h3cSecureAddressEntry." + $1 + "." + $2
+            @Summary = "Secure Ralm Logoff, User: " + $4 + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $h3cSecureRalmAuthMode = $huaweiSecureRalmAuthMode + " ( " + $3 + " )"
+            details($ifIndex,$h3cSecureAddrMAC,
+                    $h3cSecureRalmAuthMode,
+                    $h3cSecureRalmAuthUsername,
+                    $h3cSecurePortVlanMembershipList)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+#########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-PORT-SECURITY-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-PORT-SECURITY-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-PORT-SECURITY-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-PORT-SECURITY-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-H3C-PORT-SECURITY-MIB.include.snmptrap.rules >>>>>")

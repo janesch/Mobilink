@@ -1,0 +1,293 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// BSSEnvironmental.ipl
+//
+// Impact policy for Mobilink - BSS Environmental Alarms
+// Chris Janes of Innovise ESM
+//
+// V0.0 20100706 Chris Janes Original
+//
+//
+// The policy expects only events to be processed by it to arrive
+///////////////////////////////////////////////////////////////////////////////
+// Here we need to find out the subgroup that an event belongs to
+// I guess there will be alookup of some sort
+ModAddText = Strip(@AddText, "1234567890");
+DataType = "impact_lookup";  // this needs to be setup
+Filter = "POLICY = 'BSSEnvironmental' and LOOKUP = '" + ModAddText + "'";  // this needs to be setup
+CountOnly = False;
+SubGroup= GetByFilter(DataType, Filter, CountOnly);
+Num_SubGroup= Num;
+Log("Num_SubGroup = " + Num_SubGroup);
+
+if (Num_SubGroup > 0)
+{
+    SubSet = SubGroup[0].VALUE1;
+    Severity= SubGroup[0].VALUE2;
+}
+else
+{
+    SubSet = "Other";
+    Severity = 2;
+}
+@AlertGroup = SubSet;
+//Log("Agent = " + @Agent);
+//Log("Node= " + @Node);
+//Log("EventType = " + @EventType );
+//Log("SubSet  = " + SubSet  );
+//Log("Severity= " + Severity);
+//Set Default Sleeptime
+Default_SleepTime = 60;
+// Note there is a requirement for Enrichment - this is being handled by Policy StdEnrich
+// is there an existing Synthetic Event/Ticket
+DataType = "Status";  // this needs to be setup
+//Filter = "Class = 200012 and AlertGroup = '" + SubSet + "'";  // this needs to be setup
+Filter = "Class = 200012 and Node = '" + @Node + "'";  // this needs to be setup
+log("Filter = " + Filter);
+CountOnly = False;
+Existing_Event= GetByFilter(DataType, Filter, CountOnly);
+Num_Existing_Event= Num;
+log("Num_Existing_Event = " + Num_Existing_Event);
+if (Num_Existing_Event> 0)
+{
+    // Update Existing Ticket
+    log("TT Exists");
+//    log("ServerName = " + Existing_Event[0].ServerName );
+//    log("ServerSerial = " + Existing_Event[0].ServerSerial );
+    //Update Child Event with Parent Details
+    if(EventContainer.SyntheticServerSerial == 0)
+    {
+        EventContainer.SyntheticServerName = Existing_Event[0].ServerName ;
+        EventContainer.SyntheticServerSerial = Existing_Event[0].ServerSerial ;
+        EventContainer.HibernateFlag = 3 ;
+        ReturnEvent(EventContainer);
+    }
+    JournalInsert = "Node: " + @Node + " EventType: " + @AlertGroup+ " Event Text: " + @AddText;
+//Log("Journal String = " + Existing_Event[0].ServerName + Existing_Event[0].ServerSerial + JournalInsert);
+    MobiLib.ParentJournalInsert(Existing_Event[0].ServerName, Existing_Event[0].ServerSerial, JournalInsert);
+}
+elseif(@HibernateFlag<> 0)
+{
+    // Do Nothing as Impact flag is set
+    //log("Impact Flag is SET");
+}
+elseif(@Agent == 'Impact')
+{
+    EventContainer.ImpactFlag = 3;
+    ReturnEvent(EventContainer);
+}
+else
+{
+    // Get Sleep Time
+    //First get SiteLevel from SITE_ID
+    DataType = "site_id";  
+    Filter = "SITE_ID= '" + @Node + "'";  // this needs to be setup
+    CountOnly = False;
+    SITE = GetByFilter(DataType, Filter, CountOnly);
+    Num_SITE = Num;
+    if(Num_SITE == 0)
+    {
+        SiteLevel = 0;
+    }
+    else
+    {
+        SiteLevel = SITE[0].SITE_LEVEL;
+    }
+    log("SiteLevel  = " + SiteLevel );
+    DataType = "SleepTime";  // this needs to be setup
+    Filter = "SITE_LEVEL = '" + SiteLevel + "' and ALARM_ID = '" + @AlertGroup + "'";  // this needs to be setup
+    log("Filter = " + Filter );
+    CountOnly = False;
+    CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+    Num_CMDB__SleepTime = Num;
+    log("Num_CMDB__SleepTime = " + Num_CMDB__SleepTime );
+    if(Num_CMDB_SleepTime == 0)
+    {
+        //No record for this so set default Time 
+        SleepTime = Default_SleepTime ;
+        log ("SleepTime0 = " + SleepTime);
+    }
+    else
+    {
+        //  SleepTime = int(int(CMDB_SleepTime[0].TIME_DAY) * 60);
+        SleepTime = 60;
+        log ("SleepTime = " + SleepTime);
+        if (SleepTime == 0)
+        {
+            SleepTime = Default_SleepTime ;
+        }
+    }
+    log ("SleepTime2 = " + SleepTime);
+    EventContainer.HibernateFlag = 1;
+    ReturnEvent(EventContainer);
+    ActionKey = "BSSEnvironmental" + @ServerSerial + @ServerName;
+    Log("Going To Sleep "  + ActionKey + " for " + SleepTime + " Sec");
+    Hibernate(ActionKey , wait, SleepTime);
+    EventContainer.HibernateFlag = 2;
+    ReturnEvent(EventContainer);
+    Log ("Wake Up " + ActionKey );
+    RemoveHibernation(ActionKey); 
+
+    // Does the event still exist?
+    DataType = "Status";  // this needs to be setup
+    Filter = "ServerSerial = " + EventContainer.ServerSerial;  // this needs to be setup
+    CountOnly = False;
+    Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Existing_Event = Num;
+    if (Num_Existing_Event = 0)
+    {
+        // Event nolonger existd
+        Log("Event No Longer Exists");
+    }
+    else
+    {
+        @EventID = "BSSEnvironmental";
+         ReturnEvent(EventContainer);
+        //Does the Synthetic Event Exist?
+        //  Log("Event DOES Exists");
+        DataType = "Status";  // this needs to be setup
+//        Filter = "Class = 200012 and AlertGroup = '" + @AlertGroup + "'";  // this needs to be setup
+        Filter = "Class = 200012 and Node = '" + @Node + "'";  // this needs to be setup
+        log("Filter2 = " + Filter );
+        NowTime = GetDate();
+        JournalInsert = "Node: " + @Node + " EventType: " + @AlertGroup+ " Event Text: " + @AddText; 
+        CountOnly = False;
+        Existing_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+        Num_Existing_Synthetic_Event = Num;
+        log ("Num_Existing_Synthetic_Event = " + Num_Existing_Synthetic_Event );
+        if(Num_Existing_Synthetic_Event == 0)
+        {
+            // Create New Synthetic Event
+            Log("Create New Event");
+            Log("AG = " + @AlertGroup);
+            NewEvent = NewEvent(DefaultEventReader);
+            NewEvent.EventReaderName = "DefaultEventReader";
+            NewEvent.Domain=EventContainer.Domain;
+            NewEvent.Region=EventContainer.Region;
+            NewEvent.ManCity=EventContainer.ManCity;
+            NewEvent.CovCity=EventContainer.CovCity;
+            NewEvent.Agent = "Impact";
+            NewEvent.MaximoStatus= 1;
+            NewEvent.AlertGroup = @AlertGroup;
+            NewEvent.AlertKey = SubSet ;
+            NewEvent.EventType = @EventType ;
+            NewEvent.Network= @Network;
+            NewEvent.Identifier= "BSSEnvironmental20100521" + @EventType  + Network + @AlertGroup ;
+            NewEvent.Summary= "BSS Environmental Alarm Handling for " + @Node;
+            NewEvent.Severity= 5;
+            NewEvent.Type= 1;
+            NewEvent.Tally= 1;
+            NewEvent.HibernateFlag = 99;
+//            NewEvent.Node= "Impact";
+            NewEvent.Node= EventContainer.Node;
+            NewEvent.SyntheticServerName = "";
+            NewEvent.SyntheticServerSerial = 0;
+            NewEvent.FirstOccurrence = NowTime ;
+            NewEvent.LastOccurrence = NowTime ;
+            NewEvent.LogTicket = 1;
+            NewEvent.Class = 200012;
+            AddDataItem('Status', NewEvent);
+            Log("New Event Created ");
+/*
+            LoopCount = 0;
+            Num_New_Synthetic_Event=0;
+            While ( Num_New_Synthetic_Event == 0)
+            {
+*/
+            // Here we need to wait for 
+            ActionKey = "CoreHardware" + @ServerSerial + @ServerName;
+            Log("Going To Sleep "  + ActionKey + " for  30");
+            Hibernate(ActionKey , wait, 30);
+            EventContainer.HibernateFlag = 3;
+            ReturnEvent(EventContainer);
+            Log ("Wake Up " + ActionKey );
+            RemoveHibernation(ActionKey); 
+ 
+            // Get Synthetic Event Data
+            DataType = "Status";  // this needs to be setup
+//            Filter = "Class = 200012 and AlertGroup = '" + @AlertGroup + "' and HibernateFlag = 99";  // this needs to be setup
+            Filter = "Class = 200012 and Node = '" + @Node + "'";  // this needs to be setup
+            log("Filter3 = " + Filter );
+            NowTime = GetDate();
+            CountOnly = False;
+            New_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+            Num_New_Synthetic_Event = Num;
+            
+/*
+            LoopCount = LoopCount + 1;
+            if (LoopCount = 10)
+            {
+                    Num_New_Synthetic_Event=1;
+            }
+            
+            }
+*/
+            log("Num_New_Synthetic_Event  = " + Num_New_Synthetic_Event );
+            // Get latest version of the child Event
+            DataType = "Status";  // this needs to be setup
+            Filter = "ServerSerial = " + EventContainer.ServerSerial;  // this needs to be setup
+            CountOnly = False;
+            Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+            Num_Existing_Event = Num;
+ 
+           Log("ParentJournalInsert");
+/*
+            if(Num_New_Synthetic_Event > 1)
+            {
+*/
+                MobiLib.ParentJournalInsert(New_Synthetic_Event[0].ServerName, New_Synthetic_Event[0].ServerSerial, JournalInsert);
+/*
+            }
+*/
+            log("New_Synthetic_Event[0].ServerName  = " + New_Synthetic_Event[0].ServerName );
+            log("New_Synthetic_Event[0].ServerSerial = " + New_Synthetic_Event[0].ServerSerial );
+            @SyntheticServerName = New_Synthetic_Event[0].ServerName ;
+            @SyntheticServerSerial = New_Synthetic_Event[0].ServerSerial ;
+            ReturnEvent(EventContainer);
+            
+            
+            // Here we write details of all current BSS Env Events to the Journal
+            DataType = "Status";  // this needs to be setup
+            Filter = "Node = " + EventContainer.Node + "Domain like BSS and EventType Like 'Environmental' and Severity > 1 and Class <> 200012";  // this needs to be setup
+            CountOnly = False;
+            BSS_Env_Event = GetByFilter(DataType, Filter, CountOnly);
+            Num_BSS_Env_Event = Num;
+            
+            //loop through
+
+            JournalInsert = "The following BSS Env. Events for Node " + @Node + " existed when this TT Raise";
+            MobiLib.ParentJournalInsert(New_Synthetic_Event[0].ServerName, New_Synthetic_Event[0].ServerSerial, JournalInsert);
+
+            counter = 0;
+            total = 0;
+            // Loop while counter is less than the number of records passed.
+            while(counter < Num_BSS_Env_Event)
+            {
+                // Build the message
+                JournalInsert = "      EventType: " + BSS_Env_Event[counter].AlertGroup+ " Event Text: " + BSS_Env_Event[counter].AddText;
+                MobiLib.ParentJournalInsert(New_Synthetic_Event[0].ServerName, New_Synthetic_Event[0].ServerSerial, JournalInsert);
+                counter = counter + 1;
+            }
+
+        }
+        else
+        {
+            log("Update SyntheticEvent");
+            //UPdatre TT
+            NewTally = Existing_Synthetic_Event[0].Tally + 1;
+            DataType = "Status";
+            Filter = "ServerName = '" + Existing_Synthetic_Event[0].ServerName  + "' and ServerSerial = " + Existing_Synthetic_Event[0].ServerSerial  ;
+            UpdateExpression = "LastOccurrence =  " + NowTime + " , Tally = " + NewTally;
+            BatchUpdate(DataType, Filter, UpdateExpression );
+
+            MobiLib.ParentJournalInsert(Existing_Synthetic_Event[0].ServerName, Existing_Synthetic_Event[0].ServerSerial, JournalInsert);
+        }
+    }
+}
+
+
+
+   EventContainer.ImpactFlag = 4;
+    ReturnEvent(EventContainer);
+
+

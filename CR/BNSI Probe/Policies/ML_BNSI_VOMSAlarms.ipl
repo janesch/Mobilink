@@ -1,0 +1,167 @@
+/*------------------------------------------------------------------------------------------------------- 
+ Policy Name: ML_BNSI_VOMS_Alarms
+
+ Author: Chris Janes, Innovise 
+
+ Description: This policy processes the Ericsson BNSI VOMS alarms.
+ This policy is based on ML_INVOMSAlarms authored by Dinesh Kumar
+ 
+ The policy will check for the existence of Synthetic event 
+ and updates the current network event as a child event for the synthetic event.
+ If a synthetic event is not available, then a new one will be generated.
+ Further details of the policies design can be found in BNSI-VOMS Alarm LLD.dox
+ 
+ Reviewed By: 
+ 
+ V 0.0  20111117    Chris Janes     Original
+------------------------------------------------------------------------------------------------------- 
+ Event Reader filter - Domain = 'IN' AND EventId = 'NET_IN_VOMS_002' AND ImpactFlag = 4 AND Type=1 AND Severity>0 AND HibernateFlag = 0 AND Agent != 'Netcool Impact' AND MaintFlag in (1,2)
+
+------------------------------------------------------------------------------------------------------- */
+
+
+log("------------Starting ML_INVOMSAlarms for Serial " + @Serial + " ------------------");
+
+// Set Impact Flag to show we have started
+@ImpactFlag = 5;
+ReturnEvent(EventContainer);
+log("ImpactFlag: " + @ImpactFlag);
+
+// Set Policy local variables
+paramSummary=@Summary;
+paramType=@Type;
+paramNodeAlias=@NodeAlias;
+paramLastOcc=@LastOccurrence;
+paramSerial=@Serial;
+if(@Type==2)
+{
+    paramSerial=@ProblemSerial;
+}
+
+
+// Hibernate the problem event for 5 minutes to verify if it is not cleared in the ObjectServer
+EventKey = @Serial;
+// ActionKey = EventKey + "-"+ getDate();
+ActionKey = EventKey + "ML_INVOMSAlarms" + "#" + getdate();
+TimeOut = 300;
+// For debug the following line has been added
+TimeOut = 36;
+log("Starting hibernation for: " + ActionKey + " Expire in: " + TimeOut);
+@HibernateFlag = 1;
+ReturnEvent(EventContainer);
+Hibernate(ActionKey, NULL, TimeOut);
+log("Deleting Hibernation for = " + ActionKey);
+RemoveHibernation(ActionKey);
+@HibernateFlag = 2;
+ReturnEvent(EventContainer);
+
+
+// Check if the event still exists in the ObjectServer
+DataSource= "defaultobjectserver";
+Query="select Serial from alerts.status where Serial = " + EventKey + " and Severity > 0";
+CountOnly = False;
+EventFound=DirectSQL(DataSource, Query, CountOnly);
+FoundFlag=length(EventFound);
+
+//Event does still exist in the Object Server
+If(FoundFlag > 0)
+{
+    // IS there an associated Synthetic Event?
+    log("Event " + EventKey + " still in ObjectServer. Verify if a corresponding synthetic event exists..."); 
+    DataType = "OS_Status";
+    SyntheticEventFilter = "EventId = 'SYN_IN_VOMS_001'";
+    SyntheticEvent = GetByFilter(DataType, SyntheticEventFilter, False);
+    NumOfSyntheticEvent = Length(SyntheticEvent);
+
+    // There is an associated Synthetic Event
+    If(NumOfSyntheticEvent > 0)
+    {
+        Log("Found an existing Synthetic Event - " + SyntheticEvent[0].ServerSerial);
+        
+        // Add the current network event as a child of the existing event via the journal
+        SyntheticEventSerial = SyntheticEvent[0].ServerSerial;
+        MobiLib.AddGenericJournal(SyntheticEventSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+        
+        //Set the @SyntheticServerSerial & ServerName for the network event equal to the synthetic event @ServerSerial.
+        @SyntheticServerSerial=SyntheticEvent[0].ServerSerial;
+        @SyntheticServerName=SyntheticEvent[0].ServerName;
+        ReturnEvent(EventContainer);
+        
+        //Update the severity of the synthetic event based on the severity of the most recently added network event.
+        DataSource= "defaultobjectserver";
+        Query="Update alerts.status SET Severity = " + @Severity + " WHERE ServerSerial = " + SyntheticEvent[0].ServerSerial;
+        CountOnly = False;
+        DirectSQL(DataSource, Query, CountOnly);
+    }
+    // There is no associated Synthetic Event
+    else
+    {
+        //Create Synthetic Event
+        Log("No Synthetic Event found, creating a new one");
+        NewSyntheticEvent = NewEvent("ML_DefaultEventReader");
+        NewSyntheticEvent.Node = @Node;
+        NewSyntheticEvent.NodeAlias = @NodeAlias;
+        NewSyntheticEvent.Summary = "IN VOMS OnlineTransport";
+        NewSyntheticEvent.AlertGroup = @AlertGroup;
+        NewSyntheticEvent.Agent = "Netcool Impact";
+        NewSyntheticEvent.Manager = "Netcool Impact";
+        NewSyntheticEvent.Severity = 5;
+        NewSyntheticEvent.Type = 1;
+        NewSyntheticEvent.LogTicket = 1;
+        NewSyntheticEvent.ImpactFlag = 6;
+        NewSyntheticEvent.MaintFlag = @MaintFlag;
+        NewSyntheticEvent.EventId = "SYN_IN_VOMS_001";
+        NewSyntheticEvent.Class = 200042;
+        NewSyntheticEvent.Site = @Site;
+        NewSyntheticEvent.SiteCode = @SiteCode;
+        NewSyntheticEvent.Identifier = Node + Summary + Type + EventId + @LastOccurrence;
+        NewSyntheticEvent.FirstOccurrence = getdate();
+        NewSyntheticEvent.LastOccurrence = getdate();
+        NewSyntheticEvent.Domain = @Domain;
+        NewSyntheticEvent.Region = @Region;
+        NewSyntheticEvent.ManCity = @ManCity;
+        NewSyntheticEvent.CovCity = @CovCity;
+        NewSyntheticEvent.OutsourceContractor = @OutsourceContractor;
+        NewSyntheticEvent.BusImportance = @BusImportance;
+        NewSyntheticEvent.Vendor = @Vendor;
+        NewSyntheticEvent.BSC_Name = @BSC_Name;
+        NewSyntheticEvent.BTS_Name = @BTS_Name;
+        NewSyntheticEvent.AdvCorrServerSerial = @Serial;
+        NewSyntheticEvent.OmcEms = @OmcEms;
+
+        //ReturnEvent(NewSyntheticEvent);
+        AddDataItem('OS_Status', NewSyntheticEvent );
+
+        //Populate @SyntheticServerSerial of the network event with serial of the new synthetic event.    
+
+        // Get Details of Synthetic Event
+        DataType = "OS_Status";
+        SyntheticEventFilter = "EventId = 'SYN_IN_VOMS_001'";
+        SyntheticEvent = GetByFilter(DataType, SyntheticEventFilter, False);
+        NumOfSyntheticEvent = Length(SyntheticEvent);
+        log("NumOfSyntheticEvent  = " + NumOfSyntheticEvent );
+
+        If(NumOfSyntheticEvent > 0)
+        {
+            // Update Network Event with SE details
+            log("SyntheticEvent[0].ServerSerial = " + SyntheticEvent[0].ServerSerial );
+            @SyntheticServerSerial=SyntheticEvent[0].ServerSerial ;
+            @SyntheticServerName=SyntheticEvent[0].ServerName;
+            ReturnEvent(EventContainer);
+            // Add the current network event as a child of the existing event via the journal
+            SyntheticEventSerial = SyntheticEvent[0].ServerSerial;
+            MobiLib.AddGenericJournal(SyntheticEventSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+
+        }
+    }
+}
+// The NE has been cleared during the hibernation period
+else
+{
+    log("Event " + EventKey + " is NOT in ObjectServer anymore (or it was cleared)"); 
+}
+
+// Mark the end of event processing 
+@ImpactFlag = 6;
+ReturnEvent(EventContainer);
+log("------------Stopping ML_INVOMSAlarms for Serial " + @Serial + " ------------------");

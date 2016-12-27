@@ -1,0 +1,1353 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CRYPTO.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CRYPTO": ### Encryption
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CRYPTO.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "AUDITFAIL":
+        
+            ##########
+            # The audit check that verifies encryption entitlement within Cisco
+            # IOS images has found either encryption in a nonencryption image
+            # or the wrong value within a Cisco IOS encryption image. Use of
+            # the encryption image may violate U.S. export laws and regulations.
+            #
+            # %CRYPTO-0-AUDITFAIL: Encryption audit check found the wrong level
+            # of encryption in this image
+            ##########
+            
+            @AlertKey = ""
+        
+        case "AUDITWARN":
+        
+            ##########
+            # The audit check verifying encryption entitlement within the Cisco
+            # IOS image could not be performed because of an incomplete system
+            # configuration.
+            #
+            # %CRYPTO-4-AUDITWARN: Encryption audit check could not be
+            # performed
+            ##########
+            
+            @AlertKey = ""
+        
+        case "AUTOGEN":
+        
+            ##########
+            # Auto-enroll has generated a new router key pair.
+            #
+            # %CRYPTO-6-AUTOGEN: Generated new [dec] bit key pair
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "new ([0-9]+) bit")
+        
+        case "AUTOSAVE":
+        
+            ##########
+            # Auto-enroll has obtained a new router key pair and certificate
+            # and has done an automatic memory write to NVRAM to save them.
+            #
+            # %CRYPTO-6-AUTOSAVE: Running configuration saved to NVRAM
+            ##########
+            
+            @AlertKey = ""
+        
+        case "BADFP":
+        
+            ##########
+            # The fingerprint of a certificate received from a CA did not match
+            # a fingerprint saved in NVRAM. The certificate may not be valid.
+            #
+            # %CRYPTO-3-BADFP: Certificate fingerprint mismatch for certificate
+            # - certificate not accepted
+            ##########
+            
+            @AlertKey = ""
+        
+        case "BADMAGIC":
+        
+            ##########
+            # An internal software error has occurred.
+            #
+            # %CRYPTO-3-BADMAGIC: Bad [chars] magic number ([hex]).
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Bad (.*) magic")
+        
+        case "CERTCHECK":
+        
+            ##########
+            # After the system checked the certificates saved in the memory
+            # with the CRL, it detected invalid certificates.
+            #
+            # %CRYPTO-3-CERTCHECK: Certificates with invalid status have been
+            # detected!!!
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERTFAIL":
+        
+            ##########
+            # The certificate enrollment has encountered a fatal error.
+            #
+            # %CRYPTO-6-CERTFAIL: Certificate enrollment failed.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERT_FATAL_ERR":
+        
+            ##########
+            # A fatal error has occurred during a certificate enroll encounter.
+            # The system will abort.
+            #
+            # %CRYPTO-6-CERT_FATAL_ERR: [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "CERTPENDING":
+        
+            ##########
+            # The request is waiting for approval by the CA administrator.
+            #
+            # %CRYPTO-6-CERTPENDING: Enter manual authentication ...
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERTREJECT":
+        
+            ##########
+            # The previously sent certificate enrollment request has been
+            # received by the CA. The CA has rejected the enrollment request.
+            #
+            # %CRYPTO-6-CERTREJECT: Certificate enrollment request was rejected
+            # by Certificate Authority
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERTRET":
+        
+            ##########
+            # The previously sent certificate enrollment request has been
+            # received by the CA. The CA has issued the certificate and sent
+            # back a copy.
+            #
+            # %CRYPTO-6-CERTRET: Certificate received from Certificate Authority
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERTRETFAIL":
+        
+            ##########
+            # The certificate enrollment transaction has failed because of an
+            # internal error.
+            #
+            # %CRYPTO-3-CERTRETFAIL: Certificate enrollment failed.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERTTFTPRECV":
+        
+            ##########
+            # The certificate for the router could not be received using TFTP.
+            #
+            # %CRYPTO-6-CERTTFTPRECV: Could not tftp router.s Certificate.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CERTTFTPSEND":
+        
+            ##########
+            # The certificate enrollment request could not be sent using TFTP.
+            #
+            # %CRYPTO-6-CERTTFTPSEND: Could not tftp Certificate enrollment
+            # request.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CET_END_OF_LIFE":
+        
+            ##########
+            # CET is not available for all Cisco IOS releases after and
+            # including Cisco IOS release 12.2(1).
+            #
+            # %CRYPTO-6-CET_END_OF_LIFE: CET connection msg in an
+            # IPSEC_ONLY_IMAGE
+            ##########
+            
+            @AlertKey = ""
+        
+        case "ENC_METHOD_NOT_SUPPORTED":
+        
+            ##########
+            # The configured encryption method is not supported.
+            #
+            # %CRYPTO-4-ENC_METHOD_NOT_SUPPORTED: Invalid encryption method for
+            # IKE policy [int]
+            ##########
+            
+            $MOI_Local = extract($Message, "IKE policy ([0-9]+)")
+            
+            @AlertKey = "IKE Policy: " + $MOI_Local
+        
+        case "ENROLL_CANCEL":
+        
+            ##########
+            # The current certificate enrollment has been canceled.
+            #
+            # %CRYPTO-6-ENROLL_CANCEL: Certificate enrollment is cancelled.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "GETCACERT":
+        
+            ##########
+            # The CA certificate was not found in memory.
+            #
+            # %CRYPTO-3-GETCACERT: Failed to find CA cert in memory.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "GETCARACERT":
+        
+            ##########
+            # CA or RA certificates could not be parsed or processed.
+            #
+            # %CRYPTO-3-GETCARACERT: Failed to receive RA/CA certificates.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "GETCERTINITIAL":
+        
+            ##########
+            # The current certificate enrollment has failed in manual mode.
+            #
+            # %CRYPTO-6-GETCERTINITIAL: Certificate enrollment failed in manual
+            # mode
+            ##########
+            
+            @AlertKey = ""
+        
+        case "GETCRL":
+        
+            ##########
+            # The attempt to query the CRL from the CA server has failed for
+            # one of several possible reasons.
+            #
+            # %CRYPTO-3-GETCRL: Query the Certificate Revocation List from CA
+            # failed.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "HTTPSEND":
+        
+            ##########
+            # A failure to send out a message to the CA server was caused by an
+            # HTTP transaction.
+            #
+            # %CRYPTO-3-HTTPSEND: Failed to send out message to CA server.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "CLEARTEXT":
+        
+            ##########
+            # Clear text traffic is passing through an interface that is
+            # configured for encryption. This traffic is accepted because the
+            # router has the "CRYPTO IPSEC OPTIONAL ENABLE" setting enabled,
+            # which allows such traffic.
+            #
+            # %CRYPTO-4-IA_CLEARTEXT: Unencrypted traffic [chars] [IP_address]
+            # because crypto optional is configured
+            ##########
+            
+            $MOI_Remote = extract($Message, " ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +because")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, " traffic (.*) [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ")
+        
+        case "IA_ENABLE":
+        
+            ##########
+            # Currently, the router has the "CRYPTO IPSEC OPTIONAL ENABLE"
+            # setting enabled. This setting allows data that normally would be
+            # encrypted to be sent unencrypted.
+            #
+            # %CRYPTO-4-IA_ENABLE: Security warning: crypto ipsec optional is
+            # configured
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IKEINIT":
+        
+            ##########
+            # An IKE initialization error has occurred.
+            #
+            # %CRYPTO-3-IKEINIT: [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "IKE_PAK_IN_Q_TIME_LIMIT_EXCEED":
+      
+            ##########
+            # An incoming IKE packet has spent too much time in the IKE input
+            # queues. This condition can occur when the IKE subsystem is under
+            # a heavy load because a lot of peers are trying to set up SAs at
+            # the same time and IKE is not able to handle all the incoming
+            # packets in a timely manner.       
+            #
+            # %CRYPTO-3-IKE_PAK_IN_Q_TIME_LIMIT_EXCEED: Pak spent too much time
+            # in the IKE input queues
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IKE_QUICKMODE_BAD_CERT":
+        
+            ##########
+            # An encrypting peer has attempted to establish an IPSec session
+            # with an interface for which it was unauthorized. This condition
+            # might be considered a hostile event.
+            #
+            # %CRYPTO-4-IKE_QUICKMODE_BAD_CERT: encrypted connection attempted
+            # with a peer without the\nconfigured certificate attributes
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IKE_TED_BAD_REPLY":
+        
+            ##########
+            # The received TED reply does not match the TED probe that is
+            # currently outstanding. This error might be a one-time occurrence
+            # caused by a delay of the TED reply or by ill-formed packets that
+            # were sent by the peer. Ill-formed packets sent by the peer may
+            # indicate a hostile event.
+            #
+            # %CRYPTO-6-IKE_TED_BAD_REPLY: Received TED reply that did not
+            # correspond to a TED probe
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IKMP_ADD_KEY_FAIL":
+        
+            ##########
+            # Keys are stored in key rings on the router. An attempt to add
+            # another key has failed.
+            #
+            # %CRYPTO-6-IKMP_ADD_KEY_FAIL: Unable to add public key for [chars]
+            # ([IP_address]) to key ring
+            ##########
+            
+            $MOI_Remote = extract($Message, " \(([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\) +to ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, " key for (.*) \([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\) +")
+        
+        case "IKMP_AUTH_FAIL":
+        
+            ##########
+            # The IKE process was unable to authenticate its security
+            # association with its remote peer.
+            #
+            # %CRYPTO-6-IKMP_AUTH_FAIL: Authentication method [dec] failed with
+            # host [IP_address]
+            ##########
+            
+            $MOI_Remote = extract($Message, " host ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+        
+        case "IKMP_BAD_CERT_USE":
+        
+            ##########
+            # X.509v3 certificates can contain usage restrictions that limit
+            # the use of the certificate for signatures or for key exchange
+            # (encryption). The peer attempted to use the certificate in a
+            # manner that violated these usage restrictions.
+            #
+            # %CRYPTO-6-IKMP_BAD_CERT_USE: Certificate for peer at [IP_address]
+            # prohibits attempted use ([chars]).
+            ##########
+            
+            $MOI_Remote = extract($Message, "at ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +prohibits")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, "attempted use \((.*)\)")
+        
+        case "IKMP_BAD_DOI_NOTIFY":
+        
+            ##########
+            # The DOI field in notify messages gives the receiver a context in
+            # which to understand the message being notified. This DOI value is
+            # not understood, and therefore the message cannot be understood.
+            #
+            # %CRYPTO-6-IKMP_BAD_DOI_NOTIFY: DOI of [dec] in notify message
+            # from [IP_address]
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_BAD_DOI_SA":
+        
+            ##########
+            # The DOI field of an SA offer defines how to parse the fields. The
+            # SAs that have an unknown DOI cannot be parsed.
+            #
+            # %CRYPTO-6-IKMP_BAD_DOI_SA: DOI value [dec] from SA offer from
+            # [IP_address] is invalid
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +is")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_BAD_MESSAGE":
+        
+            ##########
+            # A quick verification check is done on all received ISAKMP
+            # messages to ensure that all component payload types are valid and
+            # that the sum of their individual lengths equals the total length
+            # of the received message. This message indicates a failed
+            # verification check. Persistently bad messages could mean a
+            # denial-of-service attack or bad decryption.
+            #
+            # %CRYPTO-4-IKMP_BAD_MESSAGE: IKE message from [IP_address] failed
+            # its sanity check or is malformed
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +failed")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_CRYPT_FAILURE":
+        
+            ##########
+            # Encryption or decryption on a particular IKE thread has failed.
+            #
+            # %CRYPTO-6-IKMP_CRYPT_FAILURE: IKE (connection id [dec]) unable to
+            # [chars] packet
+            ##########
+            
+            $MOI_Local = extract($Message, "connection id ([0-9]+)")
+            
+            @AlertKey = "Connection ID: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "to (.*) packet")
+        
+        case "IKMP_INVALID_POLICY":
+        
+            ##########
+            # RSA encryption is not supported by Hi-Fn compression-based
+            # encryption (crypto) hardware accelerators.
+            #
+            # %CRYPTO-4-IKMP_INVALID_POLICY: ISAKMP policy rsa-encr not
+            # supported by crypto HW accelerator [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = rtrim(extract($Message, "HW accelerator (.*)$"))
+        
+        case "IKMP_INVAL_CERT":
+        
+            ##########
+            # The certificate given by the remote peer either has been revoked
+            # or has expired (the certificate is invalid) or the signature
+            # check on the certificate has failed (invalid signature).
+            #
+            # %CRYPTO-5-IKMP_INVAL_CERT: Certificate received from [IP_address]
+            # is bad: [chars]
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +is")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "is bad: (.*)$"))
+        
+        case "IKMP_MODE_FAILURE":
+        
+            ##########
+            # Negotiation with the remote peer has failed.
+            #
+            # %CRYPTO-6-IKMP_MODE_FAILURE: Processing of [chars] mode failed
+            # with peer at [IP_address]
+            ##########
+            
+            $MOI_Remote = extract($Message, "peer at ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, " of (.*) mode ")
+        
+        case "IKMP_NO_ID_CERT_ADDR_MATCH":
+        
+            ##########
+            # ISAKMP entities assume an identity to inform the peer of who or
+            # what they are. The claimed identity did not match the information
+            # taken from the IP address of the peer certificate.
+            #
+            # %CRYPTO-6-IKMP_NO_ID_CERT_ADDR_MATCH: ID of [IP_address] (type
+            # [dec]) and certificate addr with [IP_address]
+            ##########
+            
+            $MOI_Remote = extract($Message, "ID of ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer Cert. Address: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, "addr with ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+        
+        case "IKMP_NO_ID_CERT_DN_MATCH":
+        
+            ##########
+            # ISAKMP entities assume an identity to inform the peer of who or
+            # what they are. The claimed identity did not match the information
+            # taken from the name on the peer certificate.
+            #
+            # %CRYPTO-6-IKMP_NO_ID_CERT_DN_MATCH: ID of [chars] (type [dec])
+            # and certificate DN with [chars]
+            ##########
+            
+            $MOI_Remote = extract($Message, " of (.*) \(type ")
+            
+            @AlertKey = "Peer Cert. DN: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "[Dd][Nn] with (.*)$"))
+        
+        case "IKMP_NO_ID_CERT_FQDN_MATCH":
+        
+            ##########
+            # ISAKMP entities assume an identity to inform the peer of who or
+            # what they are. The claimed identity did not match the information
+            # taken from the FQDN of the peer certificate.
+            #
+            # %CRYPTO-6-IKMP_NO_ID_CERT_FQDN_MATCH: ID of [chars] (type [dec])
+            # and certificate fqdn with [chars]
+            ##########
+            
+            $MOI_Remote = extract($Message, " of (.*) \(type ")
+            
+            @AlertKey = "Peer Cert. FQDN: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "[Ff][Qq][Dd][Nn] with (.*)$"))
+        
+        case "IKMP_NO_ID_CERT_USER_FQDN_MATCH":
+        
+            ##########
+            # ISAKMP entities assume an identity to inform the peer of who or
+            # what they are. The claimed identity did not match the information
+            # taken from the FQDN of the peer certificate.
+            #
+            # %CRYPTO-6-IKMP_NO_ID_CERT_USER_FQDN_MATCH: ID of [chars] (type
+            # [dec]) and certificate user fqdn with [chars]
+            ##########
+            
+            $MOI_Remote = extract($Message, " of (.*) \(type ")
+            
+            @AlertKey = "Peer Cert. User FQDN: " + $MOI_Remote
+            
+            $CLARIFIER = rtrim(extract($Message, "[Ff][Qq][Dd][Nn] with (.*)$"))
+        
+        case "IKMP_NO_SA":
+        
+            ##########
+            # IKE maintains the current state for a communication in the form
+            # of security associations. No security association exists for the
+            # specified packet, and it is not an initial offer from the peer to
+            # establish one. This situation could indicate a denial-of-service
+            # attack.
+            #
+            # %CRYPTO-4-IKMP_NO_SA: IKE message from [IP_address] has no SA and
+            # is not an initialization offer
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +has")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_NOT_ENCRYPTED":
+        
+            ##########
+            # A portion of the IKE is unencrypted, and a portion is encrypted.
+            # This message should have been encrypted but was not.
+            #
+            # %CRYPTO-6-IKMP_NOT_ENCRYPTED: IKE packet from [IP_address] was
+            # not encrypted and it should.ve been.
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +was")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_PEER_INIT_FAILURE":
+        
+            ##########
+            # IKE has failed to allocate memory for the IKE peer tree.
+            #
+            # %CRYPTO-3-IKMP_PEER_INIT_FAILURE: IKE failed to create IKE peer
+            # tree or leaf node.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IKMP_PKT_OVERFLOW":
+        
+            ##########
+            # ISAKMP messages are carried in UDP packets and have their own
+            # message length field. The message length field of this message
+            # was greater than the length of the UDP packet. This situation
+            # could indicate a denial-of-service attack.
+            #
+            # %CRYPTO-4-IKMP_PKT_OVERFLOW: ISAKMP message from [IP_address]
+            # larger ([dec]) than the UDP packet length ([dec])
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +larger")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_SA_NOT_AUTH":
+        
+            ##########
+            # Although the IKE security association with the remote peer was
+            # not authenticated, the peer attempted to begin a Quick Mode
+            # exchange. This exchange can be performed only with an
+            # authenticated security association.
+            #
+            # %CRYPTO-6-IKMP_SA_NOT_AUTH: Cannot accept Quick Mode exchange
+            # from [IP_address] if SA is not authenticated!
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +if")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+        
+        case "IKMP_SA_NOT_OFFERED":
+        
+            ##########
+            # IKE peers negotiate policy by having the initiator offer a list
+            # of possible protection suites. The responder has returned a type
+            # of protection suite that the initiator did not offer.
+            #
+            # %CRYPTO-6-IKMP_SA_NOT_OFFERED: Remote peer [IP_address] responded
+            # with attribute [chars] not offered or changed
+            ##########
+            
+            $MOI_Remote = extract($Message, "peer ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +responded")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, "attribute (.*) not")
+        
+        case "IKMP_UNITY_BUT_NO_OU_IN_CERT":
+        
+            ##########
+            # The certificate presented by the Unity peer contains no
+            # organizational unit field. The organizational unit field is
+            # necessary to determine the policy information based on the group
+            # identity. As a result of the lack of an organizational unit
+            # field, IKE or IPSec negotiation may fail.
+            #
+            # %CRYPTO-6-IKMP_UNITY_BUT_NO_OU_IN_CERT: Cert presented by peer
+            # [IP_address] contains no OU field. Unable to obtain group identity.
+            ##########
+            
+            $MOI_Remote = extract($Message, "peer ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +contains")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+        
+        case "IKMP_UNK_EXCHANGE":
+        
+            ##########
+            # IKE performs actions on messages based on defined exchanges. The
+            # message that was received had an unknown exchange.
+            #
+            # %CRYPTO-6-IKMP_UNK_EXCHANGE: IKE peer at [IP_address] sent a
+            # message with unknown exchange [dec]
+            ##########
+            
+            $MOI_Remote = extract($Message, "at ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) +sent")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+        
+        case "INVALIDCACERT":
+        
+            ##########
+            # The CA certificate received from the CA server could not be
+            # processed.
+            #
+            # %CRYPTO-3-INVALIDCACERT: Failed to process CA certificate.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "INVALID_INPUT":
+        
+            ##########
+            # An internal software error has occurred.
+            #
+            # %CRYPTO-3-INVALID_INPUT: The input to the parser command is not
+            # correct
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IPSEC_AAA_START_FAILURE":
+        
+            ##########
+            # The AAA subsystem was unable to send the accounting start record
+            # for IPSec. This condition could be due to the unreachable status
+            # of the AAA server.
+            #
+            # %CRYPTO-4-IPSEC_AAA_START_FAILURE: IPSEC Accounting was unable to
+            # send start record
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IPSEC_AAA_STOP_FAILURE":
+        
+            ##########
+            # The AAA subsystem was unable to send the accounting stop record
+            # for IPSec. This condition could be due to the unreachable status
+            # of the AAA server.
+            #
+            # %CRYPTO-4-IPSEC_AAA_STOP_FAILURE: IPSEC Accounting was unable to
+            # send stop record
+            ##########
+            
+            @AlertKey = ""
+        
+        case "IPSEC_ENC_METHOD_NOT_SUPPORTED":
+        
+            ##########
+            # The configured encryption algorithm is not supported.
+            #
+            # %CRYPTO-4-IPSEC_ENC_METHOD_NOT_SUPPORTED: Transform [chars] not
+            # valid under IPSec transform [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Transform (.*) not") + " " + rtrim(extract($Message, "IPSec transform (.*)$"))
+        
+        case "ISAKMP_MANUAL_DELETE":
+        
+            ##########
+            # The IKE SA was deleted by user command. However, keepalives for
+            # this connection are enabled, and IPSec SAs covered by this IKE SA
+            # still exist. Because this IKE SA is now deleted, these IPSec SAs
+            # have no IKE SA covering them.
+            #
+            # %CRYPTO-6-ISAKMP_MANUAL_DELETE: IKE SA manually deleted. Do
+            # .clear crypto sa peer [IP_address]. to manually clear IPSec SA.s
+            # covered by this IKE SA.
+            ##########
+            
+            $MOI_Remote = extract($Message, "peer ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+        
+        case "LLQ_OVERSUBSCRIBE":
+        
+            ##########
+            # The CRYPTO engine may be oversubscribed by priority class
+            # traffic. This condition occurs when the user attempts to
+            # provision more priority class bandwidth than the CRYPTO engine
+            # can process. If each class is sending at its maximum rate, some
+            # priority packets might be dropped.
+            #
+            # %CRYPTO-4-LLQ_OVERSUBSCRIBE: Sum of priority class bandwidth
+            # exceeds crypto engine.s throughput for small packets
+            # (crypto b/w=[int] kbps, allocated b/w=[int] kbps). Some priority
+            # traffic may be dropped.\n
+            ##########
+            
+            @AlertKey = ""
+        
+        case "NAMED_KEY_DNS_FAIL":
+        
+            ##########
+            # The named-key command has attempted to resolve the entered DNS
+            # name. DNS resolution has failed, and as a result, the named-key
+            # command has failed.
+            #
+            # %CRYPTO-4-NAMED_KEY_DNS_FAIL: DNS lookup for peer [chars] \n
+            # failed. Use the "addressed-key" command instead.
+            ##########
+            
+            $MOI_Remote = extract($Message, "peer (.*) ")
+            
+            @AlertKey = "Peer: " + $MOI_Remote
+        
+        case "NOAUTOSAVE":
+        
+            ##########
+            # Auto-enroll has obtained a new router key pair and certificate.
+            # However, the running configuration was previously modified.
+            #
+            # %CRYPTO-4-NOAUTOSAVE: Configuration was modified. Issue "write
+            # memory" to save new certificate
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PKCS12EXPORT_FAIL":
+        
+            ##########
+            # An attempt to generate and export a PKCS#12 key and certificate
+            # file has failed.
+            #
+            # %CRYPTO-6-PKCS12EXPORT_FAIL: PKCS #12 Export Failed.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PKCS12EXPORT_SUCCESS":
+        
+            ##########
+            # A PKCS #12 key and certificate file has been generated and
+            # successfully exported.
+            #
+            # %CRYPTO-6-PKCS12EXPORT_SUCCESS: PKCS #12 Successfully Exported.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PKCS12IMPORT_FAIL":
+        
+            ##########
+            # An attempt to import a PKCS#12 key and certificate file has
+            # failed.
+            #
+            # %CRYPTO-6-PKCS12IMPORT_FAIL: PKCS #12 Import Failed.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PKCS12IMPORT_SUCCESS":
+        
+            ##########
+            # A PKCS#12 key and certificate file has been successfully
+            # imported.
+            #
+            # %CRYPTO-6-PKCS12IMPORT_SUCCESS: PKCS #12 Successfully Imported.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PKIINPUT":
+        
+            ##########
+            # The PKI client is waiting for the response from the server.
+            #
+            # %CRYPTO-3-PKIINPUT: Wait response from server ....
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PKT_REPLAY_ERR":
+        
+            ##########
+            # The replay processing has failed. The failed replay processing
+            # may be a temporary condition caused by the wait for new SAs to be
+            # established. In the inbound case, this error might also be caused
+            # by an actual replay attack. This activity can be considered a
+            # hostile event.
+            #
+            # %CRYPTO-4-PKT_REPLAY_ERR: [chars] connection id=[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "connection id= ([0-9]+)")
+            
+            @AlertKey = "Connection ID: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "^(.*) connection id")
+        
+        case "POLLCACERT":
+        
+            ##########
+            # The system is polling the CA certificate.
+            #
+            # %CRYPTO-3-POLLCACERT: Polling CA certificate .....
+            ##########
+            
+            @AlertKey = ""
+        
+        case "POLLING":
+        
+            ##########
+            # GetCertInitial is polling for a certificate response.
+            #
+            # %CRYPTO-3-POLLING: Polling for certificate response...
+            ##########
+            
+            @AlertKey = ""
+        
+        case "POLLRACERT":
+        
+            ##########
+            # Polling for an RA certificate.
+            #
+            # %CRYPTO-3-POLLRACERT: Polling RA certificate .....
+            ##########
+            
+            @AlertKey = ""
+        
+        case "POLLROUTERCERT":
+        
+            ##########
+            # Polling for a router certificate.
+            #
+            # %CRYPTO-3-POLLROUTERCERT: Polling Router certificate .....
+            ##########
+            
+            @AlertKey = ""
+        
+        case "PRINTABORT":
+        
+            ##########
+            # While a list was being shown, the list or the elements changed.
+            # The list or the elements can change if the SAs were renegotiated
+            # at the time that the show command was paused, or if a user
+            # reconfigured or cleared the SAs. This change is not an error but
+            # rather a side effect of a dynamic system.
+            #
+            # %CRYPTO-6-PRINTABORT: [chars] caused early termination of show
+            # output[chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "^(.*) caused early") + " " + rtrim(extract($Message, "output(.*)4"))
+        
+        case "QUERYCACERT":
+        
+            ##########
+            # A query against the CA certificate from the CA server has failed.
+            #
+            # %CRYPTO-3-QUERYCACERT: Failed to query CA certificate.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "QUERY_KEY":
+        
+            ##########
+            # An attempt to query the public key and private key using the
+            # subject name has failed.
+            #
+            # %CRYPTO-3-QUERY_KEY: Querying key pair failed.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "QUERYRACERT":
+        
+            ##########
+            # A failure to get RA certificates has occurred.
+            #
+            # %CRYPTO-3-QUERYRACERT: Failed to query RA certificate.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "QUERYROUTERCERT":
+        
+            ##########
+            # A query against the router certificate has failed.
+            #
+            # %CRYPTO-3-QUERYROUTERCERT: Failed to query router certificate.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "RANDOM":
+        
+            ##########
+            # A pseudorandom number generator produced the same number twice in
+            # succession.
+            #
+            # %CRYPTO-6-RANDOM: A pseudo-random number was generated twice in
+            # succession
+            ##########
+            
+            @AlertKey = ""
+        
+        case "RECVD_PKT_FAIL_DECOMPRESS":
+        
+            ##########
+            # The received IPPCP packet failed to decompress because of a
+            # decompression buffer error.
+            #
+            # %CRYPTO-4-RECVD_PKT_FAIL_DECOMPRESS: pcp: [dec] byte packet
+            # failed to decompresspcp: dest_addr=[IP_address],
+            # src_addr=[IP_address]
+            ##########
+            
+            $MOI_Local = extract($Message, "dest_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Local = "ipaddress"
+            $MOI_Remote = extract($Message, "src_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Source: " + $MOI_Remote + ", Destination: " + $MOI_Local
+        
+        case "RECVD_PKT_INV_IDENTITY":
+        
+            ##########
+            # A decapsulated IPSec packet does not match the negotiated
+            # identity. An SA selection error is causing the peer to send other
+            # traffic through this SA. This activity could be considered a
+            # hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_INV_IDENTITY: [chars] (ip) dest_addr=
+            # [IP_address], src_addr= [IP_address], prot= [dec] (ident)
+            # local=[IP_address], remote=[IP_address] local
+            # proxy=[IP_address]/[IP_address]/[dec]/[dec],
+            # remote_proxy=[IP_address]/[IP_address]/[dec]/[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "dest_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Local = "ipaddress"
+            $MOI_Remote = extract($Message, "src_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Source: " + $MOI_Remote + ", Destination: " + $MOI_Local + ", Protocol: " + extract($Message, "prot= ?([0-9]+) ")
+            
+            $CLARIFIER = extract($Message, "(.*) \(ip\) dest")
+                    
+        case "RECVD_PKT_INV_IDENTITY_ACL":
+        
+            ##########
+            # A decapsulated packet has failed the ACL check. The peer is
+            # sending other traffic through this SA. The activity may be caused
+            # by an SA selection error by the peer and could be considered a
+            # hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_INV_IDENTITY_ACL: ipsec check access:
+            # identity not allowed by ACL (ip) dest_addr= [IP_address],
+            # src_addr= [IP_address], prot= [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "dest_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Local = "ipaddress"
+            $MOI_Remote = extract($Message, "src_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Source: " + $MOI_Remote + ", Destination: " + $MOI_Local + ", Protocol: " + extract($Message, "prot= ?([0-9]+)")
+        
+        case "RECVD_PKT_INV_PROT":
+        
+            ##########
+            # A received IPSec packet was missing an expected AH or ESP header.
+            # The peer is sending packets that do not match the negotiated
+            # security policy. This activity could be considered a hostile
+            # event.
+            #
+            # %CRYPTO-4-RECVD_PKT_INV_PROT: decapsulate: packet missing
+            # [chars], destadr=[IP_address], actual prot=[dec]
+            ##########
+            
+            $MOI_Remote = extract($Message, "destadd?r= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Destination: " + $MOI_Remote + ", Protocol: " + extract($Message, "prot= ?([0-9]+)")
+        
+        case "RECVD_PKT_INV_SPI":
+        
+            ##########
+            # A received IPSec packet specifies an SPI that does not exist in
+            # SADB. This may be a temporary condition because of slight
+            # differences in the aging of SAs between the IPSec peers or
+            # because the local SAs have been cleared. It may also be caused by
+            # invalid packets sent by the IPSec peer. This activity could be
+            # considered a hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_INV_SPI: decaps: rec.d IPSEC packet has
+            # invalid spi for destaddr=[IP_address], prot=[dec],
+            # spi=[hex]([dec])
+            ##########
+            
+            $MOI_Remote = extract($Message, "destaddr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Destination: " + $MOI_Remote + ", Protocol: " + extract($Message, "prot= ?([0-9]+),? ")
+        
+        case "RECVD_PKT_INV_UDP_WRAPPER":
+        
+            ##########
+            # Either a UDP or encapsulated packet was received that is not a
+            # correct negotiation transform. Or the system expected an
+            # UDP-encapsulated packet, but it received a non-UDP packet. There
+            # might be a policy setup error on the peer. This activity could be
+            # considered a hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_INV_UDP_WRAPPER: Rec.d packet has invalid udp
+            # wrapper protocol.\n\ncryptoflags = [hex], sa->udp_wrapper_support
+            # = [dec],transform = [hex]
+            ##########
+            
+            @AlertKey = ""
+        
+        case "RECVD_PKT_MAC_ERR":
+        
+            ##########
+            # The MAC verify processing failed. This might be caused by the use
+            # of the wrong key by either party during the MAC calculations.
+            # This activity could be considered a hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_MAC_ERR: decrypt: mac verify failed for
+            # connection id=[dec]
+            ##########
+            
+            $MOI_Remote = extract($Message, "connection id= ?([0-9]+)")
+            
+            @AlertKey = "Connection ID: " + $MOI_Remote
+        
+        case "RECVD_PKT_MSG_LEN_ERR":
+        
+            ##########
+            # The received IPSec packet is malformed, possibly because of an
+            # encapsulation error. The peer is sending malformed packets. This
+            # activity could be considered a hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_MSG_LEN_ERR: decapsulate: packet has bad
+            # [chars] length destadr=[IP_address], prot=[dec], len=[dec]
+            ##########
+            
+            $MOI_Remote = extract($Message, "destadd?r= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Destination: " + $MOI_Remote + ", Protocol: " + extract($Message, "prot= ?([0-9]+),? ")
+        
+        case "RECVD_PKT_NO_CPI":
+        
+            ##########
+            # The received IPPCP packet had an improper CPI. This might be
+            # caused by the use of an old IPPCP security association.
+            #
+            # %CRYPTO-4-RECVD_PKT_NO_CPI: pcp: wrong CPI, [hex], in packet from
+            # [IP_address]
+            ##########
+            
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "From: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, "wrong CPI,? (.*),? in ")
+        
+        case "RECVD_PKT_NOT_IPSEC":
+        
+            ##########
+            # The received packet matched the encryption (crypto) map ACL, but
+            # the packet is not IPSec-encapsulated. The IPSec peer is sending
+            # unencapsulated packets. There may simply be a policy setup error
+            # on the peer. This activity could be considered a hostile event.
+            #
+            # %CRYPTO-4-RECVD_PKT_NOT_IPSEC: Rec.d packet not an IPSEC
+            # packet.\n\n(ip) vrf/dest_addr= [chars]/[IP_address], src_addr=
+            # [IP_address], prot= [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) *,? src_addr= ")
+            $MOIType_Local = "ipaddress"
+            $MOI_Remote = extract($Message, "src_addr= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Source: " + $MOI_Remote + ", Destination: " + $MOI_Local + ", Protocol: " + extract($Message, "prot= ?([0-9]+)")
+        
+        case "REM_CRYPTOMAP_TS":
+        
+            ##########
+            # A transform set entry has been removed from the encryption
+            # (crypto) map because the entry is no longer valid when the
+            # hardware crypto engine is enabled.
+            #
+            # %CRYPTO-4-REM_CRYPTOMAP_TS: \nPlease recheck your crypto map
+            # [chars].
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = rtrim(extract($Message, "crypto map (.*).?"))
+        
+        case "REQCERT":
+        
+            ##########
+            # The certificate enrollment message is being sent.
+            #
+            # %CRYPTO-3-REQCERT: Certificate enrollment message send out ...
+            ##########
+            
+            @AlertKey = ""
+        
+        case "RSA_SELFTEST_FAILED":
+        
+            ##########
+            # An automatic test of the newly generated RSA key pair has failed,
+            # and the RSA key has been automatically deleted.
+            #
+            # %CRYPTO-3-RSA_SELFTEST_FAILED: Generated RSA key failed self test
+            ##########
+            
+            @AlertKey = ""
+        
+        case "SELF_TEST_FAILURE":
+        
+            ##########
+            # One of the encryption self-tests has failed. The encryption
+            # engine is not operable in this state.
+            #
+            # %CRYPTO-0-SELF_TEST_FAILURE: Encryption self-test failed
+            # ([chars])
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = rtrim(extract($Message, "test failed \((.*)\)"))
+        
+        case "SOCKETSELECT":
+        
+            ##########
+            # A socket selection has caused a failure.
+            #
+            # %CRYPTO-3-SOCKETSELECT: Failed to select the socket.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "SOCKETSEND":
+        
+            ##########
+            # An HTTP transaction has caused a failure.
+            #
+            # %CRYPTO-3-SOCKETSEND: Failed to send out message to CA server.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "TRANSFORM_NOT_SUPPORTED":
+        
+            ##########
+            # The system configuration has been modified. Some IPSec transform
+            # sets that were valid with software encryption (crypto) are no
+            # longer valid after switching to hardware crypto.
+            #
+            # %CRYPTO-4-TRANSFORM_NOT_SUPPORTED: Transform [chars] is not
+            # supported with the current hardware configuration. Global
+            # transform [chars] will be deleted.
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Transform (.*) is not") + " " + extract($Message, "Global transform (.*) will")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CRYPTO.include.syslog.rules >>>>>")

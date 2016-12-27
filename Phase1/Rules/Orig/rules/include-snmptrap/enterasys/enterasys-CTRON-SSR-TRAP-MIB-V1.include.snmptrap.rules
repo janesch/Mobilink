@@ -1,0 +1,634 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    enterasys-CTRON-SSR-TRAP-MIB-V1.include.snmptrap.rules 1.0 
+#    2006/02/01 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CTRON-SSR-TRAP-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.52.2501.10" | ".1.3.6.1.4.1.52.2501.10.2": ### Enterasys SSR and Riverstone RS - Traps from CTRON-SSR-TRAP-MIB-V1 and Notifications from CTRON-SSR-TRAP-MIB
+
+    log(DEBUG, "<<<<< Entering... enterasys-CTRON-SSR-TRAP-MIB-V1.include.snmptrap.rules >>>>>")
+
+    @Agent = "cabletron-Smart Switch Router"
+    @Class = ""
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### envPowerSupplyFailed 
+
+            ##########
+            # $1 = sysHwPowerSupply
+            ##########
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envPowerSupplyFailed"
+
+            @AlertGroup = "Power Supply Status"
+            @AlertKey = ""
+            if(exists($1))
+            {
+                $sysHwPowerSupply = $1
+            
+                if(int($sysHwPowerSupply)>63)
+                {
+                    if(int($sysHwPowerSupply)>128)
+                    {
+                        $PowerSupply4 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 128
+                    }
+                    else
+                    {
+                        $PowerSupply4 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 64
+                }
+                if(int($sysHwPowerSupply)>15)
+                {
+                    if(int($sysHwPowerSupply)>32)
+                    {
+                        $PowerSupply3 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 32
+                    }
+                    else
+                    {
+                        $PowerSupply3 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 16
+                }
+                if(int($sysHwPowerSupply)>3)
+                {
+                    if(int($sysHwPowerSupply)>8)
+                    {
+                        $PowerSupply2 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 8
+                    }
+                    else
+                    {
+                        $PowerSupply2 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 4
+                }
+                if(int($sysHwPowerSupply)>0)
+                {
+                    if(int($sysHwPowerSupply)>2)
+                    {
+                    $PowerSupply1 = "Up"
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 2
+                    }
+                    else
+                    {
+                        $PowerSupply1 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 1
+                }
+                $sysHwPowerSupply = $1
+                if(exists($PowerSupply1) AND exists($PowerSupply2) AND exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply2) AND exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply2) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply2) AND exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2,$PowerSupply3)
+                }
+                else if(exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply2) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply4)
+                }
+                else if(exists($PowerSupply2) AND exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2,$PowerSupply3)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply3)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply2))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2)
+                }
+                else if(exists($PowerSupply1))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1)
+                }
+                else if(exists($PowerSupply2))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2)
+                }
+                else if(exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply3)
+                }
+                else if(exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply4)
+                }
+                else 
+                {
+                    details($sysHwPowerSupply)
+                }
+                @Summary = "Power Supply Failed (see details)"
+            }
+            else
+            {
+                @Summary = "Power Supply Failed"
+            }
+                        
+            $DEFAULT_Severity = 4 
+            $DEFAULT_Type = 1 
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+         
+         case "2": ### envPowerSupplyRecovered
+
+            ##########
+            # $1 = sysHwPowerSupply
+            ##########
+        
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envPowerSupplyRecovered"
+
+            @AlertGroup = "Power Supply Status"
+            @AlertKey = ""
+            if(exists($1))
+            {
+                $sysHwPowerSupply = $1
+
+                if(int($sysHwPowerSupply)>63)
+                {
+                    if(int($sysHwPowerSupply)>128)
+                    {
+                        $PowerSupply4 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 128
+                    }
+                    else
+                    {
+                        $PowerSupply4 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 64
+                }
+                if(int($sysHwPowerSupply)>15)
+                {
+                    if(int($sysHwPowerSupply)>32)
+                    {
+                        $PowerSupply3 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 32
+                    }
+                    else
+                    {
+                        $PowerSupply3 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 16
+                }
+                if(int($sysHwPowerSupply)>3)
+                {
+                    if(int($sysHwPowerSupply)>8)
+                    {
+                        $PowerSupply2 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 8
+                    }
+                    else
+                    {
+                        $PowerSupply2 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 4
+                }
+                if(int($sysHwPowerSupply)>0)
+                {
+                    if(int($sysHwPowerSupply)>2)
+                    {
+                        $PowerSupply1 = "Up"
+                        $sysHwPowerSupply = int($sysHwPowerSupply) - 2
+                    }
+                    else
+                    {
+                        $PowerSupply1 = "Down"
+                    }
+                    $sysHwPowerSupply = int($sysHwPowerSupply) - 1
+                }
+                $sysHwPowerSupply = $1
+                if(exists($PowerSupply1) AND exists($PowerSupply2) AND exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply2) AND exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply2) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply2) AND exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2,$PowerSupply3)
+                }
+                else if(exists($PowerSupply3) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply3,$PowerSupply4)
+                }
+                else if(exists($PowerSupply2) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2,$PowerSupply4)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply4)
+                }
+                else if(exists($PowerSupply2) AND exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2,$PowerSupply3)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply3)
+                }
+                else if(exists($PowerSupply1) AND exists($PowerSupply2))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1,$PowerSupply2)
+                }
+                else if(exists($PowerSupply1))
+                {
+                    details($sysHwPowerSupply,$PowerSupply1)
+                }
+                else if(exists($PowerSupply2))
+                {
+                    details($sysHwPowerSupply,$PowerSupply2)
+                }
+                else if(exists($PowerSupply3))
+                {
+                    details($sysHwPowerSupply,$PowerSupply3)
+                }
+                else if(exists($PowerSupply4))
+                {
+                    details($sysHwPowerSupply,$PowerSupply4)
+                }
+                else
+                {
+                    details($sysHwPowerSupply)
+                }
+                switch($1)
+                {
+                    case "1"|"4"|"5"|"16"|"17"|"20"|"21"|"64"|"65"|"68"|"69"|"80"|"81"|"84"|"85":
+                        $SEV_KEY = $OS_EventId + "_up"
+                        @Summary = "All Installed Power Supplies Working Normally (see details)"
+                        $DEFAULT_Severity = 1
+                        $DEFAULT_Type = 2
+                        $DEFAULT_ExpireTime = 0
+                    default:
+                        $SEV_KEY = $OS_EventId + "_down"
+                        @Summary = "Power Supply Recovered, One or More Power Supplies still Down (see details)"
+                        $DEFAULT_Severity = 2
+                        $DEFAULT_Type = 1
+                        $DEFAULT_ExpireTime = 0
+                }
+            }
+            else
+            {
+                $SEV_KEY = $OS_EventId + "_up"
+                @Summary = "Power Supply Recovered"
+
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            case "3": ### envFanFailed
+
+            ##########
+            # $1 = sysHwFan 
+            ##########
+
+            $sysHwFan = lookup($1, sysHwFan) + " ( " + $1 + " )"
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envFanFailed"
+
+            @AlertGroup = "Fan Tray Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### working 
+                    $SEV_KEY = $OS_EventId + "_working"
+                    @Summary = "Fan Tray Working"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### notWorking 
+                    $SEV_KEY = $OS_EventId + "_notWorking"
+                    @Summary = "Fan Tray Not Working"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Fan Tray Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Fan Tray Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($sysHwFan)
+
+            case "4": ### envFanRecovered
+
+            ##########
+            # $1 = sysHwFan
+            ##########
+
+            $sysHwFan = lookup($1, sysHwFan) + " ( " + $1 + " )"
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envFanRecovered"
+
+            @AlertGroup = "Fan Tray Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### working
+                    $SEV_KEY = $OS_EventId + "_working"
+                    @Summary = "Fan Tray Working"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### notWorking
+                    $SEV_KEY = $OS_EventId + "_notWorking"
+                    @Summary = "Fan Tray Not Working"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Fan Tray Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Fan Tray Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($sysHwFan)
+
+            case "5": ### envTempExceeded
+
+            ##########
+            # $1 = sysHwTemperature
+            ##########
+
+            $sysHwTemperature = lookup($1, sysHwTemperature) + " ( " + $1 + " )"
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envTempExceeded"
+
+            @AlertGroup = "Temperature Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### normal 
+                    $SEV_KEY = $OS_EventId + "_normal"
+                    @Summary = "Chassis Temperature Normal"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### outOfRange 
+                    $SEV_KEY = $OS_EventId + "_outOfRange"
+                    @Summary = "Chassis Temperature Out Of Range"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Chassis Temperature Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Chassis Temperature Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($sysHwTemperature)
+
+            case "6": ### envTempNormal
+
+            ##########
+            # $1 = sysHwTemperature 
+            ##########
+
+            $sysHwTemperature = lookup($1, sysHwTemperature) + " ( " + $1 + " )"
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envTempNormal"
+
+            @AlertGroup = "Chassis Temperature Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### normal
+                    $SEV_KEY = $OS_EventId + "_normal"
+                    @Summary = "Chassis Temperature Normal"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### outOfRange
+                    $SEV_KEY = $OS_EventId + "_outOfRange"
+                    @Summary = "Chassis Temperature Out Of Range"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Chassis Temperature Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Chassis Temperature Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($sysHwTemperature)
+
+            case "7": ### envHotSwapIn
+
+            ##########
+            # $1 = sysHwModuleSlotNumber
+            ##########
+
+            $sysHwModuleSlotNumber = $1
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envHotSwapIn"
+
+            @AlertGroup = "Module Status"
+            @AlertKey = "sysHwModuleEntry." + $1
+            @Summary = "Module Inserted  ( Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysHwModuleSlotNumber)
+
+            case "8": ### envHotSwapOut
+
+            ##########
+            # $1 = sysHwModuleSlotNumber 
+            ##########
+
+            $sysHwModuleSlotNumber = $1
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envHotSwapOut"
+
+            @AlertGroup = "Module Status"
+            @AlertKey = "sysHwModuleEntry." + $1
+            @Summary = "Module Removed  ( Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysHwModuleSlotNumber)
+
+            case "9": ### envBackupControlModuleOnline
+
+            ##########
+            # $1 = sysHwModuleSlotNumber
+            ##########
+
+            $sysHwModuleSlotNumber = $1
+
+            $OS_EventId = "SNMPTRAP-enterasys-CTRON-SSR-TRAP-MIB-V1-envBackupControlModuleOnline"
+
+            @AlertGroup = "Backup Control Module Status"
+            @AlertKey = "sysHwModuleEntry." + $1
+            @Summary = "Backup Control Module took over for Failed Primary  ( Active Slot: " + $1 + " )"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($sysHwModuleSlotNumber)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+###########
+# Handle Severity via Lookup.
+###########
+#
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, enterasys-CTRON-SSR-TRAP-MIB-V1_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, enterasys-CTRON-SSR-TRAP-MIB-V1_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+#include "$NC_RULES_HOME/include-snmptrap/enterasys/enterasys-CTRON-SSR-TRAP-MIB-V1.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/enterasys/enterasys-CTRON-SSR-TRAP-MIB-V1.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... enterasys-CTRON-SSR-TRAP-MIB-V1.include.snmptrap.rules >>>>>")

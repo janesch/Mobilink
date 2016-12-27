@@ -1,0 +1,276 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-APS-MIB.include.snmptrap.rules 6.0
+#    2008/04/09 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  APS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.3.24.2": ### Juniper SONET Linear APS Groups - Notifications from APS-MIB
+
+    log(DEBUG, "<<<<< Entering... juniper-APS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-APS"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### apsEventSwitchover
+
+            ##########
+            # $1 = apsChanStatusSwitchovers
+            # $2 = apsChanStatusCurrent
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $apsChanStatusSwitchovers = $1
+            $apsChanStatusCurrent = lookup($2, apsChanStatusCurrent) + " ( " + $2 + " )"
+            
+            $apsChanConfigGroupName_Raw = extract($OID1, "\.2636\.3\.24\.1\.6\.1\.4\.(.*)\.[0-9]+$")
+            $OctetString = $apsChanConfigGroupName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $apsChanConfigGroupName = $String
+            
+            $apsChanConfigNumber = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-APS-MIB-apsEventSwitchover"
+
+            @AlertGroup = "APS Channel Status"
+            @AlertKey = "apsChanStatusEntry." + $apsChanConfigGroupName_Raw + "." + $apsChanConfigNumber
+            @Summary = "APS Channel Switchover  ( Group: " + $apsChanConfigGroupName + ", Channel: " + $apsChanConfigNumber + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$apsChanStatusSwitchovers,$apsChanStatusCurrent,$apsChanConfigGroupName,$apsChanConfigNumber)
+            }
+            else
+            {
+                details($apsChanStatusSwitchovers,$apsChanStatusCurrent,$apsChanConfigGroupName,$apsChanConfigNumber)
+            }
+
+        case "2": ### apsEventModeMismatch
+
+            ##########
+            # $1 = apsStatusModeMismatches
+            # $2 = apsStatusCurrent
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $apsStatusModeMismatches = $1
+            $apsStatusCurrent = lookup($2, apsStatusCurrent) + " ( " + $2 + " )"
+            
+            $apsConfigName_Raw = extract($OID1, "\.2636\.3\.24\.1\.2\.1\.4\.(.*)$")
+            $OctetString = $apsConfigName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $apsConfigName = $String
+            
+            $OS_EventId = "SNMPTRAP-juniper-APS-MIB-apsEventModeMismatch"
+
+            @AlertGroup = "APS Group Status"
+            @AlertKey = "apsStatusEntry." + $apsConfigName_Raw
+            @Summary = "APS Group Mode Mismatch  ( Group: " + $apsConfigName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $apsStatusCurrent = $apsStatusCurrent
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$apsStatusModeMismatches,$apsStatusCurrent,$apsConfigName)
+            }
+            else
+            {
+                details($apsStatusModeMismatches,$apsStatusCurrent,$apsConfigName)
+            }
+
+        case "3": ### apsEventChannelMismatch
+
+            ##########
+            # $1 = apsStatusChannelMismatches
+            # $2 = apsStatusCurrent
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $apsStatusChannelMismatches = $1
+            $apsStatusCurrent = lookup($2, apsChanStatusCurrent) + " ( " + $2 + " )"
+            
+            $apsConfigName_Raw = extract($OID1, "\.2636\.3\.24\.1\.2\.1\.5\.(.*)$")
+            $OctetString = $apsConfigName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $apsConfigName = $String
+            
+            $OS_EventId = "SNMPTRAP-juniper-APS-MIB-apsEventChannelMismatch"
+
+            @AlertGroup = "APS Group Status"
+            @AlertKey = "apsStatusEntry." + $apsConfigName_Raw
+            @Summary = "APS Group Channel Mismatch  ( Group: " + $apsConfigName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$apsStatusChannelMismatches,$apsStatusCurrent,$apsConfigName)
+            }
+            else
+            {
+                details($apsStatusChannelMismatches,$apsStatusCurrent,$apsConfigName)
+            }
+
+        case "4": ### apsEventPSBF
+
+            ##########
+            # $1 = apsStatusPSBFs
+            # $2 = apsStatusCurrent
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $apsStatusPSBFs = $1
+            $apsStatusCurrent = lookup($2, apsChanStatusCurrent) + " ( " + $2 + " )"
+            
+            $apsConfigName_Raw = extract($OID1, "\.2636\.3\.24\.1\.2\.1\.6\.(.*)$")
+            $OctetString = $apsConfigName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $apsConfigName = $String
+            
+            $OS_EventId = "SNMPTRAP-juniper-APS-MIB-apsEventPSBF"
+
+            @AlertGroup = "APS Group Status"
+            @AlertKey = "apsStatusEntry." + $apsConfigName_Raw
+            @Summary = "APS Group Protection Switch Byte Failure  ( Group: " + $apsConfigName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$apsStatusPSBFs,$apsStatusCurrent,$apsConfigName)
+            }
+            else
+            {
+                details($apsStatusPSBFs,$apsStatusCurrent,$apsConfigName)
+            }
+
+        case "5": ### apsEventFEPLF
+
+            ##########
+            # $1 = apsStatusFEPLFs
+            # $2 = apsStatusCurrent
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $apsStatusFEPLFs = $1
+            $apsStatusCurrent = lookup($2, apsChanStatusCurrent) + " ( " + $2 + " )"
+            
+            $apsConfigName_Raw = extract($OID1, "\.2636\.3\.24\.1\.2\.1\.7\.(.*)$")
+            $OctetString = $apsConfigName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $apsConfigName = $String
+            
+            $OS_EventId = "SNMPTRAP-juniper-APS-MIB-apsEventFEPLF"
+
+            @AlertGroup = "APS Group Status"
+            @AlertKey = "apsStatusEntry." + $apsConfigName_Raw
+            @Summary = "APS Group Far-End Protection-Line Failure  ( Group: " + $apsConfigName + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+            
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$apsStatusFEPLFs,$apsStatusCurrent,$apsConfigName)
+            }
+            else
+            {
+                details($apsStatusFEPLFs,$apsStatusCurrent,$apsConfigName)
+            }
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-APS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-APS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-APS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-APS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-APS-MIB.include.snmptrap.rules >>>>>")

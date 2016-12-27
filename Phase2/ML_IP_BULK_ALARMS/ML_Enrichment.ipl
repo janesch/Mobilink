@@ -1,0 +1,1204 @@
+/*      ML_Enrichment Policy####
+    This Policy is used to enrich ML Events with Domain
+    Region, ManCity and CovCity
+     EventReader Filter:
+    ImpactFlag = 1 and probably something else (To be set)
+    V 1.0    29-07-2010    Alex Silva
+    V 1.1    20101004    Chris Janes BusImportance added
+    
+*/
+//startSeconds = GetDate();
+@ImpactFlag = 1; // Waiting Enrichment
+CurrentSerial = @Serial;
+ReturnEvent(EventContainer); 
+log("XX1: start...............alarm Serial = " + CurrentSerial);
+/*
+    14/01/2011 - NP
+    Update the RESOLUTION event's summary same as respective smmary of PROBLEM event
+    //1. Find respective problem event 
+    //2. Update the summary of resolution event with it.
+    //3. Update current event's summary as per Summary value.
+*/
+if(@Class==2057 and @Type==2){
+    Log("XX1a: this is motorola resolution event");
+    currSummary="";
+    StatusDB = "OS_Status";
+    ProblemEventFilter ="Type=1 and Node='"+@Node+"' and AlertKey='"+@AlertKey+"' and AlertGroup='"+@AlertGroup+"' and Manager='"+@Manager+"'";
+    ProblemEventOutput = GetByFilter(StatusDB,ProblemEventFilter,False);
+    log("IBMDEBUG: Enrich1#no. rows:" + Length(ProblemEventOutput));
+    if(Length(ProblemEventOutput)>0){
+        Log("XX1b: we have found respective Motorola problem event : "+ProblemEventOutput[0].Serial);
+        currSummary=ProblemEventOutput[0].Summary;        
+        @Summary=currSummary;
+        //ReturnEvent(EventContainer);
+    }else{
+        Log("XX1b1: could not locate Motorola problem event for: "+@Serial);
+    }
+    Log("XX1c:Motorola resolution Event Summary:"+currSummary);
+
+    if(currSummary!=""){
+    //Even though we updated Summary into DB, but still current event has old summary in memory
+    //Set the EventID as with fetched Summary value
+    if(currSummary like 'GPRS Unavailable' or currSummary like 'EGPRS Unavailable'){
+        Log ("Serial = " + CurrentSerial + "[Motorola] - cell GPRS failure");
+        @EventId = "NET_GPRS_001";
+    }
+    
+    if(@HibernateFlag = 0 and  ( currSummary  like 'No calls on cell' or currSummary  like 'CSR below threshold' )   ){
+        @EventId = "CellPer_001";
+        log("Serial = " + CurrentSerial + "CellPer_001 Motorola Node:"+@Node);
+        //ReturnEvent(EventContainer);
+    }
+    
+    if (currSummary  like 'Last RSL Link Failure' ) {
+        log("Serial = " + CurrentSerial + "Summary :" +@Summary + " Class " + @Class);
+        @EventId = "MSD_002";
+        //ReturnEvent(EventContainer);
+    }
+    }
+}
+
+/*
+    25/01/2011 - NP
+    Update the RESOLUTION event's summary same as respective smmary of PROBLEM event For NSN
+    //1. Find respective problem event 
+    //2. Update the summary of resolution event with it.
+    //3. Update current event's summary as per Summary value.
+*/
+/*
+    Comment the NSN-resolution event summary reseting code as per Iram's email as below
+Email (22/02/2011) :-Thanks Nitesh but I didn't get any confirmation email from your side. We are getting valid summary field from Vendor now; 
+you can remove code. I will observe it with new alarms and let you know in case of any issue.
+ 
+if(@Class==600 and @Type==2){
+    Log("XX1a: this is NSN resolution event :"+CurrentSerial);
+    currSummary="";
+    StatusDB = "OS_Status";
+    ProblemEventFilter ="Type=1 and Class=600 and Node='"+@Node+"' and AlertKey='"+@AlertKey+"' and AlertGroup='"+@AlertGroup+"' and Manager='"+@Manager+"'";
+    ProblemEventOutput = GetByFilter(StatusDB,ProblemEventFilter,False);
+    if(Length(ProblemEventOutput)>0){
+        Log("XX1b: "+CurrentSerial+" we have found respective NSN problem event : "+ProblemEventOutput[0].Serial);
+        currSummary=ProblemEventOutput[0].Summary;        
+        @Summary=currSummary;
+        ReturnEvent(EventContainer);
+    }else{
+        Log("XX1b1: could not locate NSN problem event for: "+CurrentSerial);
+    }
+    Log(CurrentSerial+" XX1c:NSN resolution Event Summary:"+currSummary);
+    if(Length(currSummary)>0){
+        if(currSummary like 'SIGNALLING LINK TEST FAILED' or currSummary like 'FAILURE IN SIGNALLING LINK ACTIVATION'
+            or  currSummary like 'SIGNALING LINK OUT OF SERVICE' or currSummary like 'SIGNALLING LINK OUT OF SERVICE'){
+            
+            log("Serial = " + CurrentSerial + "NET_C7_001 NokiaNode:"+@Node);
+            @EventId = "NET_C7_001";
+            summaryArray=split(currSummary,":");
+            Log("Length(summaryArray):"+length(summaryArray));
+            max=Length(summaryArray);
+            if(max>=2){
+                Log("We have required tokens into Summary for Z_Node & Linkset_Name");
+                Log("summaryArray[0]:"+summaryArray[0]);
+                Log("summaryArray[1]:"+summaryArray[1]);
+      
+                linkToken= summaryArray[max-1];
+                Log("linkToken :"+linkToken);
+                tokenArray = split(linkToken," ");
+                Log("Length(tokenArray):"+length(tokenArray));
+                linkValue = tokenArray[0];
+                Log("linkValue :"+linkValue);
+                linkNo= JavaCall("java.lang.Integer", null, "parseInt",{ linkValue,16} );
+                log("linkValue: "+linkValue +"          linkNo: " + linkNo);
+                c7connectivityDB = "IMPACT_C7CONNECTIVITY";
+                c7connectivityFilter = "A_NODE= '" +@Node +"' and LINK_NAME = '"+linkNo+"'";
+                Log("c7connectivityFilter:"+c7connectivityFilter);
+                c7connectivityOutput = GetByFilter(c7connectivityDB,c7connectivityFilter,false);
+                Numc7connectivityOutput = Length(c7connectivityOutput);
+                Log("Numc7connectivityOutput "+Numc7connectivityOutput );
+  
+                if(Numc7connectivityOutput>0){
+                    @Z_Node= c7connectivityOutput[0].Z_NODE;
+                    @Linkset_Name =c7connectivityOutput[0].LINKSET_NAME;
+                }else{
+                    @Z_Node= "N/A";
+                    @Linkset_Name = "N/A";
+                }  
+                
+                ReturnEvent(EventContainer);
+            }else{
+                Log("We don't have required token for Linkset_Name");
+                @Z_Node= "N/A";
+                @Linkset_Name = "N/A";
+                ReturnEvent(EventContainer);
+                //exit();
+            }
+        }
+    }elseif(currSummary like 'LINK SET UNAVAILABLE'){
+        log("Serial = " + CurrentSerial + "NET_C7_002 NokiaNode:"+@Node);
+        @EventId = "NET_C7_002";
+        ReturnEvent(EventContainer);
+    }elseif(currSummary like 'ROUTE SET UNAVAILABLE' or currSummary like 'SCCP SUBSYSTEM PROHIBITED'){
+        log("Serial = " + CurrentSerial + "NET_C7_003 NokiaNode:"+@Node);
+        @EventId = "NET_C7_003";
+        ReturnEvent(EventContainer);
+    }elseif(currSummary like 'FAULT RATE MONITORING'){
+        log("Serial = " + CurrentSerial + "NET_MED_OUT_001 NokiaNode:"+@Node);
+        @EventId = "NET_MED_OUT_001";
+        diuExpr=":ET\s(.*)d";
+        diuValue=RExtract(currSummary ,diuExpr);
+        currDIU = diuValue;
+        cmoDB = "IMPACT_TG_CONNECTIVITY";
+        cmoFilter = "A_NODE= '" +@Node +"' and A_NODE_DIU='"+currDIU  +"'";
+        Log("cmoFilter"+cmoFilter);
+        cmoFilterOutput = GetByFilter(cmoDB,cmoFilter,false);
+        NumcmoFilterOutput = Length(cmoFilterOutput);
+        Log("NumcmoFilterOutput:"+NumcmoFilterOutput);
+        
+        if(NumcmoFilterOutput>0){
+            Log("z_node found");
+            @Z_Node = cmoFilterOutput[0].Z_NODE;
+            @Linkset_Name = cmoFilterOutput[0].TGNO;
+            ReturnEvent(EventContainer);
+        }else{
+            Log("z_node not found so we should stop here...");
+        }
+    }
+}
+*/
+/*
+    21/10/2010 - Nitesh Patel
+    Below code is to set EventId = 'NET_GPRS_001' for relevant events of cell GPRS failure
+*/
+// JL 20101208 - update Summary from what we get from the probe, also apply naming convention to EventId
+if(@Class == 4915 and @Summary like 'Quality of Service Alarm Notification: 1016482'){
+    Log ("Serial = " + CurrentSerial + " [Alcatel] - cell GPRS failure");
+    @EventId = "NET_GPRS_001";
+    @Summary = "Loss of Packet Service";
+}elseif(@Class == 8891 and @Summary like 'Cell PS Service Faulty'){
+    Log ("Serial = " + CurrentSerial + "[Huawei] - cell GPRS failure");
+    @EventId = "NET_GPRS_001";
+}elseif(@Class == 2057 and (@Summary like 'GPRS Unavailable' or @Summary like 'EGPRS Unavailable') ){
+    // this will also catch PDCH failure
+    Log ("Serial = " + CurrentSerial + "[Motorola] - cell GPRS failure");
+    @EventId = "NET_GPRS_001";
+}
+//ReturnEvent(EventContainer);
+
+/*
+    Core Signal Down c7 events Enrichmnets
+    Step 1 : Set respective Event ID
+    Step 2 : Enrich with Z_Node and Linkset_Name
+*/
+if(@Class == 8891 and (@Summary like 'MTP LINK FAILED' or @Summary like 'PRA Signaling Link fail')){
+    log("Serial = " + CurrentSerial + "NET_C7_001 Huawei Node:"+@Node);
+    @EventId = "NET_C7_001";
+
+    c7connectivityFilter="";
+    if(@Summary like 'MTP LINK FAILED'){
+        expr="Link Name=(.*)\(\d*\),\sNI";
+        currLinkName = RExtract(@AddText,expr);
+        //Fetch SLC value from current alarm
+        slcExpr = "SLC=(.*),";
+        currSLC = RExtract(@AddText,slcExpr);
+        Log("LinkName:"+currLinkName);
+        Log("currSLC:"+currSLC);
+        c7connectivityFilter = "A_NODE_NAME= '" +@NodeAlias +"' and LINK_NAME = '"+currLinkName+"' and SLC='"+currSLC+"'";
+    }elseif(@Summary like 'PRA Signaling Link fail'){
+        expr="Name=(.*)\(";
+        currLinkName = RExtract(@AddText,expr);
+        Log("event LinkName:"+currLinkName);
+        c7connectivityFilter = "A_NODE_NAME= '" +@NodeAlias +"' and LINK_NAME = '"+currLinkName+"'";
+    }
+    c7connectivityDB = "IMPACT_C7CONNECTIVITY";
+    Log("c7connectivityFilter:"+c7connectivityFilter);
+    c7connectivityOutput = GetByFilter(c7connectivityDB,c7connectivityFilter,false);
+    Numc7connectivityOutput = Length(c7connectivityOutput);
+    log("IBMDEBUG: Enrich2#no. rows:" +Numc7connectivityOutput);
+    Log("Numc7connectivityOutput "+Numc7connectivityOutput );
+    if(Numc7connectivityOutput>0){
+        @Z_Node= c7connectivityOutput[0].Z_NODE;
+        @Linkset_Name =c7connectivityOutput[0].LINKSET_NAME;
+        Log("z_node:"+c7connectivityOutput[0].Z_NODE+"#Linkset_Name:"+c7connectivityOutput[0].LINKSET_NAME);
+    }else
+     {
+           @Z_Node= "N/A";
+           @Linkset_Name = "N/A";
+     }  
+      //ReturnEvent(EventContainer);
+   
+}elseif(@Class ==600 and (@Summary like 'SIGNALLING LINK TEST FAILED' or @Summary like 'FAILURE IN SIGNALLING LINK ACTIVATION'
+or  @Summary like 'SIGNALING LINK OUT OF SERVICE' or @Summary like 'SIGNALLING LINK OUT OF SERVICE')){
+    log("Serial = " + CurrentSerial + "NET_C7_001 NokiaNode:"+@Node);
+    @EventId = "NET_C7_001";
+     summaryArray=split(@Summary,":");
+     Log("Length(summaryArray):"+length(summaryArray));
+     max=Length(summaryArray);
+    if(max>=2){
+        Log("We have required tokens into Summary for Z_Node & Linkset_Name");
+        Log("summaryArray[0]:"+summaryArray[0]);
+        Log("summaryArray[1]:"+summaryArray[1]);
+            
+        linkToken= summaryArray[max-1];
+        Log("linkToken :"+linkToken);
+        
+        tokenArray = split(linkToken," ");
+        Log("Length(tokenArray):"+length(tokenArray));
+        linkValue = tokenArray[0];
+        
+        Log("linkValue :"+linkValue);
+        linkNo= JavaCall("java.lang.Integer", null, "parseInt",{ linkValue,16} );
+        log("linkValue: "+linkValue +"          linkNo: " + linkNo);
+        c7connectivityDB = "IMPACT_C7CONNECTIVITY";
+        //c7connectivityFilter = "A_NODE= '" +@Node +"' and LINKSET_NAME = '"+currLinkset  +"' and SLC='"+currSLC+"'";
+        c7connectivityFilter = "A_NODE= '" +@Node +"' and LINK_NAME = '"+linkNo+"'";
+        Log("c7connectivityFilter:"+c7connectivityFilter);
+        c7connectivityOutput = GetByFilter(c7connectivityDB,c7connectivityFilter,false);
+        Numc7connectivityOutput = Length(c7connectivityOutput);
+        log("IBMDEBUG: Enrich3#no. rows:" + Numc7connectivityOutput);
+        Log("Numc7connectivityOutput "+Numc7connectivityOutput );
+        
+        if(Numc7connectivityOutput>0){
+            @Z_Node= c7connectivityOutput[0].Z_NODE;
+            @Linkset_Name =c7connectivityOutput[0].LINKSET_NAME;
+        }else
+        {
+           @Z_Node= "N/A";
+           @Linkset_Name = "N/A";
+        }  
+      //ReturnEvent(EventContainer);
+    }else{
+        Log("We don't have required token for Linkset_Name");
+           @Z_Node= "N/A";
+           @Linkset_Name = "N/A";
+           //ReturnEvent(EventContainer);
+        //exit();
+   }
+}
+ 
+
+//DPC Multiple C7 Alarm
+if(@Class==9207 ){
+    if(@Summary like 'Route Set Unavailable'){
+        log("Serial = " + CurrentSerial + "NET_C7_003 Siemens:"+@Node);
+        @EventId = "NET_C7_003";
+  
+// MS 20110304 code for populating Z_Node (needed for maintenance)  
+  dpcExpr="DPC = (.*)";
+        currDPC=RExtract(@AddText,dpcExpr);
+        currDPCNo = currDPC;
+     
+    if(Substring(currDPC,0,2)=="0x"){
+        currDPC = Substring(currDPC,2);
+    }
+    Log("currDPC:"+currDPC);
+    spcDB = "SPC";
+    spcFilter = "POINT_CODE_DEC ="+currDPCNo ;
+    spcFilterOutput = GetByFilter(spcDB,spcFilter,false);
+    NumspcFilterOutput = Length(spcFilterOutput);
+    log("IBMDEBUG: Enrich4#no. rows:" + NumspcFilterOutput);
+                
+    destBSC ="";
+    if(NumspcFilterOutput>0){
+    destBSC=spcFilterOutput[0].NODE_NAME;
+    Log("Destination BSC :"+destBSC);
+    }
+  @Z_Node=destBSC;
+        //ReturnEvent(EventContainer);
+  
+    }elseif(@Summary like 'Link Set Failure'){
+        log("Serial = " + CurrentSerial + "NET_C7_002 Siemens:"+@Node);
+        @EventId = "NET_C7_002";
+ 
+// MS 20110304 code for populating Z_Node (needed for maintenance) 
+  linksetExpr = "Link set ID = Numeric name : (.*)";
+        lsValue = RExtract(@Summary,linksetExpr);
+        Log("lsValue:"+lsValue);
+        linksetNo = trim(lsValue);
+        c7connDB = "IMPACT_C7CONNECTIVITY";
+        c7connFilter = "A_NODE_NAME='" + @Node+"' and LINKSET_ID="+linksetNo;
+        c7connFilterOutput = GetByFilter(c7connDB,c7connFilter,false);
+        Numc7connFilterOutput = Length(c7connFilterOutput);
+        log("IBMDEBUG: Enrich5#no. rows:" + Numc7connFilterOutput);
+        if(Numc7connFilterOutput>0){
+            @LinkSet_Name=c7connFilterOutput [0].LINKSET_NAME;
+            @Z_Node=c7connFilterOutput [0].Z_NODE;
+        }else{
+            Log("We don't have Linnkset_name for current Node:"+@Node+"#Serial:"+@Serial);
+   @Z_Node="N/A";
+   @Linkset_Name="N/A";
+        } 
+        //ReturnEvent(EventContainer);
+    }elseif(@Summary like 'Signaling Link Failure'){
+        log("Serial = " + CurrentSerial + "NET_C7_001 Siemens:"+@Node);
+        @EventId = "NET_C7_001";
+        MyString = @Summary;
+        Delimiter = ":";
+        MyString1 = Split(MyString, Delimiter);
+        Delimiter = ",";
+        MyString2 = Split(MyString1[3], Delimiter);
+        MyChar = " ";
+        MyStrip = Strip(MyString2[0], MyChar);
+        LinksetID=MyStrip;
+/*        Linkset = Split(MyString, Delimiter);
+        LinksetID = Substring(Linkset[3],1,2);
+*/   
+        c7connectivityDB = "IMPACT_C7CONNECTIVITY";
+        c7connectivityFilter = "A_NODE_NAME= '" +@NodeAlias +"' and LINKSET_ID = " + Int(LinksetID);
+        c7connectivityOutput = GetByFilter(c7connectivityDB,c7connectivityFilter,false);
+        Numc7connectivityOutput = Length(c7connectivityOutput);
+        log("IBMDEBUG: Enrich6#no. rows:" + Numc7connectivityOutput);
+        if(Numc7connectivityOutput>0){
+            @Z_Node= c7connectivityOutput[0].Z_NODE;
+            @Linkset_Name =c7connectivityOutput[0].LINKSET_NAME;
+        }else{
+            @Z_Node= "N/A";
+            @Linkset_Name = "N/A";
+        }  
+      //ReturnEvent(EventContainer);
+  }
+
+}elseif(@Class==600){
+    if(@Summary like 'LINK SET UNAVAILABLE'){
+        log("Serial = " + CurrentSerial + "NET_C7_002 NokiaNode:"+@Node);
+        @EventId = "NET_C7_002";
+  
+// MS 20110304 code for populating Z_Node (needed for maintenance) 
+//  expr="Link Name=(.*)\(\d{2}\),\sNI";
+//        currLinksetName= RExtract(@AddText,expr);
+//        Log("linksetName:"+currLinksetName);
+        
+        //Summary =LINK SET UNAVAILABLE:2070:0019 08 00001B5B 08: 
+        summaryArray = split(@Summary,":");
+        Log("summaryArray :"+Length(summaryArray) );
+        if(Length(summaryArray)>=3){
+            Log("We have required tokens into Summary");
+            linksetToken= summaryArray[2];
+            Log("linksetToken :"+linksetToken);
+            tokenArray = split(linksetToken," ");
+            Log("Length(tokenArray):"+length(tokenArray));
+            linksetValue = tokenArray[0];
+            //currDPCValue = "00001B5B";
+            //linkset_id = 0019
+            Log("currLinkset_ID Value :"+linksetValue);
+            linksetNo= JavaCall("java.lang.Integer", null, "parseInt",{ linksetValue,16} );
+            log("linksetNo:" + linksetNo);
+            c7connDB = "IMPACT_C7CONNECTIVITY";
+            c7connFilter = "A_NODE='" + @Node+"' and LINKSET_ID="+linksetNo;
+            c7connFilterOutput = GetByFilter(c7connDB,c7connFilter,false);
+            Numc7connFilterOutput = Length(c7connFilterOutput);
+            log("IBMDEBUG: Enrich7#no. rows:" +Numc7connFilterOutput);
+
+            if(Numc7connFilterOutput>0){
+                @LinkSet_Name=c7connFilterOutput [0].LINKSET_NAME;
+                @Z_Node=c7connFilterOutput [0].Z_NODE;
+            }else{
+                Log("We don't have Linnkset_name for current Node:"+@Node+"#Serial:"+@Serial);
+    @Z_Node="N/A";
+    @Linkset_Name="N/A";
+            }
+        }
+        //ReturnEvent(EventContainer);
+    }elseif(@Summary like 'ROUTE SET UNAVAILABLE' or @Summary like 'SCCP SUBSYSTEM PROHIBITED'){
+        log("Serial = " + CurrentSerial + "NET_C7_003 NokiaNode:"+@Node);
+        @EventId = "NET_C7_003";
+  
+// MS 20110304 code for populating Z_Node (needed for maintenance)  
+  Log("NSN DPC down alarm");
+        summaryArray = split(@Summary,":");
+        Log("summaryArray :"+Length(summaryArray) );
+        if(Length(summaryArray)>=3){
+            Log("We have required tokens into Summary");
+            dpcToken = summaryArray[2];
+            Log("dpcToken :"+dpcToken );
+            dpcTokenArray = split(dpcToken ," ");
+            Log("Length(dpcTokenArray):"+length(dpcTokenArray));
+        
+        dpcValue=0;
+        if(@Summary like 'ROUTE SET UNAVAILABLE'){
+            //ROUTE SET UNAVAILABLE:2064:00001F14 08 00  :
+            dpcValue = dpcTokenArray[0];
+        }elseif(@Summary like 'SCCP SUBSYSTEM PROHIBITED'){
+            //SCCP SUBSYSTEM PROHIBITED:2241:FE 08 00001E54 01  :
+            dpcValue = dpcTokenArray[2];
+        }
+        Log("[NSN]-dpcValue :"+dpcValue );
+        currDPC=dpcValue ;
+  
+  if(Substring(currDPC,0,2)=="0x"){
+        currDPC = Substring(currDPC,2);
+  }
+  Log("currDPC:"+currDPC);
+  
+  currDPCNo = JavaCall("java.lang.Integer", null, "parseInt",{ currDPC,16} );
+  Log("currDPC:"+currDPC+"#currDPCNo:"+currDPCNo);
+  spcDB = "SPC";
+  spcFilter = "POINT_CODE_DEC ="+currDPCNo ;
+  spcFilterOutput = GetByFilter(spcDB,spcFilter,false);
+  NumspcFilterOutput = Length(spcFilterOutput);
+    log("IBMDEBUG: Enrich8#no. rows:" + NumspcFilterOutput);
+
+  destBSC ="";
+  if(NumspcFilterOutput>0){
+  destBSC=spcFilterOutput[0].NODE_NAME;
+  Log("Destination BSC :"+destBSC);
+  }
+  @Z_Node=destBSC;
+  }else{
+            Log("We don't token having DPC value so stop processing");
+        }
+
+       // ReturnEvent(EventContainer);
+    }
+}elseif(@Class == 8891 and (@Summary like 'MTP DSP INACCESSIBLE' or @Summary like 'SCCP DPC Paused' or @Summary like 'MTP ROUTE TFP'
+    or @Summary like 'MTP ROUTE UNAVAILABLE' or @Summary like 'SCCP SSN Paused')){
+    log("Serial = " + CurrentSerial + "NET_C7_003 NokiaNode:"+@Node);
+    @EventId = "NET_C7_003";
+ 
+// MS 20110304 code for populating Z_Node (needed for maintenance)
+ Log("Huawei DPC down alarm");
+        if(@Summary like "MTP ROUTE UNAVAILABLE"){
+            dpcExpr=".*=(.*), APC";
+            currDPC=RExtract(@AddText,dpcExpr);
+        }elseif(@Summary like "MTP ROUTE TFP"){
+            //TODO - Need to Identify DPC location into @AddText
+            dpcExpr="Route\)=(.*), APC";
+            currDPC=RExtract(@AddText,dpcExpr);
+        }elseif(@Summary like "SCCP DPC Paused"){
+            //TODO - Need to Identify DPC location into @AddText
+            dpcExpr="DPC=(.*), OPC";
+            currDPC=RExtract(@AddText,dpcExpr);
+        }elseif(@Summary like "MTP DSP INACCESSIBLE"){
+            dpcExpr="DPC=(.*), OPC";
+            currDPC=RExtract(@AddText,dpcExpr);
+        }elseif(@Summary like "SCCP SSN Paused"){
+            dpcExpr="SPC=(.*), OPC";
+            currDPC=RExtract(@AddText,dpcExpr);
+        }
+        Log("[Huawei]-currDPC:"+currDPC);
+ 
+  if(Substring(currDPC,0,2)=="0x"){
+        currDPC = Substring(currDPC,2);
+  }
+  Log("currDPC:"+currDPC);
+    
+        currDPCNo = JavaCall("java.lang.Integer", null, "parseInt",{ currDPC,16} );
+    
+  Log("currDPC:"+currDPC+"#currDPCNo:"+currDPCNo);
+  spcDB = "SPC";
+  spcFilter = "POINT_CODE_DEC ="+currDPCNo ;
+  spcFilterOutput = GetByFilter(spcDB,spcFilter,false);
+  NumspcFilterOutput = Length(spcFilterOutput);
+    log("IBMDEBUG: Enrich9#no. rows:" + NumspcFilterOutput);
+
+                
+  destBSC ="";
+  if(NumspcFilterOutput>0){
+  destBSC=spcFilterOutput[0].NODE_NAME;
+  Log("Destination BSC :"+destBSC);
+  }
+  @Z_Node=destBSC;
+ 
+    //ReturnEvent(EventContainer);
+}
+/*
+    Core Media outage alarms
+*/
+if(@Class == 600 and @Summary like 'FAULT RATE MONITORING'){
+    log("Serial = " + CurrentSerial + "NET_MED_OUT_001 NokiaNode:"+@Node);
+    @EventId = "NET_MED_OUT_001";
+    diuExpr=":ET\s(.*)d";
+    diuValue=RExtract(@Summary,diuExpr);
+    currDIU = diuValue;
+    cmoDB = "IMPACT_TG_CONNECTIVITY";
+    cmoFilter = "A_NODE= '" +@Node +"' and A_NODE_DIU='"+currDIU  +"'";
+    Log("cmoFilter"+cmoFilter);
+    cmoFilterOutput = GetByFilter(cmoDB,cmoFilter,false);
+    NumcmoFilterOutput = Length(cmoFilterOutput);
+    log("IBMDEBUG: Enrich10#no. rows:" + NumcmoFilterOutput);
+    Log("NumcmoFilterOutput:"+NumcmoFilterOutput);
+    if(NumcmoFilterOutput>0){
+        Log("z_node found");
+        //TODO - Change columnName when we have table ready in MLDB
+        @Z_Node = cmoFilterOutput[0].Z_NODE;
+        @Linkset_Name = cmoFilterOutput[0].TGNO;
+        //ReturnEvent(EventContainer);
+    }else{
+        Log("z_node not found so we should stop here...");
+    }
+
+}elseif(@Class==8891 and (@Summary like  'E1/T1 multiframe out-of-synchronization' or @Summary like 'E1/T1 out-of-frame'
+    or @Summary like 'E1/T1 received remote alarm' or @Summary like 'E1/T1 alarm indication signal' or @Summary like 'E1/T1 signals lost')){
+    log("Serial = " + CurrentSerial + "NET_MED_OUT_001 HuaweiNode:"+@Node);
+
+    dExpr = "Frame No.=(.*), Slot";
+    dValue = RExtract(@AddText,dExpr);
+    iExpr = "Slot No\.=(.*), Board Position";
+    iValue = RExtract(@AddText,iExpr);
+    uExpr = "Port No.=(.*), Office No";
+    uValue = RExtract(@AddText,uExpr);
+    currDIU = dValue+"-"+iValue+"-"+uValue;
+    //NP - 06/01/2011 :- If alarm is Core Hardware type then ignore them and don't set EventId
+    hardwareExp = "Office name=(.*), TDM port";
+    coreHwToken=RExtract(@AddText,hardwareExp);
+    
+    if(coreHwToken like 'Wapda.*' or coreHwToken like 'WAPDA.*' or coreHwToken like '.*Gen.*' or coreHwToken like 'Rectifier.*' or coreHwToken like 'High Temp.*'){
+        Log("This is Core hardware alarm so ignore it");
+    }else{
+        @EventId = "NET_MED_OUT_001";
+        cmoDB = "IMPACT_TG_CONNECTIVITY";
+        cmoFilter = "A_NODE= '" +@NodeAlias +"' and A_NODE_DIU='"+currDIU  +"'";
+        Log("cmoFilter"+cmoFilter);
+        cmoFilterOutput = GetByFilter(cmoDB,cmoFilter,false);
+        NumcmoFilterOutput = Length(cmoFilterOutput);
+        log("IBMDEBUG: Enrich11#no. rows:" + NumcmoFilterOutput);
+        Log("NumcmoFilterOutput:"+NumcmoFilterOutput);
+        if(NumcmoFilterOutput>0){
+            Log("z_node found");
+            //TODO - Change columnName when we have table ready in MLDB
+            @Z_Node = cmoFilterOutput[0].Z_NODE;
+            @Linkset_Name = cmoFilterOutput[0].TGNO;
+            //ReturnEvent(EventContainer);
+        }else{
+            Log("z_node not found so we should stop here...");
+        }
+    }
+}elseif(@Class==9207 and (@Summary like 'Loss Of Signal:  Affected MOC MAL, MOI CLASS=PCMMAL' or @Summary like 'Remote Alarm Interface:  Affected MOC SAL, MOI CLASS=PCMSAL')){
+    log("Serial = " + CurrentSerial + "NET_MED_OUT_001 SiemensNode:"+@Node);
+    @EventId = "NET_MED_OUT_001";
+    ltgExpr=" LTG=(.*)\s";
+    ltgValue=RExtract(@AddText,ltgExpr);
+    diuExpr=" DIU=(.*)";
+    diuValue=RExtract(@AddText,diuExpr);
+    currDIU=ltgValue+"-"+diuValue;
+    cmoDB = "IMPACT_TG_CONNECTIVITY";
+    cmoFilter = "A_NODE= '" +@NodeAlias +"' and A_NODE_DIU='"+currDIU  +"'";
+    Log("cmoFilter"+cmoFilter);
+    cmoFilterOutput = GetByFilter(cmoDB,cmoFilter,false);
+    NumcmoFilterOutput = Length(cmoFilterOutput);
+    log("IBMDEBUG: Enrich12#no. rows:" + NumcmoFilterOutput);
+    Log("NumcmoFilterOutput:"+NumcmoFilterOutput);
+    if(NumcmoFilterOutput>0){
+        Log("z_node found");
+        //TODO - Change columnName when we have table ready in MLDB
+        @Z_Node = cmoFilterOutput[0].Z_NODE;
+        @Linkset_Name = cmoFilterOutput[0].TGNO;
+        //ReturnEvent(EventContainer);
+    }else{
+        Log("z_node not found so we should stop here...");
+    }
+}
+
+/*
+    IN DPC alarms
+*/
+if(@Class==40425 and @Summary like 'Adjacent signalling point inaccessible' or @Summary like 'RtpAudMgr01:High swap space utilization'){
+    log("Serial = " + CurrentSerial + "NET_IN_DPC_001 IN-Node:"+@Node);
+    @EventId = "NET_IN_DPC_001";
+    //ReturnEvent(EventContainer);
+}
+/*
+    IN QoS alarms
+*/
+// Taken out @Summary like 'No connection with the SNMP Master Agent'
+if(@Class==40425 and (@Summary like 'Cpu utilization' or @Summary like 'Database operation failed in step'
+        or @Summary like 'NTP Check failed' or @Summary like 'connection to the DB:T001 subsystem via'
+        or @Summary like 'start subsystem SNMP' or @Summary like 'High swap space utilization') ){
+    log("Serial = " + CurrentSerial + "NET_IN_QOS_001 IN-Node:"+@Node);
+    @EventId = "NET_IN_QOS_001";
+    @Domain = "IN";
+    ReturnEvent(EventContainer);
+}
+/*
+    IN NodeDown Alarms
+*/
+if(@Class==40425 and (@Summary like 'RtpNmShutdownNode\(\) called for node' or @Summary like 'is DOWN, moving to'
+       or @Summary like 'resourceMonitoring: Netmon error')){
+    // Remove below alarms as per Saad's email on 5/01/2010
+    //@Summary like 'network connection down' 
+    log("Serial = " + CurrentSerial + "NET_IN_NODE_001 IN-Node:"+@Node);
+    @EventId = "NET_IN_NODE_001";
+    //ReturnEvent(EventContainer);
+}
+/*
+    TxN Input Power Alarms
+*/
+if(@Class==8889 and (@Summary like 'IN_PWR_ABN' or @Summary like 'IN_PWR_FAIL' or @Summary like 'IN_PWR_HIGH' 
+        or @Summary like 'IN_PWR_LOW')) {
+    log("Serial = " + CurrentSerial + "NET_IN_POW_001 TxN:"+@Node);
+    @EventId = "NET_IN_POW_001";
+    //ReturnEvent(EventContainer);
+}
+/*
+    TxN ExternalCustomer alarms
+*/
+if(@Class==8889 and (@Summary =='T_ALOS Service affecting' or @Summary =='TU_AIS Service affecting' or
+        @Summary =='UP_E1_AIS Service affecting' or @Summary =='DOWN_E1_AIS Service affecting')){
+    log("Serial = " + CurrentSerial + "NET_EXT_CUS_001 TxN:"+@Node);
+    @EventId = "NET_EXT_CUS_001";
+    //ReturnEvent(EventContainer);
+}
+ 
+//
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    ASSIGN EVENTID HERE
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// BSS Environmental Events
+log("XXX320 Serial = " + CurrentSerial + "Domain=" + @Domain + " EventType = " + @EventType + " HibernateFlag = " + @HibernateFlag  + " Agent " + @Agent);
+if(@Domain like 'BSS' and @EventType like 'Environmental Alarm' and @HibernateFlag = 0 and @Agent <> 'Netcool Impact' )
+{
+    @EventId = "BSSE_001";
+    log("Serial = " + CurrentSerial + "BSSE_001 Node:"+@Node);
+    //ReturnEvent(EventContainer);
+}
+// Cell Performance alarms
+if(@Class = 8891 and @HibernateFlag = 0 and  @Summary like 'Cell long time no access'   )
+{
+    @EventId = "CellPer_001";
+    log("CellPer_001 Huawei Node:"+@Node);
+    //ReturnEvent(EventContainer);
+}elseif(@Class = 2057 and @HibernateFlag = 0 and  ( @Summary like 'No calls on cell' or @Summary like 'CSR below threshold' )   )
+{
+    @EventId = "CellPer_001";
+    log("Serial = " + CurrentSerial + "CellPer_001 Motorola Node:"+@Node);
+    //ReturnEvent(EventContainer);
+} elseif(@Class = 4915 and @HibernateFlag = 0 and  ( @Summary like 'Zero Calls on Cell' or @Summary like 'Zero terminating calls' )   )
+{
+    @EventId = "CellPer_001";
+    log("Serial = " + CurrentSerial + "CellPer_001 Alcatel Node:"+@Node);
+    //ReturnEvent(EventContainer);
+}
+// EventId of Communication Alarm Events
+if(@Summary = 'SCCP NOT DEFINED for NETWORK')
+{
+    log("Serial = " + CurrentSerial + "COMM_001" + @Summary);
+    @EventId = "COMM_001";
+    //ReturnEvent(EventContainer);
+}
+ 
+//
+//  X25 network eventId's
+//
+if(@HibernateFlag = 0 and  ( currSummary  like 'x25CircuitDown')   ){
+        @EventId = "NET_X25_FAIL_002";
+        log("Serial = " + CurrentSerial + "NET_X25_FAIL_002 Motorola Node:"+@Node);
+        //ReturnEvent(EventContainer);
+} elseif(@Class = 8891 and @HibernateFlag = 0 and  @Summary like 'Ater OML Broken Alarm')
+{
+    // X25FailureTxN for Huawei events
+    @EventId = "NET_X25_FAIL_002";
+    log("Serial = " + CurrentSerial + "NET_X25_FAIL_002 Huawei Node: "+@Node);
+    //ReturnEvent(EventContainer);
+} elseif(@Class = 2057 and @HibernateFlag = 0 and  ( @Summary like 'x25 Circuit Down')   )
+{
+    // X25FailureTxN for Motorola events
+    @EventId = "NET_X25_FAIL_002";
+    log("Serial = " + CurrentSerial + "NET_X25_FAIL_002 Motorola Node:"+@Node);
+    //ReturnEvent(EventContainer);
+} elseif (@Class = 4915 and @HibernateFlag = 0 and  ( @Summary like 'X25 link failure' )   )
+{
+    // X25FailureTxN for Alcatel events
+    @EventId = "NET_X25_FAIL_002";
+    log("Serial = " + CurrentSerial + "NET_X25_FAIL_002 Alcatel Node:"+@Node);
+    //ReturnEvent(EventContainer);
+}elseif(@Class = 4915 and @HibernateFlag = 0 and  ( @Summary like 'X25 [38]' )   )
+{
+    // 2nd Alcatel rule
+    @EventId = "NET_X25_FAIL_001";
+    log("Serial = " + CurrentSerial + "NET_X25_FAIL_001 Alcatel Node:"+@Node);
+    //ReturnEvent(EventContainer);
+}
+
+if (@Summary like 'Last RSL Link Failure' and @Class = 2057) {
+    log("Serial = " + CurrentSerial + "Summary :" +@Summary + " Class " + @Class);
+     @EventId = "MSD_002";
+    //ReturnEvent(EventContainer);
+}
+// When EventId is not present set it to DEFAULT 
+// As per Julian's instruction - By Nitesh 11/10/2010
+Log("EventId:"+@EventId+"#Domain:"+@Domain);
+if(@EventId =="" and @Domain!='TXN'){
+    log("Serial = " + CurrentSerial + "XXXX DEFAULT" );
+    @EventId = 'DEFAULT';
+}
+/*
+    01-Sep-2010    : Nitesh Patel    
+    Add code for enrich Motorola events .
+*/
+//Initailise with current NodeAlias
+friendlyName = @NodeAlias;
+//User URLArray as Enrichment standardise based on URL field
+URLArray = split(@URL, ",");
+URLArrayLength=Length(URLArray);
+Log("URLArrayLength:"+URLArrayLength);
+if(@Class == 2057 || URLArrayLength>=5)
+{
+    /*
+        ######################################################################
+        ########### Motorola friendly name stuff ##########################################
+        ######################################################################
+    */
+    
+    // check identifier for the Cell info
+    log("XX2 " + CurrentSerial + "#Class"+@Class+" Got Motorola Event, Identifier= " + @Identifier);
+    IdentifierArray = split(@Identifier, ",");
+    NodeFieldArray = split(@Node,":");
+    EMS= @OmcEms;
+    BSCrdninstance = RExtract(NodeFieldArray[0] ,"=(\d*)");
+    BTSrdninstance = RExtract(NodeFieldArray[1] ,"=(\d*)");   
+    log("XX3  BSCrdninstance  = " + BSCrdninstance  + " BTSrdninstance =  " + BTSrdninstance );
+    ArrayLength = length(IdentifierArray );
+    log("XX4= " + CurrentSerial + " EMS = " + EMS + " BSCrdninstance = " + BSCrdninstance + " BTSrdninstance = " + BTSrdninstance );
+    // is it a transcoder alarm
+    CheckForTranscoder = Substring(@Node,0,5);
+    CheckForCell="";
+    if(Length(NodeFieldArray)>=3){
+        CheckForCell=Substring(NodeFieldArray[2],1,5);
+        Log("CheckForCell:"+CheckForCell);
+    }
+   
+    if (CheckForTranscoder = "RXCDR") {
+        if (rxcdrID != "") {
+            //###########################################################################
+            //transcoder alarm, get the details from motorola loookup 
+            //###########################################################################
+            rxcdrID = RExtract(@Node,"RXCDR=(\d*)");
+            Log("XX41 Serial = " + CurrentSerial + " rxcdrID = " + rxcdrID + " node = " + @Node);
+        
+            // get the transcoder name...
+            DataType = "motorola_name";  
+            TransFilter = "omc = '" + EMS + "' and id = " + rxcdrID + " and device_type = 'RXCDR'" +" and container = '' " ;  
+            log ("XX42 Serial = " + CurrentSerial + " sql = " + TransFilter );
+            TransQuery= GetByFilter(DataType, TransFilter , False);
+            NumTrans= length(TransQuery);
+            log("IBMDEBUG: Enrich13#no. rows:" +NumTrans);
+            if (NumTrans> 0) {
+                  TransName = TransQuery[0].DEVICE_NAME;
+                  log ("XX5 Serial = " + CurrentSerial + " ML_Enrichment  TransName is.......................... " + TransName );
+            } else {
+                  log ("XX6 Serial = " + CurrentSerial + " ML_Enrichment:  returned 0 rows from TRANS query " + TransQuery);
+                  //When no match found set value to the lookup code        
+                  TransName = rxcdrID; 
+            }
+        
+           
+        SourceNodeString = TransName ;
+        //friendlyName = TransName + ":" + TransBTSName;
+        // Nitesh Patel - 19/11/2010
+        //Transcoder Card level alarms 
+        if (URLArrayLength == 6) {
+                //###########################################################################
+                // card level alarm.  Add the 5th and 6th tokens to the Node field            
+                //########################################################################### 
+              Token4 = URLArray[4];
+              Token4_a = RExtract(Token4,"=(\d*)");
+              Token4_b = RExtract(Token4,"_*.*(_.*\.).*");
+              Token4_final = Substring(Token4_b,1,Length(Token4_b)-1)+"="+Token4_a;
+              Log("XX6a Serial = " + CurrentSerial + " Token4: "+Token4);
+              Log("Token4a:"+Token4_a);
+              Log("Token4b:"+Token4_b);
+              Log("Token4b_final:"+Token4_final);
+              Token5 =URLArray[5];
+              Token5_a = RExtract(Token5,"=(\d*)");
+              Token5_b = RExtract(Token5,"_*.*(_.*\.).*");
+              Log("Token5"+Token5);
+              Log("Token5_a"+Token5_a);
+              Log("Token5_b"+Token5_b);
+              Token5_final = Substring(Token5_b,1,Length(Token5_b)-1) + "="+Token5_a;
+              Log("Token5b_final:"+Token5_final);
+              friendlyName = TransName+":"+Token4_final+":"+Token5_final;     
+        }else{
+            friendlyName = TransName;
+        }
+    }
+            
+    } else {
+  
+        //###########################################################################
+        // NOT a transcoder alarm, get the details and check if card alarm 
+        //###########################################################################
+         DataType = "motorola_name";  
+         BSCFilter = "omc = '" + EMS + "' and id = " + BSCrdninstance + " and device_type = 'BSC'" +" and container = '' " ;  
+        log ("XX61 Serial = " + CurrentSerial + " BSCFilter = " + BSCFilter );
+         BSCQuery= GetByFilter(DataType, BSCFilter , False);
+         NumBSC= length(BSCQuery);
+        log("IBMDEBUG: Enrich14#no. rows:" + NumBSC);
+         if (NumBSC > 0) {
+              BSCName = BSCQuery[0].DEVICE_NAME;
+              log ("XX7 Serial = " + CurrentSerial + " BSCName is.......................... " + BSCName );
+         } else {
+              log ("XX8 Serial = " +CurrentSerial  + "  returned 0 rows from BSC query " + BSCFilter);
+              //When no match found set value to the lookup code        
+              BSCName = BSCrdninstance ; 
+         }
+         //JL - set source node to BSC name for now -- for TBSM
+         SourceNodeString= BSCName;
+     
+        // #################### Get BTS Name ################################
+         DataType = "motorola_name";  
+        // add a check for null 
+        if (BTSrdninstance !=  '') {
+                log ("XX811: serial is " + CurrentSerial + " got BTSrdninstance = " + BTSrdninstance );
+                BTSFilter = "omc = '" + EMS + "' and id = " + BTSrdninstance + " and container = '" +  BSCName  + "'";  
+                log ("XX812 BTSFilter = " + BTSFilter);
+                 BTSQuery= GetByFilter(DataType, BTSFilter , False);
+                 NumBTS= length(BTSQuery);
+                log("IBMDEBUG: Enrich15#no. rows:" + NumBTS);
+                 if (NumBTS> 0) {
+                      log ("XX813 Serial = " + CurrentSerial + " ML_Enrichment  returned a row from BTSquery " + BTSQuery);
+                      BTSName = BTSQuery[0].DEVICE_NAME;
+                      log ("XX814 Serial = " + CurrentSerial + " ML_Enrichment  BTSName is............................... " + BTSName );
+                 } else {
+                      log ("XX815 Serial = " + CurrentSerial + " ML_Enrichment  returned 0 rows from queryBTSFilter " + BTSFilter );
+                      //When no match found set lookupvalue of @Node
+                      BTSName = BTSrdninstance ;
+                 }
+            } else {
+                    log ("XX816: Serial = " + CurrentSerial + " BTSrdninstance is null ");
+                  //When no match found set lookupvalue of @Node
+                  BTSName = BTSrdninstance ;
+            }
+         //set source node to BTS name now, BTS supercedes BSC
+         SourceNodeString = BTSName;
+         // check if the Identifier contains a cell...
+         Token2 = IdentifierArray[2]; 
+         Token5 = IdentifierArray[5]; 
+         //CheckCell = Substring(Token5,0,6);
+         Log("XX817 Serial = " + CurrentSerial + " ArrayLength: "+ArrayLength+"#URLArrayLength:"+URLArrayLength);
+    
+        //Change for Card Level alarms to fetch value from URL
+         if (URLArrayLength == 6) {
+                //###########################################################################
+                // card level alarm.  Add the 3rd and 4th tokens to the Node field            
+                //########################################################################### 
+              friendlyName = BSCName + ":" + BTSName + ":" + NodeFieldArray[2] + ":" + NodeFieldArray[3];
+              Token4 = URLArray[4];
+              Token4_a = RExtract(Token4,"=(\d*)");
+              //Token4_b = RExtract(Token4,"(_.*\.).*");
+              Token4_b = RExtract(Token4,"_*.*(_.*\.).*");
+              Token4_final = Substring(Token4_b,1,Length(Token4_b)-1)+"="+Token4_a;
+                            Token5 =URLArray[5];
+              Token5_a = RExtract(Token5,"=(\d*)");
+              Token5_b = RExtract(Token5,"_*.*(_.*\.).*");
+                            Token5_final = Substring(Token5_b,1,Length(Token5_b)-1) + "="+Token5_a;
+                           friendlyName = BSCName + ":" + BTSName+":"+Token4_final+":"+Token5_final;     
+     } elseif(CheckForCell=="CELL"){
+       //elseif (URLArrayLength == 5) {
+                      cellId=RExtract(NodeFieldArray[2],".*=(\d*)");
+          
+            
+            // cell level alarm.  Lookup the cell name and concat to friendly name
+          DataType = "motorola_name";  
+          cellFilter = "omc = '" + EMS + "' and id = " + cellId + " and container = '" + BTSName + "'" ;  
+          Log("XX9 cellFilter = " + cellFilter );
+          //Avoid filter exeception
+          if(BTSName != 'Not found'){
+              cellQry= GetByFilter(DataType, cellFilter , False);
+              numCellQry= length(cellQry);
+                log("IBMDEBUG: Enrich16#no. rows:" + numCellQry);
+
+              if (numCellQry> 0) {
+                    log ("XX10: Serial =  " + CurrentSerial + "   returned > 0  rows from query cellFilter:" + cellFilter );
+                    //Log("XXX9991 FilternumCellQry= " + numCellQry);
+
+                    CellName = cellQry[0].DEVICE_NAME;
+              } else {
+                  log ("XX11: Serial =  " + CurrentSerial + "   returned 0 rows from query cellFilter:" + cellFilter );
+                  //When no match found set lookupvalue itself
+                   CellName = cellId;
+                    //Log("XXX9992 FilternumCellQry= " + numCellQry);
+
+              }
+                //~~~~~POC
+                //intCellId = Int(cellId);
+                //cellKeys={EMS,intCellId,BTSName,"Cell"};
+                //MaxNum=1;
+                //Log("XXX9993 cellKeys = " + cellKeys);
+                //DataType = "motorola_name_composite";  
+                //cellQry= GetByKey(DataType, cellKeys, MaxNum);
+                  //numCellQry= length(cellQry);
+                //Log("XXX9994 numCellQry= " + numCellQry);
+
+                //~~~~POC
+            
+          }else{
+              //When no match found set lookupvalue itself
+              CellName =cellId;
+
+                
+
+          }
+          friendlyName = BSCName + ":" + BTSName + ":" + CellName;
+     } else {
+        friendlyName = BSCName + ":" + BTSName;     
+     }
+     Log("XX12 : Serial = " + CurrentSerial + " friendlyName:"+friendlyName); 
+     //ReturnEvent(EventContainer);
+     }
+    //INC21427 move up one braket since only Moto will set it anyway
+    @NodeAlias= friendlyName;
+    
+    }
+// END OF MOTOTOLA FRIENDLY NAME STUFF
+
+/*
+    @Site name population logic
+    15/09/2010 - Nitesh Patel
+*/
+Log("XX13 Serial = " + CurrentSerial + " Node:" +@Node+ " NodeAlias:"+@NodeAlias+" Class: "+@Class);
+// default seperator
+seperator = " ";
+if(@Class == 2057){
+    seperator = ":";
+}
+if(@Class == 4915){
+    //Log("This is Alcatel event");
+    seperator = " ";
+}
+if(@Class == 8891){
+    //Log("This is Huawei event");
+    seperator = "~";
+}
+NodeAliasArray = split(@NodeAlias, seperator);
+ArrayLength = length(NodeAliasArray);
+@BSC_Name = NodeAliasArray[0];
+if (ArrayLength > 1) {
+    @BTS_Name = NodeAliasArray[1] ;
+} 
+ReturnEvent(EventContainer);
+Log("XX131 Serial = " + CurrentSerial + " returned event to update BSC and BTS name. BSC_Name=  " + @BSC_Name + " BTS_Name=  " +@BTS_Name );
+
+    doubleUnderscoreTokenCount = 0;
+    i=0;
+    doubleUnderscoreTokenArray = {};
+    while(i<ArrayLength){
+                strSearch = RExtract(NodeAliasArray[i],".*(__).*");
+                if(length(strSearch)>0){
+            
+            doubleUnderscoreTokenCount = doubleUnderscoreTokenCount + 1;
+            doubleUnderscoreTokenArray = doubleUnderscoreTokenArray + NodeAliasArray[i];
+        }
+        i = i +1;
+    }
+    Log("XX14 Serial = " + CurrentSerial + " doubleUnderscoreTokenCount = "+doubleUnderscoreTokenCount);
+    // default site
+    site_code_to_check = "FRF";
+ 
+    if(doubleUnderscoreTokenCount == 0){
+        //NP - 15/08/2011
+        //Add SYN_CRS_GPRS_001 to process same like BSS
+        // Add WiMax network events to process same like BSS
+          if (@Class == 8891 OR @Class==203002 or @Class in (204000,204200,204300)) {
+                // deal with Huawei events that only have BSC name and no __ tokens!
+                site_code_to_check = Substring(Trim(NodeAliasArray[0]),0,7);
+                @BSC_Name = Trim(NodeAliasArray[0]); //set BSC_Name
+          } else {
+                                site_code_to_check = "FRF"; //Change to FRF instead of NA as per Julian's instruction - Nitesh 11/10/2010
+            }
+    }elseif(doubleUnderscoreTokenCount == 1){
+        site_code_to_check = Substring(Trim(doubleUnderscoreTokenArray[0]),0,7);
+        // JL 20101006 don't apply for Huawei, it is legitimiately not using __ for BSC name
+        //if (@Class != 8891 ) {
+        //INC22478 - Remove exception for Huawei
+            @BSC_Name = Trim(doubleUnderscoreTokenArray[0]); //set BSC_Name if not Huawei
+        //}
+    }elseif(doubleUnderscoreTokenCount == 2){
+            //INC22478 - Remove exception code for Hauwei
+            site_code_to_check = Substring(Trim(doubleUnderscoreTokenArray[1]),0,7);
+            @BSC_Name = Trim(doubleUnderscoreTokenArray[0]); //set BSC_Name
+            @BTS_Name = Trim(doubleUnderscoreTokenArray[1]); //set BTS_Name
+            ReturnEvent(EventContainer);
+
+            Log("XX16 Serial = " + CurrentSerial + " returned event to update BSC and BTS name. BSC_Name=  " + @BSC_Name + " BTS_Name=  " +@BTS_Name );
+    }else{
+
+        site_code_to_check = Substring(Trim(doubleUnderscoreTokenArray[1]),0,7);
+        @BSC_Name = Trim(doubleUnderscoreTokenArray[0]); //set BSC_Name
+        @BTS_Name = Trim(doubleUnderscoreTokenArray[1]); //set BTS_Name
+    }
+//
+// populate SiteCode based on BTS_Name
+//
+BTSNameLength=Length(@BTS_Name);
+BSCNameLength=Length(@BSC_Name);
+Log("XX18 Serial = " + CurrentSerial + " BSC_Name = " + @BSC_Name + " BSCNameLength = " + BSCNameLength);
+Log("XX18a Serial = " + CurrentSerial + " BTS_Name = " + @BTS_Name + " BTSNameLength = " + BTSNameLength);
+
+// Added by Alex Silva (13-04-2011) and requested by Azam
+if(BSCNameLength >= 7 And @Class== 2057 And @Node like 'BTS=0')
+{
+    @SiteCode = substring(@BSC_Name,0,7);
+}
+elseif(BTSNameLength >= 7) 
+{ 
+    
+    @SiteCode = substring(@BTS_Name,0,7);
+} 
+elseif (BSCNameLength >= 7) 
+{ 
+    
+        @SiteCode = substring(@BSC_Name,0,7);
+} 
+else 
+{
+        @SiteCode = "N/A";
+}
+Log("XX18b Serial = " + CurrentSerial + "#Sitecode:"+@SiteCode);
+//ReturnEvent(EventContainer);
+domain = "N/A";
+//JL 18-01-2012 changed due to TSRM column size
+region = "UNKNOWN";
+man_city = "N/A";
+cov_city = "N/A";
+ne_priority = "N/A";
+//    20101004    Change by Chris Janes of Innovise
+busimportance = "N/A";
+//    20101004    End of Change
+oc_name = "N/A";
+outsource_contractor = "N/A";
+//vendor = "N/A";
+site_type = "N/A";
+if(@Agent like 'NEC' or @Domain == 'BSS' )
+{ 
+    site_code_to_check = @SiteCode;
+}
+NodeEntriesDataType = "CIINFO";
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// LOOKUP ENRICHMENT DATA  based on site name ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if (@Type != 2){
+    NodeEntriesFilter = "";
+    if(@Domain=='BSS' or @Agent like 'NEC' OR @Class==203002 OR @Class in (204000,204200,204300) ){
+        NodeEntriesFilter = " SITECODE= '"+site_code_to_check +"'";
+    }elseif (@Domain='IN') {
+        //NP - 20/05/2011
+        //Added for INC22014 - Region not filled for IN and SMSC alarms
+        inNodeName = split(@NodeAlias,"/");
+        if(Length(inNodeName)>0){
+            NodeEntriesFilter = " Name= '"+toUpper(inNodeName[0]) +"'"; 
+        }else{
+            NodeEntriesFilter = " Name= '"+toUpper(@NodeAlias) +"'"; 
+        }
+
+    } elseif (@Domain in ('IP non-MPLS','IP MPLS') and @Manager in ('MTTrapd_IPDOMAIN','ITNM')) {
+ 
+  if (@Node==@NodeAlias)
+  {
+   IPNodeAliasDataType = "NodeDetails";
+   IPNodeAliasFilter = "ipAddress= '" + @Node + "'"; 
+   IPNodeAliasEntries = GetByFilter(IPNodeAliasDataType, IPNodeAliasFilter,False);
+   IPNodeAliasNumEntries = Length(IPNodeAliasEntries);
+   log("IBMDEBUG: Enrich18#no. rows:" + IPNodeAliasNumEntries);
+   if(IPNodeAliasNumEntries>0)
+   {
+if(IPNodeAliasEntries[0].sysName not like NULL)
+{
+    @NodeAlias = IPNodeAliasEntries[0].sysName;
+    ReturnEvent(EventContainer);
+}
+else
+   {
+    log("XX194:  CurrentSerial " + CurrentSerial + " NULL entry for sysName in NodeDetails for IP address: " + @Node);
+   }
+   }
+   else
+   {
+    log("XX193:  CurrentSerial " + CurrentSerial + " NO match found in NodeDetails for IP address: " + @Node);
+   }
+  }
+ 
+  if(@EventId=="NmosLinkState")
+  {
+   NodeAliasString = split(@NodeAlias,"[");
+   if (NodeAliasString[0] not like NULL)
+   {
+    A_Node=NodeAliasString[0];
+   }
+  }
+  else
+  {
+   A_Node=@NodeAlias;
+  }
+  NodeEntriesFilter = " Name= '"+toUpper(A_Node) +"'";
+ 
+  NodeAliasString = split(@NodeAlias,"-");
+  if((NodeAliasString[length(NodeAliasString)-1] like 're') && (length(NodeAliasString)>1))
+  {
+   newNodeAlias="";
+   i=0;
+   while (i<length(NodeAliasString)-1)
+   {
+    if (i==0)
+    {
+     newNodeAlias=NodeAliasString[i];
+    }
+    else
+    {
+     newNodeAlias=newNodeAlias + "-" + NodeAliasString[i];
+    }
+    i = i + 1;
+   }
+   NodeEntriesFilter = " Name= '"+toUpper(newNodeAlias) +"'";
+  }
+ }else{
+        //NodeEntriesFilter = " Name= '"+@NodeAlias +"'";
+        NodeEntriesFilter = " Name= '"+toUpper(@NodeAlias) +"'";
+    }
+    Log("XX18c Serial = " + CurrentSerial +"#domain:"+@Domain+ " NodeEntriesFilter:"+NodeEntriesFilter);
+    
+    NodeEntries = GetByFilter(NodeEntriesDataType, NodeEntriesFilter,False);
+    NumNodeEntries = Length(NodeEntries);
+    log("IBMDEBUG: Enrich17#no. rows:" + NumNodeEntries);
+    if (NumNodeEntries > 0)
+    {
+        log("XX191:  CurrentSerial " + CurrentSerial + " match found for site code " + site_code_to_check + " Class = " + @Class );
+        //15-08-2011 - NP
+        // Comment Domian population as per Sohaib's email
+        //domain = NodeEntries[0].DOMAIN;
+        region = NodeEntries[0].REGION;    
+        man_city = NodeEntries[0].MANAGING_CITY;
+        cov_city = NodeEntries[0].COVERAGE_CITY;
+        ne_priority = NodeEntries[0].PRIORITY;
+    //    20101004    Change by Chris Janes of Innovise
+        busimportance = NodeEntries[0].PRIORITY;
+    //    20101004    End of Change
+        outsource_contractor = NodeEntries[0].OUTSOURCE_CONTRACTOR;
+        //vendor = NodeEntries[0].VENDOR;
+        site_type = NodeEntries[0].SITETYPE;
+    } else {
+        log("XX192:  CurrentSerial " + CurrentSerial + " NO match found for site code " + site_code_to_check + " Class = " + @Class + " NodeAlias = " + @NodeAlias);
+    }
+    @Region= region;
+    @ManCity= man_city;
+    @CovCity= cov_city;
+    @NePriority = ne_priority;
+    @OutsourceContractor = outsource_contractor;
+    //@Vendor = vendor;
+    @BusImportance = busimportance;
+    @SiteType = site_type;
+    //ReturnEvent(EventContainer);
+ }
+@Site = site_code_to_check;
+@SourceNode = ToUpper(SourceNodeString);
+ // Nitesh Patel 
+ //This must be at end of all Code so after  this other policies can start processing.
+@ImpactFlag = 2; //Enriched
+ReturnEvent(EventContainer);
+ 
+// 20101222    Chrisa Janes TxN Environmental Alerms LLD v 1.5 sec 1.6.3
+/*
+if(@EventId == "BSSE_001")
+{
+    NetworkElementDataType = "NETWORKELEMENT";
+    NetworkElementFilter= " ID_NAME = '"+@SiteCode+"'";
+    NetworkElementEntries = GetByFilter(NetworkElementDataType, NetworkElementFilter,False);
+    NumNetworkElementEntries = Length(NetworkElementEntries );
+    if (NumNetworkElementEntries > 0)
+    {
+        @EventId = "NET_TXN_ENV_001";
+        log("XX21: "  + CurrentSerial +  " EventId changed from BSSE_001 to NET_TXN_ENV_001");
+        ReturnEvent(EventContainer);
+    }
+}
+*/
+//endSeconds = GetDate();
+//elapsedSeconds = endSeconds - startSeconds;
+//log ("TIMING2 " + CurrentSerial + " elapsedSeconds = " + elapsedSeconds  + "  Node = " +  @Node + " NodeAlias = " + @NodeAlias  + " Class = " + @Class + " EventID = " + @EventId + " Agent = " + @Agent + " Type = " + @Type );

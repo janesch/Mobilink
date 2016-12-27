@@ -1,0 +1,94 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SEC.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SEC": ### IP security
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SEC.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "IPACCESSLOGS":
+
+            ##########
+            # A packet matching the log criteria for the given access
+            # list was detected.
+            #
+            # %SEC-6-IPACCESSLOGS : list [chars] [chars] [IP_address]
+            # [dec] packet[chars]   
+            ##########
+            
+            @AlertKey = "Host: " + extract($Message, " ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ") + ", List: " + extract($Message, " list ([A-Za-z0-9\-]+) ")
+            switch(extract($Message, "list [A-Za-z0-9\-]+ ([a-z]+) "))
+            {
+                case "denied":
+                    @Severity = 3
+                    @Type = 1
+                case "permitted":
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            
+        case "IPACCESSLOGDP"|"IPACCESSLOGNP"|"IPACCESSLOGP":
+
+            ##########
+            # A packet matching the log criteria for the given access
+            # list has been detected.
+            #
+            # %SEC-6-IPACCESSLOGDP : list [chars] [chars] [chars]
+            # [IP_address] [chars]-> [IP_address] ([dec]/[dec]), [dec]
+            # packet[chars]
+            #
+            # A packet matching the log criteria for the given access
+            # list has been detected.
+            #
+            # %SEC-6-IPACCESSLOGNP : list [chars] [chars] [dec]
+            # [IP_address] [chars]-> [IP_address], [dec] packet[chars]
+            #
+            # A packet matching the log criteria for the given access
+            # list has been detected.
+            #
+            # %SEC-6-IPACCESSLOGP : list [chars] [chars] [chars]
+            # [IP_address]([dec]) [chars]-> [IP_address]([dec]), [dec]
+            # packet[chars]
+            ##########
+            
+            @AlertKey =  "Path: " + extract($Message, "ed [a-z]+ (.*) [0-9]+ packet") + ", Protocol: " + extract($Message, "ed ([a-z]+) .* [0-9]+ packet") + ", List: " + extract($Message, " list ([A-Za-z0-9\-]+) ")
+            switch(extract($Message, " list [A-Za-z0-9\-]+ ([a-z]+) "))
+            {
+                case "denied":
+                    @Severity = 3
+                    @Type = 1
+                case "permitted":
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SEC.include.syslog.rules >>>>>")

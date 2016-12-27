@@ -1,0 +1,51 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SLOTDUMP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release.
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SLOTDUMP":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SLOTDUMP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "MODULE_DETECTED":
+        
+            ##########
+            # An error occurred during a core dump of slot.
+            #
+            # %SLOTDUMP-3-CORE_DUMP_ERROR: Core dump error slot [dec]: [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ss]lot ([0-9]+)")
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SLOTDUMP.include.syslog.rules >>>>>")

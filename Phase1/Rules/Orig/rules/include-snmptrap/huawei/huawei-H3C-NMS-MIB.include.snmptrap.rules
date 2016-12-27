@@ -1,0 +1,1160 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-NMS-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-NMS-MIB release V1.1
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-NMS-MIB release V1.1
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.4.1.1.2": ### Huawei Technologies - Notifications from H3C-NMS-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cNMDeviceNotReached
+
+            ##########
+            # This notification is generated when a device was not reached.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            details($h3cNMDeviceID,
+                    $h3cNMDeviceDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceNotReached"
+
+            @Node = $2
+
+            @AlertGroup = "Device (Un)Reachable"
+            @AlertKey = "Device-ID: " + $1
+            @Summary = "Device Unreachable  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### h3cNMDeviceRequestDenied
+
+            ##########
+            # This notification is generated when a device rejects
+            # SNMP requests.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            details($h3cNMDeviceID,
+                    $h3cNMDeviceDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceRequestDenied"
+
+            @Node = $2
+
+            @AlertGroup = "Device SNMP Request Denied"
+            @AlertKey = "Device-ID: " + $1
+            @Summary = "SNMP Request Denied  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### h3cNMDeviceAccessException
+
+            ##########
+            # This notification is generated when a exception raised
+            # on getting information from a device. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = h3cNMErrorInfo - The error information string. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $h3cNMErrorInfo = $3
+            details($h3cNMDeviceID,
+                    $h3cNMDeviceDescr,
+                    $h3cNMErrorInfo)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceAccessException"
+
+            @Node = $2
+
+            @AlertGroup = "Device Access Exception"
+            @AlertKey = "Device-ID: " + $1
+            @Summary = "Device Access Exception - Unable to get Information  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### h3cNMDeviceReached
+
+            ##########
+            # This notification is generated when a device was reached. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            details($h3cNMDeviceID,
+                    $h3cNMDeviceDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceReached"
+
+            @Node = $2
+
+            @AlertGroup = "Device (Un)Reachable"
+            @AlertKey = "Device-ID: " + $1
+            @Summary = "Device Reachable  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### h3cNMDeviceTypeChange
+
+            ##########
+            # This notification is generated when a device type changed. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = h3cNMLastDeviceType - The last device type of a device.
+            #        A NMS device type maybe represent one or serveral physical
+            #        device types. 
+            # $4 = h3cNMCurrentDeviceType - The current device type of a device.
+            #        If the value is not equal h3cNMLastDeviceType, then it
+            #        indicates NMS find the changing of the type of a device. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $h3cNMLastDeviceType = $3
+            $h3cNMCurrentDeviceType = $4
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $h3cNMLastDeviceType,$h3cNMCurrentDeviceType)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceTypeChange"
+
+            @Node = $2
+
+            @AlertGroup = "Device Type Change"
+            @AlertKey = "Device-ID: " + $1
+            @Summary = "Device Type Changed  ( From: " + $3 + ", To: " + $4 + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### h3cNMDeviceServiceDown
+
+            ##########
+            # This notification is generated when one device service
+            # was shutdown. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = h3cNMServiceType - The service type of a device.
+            #        The service defines various function provided by a device
+            #        such as telnet, ftp, http and SMTP. 
+            # $4 = h3cNMServiceName - The service name of a device.
+            #        The value is the string representation of h3cNMServiceType. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $h3cNMServiceType = $3
+            $h3cNMServiceName = $4
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $h3cNMServiceType,$h3cNMServiceName)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceServiceDown"
+
+            @Node = $2
+
+            @AlertGroup = "Device Service Up/Down"
+            @AlertKey = "Device: " + $1 + ", Service: " + $4 + ":" + $3 
+            @Summary = "Service Down  ( Service: " + $4 + ", Service Type: " + $3  + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### h3cNMDeviceServiceUp
+
+            ##########
+            # This notification is generated when one device service recovered.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = h3cNMServiceType - The service type of a device.
+            #        The service defines various function provided by a device
+            #        such as telnet, ftp, http and SMTP. 
+            # $4 = h3cNMServiceName - The service name of a device.
+            #        The value is the string representation of h3cNMServiceType. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $h3cNMServiceType = $3
+            $h3cNMServiceName = $4
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $h3cNMServiceType,$h3cNMServiceName)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceServiceUp"
+
+            @Node = $2
+
+            @AlertGroup = "Device Service Up/Down"
+            @AlertKey = "Device: " + $1 + ", Service: " + $4 + ":" + $3 
+            @Summary = "Service Up  ( Service: " + $4 + ", Service Type: " + $3  + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### h3cNMDeviceLinkDown
+
+            ##########
+            # This notification is generated when at least one port
+            # of a device was shutdown. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $4 = ifDescr - A textual string containing information about the
+            #        interface. This string should include the name of the 
+            #        manufacturer, the product name and the version of the
+            #        hardware interface.
+            # $5 = ifAlias - This object is an 'alias' name for the interface
+            #        as specified by a network manager, and provides a non-
+            #        volatile 'handle' for the interface.
+            # $6 = ifAdminStatus - The desired state of the interface. The
+            #        testing(3) state indicates that no operational packets
+            #        can be passed.
+            # $7 = ifOperStatus - The current operational state of the
+            #        interface. The testing(3) state indicates that no
+            #        operational packets can be passed.
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $ifIndex = $3
+            $ifDescr = $4
+            $ifAlias = $5
+            $ifAdminStatus = lookup($6,ifAdminStatus) + " ( " + $6 + " )"
+            $ifOperStatus = lookup($7,ifOperStatus) + " ( " + $7 + " )"
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $ifIndex,$ifDescr,$ifAlias,
+                    $ifAdminStatus,$ifOperStatus)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceLinkDown"
+
+            @Node = $2
+
+            @AlertGroup = "Device Link Up/Down"
+            @AlertKey = "Device ID: " + $1 + ", ifEntry." + $3
+            @Summary = "Link Down  ( " + $4 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### h3cNMDeviceLinkUp
+
+            ##########
+            # This notification is generated when one port of device recovered. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = ifIndex - A unique value for each interface. Its value
+            #        ranges between 1 and the value of ifNumber. The value for
+            #        each interface must remain constant at least from  one
+            #        re-initialization of the entity's network  management
+            #        system to the next re-initialization.
+            # $4 = ifDescr - A textual string containing information about the
+            #        interface. This string should include the name of the 
+            #        manufacturer, the product name and the version of the
+            #        hardware interface.
+            # $5 = ifAlias - This object is an 'alias' name for the interface
+            #        as specified by a network manager, and provides a non-
+            #        volatile 'handle' for the interface.
+            # $6 = ifAdminStatus - The desired state of the interface. The
+            #        testing(3) state indicates that no operational packets
+            #        can be passed.
+            # $7 = ifOperStatus - The current operational state of the
+            #        interface. The testing(3) state indicates that no
+            #        operational packets can be passed.
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $ifIndex = $3
+            $ifDescr = $4
+            $ifAlias = $5
+            $ifAdminStatus = lookup($6,ifAdminStatus) + " ( " + $6 + " )"
+            $ifOperStatus = lookup($7,ifOperStatus) + " ( " + $7 + " )"
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $ifIndex,$ifDescr,$ifAlias,
+                    $ifAdminStatus,$ifOperStatus)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMDeviceLinkUp"
+
+            @Node = $2
+
+            @AlertGroup = "Device Link Up/Down"
+            @AlertKey = "Device ID: " + $1 + ", ifEntry." + $3
+            @Summary = "Link Up  ( " + $4 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### h3cDeviceIfAddrChange
+
+            ##########
+            # This notification is generated when IP Address of a
+            # interfaces has been found changed.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = ifIndex - A unique value for each interface.
+            # $4 = ifDescr - A textual string containing information about the
+            #        interface
+            # $5 = h3cNMLastIPAddr - The last IP Address of a interface.
+            # $6 = h3cNMCurrIPAddr - The current IP Address of a interface.
+            # $7 = h3cNMIPChangeType - The mode of IP Address change,
+            #        1: IP lost; 2: new IP; 3: IP changed.
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $ifIndex = $3
+            $ifDescr = $4
+            $h3cNMLastIPAddr = $5
+            $h3cNMCurrIPAddr = $6
+            $h3cNMIPChangeType = lookup($7,h3cNMIPChangeType) + " ( " + $7 + " )"
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $ifIndex,$ifDescr,$h3cNMLastIPAddr,
+                    $h3cNMCurrIPAddr,$h3cNMIPChangeType)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cDeviceIfAddrChange"
+
+            @Node = $2
+
+            @AlertGroup = "IP Address Change"
+            @AlertKey = "ifEntry." + $3
+
+            switch($7) ### Type of Change
+            {
+            case "1":
+
+                $OS_EventId = $OS_EventId + "_lostIP"
+
+                @Summary = "IP Address lost, Last IP: " + $5 + "  ( Interface: " + $ifDescr + " ) "
+
+                $DEFAULT_Severity = 2
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            case "2":
+
+                $OS_EventId = $OS_EventId + "_newIP"
+
+                @Summary = "New IP Address assigned, Current IP: " + $6 + "  ( Interface: " + $ifDescr + " ) "
+
+                $DEFAULT_Severity = 2
+                $DEFAULT_Type = 13
+                $DEFAULT_ExpireTime = 1800
+
+            case "3":
+
+                $OS_EventId = $OS_EventId + "_changedIP"
+
+                @Summary = "IP Address has been changed, Last IP: " + $5 + ", Current IP: " + $6 + "  ( Interface: " + $ifDescr + " ) "
+
+                $DEFAULT_Severity = 2
+                $DEFAULT_Type = 13
+                $DEFAULT_ExpireTime =1800
+
+            default:
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $7
+
+        case "11": ### h3cDuplicatedDeviceFounded
+
+            ##########
+            # This notification is generated when a device is found be
+            # same as the one which is a network management device.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = h3cNMDuplicatedIPList - The IP Addresses which belong to a
+            #        same device, separated by comma.
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $h3cNMDuplicatedIPList = $3
+            details($h3cNMDeviceID,
+                    $h3cNMDeviceDescr,
+                    $h3cNMDuplicatedIPList)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cDuplicatedDeviceFounded"
+
+            @Node = $2
+
+            @AlertGroup = "Duplicate Device"
+            @AlertKey = "Device ID: " + $1
+            @Summary = "Duplicate Device Found, see event-details for IP-address list  ( " + $2 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "12": ### h3cDeviceMPSubLinkDown
+
+            ##########
+            # This notification is generated when a mp-sublink is down.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = hwMpMemberlinkIfIndex - The interface index of the son channels
+            #        of the MP link
+            # $4 = hwMpMemberlinkDescr - The interface name of the son channels
+            #        of the MP link
+            # $5 = ifIndex - A unique value for each interface.
+            # $6 = ifDescr - A textual string containing information about the
+            #        interface
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $hwMpMemberlinkIfIndex = $3
+            $hwMpMemberlinkDescr = $4
+            $ifIndex = $5
+            $ifDescr = $6
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $hwMpMemberlinkIfIndex,$hwMpMemberlinkDescr,
+                    $ifIndex,$ifDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cDeviceMPSubLinkDown"
+
+            @Node = $2
+
+            @AlertGroup = "MP Sublink Up/Down"
+            @AlertKey = "ifEntry." + $5 + ", hwMpMemberlinkEntry." + $3
+            @Summary = "MP Sublink DOWN  ( " + $ifDescr + ", " + $hwMpMemberlinkDescr + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### h3cDeviceMPSubLinkUp
+
+            ##########
+            # This notification is generated when a mp-sublink is up.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = hwMpMemberlinkIfIndex - The interface index of the son channels
+            #        of the MP link
+            # $4 = hwMpMemberlinkDescr - The interface name of the son channels
+            #        of the MP link
+            # $5 = ifIndex - A unique value for each interface.
+            # $6 = ifDescr - A textual string containing information about the
+            #        interface
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $hwMpMemberlinkIfIndex = $3
+            $hwMpMemberlinkDescr = $4
+            $ifIndex = $5
+            $ifDescr = $6
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $hwMpMemberlinkIfIndex,$hwMpMemberlinkDescr,
+                    $ifIndex,$ifDescr)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cDeviceMPSubLinkUp"
+
+            @Node = $2
+
+            @AlertGroup = "MP Sublink Up/Down"
+            @AlertKey = "ifEntry." + $5 + ", hwMpMemberlinkEntry." + $3
+            @Summary = "MP Sublink UP  ( " + $ifDescr + ", " + $hwMpMemberlinkDescr + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    #########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-NMS-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-NMS-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_Resource.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_Resource.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.10.4.1.2.2": ### Huawei Technologies - Notifications from H3C-NMS-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cNMThreshold1Up
+
+            ##########
+            # This notification is generated when a performance task data
+            # exceed the first threshold. Generally, the first threshold is
+            # lower than the second. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMTaskId -  The performance task identifier, where
+            #        performance trap generate from. 
+            # $3 = h3cNMTaskName -  The name of the performance task. 
+            # $4 = h3cNMTemplateName -  The template name of the
+            #        performance task. 
+            # $5 = h3cNMInstanceId -  The performance task instance identifier,
+            #        where performance trap generate from. 
+            # $6 = h3cNMInstanceOID -  The snmp oid of the performance task
+            #        instance. 
+            # $7 = h3cNMInstanceDescr -  The detail description of the
+            #        performance task instance. 
+            # $8 = h3cNMInstanceValue -  The performance data of the
+            #        performance task instance. 
+            # $9 = h3cNMThresholdValue -  The threshold which the performance
+            #        task instance exceed or resume. 
+            # $10 = h3cNMAlarmLevel -  The alarm level of performance trap. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMTaskId = $2
+            $h3cNMTaskName = $3
+            $h3cNMTemplateName = $4
+            $h3cNMInstanceId = $5
+            $h3cNMInstanceOID = $6
+            $h3cNMInstanceDescr = $7
+            $h3cNMInstanceValue = $8
+            $h3cNMThresholdValue = $9
+            $h3cNMAlarmLevel = $10
+            details($h3cNMDeviceID,$h3cNMTaskId,
+                    $h3cNMTaskName,$h3cNMTemplateName,
+                    $h3cNMInstanceId,$h3cNMInstanceOID,
+                    $h3cNMInstanceDescr,$h3cNMInstanceValue,
+                    $h3cNMThresholdValue,$h3cNMAlarmLevel)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMThreshold1Up"
+
+            @Node = $1
+
+            @AlertGroup = "Performance Threshold 1"
+            @AlertKey = "Device-ID: " + $1 + ", Task-ID: " + $2 + ", Instance-ID: " + $5
+            @Summary = "Performance Threshold 1 Exceeded, Threshold: " + $9 + ", Actual: " + $8 + "  ( Task: " + $3 + ", Instance: " + $7 + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### h3cNMThreshold1Down
+
+            ##########
+            # This notification is generated when a performance task data
+            # under the first threshold.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMTaskId -  The performance task identifier, where
+            #        performance trap generate from. 
+            # $3 = h3cNMTaskName -  The name of the performance task. 
+            # $4 = h3cNMTemplateName -  The template name of the
+            #        performance task. 
+            # $5 = h3cNMInstanceId -  The performance task instance identifier,
+            #        where performance trap generate from. 
+            # $6 = h3cNMInstanceOID -  The snmp oid of the performance task
+            #        instance. 
+            # $7 = h3cNMInstanceDescr -  The detail description of the
+            #        performance task instance. 
+            # $8 = h3cNMInstanceValue -  The performance data of the
+            #        performance task instance. 
+            # $9 = h3cNMThresholdValue -  The threshold which the performance
+            #        task instance exceed or resume. 
+            # $10 = h3cNMAlarmLevel -  The alarm level of performance trap. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMTaskId = $2
+            $h3cNMTaskName = $3
+            $h3cNMTemplateName = $4
+            $h3cNMInstanceId = $5
+            $h3cNMInstanceOID = $6
+            $h3cNMInstanceDescr = $7
+            $h3cNMInstanceValue = $8
+            $h3cNMThresholdValue = $9
+            $h3cNMAlarmLevel = $10 
+            details($h3cNMDeviceID,$h3cNMTaskId,
+                    $h3cNMTaskName,$h3cNMTemplateName,
+                    $h3cNMInstanceId,$h3cNMInstanceOID,
+                    $h3cNMInstanceDescr,$h3cNMInstanceValue,
+                    $h3cNMThresholdValue,$h3cNMAlarmLevel)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMThreshold1Down"
+
+            @Node = $1
+
+            @AlertGroup = "Performance Threshold 1"
+            @AlertKey = "Device-ID: " + $1 + ", Task-ID: " + $2 + ", Instance-ID: " + $5
+            @Summary = "Performance Threshold 1 Normal, Threshold: " + $9 + ", Actual: " + $8 + "  ( Task: " + $3 + ", Instance: " + $7 + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### h3cNMThreshold2Up
+
+            ##########
+            # This notification is generated when a performance task data
+            # exceed the second threshold.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMTaskId -  The performance task identifier, where
+            #        performance trap generate from. 
+            # $3 = h3cNMTaskName -  The name of the performance task. 
+            # $4 = h3cNMTemplateName -  The template name of the
+            #        performance task. 
+            # $5 = h3cNMInstanceId -  The performance task instance identifier,
+            #        where performance trap generate from. 
+            # $6 = h3cNMInstanceOID -  The snmp oid of the performance task
+            #        instance. 
+            # $7 = h3cNMInstanceDescr -  The detail description of the
+            #        performance task instance. 
+            # $8 = h3cNMInstanceValue -  The performance data of the
+            #        performance task instance. 
+            # $9 = h3cNMThresholdValue -  The threshold which the performance
+            #        task instance exceed or resume. 
+            # $10 = h3cNMAlarmLevel -  The alarm level of performance trap. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMTaskId = $2
+            $h3cNMTaskName = $3
+            $h3cNMTemplateName = $4
+            $h3cNMInstanceId = $5
+            $h3cNMInstanceOID = $6
+            $h3cNMInstanceDescr = $7
+            $h3cNMInstanceValue = $8
+            $h3cNMThresholdValue = $9
+            $h3cNMAlarmLevel = $10
+            details($h3cNMDeviceID,$h3cNMTaskId,
+                    $h3cNMTaskName,$h3cNMTemplateName,
+                    $h3cNMInstanceId,$h3cNMInstanceOID,
+                    $h3cNMInstanceDescr,$h3cNMInstanceValue,
+                    $h3cNMThresholdValue,$h3cNMAlarmLevel)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMThreshold2Up"
+
+            @Node = $1
+
+            @AlertGroup = "Performance Threshold 2"
+            @AlertKey = "Device-ID: " + $1 + ", Task-ID: " + $2 + ", Instance-ID: " + $5
+            @Summary = "Performance Threshold 2 Exceeded, Threshold: " + $9 + ", Actual: " + $8 + "  ( Task: " + $3 + ", Instance: " + $7 + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### h3cNMThreshold2Down
+
+            ##########
+            # This notification is generated when a performance task data
+            # under the second threshold.
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMTaskId -  The performance task identifier, where
+            #        performance trap generate from. 
+            # $3 = h3cNMTaskName -  The name of the performance task. 
+            # $4 = h3cNMTemplateName -  The template name of the
+            #        performance task. 
+            # $5 = h3cNMInstanceId -  The performance task instance identifier,
+            #        where performance trap generate from. 
+            # $6 = h3cNMInstanceOID -  The snmp oid of the performance task
+            #        instance. 
+            # $7 = h3cNMInstanceDescr -  The detail description of the
+            #        performance task instance. 
+            # $8 = h3cNMInstanceValue -  The performance data of the
+            #        performance task instance. 
+            # $9 = h3cNMThresholdValue -  The threshold which the performance
+            #        task instance exceed or resume. 
+            # $10 = h3cNMAlarmLevel -  The alarm level of performance trap. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMTaskId = $2
+            $h3cNMTaskName = $3
+            $h3cNMTemplateName = $4
+            $h3cNMInstanceId = $5
+            $h3cNMInstanceOID = $6
+            $h3cNMInstanceDescr = $7
+            $h3cNMInstanceValue = $8
+            $h3cNMThresholdValue = $9
+            $h3cNMAlarmLevel = $10 
+            details($h3cNMDeviceID,$h3cNMTaskId,
+                    $h3cNMTaskName,$h3cNMTemplateName,
+                    $h3cNMInstanceId,$h3cNMInstanceOID,
+                    $h3cNMInstanceDescr,$h3cNMInstanceValue,
+                    $h3cNMThresholdValue,$h3cNMAlarmLevel)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMThreshold2Down"
+
+            @Node = $1
+
+            @AlertGroup = "Performance Threshold 2"
+            @AlertKey = "Device-ID: " + $1 + ", Task-ID: " + $2 + ", Instance-ID: " + $5
+            @Summary = "Performance Threshold 2 Normal, Threshold: " + $9 + ", Actual: " + $8 + "  ( Task: " + $3 + ", Instance: " + $7 + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    #########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-NMS-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-NMS-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_Performance.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_Performance.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.10.4.1.3.2": ### Huawei Technologies - Notifications from H3C-NMS-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cNMCfgChanged
+
+            ##########
+            # This notification is generated when the change of a device's
+            # configuration file was discovered by NMS. 
+            #
+            # $1 = h3cNMDeviceID - The exclusive identification of a managed
+            #        device in the NMS.
+            # $2 = h3cNMDeviceDescr - The description of a managed device in
+            #        the NMS. The description is generally compound of the device
+            #        address and the name such as DNS name, hostname or sysname.
+            #        The format: name[address] or address 
+            # $3 = h3cNMCfgFileType -  The device configuration file type. 
+            # $4 = h3cNMLastBackupTime -  The time of the last configuration
+            #        backuping for a device. 
+            # $5 = h3cNMCurrentBackupTime -  The time of current configuration
+            #        backuping for a device. 
+            ##########
+
+            $h3cNMDeviceID = $1
+            $h3cNMDeviceDescr = $2
+            $h3cNMCfgFileType = lookup($3,h3cNMCfgFileType) + " ( " + $3 + " )"
+            $h3cNMLastBackupTime = $4
+            $h3cNMCurrentBackupTime = $5
+            details($h3cNMDeviceID,$h3cNMDeviceDescr,
+                    $h3cNMCfgFileType,$h3cNMLastBackupTime,
+                    $h3cNMCurrentBackupTime)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMCfgChanged"
+
+            switch($3)
+            {
+                case "1": ### running
+
+                    $OS_EventId = $OS_EventId + "_running"
+
+                    @AlertGroup = "Device Running Config Change"
+                    @AlertKey = "Device-ID: " + $1
+                    @Summary = "Device Running Configuration Change Detected  ( " + @AlertKey + " )"
+
+                case "2": ### start-up
+
+                    $OS_EventId = $OS_EventId + "_startup"
+
+                    @AlertGroup = "Device Startup Config Change"
+                    @AlertKey = "Device-ID: " + $1
+                    @Summary = "Device Startup Configuration Change Detected  ( " + @AlertKey + " )"
+
+                default:
+            }
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 900
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $3
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    #########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-NMS-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-NMS-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_CfgFileMgmt.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_CfgFileMgmt.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2011.10.4.1.4.2": ### Huawei Technologies - Notifications from H3C-NMS-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cNMIpsTooManyAttack
+
+            ##########
+            # This Alarm is generated when IPS attacks exceed the threshold.
+            #
+            # $1 = h3cNMIpsAlarmLevel -  The least severity level(1 represents
+            #        the most severe) of Alarm trap. 
+            # $2 = h3cNMIpsAlarmPeriod -  The maximum time(second) to reset
+            #        h3cIpsAlarmCount to 0. 
+            # $3 = h3cNMIpsAlarmCount -  The count of Alarm events whose levels
+            #        are at least h3cIpsAlarmLevel.
+            ##########
+
+            $h3cNMIpsAlarmLevel = lookup($1,h3cNMIpsAlarmLevel)
+            $h3cNMIpsAlarmPeriod = $2
+            $h3cNMIpsAlarmCount = $3
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-NMS-MIB-h3cNMIpsTooManyAttack"
+
+            @AlertGroup = "IPS Attacks Threshold"
+            @Summary = "IPS Attacks Threshold Exceeded  ( Number of " + $h3cNMIpsAlarmLevel + " events: " + $3 + " )"
+            update(@Summary)
+
+            switch ($1)
+            {
+            case "0": ### critical
+
+                $OS_EventId = $OS_EventId + "_critical"
+
+                $DEFAULT_Severity = 5
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            case "1": ### severe
+
+                $OS_EventId = $OS_EventId + "_severe"
+
+                $DEFAULT_Severity = 4
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            case "2": ### information
+
+                $OS_EventId = $OS_EventId + "_information"
+
+                $DEFAULT_Severity = 2
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            case "3": ### normal
+
+                $OS_EventId = $OS_EventId + "_normal"
+
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            default:
+            }
+            update(@Severity)
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $h3cNMIpsAlarmLevel = $h3cNMIpsAlarmLevel + " ( " + $1 + " )"
+            details($h3cNMIpsAlarmLevel,
+                    $h3cNMIpsAlarmPeriod,
+                    $h3cNMIpsAlarmCount)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    #########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-NMS-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-NMS-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_IpsMonitor.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-NMS-MIB_IpsMonitor.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+    log(DEBUG, "<<<<< Leaving... huawei-H3C-NMS-MIB.include.snmptrap.rules >>>>>")

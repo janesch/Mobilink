@@ -1,0 +1,283 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    shasta-SSG-5000-CHASSIS-MIB.include.snmptrap.lookup 1.0 
+#    2005/10/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  SSG-5000-CHASSIS-MIB
+#
+###############################################################################
+
+table ssg5000SysTempStatus =
+{
+    ##########
+    # ok(1): 10C <= temperature  <= 40C
+    # overTemperature(2): temperature > 40C
+    # underTemperature(3): temperature < 10C
+    ##########
+
+    {"1","OK, 10C-40C"}, ### ok
+    {"2","Over Temperature, > 40C"}, ### overTemperature
+    {"3","Under Temperature, < 10C"} ### underTemperature
+}
+default = "Unknown"
+
+table ssg5000PSOperStatus =
+{
+    ##########
+    # Operational status of an SSG-5000 chassis component. A partialFault(5)
+    # indicates a partial failure in redundant components. A fault(3) value
+    # indicates failure in non-redundant component or a total failure in
+    # redundant component.
+    ##########
+    
+    {"1","Unknown"}, ### unknown - none of the following
+    {"2","Empty"}, ### empty - not present
+    {"3","OK"}, ### ok - status ok
+    {"4","Fault, Major Problem"}, ### fault - major problem
+    {"5","Partial Fault"}, ### partialFault - partial failure
+    {"6","Diagnostic Fault"} ### diagFault - diagnostic fault
+}
+default = "Unknown"
+
+table ssg5000ALARMStateType =
+{
+    ##########
+    # Alarm state type, alarmClear is reverting this alarm's alarm state,
+    # alarmOccur normally indicate the alarm conditions, except events of
+    # nodeReboot, cardBoot, cardRebooted, cardInserted, alcPortUp, ssmUp,
+    # ct3Up.
+    ##########
+    
+    {"1","Alarm Occured"}, ### alarmOccur
+    {"2","Alarm Cleared"} ### alarmClear
+}
+default = "Unknown"
+
+table ssg5000CardType =
+{
+    {"0","Card Absent"}, ### cardAbsent
+    {"1","Control Management Card"}, ### controlManagementCard
+    {"2","Subscriber Service Card"}, ### subscriberServiceCard
+    {"3","Switch Fabric Card"}, ### switchFabricCard
+    {"4","OC-3 ATM Line Card"}, ### oc3AtmLineCard
+    {"5","DS3 ATM Line Card"}, ### ds3AtmLineCard
+    {"6","HSI Line Card"}, ### hsiLineCard
+    {"7","E3 ATM Line Card"}, ### e3AtmLineCard
+    {"8","OC-12S ATM Line Card"}, ### oc12SAtmLineCard
+    {"9","OC-12D ATM Line Card"}, ### oc12DAtmLineCard
+    {"10","Card Type Unknown"}, ### cardTypeUnknown
+    {"11","DS3 Channelized Frame Card"}, ### ds3ChannelizedFrameCard
+    {"12","Ethernet Line Card"}, ### ethernetLineCard
+    {"13","Gigabit Ethernet Line Card"} ### gigabitEthernetLineCard
+}
+default = "Unknown"
+
+table ssg5000ServiceAlarmSeverityType =
+{
+    ##########
+    # Service Level Alarm severity level type.
+    ##########
+    
+    {"1","Informational"}, ### informational
+    {"2","Warning"}, ### warning
+    {"3","Critical"} ### critical
+}
+default = "Unknown"
+
+table ssg5000SystemAlarmType =
+{
+    ##########
+    # System alarm type: nodeReboot is an informational event reported when the
+    # system is administratively rebooted by command. PCMCIA card
+    # inserted/removed events are only significant when user is doing software
+    # upgrade with PCMCIA. sysSSMsAreUp is an informational event for
+    # successful state of complete system hardware startup. Starting from
+    # version 2.1, 'pcmciaCardInserted' and 'pcmciaCardRemoved' are moved to
+    # CardAlarmType.
+    ##########
+    
+    {"1","Node Dead"}, ### nodeDead
+    {"2","Node Reboot"}, ### nodeReboot
+    {"3","Fan Dead"}, ### fanDead
+    {"4","Fan Failure"}, ### fanFailure
+    {"5","Temperature Overheat"}, ### temperatureOverheat
+    {"6","DC Power Failure"}, ### dcPowerFailure
+    {"7","AC/DC Shelf Failure"}, ### acDcShelfFailure
+    {"8","AC/DC Shelf Overheat"}, ### acDcShelfOverheat
+    {"9","Battery Failure"}, ### batteryFailure
+    {"10","Battery Overheat"}, ### batteryOverheat
+    {"11","PCMCIA Card Inserted"}, ### pcmciaCardInserted
+    {"12","PCMCIA Card Removed"}, ### pcmciaCardRemoved
+    {"13","System SSMs Up"} ### sysSSMsAreUp
+}
+default = "Unknown"
+
+table ssg5000CardAlarmType =
+{
+    ##########
+    # Card alarm type: cardInserted is an positive event of card is up in
+    # service. cardSwitchToActive is a redundant card event, indicate the card
+    # by TrapSlotId is now in the active role. cardStandbyNotInRedundant is a
+    # redundant card event, indicates if the standby card is in the redundant
+    # mode or not by TrapOccurClearTag. cardStandbyNotInRedundant/SET indicate
+    # the card is not ready in redundant, may due to its configuration not
+    # sync up by any reason. Starting from version 2.1, 'pcmciaCardInserted'
+    # and 'pcmciaCardRemoved' are moved to CardAlarmType. PCMCIA card
+    # inserted/removed events are only significant when user is doing software
+    # upgrade with PCMCIA.
+    ##########
+
+    {"1","Card Missing"}, ### cardMissing
+    {"2","Card Inserted"}, ### cardInserted
+    {"3","Card Removed"}, ### cardRemoved
+    {"4","Card Mismatch"}, ### cardMismatch
+    {"5","Card Boot"}, ### cardBoot
+    {"6","Card Reboot"}, ### cardReboot
+    {"7","Card Revision Mismatch"}, ### cardRevMismatch
+    {"8","Card Failed"}, ### cardFailed
+    {"9","Card Malfunction"}, ### cardMalfunction
+    {"10","Card Failed Diagnostics"}, ### cardFailDiag
+    {"11","Card Dead"}, ### cardDead
+    {"12","Card Switch to Active"}, ### cardSwitchToActive
+    {"13","Card Standby Not in Redundant"}, ### cardStandbyNotInRedundant
+    {"14","Card PCMCIA Inserted"}, ### cardPcmciaInserted
+    {"15","Card PCMCIA Removed"} ### cardPcmciaRemoved
+}
+default = "Unknown"
+
+table ssg5000ALCPortAlarmType =
+{
+    ##########
+    # Port alarm type, an id for port specific alarm, Up/Down, indicates port's
+    # operational state, following are acronyms for ATM interfaces:
+    #   Loop: in loop back state,
+    #   LOS:  in Lost of Signal state,
+    #   LOF:  in Lost of Frame state,
+    #   LAIS: Line Alarm Indication Signal occurs,
+    #   LRDI: Line Remote Defect Indicator occurs,
+    #   LOP:  in Lost of Pointer occurs,
+    #   PAIS: Path Alarm Indication Signal occurs,
+    #   PRDI: Path Remote Defect Indicator occurs,
+    #   LCD:  in Lost of Cell Delineation state,
+    #
+    # NOTE: portUp alarm clear port's previous alarms.
+    ##########
+
+    {"1","Port Up"}, ### portUp
+    {"2","Port Down"}, ### portDown
+    {"3","Port Loopback"}, ### portLoop
+    {"4","Port Loss of Signal"}, ### portLOS
+    {"5","Port Loss of Frame"}, ### portLOF
+    {"6","Port Line Alarm Indication Signal"}, ### portLAIS
+    {"7","Port Line Remote Defect Indication"}, ### portLRDI
+    {"8","Port Loss of Pointer"}, ### portLOP
+    {"9","Port Path Alarm Indication Signal"}, ### portPAIS
+    {"10","Port Path Remote Defect Indication"}, ### portPRDI
+    {"11","Port Loss of Cell Delineation"} ### portLCD
+}
+default = "Unknown"
+
+table ssg5000SSMAlarmType =
+{
+    ##########
+    # SSM alarm type, ssmUp indicate SSM is Up and in service, which clear ssm
+    # existing alarms.
+    ##########
+
+    {"1","SSM Failed"}, ### ssmFailed
+    {"2","SSM Reset"}, ### ssmReset
+    {"3","SSM Up"}, ### ssmUp
+    {"4","SSM Dead"}, ### ssmDead
+    {"5","SSM Down"} ### ssmDown
+}
+default = "Unknown"
+
+table ssg5000CT3PortAlarmType =
+{
+    ##########
+    # Channelized DS3 port alarm type, ct3Up alarm clear previous alarms.
+    ##########
+
+    {"1","CT3 Port Failed"}, ### ct3Failed
+    {"2","CT3 Port Reset"}, ### ct3Reset
+    {"3","CT3 Port Up"}, ### ct3Up
+    {"4","CT3 Port Dead"}, ### ct3Dead
+    {"5","CT3 Port Down"}, ### ct3Down
+    {"6","CT3 Port DS3 Loss of Signal"}, ### ct3DS3LOS
+    {"7","CT3 Port DS3 Out of Frame"}, ### ct3DS3OOF
+    {"8","CT3 Port DS3 Alarm Indication Signal"}, ### ct3DS3AIS
+    {"9","CT3 Port DS3 Far-End Receive Failure"}, ### ct3DS3FERF
+    {"10","CT3 Port DS3 Red Alarm"} ### ct3DS3RED
+}
+default = "Unknown"
+
+table ssg5000CT3DS2AlarmType =
+{
+    ##########
+    # Channelized CT3 DS2 channel alarm type.
+    ##########
+
+    {"1","CT3 Port DS2 Out of Frame"}, ### ds2OOF
+    {"2","CT3 Port DS2 Alarm Indication Signal"}, ### ds2AIS
+    {"3","CT3 Port DS2 Remote Alarm Indication"} ### ds2RAI
+}
+default = "Unknown"
+
+table ssg5000CT3DS1AlarmType =
+{
+    ##########
+    # Channelized CT3 DS1 channel alarm type.
+    ##########
+
+    {"1","CT3 Port DS1 Out of Frame"}, ### ds1OOF
+    {"2","CT3 Port DS1 Alarm Indication Signal"}, ### ds1AIS
+    {"3","CT3 Port DS1 Remote Alarm Indication"} ### ds1RAI
+}
+default = "Unknown"
+
+table ssg5000ETHPortAlarmType =
+{
+    ##########
+    # ETHERNET port alarm type.
+    ##########
+
+    {"1","Ethernet Link Down"} ### ethLinkDown
+}
+default = "Unknown"
+
+table ssg5000PVCAlarmType =
+{
+    ##########
+    # PVC connection alarm type"
+    ##########
+
+    {"1","Connection Down"} ### connectionDown
+}
+default = "Unknown"
+
+table ssg5000FrameRelayAlarmType =
+{
+    ##########
+    # CT3 Frame Relay DLCI status change alarm type.
+    ##########
+
+    {"1","Invalid"}, ### invalid
+    {"2","Active"}, ### active
+    {"3","Inactive"} ### inactive
+}
+default = "Unknown"

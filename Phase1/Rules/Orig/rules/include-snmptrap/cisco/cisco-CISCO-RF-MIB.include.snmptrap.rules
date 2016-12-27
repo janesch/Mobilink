@@ -1,0 +1,176 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-RF-MIB.include.snmptrap.rules 1.0
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-RF-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.176.2": ### Cisco Redundancy Framework (RF) Subsystem - Notifications from CISCO-RF-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-RF-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Redundancy Framework"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### ciscoRFSwactNotif
+
+            ##########
+            # $1 = cRFStatusUnitId
+            # $2 = sysUpTime
+            # $3 = cRFStatusLastSwactReasonCode 
+            ##########
+
+            $cRFStatusUnitId = $1
+            $sysUpTime = $2
+            $cRFStatusLastSwactReasonCode = lookup($3, ciscoRFSwactReasonType)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-RF-MIB-ciscoRFSwactNotif"  
+
+            @AlertGroup = "SWACT Status"
+            @AlertKey = "Unit ID: " + $1
+            @Summary = "SWACT: " + $1 + " Active: " + $cRFStatusLastSwactReasonCode
+            switch($3)
+            {
+                case "1": ### unsupported - the 'reason code' is an unsupported feature
+                    $SEV_KEY = $OS_EventId + "_unsupported"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### none - no SWACT has occurred
+                    $SEV_KEY = $OS_EventId + "_none"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### notKnown - reason is unknown
+                    $SEV_KEY = $OS_EventId + "_notKnown"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### userInitiated - a safe, manual SWACT was initiated by user
+                    $SEV_KEY = $OS_EventId + "_userInitiated"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### userForced - a manual SWACT was forced by user; ignoring pre-conditions, warnings and safety checks
+                    $SEV_KEY = $OS_EventId + "_userForced"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### activeUnitFailed - active unit failure caused an auto SWACT
+                    $SEV_KEY = $OS_EventId + "_activeUnitFailed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### activeUnitRemoved - active unit removal caused an auto SWACT
+                    $SEV_KEY = $OS_EventId + "_activeUnitRemoved"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + $specific-trap + " " + $3 + " " + @Agent + " " + @Manager
+            
+            $cRFStatusLastSwactReasonCode = $cRFStatusLastSwactReasonCode + " ( " + $3 + " )"
+           
+            details($cRFStatusUnitId,$sysUpTime,$cRFStatusLastSwactReasonCode)
+
+        case "2": ### ciscoRFProgressionNotif
+
+            ##########
+            # $1 = cRFStatusUnitId 
+            # $2 = cRFStatusUnitState 
+            # $3 = cRFStatusPeerUnitId
+            # $4 = cRFStatusPeerUnitState
+            ##########
+
+            $cRFStatusUnitId = $1
+            $cRFStatusUnitState = lookup($2, ciscoRFState)
+            $cRFStatusPeerUnitId = $3
+            $cRFStatusPeerUnitState = lookup($4, ciscoRFState)
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-RF-MIB-ciscoRFProgressionNotif"
+
+            @AlertGroup = "Redundant Unit Status"
+            @AlertKey = "Unit ID: " + $1 + ", Peer Unit ID: " + $3
+            @Summary = "Redundant Unit State Change, Unit: " + $cRFStatusUnitState + ", Peer Unit: " + $cRFStatusPeerUnitState
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $4
+            
+            $cRFStatusUnitState = $cRFStatusUnitState + " ( " + $2 + " )"
+            $cRFStatusPeerUnitState = $cRFStatusPeerUnitState + " ( " + $4 + " )"
+           
+            details($cRFStatusUnitId,$cRFStatusUnitState,$cRFStatusPeerUnitId,$cRFStatusPeerUnitState)
+            
+            update(@Summary)
+            update(@Type)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-RF-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-RF-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-RF-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-RF-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-RF-MIB.include.snmptrap.rules >>>>>")
+

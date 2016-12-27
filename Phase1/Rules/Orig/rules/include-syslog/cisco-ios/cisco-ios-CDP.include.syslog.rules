@@ -1,0 +1,72 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CDP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CDP":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CDP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "DUPLEX_MISMATCH":
+        
+            ##########
+            # CDP has discovered a mismatch of duplex configuration.
+            #
+            # %CDP-4-DUPLEX_MISMATCH: duplex mismatch discovered on [chars]
+            # ([chars]), with [chars] [chars] ([chars]).
+            ##########
+            
+            $MOI_Local = extract($Message, "on ([A-Z|a-z|0-9|/]+) \(")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = rtrim(extract($Message, ",? with (.*)$"))
+        
+        case "NATIVE_VLAN_MISMATCH":
+        
+            ##########
+            # CDP has discovered a mismatch of native VLAN configuration.
+            #
+            # %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on
+            # [chars] ([dec]), with [chars] [chars] ([dec]).
+            ##########
+            
+            $MOI_Local = extract($Message, "on ([A-Z|a-z|0-9|/]+) \(")
+            
+            @AlertKey = "VLAN: " + $MOI_Local
+            
+            $CLARIFIER = rtrim(extract($Message, ",? with (.*)$"))
+        
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CDP.include.syslog.rules >>>>>")

@@ -1,0 +1,47 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-PQUICC.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "PQUICC": ### MPC860 quad integrated communications controller
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-PQUICC.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "LOSTCARR":
+            
+            ##########
+            # The Ethernet 10BASE-T cable is unplugged.
+            #
+            # %PQUICC-1-LOSTCARR : Unit [dec], lost carrier.
+            # Transceiver problem? 
+            ##########
+            
+            @AlertKey = "Unit: " + extract($Message, "Unit (.*) lost carrier")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }    
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-PQUICC.include.syslog.rules >>>>>")

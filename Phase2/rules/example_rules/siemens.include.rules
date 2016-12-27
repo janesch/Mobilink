@@ -1,0 +1,1190 @@
+#############################################################################
+#
+#		siemens.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Siemens @vantage Commander traps.
+#		This is based upon INC-MIB-C 
+#
+#	V0.0	20100412	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.160.0":	# legato Traps
+    @Agent = "Legato"
+    @Class = "40425"
+    @OmcEms = $PeerIPaddress
+    @Domain = "IN"
+    @Vendor= "Siemens" 
+
+    $OS_ExpireTime = 600
+    @Grade = $specific-trap
+    $OPTION_TypeFieldUsage = "3.6"
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+
+    switch($specific-trap)
+    {
+	case"1001":    # brsTrapCritical
+			
+		$tiAlarmSourceName = $1		# The source of the event (may not be the machine upon  which the event was generated)
+		$tiAlarmSymbNEname = $2		# The symbolic Network Element ( NE ) name.Normally it is different from the source name
+		$tiAlarmNotificationID = $3		#The notification id unique for a whole INCommander  management area and is common for all configured OS's.
+																		# It will be incremented by one for each new event received from any configured network element ( including the INCommander itself ) and could wrap  from 2147483647 to 1.
+																		# Gaps in the notification identifier of consecutive alarm SNMP traps received at the OS site are normal because of the separate EFD processing for each OS.
+				$tiAlarmTransferID = $4				# The OS specific unique transfer identifier. Will be incremented by one for each new event sent to an OS. Could wrap from 2147483647 to 1.
+																		# Gaps in the transfer identifier of consecutive alarm SNMP traps received at the OS site indicates  the lost of SNMP traps sent from the INCommander to the OS.
+
+				@Severity = 5
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapCritical"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				
+			case"1002":    # brsTrapMajor
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 4
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapMajor"
+				@AlertGroup = $tiAlarmSourceName 
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				@AlertKey = $tiAlarmNotificationID
+				
+			case"1003":    # brsTrapMinor
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 3
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapMinor"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				
+			case"1004":    # brsTrapWarning
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 2
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapWarning"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				
+			case"1005":    # brsTrapNormal
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 2
+				@Type = 0
+				@Summary =  "In Dev Legato - brsTrapNormal"
+				@AlertGroup = $tiAlarmSourceName 
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				@AlertKey = $tiAlarmNotificationID
+
+
+			case"1006":    # brsTrapReset
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 1
+				@Type = 2
+				@Summary =  "In Dev Legato - brsTrapReset"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				
+			default:
+			
+				@Severity = 1
+				@Type = 1
+				@Summary  =  "In Dev Legato - Unknown Specific Trap"
+				@AlertGroup = "Legato"
+				@AlertKey = $specific-trap
+    				@Domain = "IN"
+    				@Vendor= "Siemens" 
+				details($*)
+}
+        #@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + @Type
+        @Identifier = @Node + " " +  $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + $tiAlarmDescription + " " +  @Manager + @Type
+details($*)
+
+
+case ".1.3.6.1.4.1.231.7.99.4":	#  tiIncTraps Traps
+    @Agent = "tiIncTraps"
+    @Class = "40425"
+    @OmcEms = $PeerIPaddress
+    @Node = $PeerIPaddress
+    @Domain = "IN"
+    @Vendor= "Siemens" 
+    #@NodeAlias = @Node 
+
+    $OS_ExpireTime = 18000
+	@Grade = $specific-trap
+    $OPTION_TypeFieldUsage = "3.6"
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+
+##Lookup IN Values Edit by Mansoor Innovise 21102010#
+
+    $NewValue = lookup($10, INValues)
+
+    if(match($NewValue, "Unknown"))
+    {
+                        # lookup failed leave $10 alone
+                        $10 = $10
+                        @NodeAlias = $11 + "/" + $10
+    }
+    else
+    {
+                        $10 = $NewValue
+                        @NodeAlias = $10
+    }
+
+@Node = @NodeAlias
+###
+# Node field set from variables for Mobilink
+# Giles Blake, 13/07/10
+###
+
+#@Node = $11 + "/" + $10
+
+if(regmatch($8, "^.*LINK=.*"))
+	{
+	@Location = extract ($8, "^.*LINK=(.*)")
+	}
+
+###
+# End, 13/07/10
+###
+
+    switch($specific-trap)
+    {
+	case"2301":    								# tiIncTrapCritical
+		$tiAlarmDateTime = $1					# Represents the occurrence date and time of an alarm as display string in the format as defined by the  ASN.1 standard data type
+																	# GeneralizedTime ( used format: YYYYMMDDHHMMSS[+-]HHMM, e.g.: 19960322123000+0100 ). 
+																	#	Refer to IS ISO/IEC 8824 respectively ITU-T Recommendation X.208
+		$tiAlarmReportingObject = $2		# Object Id of the alarm reporting object according to the SNMP object model defined for the NE
+		$tiAlarmFaultyObject = $3				# Object Id of the faulty object according to the SNMP  object model defined for the NE. Could be identical
+																	# with the Object Id of the alarm reporting object.
+		$tiAlarmEventTypeId = $4				#  Event Type Id as integer. This field specifies the type of the alarm being reported.
+		$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+		$tiAlarmSeverity = $5						# The perceived severity of an alarm as integer conforming to the ITU-T Recommendation X.721. 
+																	# Alarm cleared messages are sent with the value cleared
+		$tiAlarmErrorID = $6						# Error Id as integer. This Error Id is specific to the general alarm source type (e.g. SCP, INC).
+		$tiAlarmEndKey = $7						# End Key of an alarm as integer. It indicates whether an alarm cleared message is expected 
+																	#  INTEGER { false(0), true(1) }
+		$tiAlarmDescription = $8				# Represents the description of an alarm
+		$tiAlarmSequenceNumber = $9	# The unique event sequence number. Will be incremented by one for each new event. Could wrap from 2147483647 to 1.
+																	# In case of INCommander internal alarms always 1.
+		$tiAlarmSourceName = $10			# The source of the event (may not be the machine upon which the event was generated)
+		$tiAlarmSymbNEname = $11		# The symbolic Network Element ( NE ) name. Normally it is different from the source name.
+		$tiAlarmNotificationID = $12			# The notification id unique for a whole INCommander  management area and is common for all configured OS's.
+																	# It will be incremented by one for each new event received from any configured network element ( including the 
+																	# INCommander itself ) and could wrap from 2147483647 to 1.
+		$tiAlarmTransferID = $13				# The OS specific unique transfer identifier. Will be incremented by one for each new event  sent to an OS.
+                    															# Could wrap from 2147483647 to 1
+
+		[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+		@Summary =  $tiAlarmDescription
+#		@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertGroup
+                @AlertGroup = $tiAlarmEventTypeText
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+		$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+		$LenProcLabel = length ($ProcLabel)
+		@AddText = $LenProcLabel
+			@EventType = $tiAlarmEventTypeText 
+		if(int($LenProcLabel) <3)
+		{
+			#@AlertKey = $tiAlarmSourceName
+			@AlertKey = $tiAlarmNotificationID
+		}
+		else
+		{
+#			@AlertKey = $ProcLabel
+#Edit By Mansoor at 01112010 for AlertKey
+                        #@AlertKey = $ProcLabel + " - " + $tiAlarmNotificationID
+			@AlertKey = $tiAlarmNotificationID
+		}
+#Changes for Time Stamp at 04112010
+#1_text = "20101117190911+0500"
+               $EMS_Date = extract($1_text, "([0-9]+)")
+               log (DEBUG, "1_text =" + $EMS_Date)
+               @FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               @LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+#temp add 20min to resolution events FF Innovise Nov 2010
+        if (match(@Type, "2"))
+         {
+       	$Last = getdate
+	$First = getdate 
+        $addtwenty = DateToTime($Last, "%Y%m%d%H%M%S") + 1200
+	@FirstOccurrence = $addtwenty
+        @LastOccurrence = $addtwenty
+         }
+
+# setting z_node FF jan 2010
+#if (exists($tiAlarmDescription))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF summary=" + $tiAlarmDescription)
+#         log (DEBUG, "FF sum1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+#        }
+
+
+	case"2302":    # tiIncTrapMajor
+		$tiAlarmDateTime = $1
+		$tiAlarmReportingObject = $2
+		$tiAlarmFaultyObject = $3
+		$tiAlarmEventTypeId = $4
+		$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+		$tiAlarmSeverity = $5
+		$tiAlarmErrorID = $6
+		$tiAlarmEndKey = $7
+		$tiAlarmDescription = $8
+		$tiAlarmSequenceNumber = $9
+		$tiAlarmSourceName = $10
+		$tiAlarmSymbNEname = $11
+		$tiAlarmNotificationID = $12
+		$tiAlarmTransferID = $13
+
+		[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+		@Summary =  $tiAlarmDescription
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+#		@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertGroup
+                @AlertGroup = $tiAlarmEventTypeText
+		$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+		$LenProcLabel = length ($ProcLabel)
+		@AddText = $LenProcLabel
+		@EventType = $tiAlarmEventTypeText 
+		if(int($LenProcLabel) <3)
+		{
+				#@AlertKey = $tiAlarmSourceName
+                                @AlertKey = $tiAlarmNotificationID
+		}
+		else
+		{
+#				@AlertKey = $ProcLabel
+#Edit By Mansoor at 01112010 for AlertKey
+#                                @AlertKey = $ProcLabel + " - " + $tiAlarmNotificationID
+                                @AlertKey = $tiAlarmNotificationID
+
+		}
+#Changes for Time Stamp at 04112010
+
+               $EMS_Date = extract($1_text, "([0-9]+)")
+              log (DEBUG, "1_text =" + $EMS_Date) 
+	       @FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               @LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+
+#temp add 20min to resolution events FF Innovise Nov 2010
+        if (match(@Type, "2"))
+         {
+        #log(DEBUG, ":FF-resolutiontime:" +  $EMS_Date)
+        #$addtwenty = DateToTime($EMS_Date, "%Y%m%d%H%M%S") + 1200
+        #log(DEBUG, ":FF-twentyminadded" +  $addtwenty)
+        #@FirstOccurrence = $addtwenty
+        #log(DEBUG, ":FF-First" +  @FirstOccurrence)
+        #@LastOccurrence = $addtwenty
+        #log(DEBUG, ":FF-Last" +  @LastOccurrence)
+	$Last = getdate
+        $First = getdate
+        $addtwenty = DateToTime($Last, "%Y%m%d%H%M%S") + 1200
+        @FirstOccurrence = $addtwenty
+        @LastOccurrence = $addtwenty
+         }
+# setting z_node FF jan 2010
+#if (exists ($tiAlarmDescription))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF summary =" + $tiAlarmDescription)
+#         log (DEBUG, "FF sum1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+#        }
+
+
+
+
+	case"2303":    # tiIncTrapMinor
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+#		        @AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertGroup
+                        @AlertGroup = $tiAlarmEventTypeText
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+			@EventType = $tiAlarmEventTypeText 
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			if(int($LenProcLabel) <3)
+			{
+					#@AlertKey = $tiAlarmSourceName
+					@AlertKey = $tiAlarmNotificationID 
+			}
+			else
+			{
+#					#@AlertKey = $ProcLabel
+					@AlertKey = $tiAlarmNotificationID 
+#Edit By Mansoor at 01112010 for AlertKey
+                                        #@AlertKey = $ProcLabel + " - " + $tiAlarmNotificationID
+
+			}
+#Changes for Time Stamp at 04112010
+
+               $EMS_Date = extract($1_text, "([0-9]+)")
+              log (DEBUG, "1_text =" + $EMS_Date) 
+		@FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               @LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+#temp add 20min to resolution events FF Innovise Nov 2010
+        if (match(@Type, "2"))
+         {
+        #log(DEBUG, ":FF-resolutiontime:" +  $EMS_Date)
+        #$addtwenty = DateToTime($EMS_Date, "%Y%m%d%H%M%S") + 1200
+        #log(DEBUG, ":FF-twentyminadded" +  $addtwenty)
+        #@FirstOccurrence = $addtwenty
+        #log(DEBUG, ":FF-First" +  @FirstOccurrence)
+        #@LastOccurrence = $addtwenty
+        #log(DEBUG, ":FF-Last" +  @LastOccurrence)
+       	$Last = getdate
+        $First = getdate
+        $addtwenty = DateToTime($Last, "%Y%m%d%H%M%S") + 1200
+        @FirstOccurrence = $addtwenty
+        @LastOccurrence = $addtwenty
+	 }
+# setting z_node FF jan 2010
+#if (exists($tiAlarmDescription))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF summary =" + $tiAlarmdescription)
+#         log (DEBUG, "FF summ1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+        #}
+
+
+
+	case"2304":    # tiIncTrapWarning
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+#			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertGroup
+                        @AlertGroup = $tiAlarmEventTypeText
+			@EventType = $tiAlarmEventTypeText 
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+			if(int($LenProcLabel) <3)
+			{
+					#@AlertKey = $tiAlarmSourceName
+					@AlertKey = $tiAlarmNotificationID
+			}
+			else
+			{
+#					#@AlertKey = $ProcLabel
+					#@AlertKey = $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertKey
+                                        #@AlertKey = $ProcLabel + " - " + $tiAlarmNotificationID
+                                        @AlertKey = $tiAlarmNotificationID
+
+			}
+#Changes for Time Stamp at 04112010
+
+               $EMS_Date = extract($1_text, "([0-9]+)")
+               log (DEBUG, "1_text =" + $EMS_Date) 
+		@FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               @LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+             log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+#temp add 20min to resolution events FF Innovise Nov 2010
+        if (match(@Type, "2"))
+         {
+       # log(DEBUG, ":FF-resolutiontime:" +  $EMS_Date)
+       # $addtwenty = DateToTime($EMS_Date, "%Y%m%d%H%M%S") + 1200
+       # log(DEBUG, ":FF-twentyminadded" +  $addtwenty)
+       # @FirstOccurrence = $addtwenty
+       # log(DEBUG, ":FF-First" +  @FirstOccurrence)
+       # @LastOccurrence = $addtwenty
+       # log(DEBUG, ":FF-Last" +  @LastOccurrence)
+      $Last = getdate
+        $First = getdate
+        $addtwenty = DateToTime($Last, "%Y%m%d%H%M%S") + 1200
+        @FirstOccurrence = $addtwenty
+        @LastOccurrence = $addtwenty
+	  }
+# setting z_node FF jan 2010
+#if (exists($tiAlarmDescription))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF sum =" + $tiAlarmDescription)
+#         log (DEBUG, "FF sum1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+#        }
+
+
+
+	case"2305":    # tiIncTrapNormal
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+#			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+
+#Edit By Mansoor at 01112010 for AlertGroup
+                        @AlertGroup = $tiAlarmEventTypeText
+			@EventType = $tiAlarmEventTypeText 
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			if(int($LenProcLabel) <3)
+			{
+					#@AlertKey = $tiAlarmSourceName
+					@AlertKey = $tiAlarmNotificationID
+			}
+			else
+			{
+#					#@AlertKey = $ProcLabel
+					@AlertKey = $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertKey
+                                        #@AlertKey = $ProcLabel + " - " + $tiAlarmNotificationID
+
+			}
+#Changes for Time Stamp at 04112010
+
+               $EMS_Date = extract($1_text, "([0-9]+)")
+              log (DEBUG, "1_text =" + $EMS_Date) 
+		@FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               @LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+#temp add 20min to resolution events FF Innovise Nov 2010
+        if (match(@Type, "2"))
+         {
+        #log(DEBUG, ":FF-resolutiontime:" +  $EMS_Date)
+        #$addtwenty = DateToTime($EMS_Date, "%Y%m%d%H%M%S") + 1200
+        #log(DEBUG, ":FF-twentyminadded" +  $addtwenty)
+        #@FirstOccurrence = $addtwenty
+        #log(DEBUG, ":FF-First" +  @FirstOccurrence)
+        #@LastOccurrence = $addtwenty
+        #log(DEBUG, ":FF-Last" +  @LastOccurrence)
+       	$Last = getdate
+        $First = getdate
+        $addtwenty = DateToTime($Last, "%Y%m%d%H%M%S") + 1200
+        @FirstOccurrence = $addtwenty
+        @LastOccurrence = $addtwenty
+	 }
+# setting z_node FF jan 2010
+#if (exists($tiAlarmDescription))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF sum =" + $tiAlarmDescription)
+#         log (DEBUG, "FF sum1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+#        }
+
+
+
+	case"2306":    # tiIncTrapCleared
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+#			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+#Edit By Mansoor at 01112010 for AlertGroup
+                        @AlertGroup = $tiAlarmEventTypeText
+			@EventType = $tiAlarmEventTypeText 
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			@EventType = $tiAlarmEventTypeText 
+			if(int($LenProcLabel) <3)
+			{
+					#@AlertKey = $tiAlarmSourceName
+                                        @AlertKey = $tiAlarmNotificationID
+			}
+			else
+			{
+#					#@AlertKey = $ProcLabel
+#Edit By Mansoor at 01112010 for AlertKey
+                                         #@AlertKey = $ProcLabel + " - " + $tiAlarmNotificationID
+                                         @AlertKey =  $tiAlarmNotificationID
+
+			}
+#Changes for Time Stamp at 04112010
+
+               $EMS_Date = extract($1_text, "([0-9]+)")
+       log (DEBUG, "1_text =" + $EMS_Date)   
+	     @FirstOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               @LastOccurrence = DateToTime($EMS_Date, "%Y%m%d%H%M%S")
+               log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+#temp add 20min to resolution events FF Innovise Nov 2010
+        if (match(@Type, "2"))
+         {
+        #log(DEBUG, ":FF-resolutiontime:" +  $EMS_Date)
+        #$addtwenty = DateToTime($EMS_Date, "%Y%m%d%H%M%S") + 1200
+        #log(DEBUG, ":FF-twentyminadded" +  $addtwenty)
+        #@FirstOccurrence = $addtwenty
+        #log(DEBUG, ":FF-First" +  @FirstOccurrence)
+        #@LastOccurrence = $addtwenty
+        #log(DEBUG, ":FF-Last" +  @LastOccurrence)
+       $Last = getdate
+        $First = getdate
+        $addtwenty = DateToTime($Last, "%Y%m%d%H%M%S") + 1200
+        @FirstOccurrence = $addtwenty
+        @LastOccurrence = $addtwenty
+	 }
+
+# setting z_node FF jan 2010
+#if (exists($tiAlarmDescription ))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF sum =" + $tiAlarmDescription)
+#         log (DEBUG, "FF sum1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+#        }
+
+
+
+
+	case"2310":    # tiIncPeriodicalSumRep
+			$tiAlarmSourceName = $1			# The source of the event (may not be the machine upon which the event was generated)
+			$tiAlarmSymbNEname = $2			# The symbolic Network Element ( NE ) name. Normally it is different from the source name.
+			$tiIsConnectionReliable = $3		# Is the host responding to requests ?  INTEGER { false(0), true(1) }
+			[$MaxSeverity , $Discard] =  lookup($4, tiAlarmSeverity)
+			$NumCriticalAlarms = $5				# Number of open critical alarms
+			$NumMajorAlarms = $6					# Number of open major alarms
+			$NumMinorAlarms = $7					# Number of open minor alarms
+			$NumWarnings = $8						# Number of open warning alarms
+			$NumNormalEvents = $9				# Number of open events with severity normal
+			$NumUnknownEvents = $10		# Number of open events with unknown severity
+
+			@Severity = 2
+			@Type = 0
+			@Summary =   $tiAlarmSourceName
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			@URL = "tiIsConnectionReliable = " + $tiIsConnectionReliable + " MaxSeverity = " + $MaxSeverity + " NumCriticalAlarms = " + $NumCriticalAlarms + " NumMajorAlarms = " + $NumMajorAlarms + " NumMinorAlarms = " + $NumMinorAlarms + " NumWarnings = " + $NumWarnings + " NumNormalEvents = " + $NumNormalEvents + " NumUnknownEvents = " + $NumUnknownEvents 
+			@AlertGroup = "PeriodicalSumRep" 
+			#@AlertKey = $tiAlarmSourceName
+                        @AlertKey =  $tiAlarmNotificationID
+			@EventType = "Summary"
+
+
+	case"2311":    # tiIncSpontaneousSumRep
+			$tiAlarmSourceName = $1
+			$tiAlarmSymbNEname = $2
+			$tiIsConnectionReliable = $3
+			$MaxSeverity = $4
+			$NumCriticalAlarms = $5
+			$NumMajorAlarms = $6
+			$NumMinorAlarms = $7
+			$NumWarnings = $8
+			$NumNormalEvents = $9
+			$NumUnknownEvents = $10
+
+			@Severity = 2
+			@Type = 0
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			@Summary =  "In Dev TilNc - Spontaneous Alarm Summary Report for  " + $tiAlarmSourceName
+			@URL = "tiIsConnectionReliable = " + $tiIsConnectionReliable + " MaxSeverity = " + $MaxSeverity + " NumCriticalAlarms = " + $NumCriticalAlarms + " NumMajorAlarms = " + $NumMajorAlarms + " NumMinorAlarms = " + $NumMinorAlarms + " NumWarnings = " + $NumWarnings + " NumNormalEvents = " + $NumNormalEvents + " NumUnknownEvents = " + $NumUnknownEvents 
+			@AlertGroup = "SpontaneousSumRep" 
+			@AlertKey = $tiAlarmSourceName
+			@EventType = "Summary"
+
+
+
+
+	default:
+
+			@Severity = 1
+			@Type = 1
+			@Summary  =  "In Dev Tilnc - Unknown Specific Trap"
+			@AlertGroup = "Tilnc"
+			@AlertKey = $specific-trap
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+			details($*)
+}
+
+# Ther following added here for quickness, they would be better placed with the relevent Specific Trap but time dictates
+
+# From IN VOMS alarms LLD v2.2
+#          IN VOMS alarm   Alarm 1
+if(regmatch(@Summary, "OnlineTransport.*TCP connection id .* is not available"))
+{
+            $OS_EventId = "NET_IN_VOMS_002"
+            @Domain="IN"
+            #@TTHibernate not required
+}
+#          IN VOMS alarm   Alarm 2
+else if(regmatch(@Summary, "OnlineTransport.*The remote Online-PH subsystem id .* is not available"))
+{
+            $OS_EventId = "NET_IN_VOMS_002"
+            @Domain="IN"
+            #@TTHibernate not required
+}
+#          IN VOMS alarm   Alarm 3
+else if(regmatch(@Summary, "LoadService: The JMS is not working properly")         )
+{
+            $OS_EventId = "NET_IN_VOMS_001"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN VOMS alarm   Alarm 4
+else if(regmatch(@Summary, "LoadService: The cluster is not working properly")     )
+{
+            $OS_EventId = "NET_IN_VOMS_001"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN VOMS alarm   Alarm 5
+#else if(regmatch(@Summary, "LoadService: Utilized capacity of tablespace .* percent")       )
+#{
+#            $OS_EventId = "NET_IN_VOMS_001"
+#            @Domain="IN"
+#            @TTHibernate=300 
+#}
+#          IN VOMS alarm   Alarm 6
+#else if(regmatch(@Summary, "LogFileWriter: capacity .* percent of file system partition")     )
+#{
+#            $OS_EventId = "NET_IN_VOMS_001"
+#            @Domain="IN"
+#            @TTHibernate=300 
+#}
+#          IN VOMS alarm   Alarm 5
+else if(regmatch(@Summary, "SCPMessageHandler: SCP Message Handler: Too many connections on port .*")    )
+{
+            $OS_EventId = "NET_IN_VOMS_001"
+            @Domain="IN"
+            @TTHibernate=900 
+}
+ 
+ 
+# from IN Critical Threshold Crossed alarm LLD v2.2
+#          IN Critical Threshold Crossed       Alarm 1
+else if(regmatch(@Summary, ".*Running out of file system or database space on /TspAccBackup.* percent available")          )
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+            @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 2
+else if(regmatch(@Summary, ".*Running out of file system or database space on /global/TspFt.* percent available")          )
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+            @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 3
+else if(regmatch(@Summary, ".*Running out of file system or database space on /dump.* percent available")          )
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+            @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 4
+else if(regmatch(@Summary, ".*File group oracleArchiveLog .* too large.*")    )
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+            @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 5
+else if(regmatch(@Summary, "OEM.*Warning on Host .* File System usage .* has exceeded the Warning level .*")       )
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+            @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 6
+else if(regmatch(@Summary, "OEM.* alloc.* file system full")       )
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+	    @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 7
+else if(regmatch(@Summary, "LogFileWriter: capacity .* percent of file system partition .*")	)
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+	    @TTHibernate=300
+}
+#          IN Critical Threshold Crossed       Alarm 8
+else if(regmatch(@Summary, "LoadService: Utilized capacity of tablespace .* percent")	)
+{
+            $OS_EventId = "NET_IN_CTC_001"
+            @Domain="IN"
+	    @TTHibernate=300
+}
+
+#  From IN Processing Error alarm LLD v2.2 
+#          IN Processing Error alarm            Alarm 1
+else if(regmatch(@Summary, ".*Performance degradation of process instance CCC_USER_527 due to failed locality optimization")   )
+{
+            $OS_EventId = "NET_IN_PER_001"
+            @Domain="IN"
+            @TTHibernate=900 
+}
+#          IN Processing Error alarm            Alarm 2
+#else if(regmatch(@Summary, "OEM.* SA SA.* to test host .* failed" )    )
+#modified to be genric FF
+else if(regmatch(@Summary, "OEM.* SA SA.* " ) or regmatch(@Summary, "OEM.*SA SA.*" ))
+{
+            $OS_EventId = "NET_IN_PER_002"
+            @Domain="IN"
+            #@TTHibernate not required
+}
+#          IN Processing Error alarm            Alarm 3
+else if(regmatch(@Summary, "OEM.* SA SA.* to test host .* has exceeded its configured timeout, pid .* will be terminated")         )
+{
+            $OS_EventId = "NET_IN_PER_002"
+            @Domain="IN"
+            #@TTHibernate not required
+}
+#          IN Processing Error alarm            Alarm 4
+else if(regmatch(@Summary, ".* UDP connection failed for LAN IP address .*")        )
+{
+            $OS_EventId = "NET_IN_PER_003"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN Processing Error alarm            Alarm 5
+#else if(regmatch(@Summary, ".* Sending Interface .* offline")        )
+#{
+#            $OS_EventId = "NET_IN_PER_001"
+#            @Domain="IN"
+#            @TTHibernate=300 
+#}
+#          IN Processing Error alarm            Alarm 5
+else if(regmatch(@Summary, ".*connection to dispatcher .* disconnected")  )
+{
+            $OS_EventId = "NET_IN_PER_003"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN Processing Error alarm            Alarm 6
+else if(regmatch(@Summary, "OEM.* Spheras agent ssmProxy not running")            )
+{
+            $OS_EventId = "NET_IN_PER_001"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN Processing Error alarm            Alarm 7
+else if(regmatch(@Summary, ".*Failed to copy remote file")           )
+{
+            $OS_EventId = "NET_IN_PER_001"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN Processing Error alarm            Alarm 8
+else if(regmatch(@Summary, ".*Slave RU failed .*")  )
+{
+            $OS_EventId = "NET_IN_PER_001"
+            @Domain="IN"
+            @TTHibernate=300
+}
+#          IN Processing Error alarm            Alarm 9
+#else if(regmatch(@Summary, "connection to the DB.* terminated")  )
+#{
+#            $OS_EventId = "NET_IN_PER_001"
+#            @Domain="IN"
+#            @TTHibernate=300 
+#}
+#          IN Processing Error alarm            Alarm 9
+else if(regmatch(@Summary, "CheckBackup processing of the table .* in thread")     )
+{
+            $OS_EventId = "NET_IN_PER_003"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN Processing Error alarm            Alarm 12
+#else if(regmatch(@Summary, "Administrator intervention required for subsystem .*")            )
+#{
+#            $OS_EventId = "NET_IN_PER_001"
+#            @Domain="IN"
+#            @TTHibernate=300 
+#}
+#          IN Processing Error alarm            Alarm 10 & 11
+else if(regmatch(@Summary, "BRAlarm.* Backup failed.* exit code")         )
+{
+            $OS_EventId = "NET_IN_PER_003"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#          IN Processing Error alarm            Alarm 11
+#else if(regmatch(@Summary, "BRAlarm.* Backup failed.* exit code")         )
+#{
+#            $OS_EventId = "NET_IN_PER_003"
+#            @Domain="IN"
+#            @TTHibernate=300 
+#}
+#          IN Processing Error alarm            Alarm 12
+else if(regmatch(@Summary, "DR.* inaccessible")  )
+{
+            $OS_EventId = "NET_IN_PER_003"
+            @Domain="IN"
+            @TTHibernate=300 
+}
+#	   IN Processing Error alarm		Alarm 13
+else if (regmatch(@Summary, "SmcfProcGroup.*Error detected during execution of SM task .* The task aborted its execution")	)
+{
+        	$OS_EventId = "NET_IN_PER_003"
+            @Domain="IN"
+            @TTHibernate=300
+}
+
+# From IN Valista Issue alarms LLD v2.1
+#          IN Valista Issue alarm          > 300
+if(regmatch(@Summary, ".* portion \( > 300 per mill\) .* transactions")   )
+{
+            $OS_EventId = "NET_IN_VAL_001"
+            @Domain="IN"
+            @TTHibernate=300
+#            @AlertKey = "300"
+}
+#          IN Valista Issue alarm          > 200
+else if(regmatch(@Summary, ".* portion \( > 200 per mill\) .* transactions"))
+{
+            $OS_EventId = "NET_IN_VAL_002"
+            @Domain="IN"
+#            @AlertKey = $specific-trap
+}
+#          IN Valista Issue alarm          > 100
+else if(regmatch(@Summary, ".* portion \( > 100 per mill\) .* transactions"))
+{
+            @Summary = "TO BE DISCARDED: " + @Summary
+            discard 
+}
+
+# From IN Call Gapping alarms LLD v2.1
+if(regmatch(@Summary, ".*GlobalLimit has reached .* of the effective limitation rate of .*"))
+{
+#          IN Call Gapping alarm           100%  
+   if(regmatch(@Summary, ".*GlobalLimit has reached 100 \% of the effective limitation rate of .*"))
+       {
+            $OS_EventId = "NET_IN_CGA_001"
+            @Domain="IN"
+            @TTHibernate=300
+#            @AlertKey = "Thres100Reached"
+       }
+#          IN Call Gapping alarm          <100%
+   else
+       {
+            $OS_EventId = "NET_IN_CGA_001"
+            @Domain="IN"
+#            @AlertKey = "Thres100NotReached"
+       }
+}
+
+# Updated by Mihai Strava, Innovise, 05-01-2011
+# From IN Equipment alarms LLD v2.1
+
+    if (regmatch(@Summary, "OEM.*"))
+      {
+
+#   IN Equipment alarm   Alarm 1-3
+        if (regmatch(@Summary, "secondary error from DVMA read transaction") || regmatch(@Summary, "Correctable error") || regmatch(@Summary, "Correctable Error") || regmatch(@Summary, "Uncorrectable Error") || regmatch(@Summary, "Uncorrectable error") || regmatch(@Summary, "Memory Intermittent Single bit Error from"))
+        {
+           $OS_EventId = "NET_IN_EQT_001"
+           @Domain = "IN"
+#           @AlertKey = $specific-trap
+        }
+
+#   IN Equipment alarm   Alarms 4-8
+        if (regmatch(@Summary, "OEM.*Critical on Host .*") || regmatch(@Summary, "OEM.* Temperature is above working limit .*") || regmatch(@Summary, "OEM.* Controller entered conservative cache mode .*") || regmatch(@Summary, "OEM.*WARNING: /pci@WARNING: /pci@.*") || regmatch(@Summary, "OEM.*Link Down Event .*"))
+        {
+           $OS_EventId = "NET_IN_EQT_002"
+           @Domain = "IN"
+           @TTHibernate=300
+#           @AlertKey = $specific-trap
+        }
+
+#   IN Equipment alarm   Alarms 9-10
+        if (regmatch(@Summary, ".*Mirror vdisk.* online piece left - this mirror disk is now NOT-MIRRORED") || regmatch(@Summary, ".*Mirror vdisk.* Piece 0 disabled"))
+        {
+           $OS_EventId = "NET_IN_EQT_003"
+           @Domain = "IN"
+#           @AlertKey = $specific-trap
+        }
+      }
+
+#@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + @Type
+@Identifier = @Node + " " +  $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + $tiAlarmDescription + " " + @Manager + @Type
+details($*)
+
+#Discarding PayWorkerProc Events ---Eidt Changes by Mansoor at ----21 Oct 2010--------
+#Cancel discarding, added IN Valista Issue logic above ---Mihai Strava---29 Dec 2010-------- 
+ 
+#if (regmatch (@Summary, "^PayWorkerProc"))
+#{
+#                      if (regmatch (@Summary, ".* portion \( > 100 per mill\) .* transactions\."))
+#                	{
+#                       @Summary = "TO BE DISCARDED: " + @Summary
+#                        discard
+#                	}
+#                      else
+#                	{
+#                	@Summary = @Summary
+#                	}
+#}
+
+
+# From IN Environmental alarms LLD v2.2
+#          IN Environmental alarm            Alarm 1
+if(regmatch(@Summary, "Module Temperature Limit was Exceeded")   )
+{
+            $OS_EventId = "NET_IN_ENV_001"
+#            @AlertKey = "NET_IN_ENV_001"
+            @Domain="IN"
+            @TTHibernate=10
+            @Identifier = @Node + " " +  $generic-trap + " " + $specific-trap + " " + @AlertGroup + " Module Temperature Limit was Exceeded " + @Manager + @Type
+            details($*)
+}
+#          IN Environmental alarm            Alarm 2
+else if(regmatch(@Summary, "Module Temperature Limit Back to Normal")    )
+{
+             @Summary = "TO BE DISCARDED: " + @Summary
+             discard
+#            $OS_EventId = "NET_IN_ENV_001"
+#            @Domain="IN"
+#            @Type = 2
+}
+#          IN Environmental alarm            Alarm 3
+else if(regmatch(@Summary, "Lost MopNET Connection")         )
+{
+            $OS_EventId = "NET_IN_ENV_002"
+#            @AlertKey = "NET_IN_ENV_002"
+            @Domain="IN"
+            @TTHibernate=10
+            @Identifier = @Node + " " +  $generic-trap + " " + $specific-trap + " " + @AlertGroup + " Lost MopNET Connection " + @Manager + @Type
+            details($*)
+}
+#          IN Environmental alarm            Alarm 4
+else if(regmatch(@Summary, "Restored MopNET Connection")        )
+{
+             @Summary = "TO BE DISCARDED: " + @Summary
+             discard
+#            $OS_EventId = "NET_IN_ENV_001"
+#            @Domain="IN"
+#            @Type = 2
+}
+
+
+case ".1.3.6.1.4.1.2451.0":	# Tecnomen Traps
+    @Agent = "Tecnomen"
+    @Class = "40425"
+    @OmcEms = $PeerIPaddress
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+
+	@Grade = $specific-trap
+    $OS_ExpireTime = 600
+    $OPTION_TypeFieldUsage = "3.6"
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+    switch($specific-trap)
+    {
+			case"7":    # rpAlarmOnTrap
+					$rpNotificationID = $1						# an identifier for the notification. Notification identifiers must be chosen to be unique  across all notifications of a particular 
+																				#  managed object  throughout the time that the correlation is significant
+					$rpModuleNumber = $2					#  The alarm code is unique within one module (also called component in OMC
+					$rpAlarmCode = $3						# (unique inside one module)
+					$rpSubscriberNumber = $4			#  Available only in MMS alarms
+					$rpEventTimeOn = $5					# This is the time that the alarm was emitted
+					$rpEventType = $6							# This is the time that the alarm was last set to off state.
+					$rpEventTypeText =  lookup($rpEventType, rpEventType)
+					$rpProbableCause = $7				# defines further qualification as to the probable cause of the alarm.
+					$rpPerceivedSeverity = $8				# defines the severity of the alarm
+					$rpProposedRepairAction = $9	# Proposed repair action, if present, provides a suggested repair action for the alarm.
+					$rpAlarmText  = $10						# The alarm text
+					$tiAlarmSourceName = $11			# The source of the event (may not be the machine upon which the event was generated)
+					$tiAlarmSymbNEname = $12		# The symbolic Network Element ( NE ) name. Normally it is different from the source name.
+					$tiAlarmNotificationID = $13			# The notification id unique for a whole INCommander  management area and is common for all configured OS's.
+																				# It will be incremented by one for each new event received from any configured network element ( including the 
+																				# INCommander itself ) and could wrap from 2147483647 to 1.
+					$tiAlarmTransferID = $14				# The OS specific unique transfer identifier. Will be incremented by one for each new event  sent to an OS.
+                    															# Could wrap from 2147483647 to 1
+					
+					[@Severity, @Type] = lookup ($rpPerceivedSeverity, rpPerceivedSeverity)
+					@Summary =  "In Dev Tecnomen - rpAlarmOnTrap - " + $rpAlarmText
+					@AlertGroup = $tiAlarmSourceName + $tiAlarmNotificationID
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+					@AlertKey = $tiAlarmNotificationID
+					
+			case"8":    # rpAlarmOffgTrap
+					$rpNotificationID = $1
+					$rpModuleNumber = $2
+					$rpAlarmCode = $3
+					$rpSubscriberNumber = $4
+					$rpEventTimeOn = $5
+					$rpEventType = $6
+					$rpProbableCause = $7
+					$rpPerceivedSeverity = $8
+					$rpProposedRepairAction = $9
+					$rpAlarmText  = $10
+					$tiAlarmSourceName = $11
+					$tiAlarmSymbNEname = $12
+					$tiAlarmNotificationID = $13
+					$tiAlarmTransferID = $14
+					
+					@Severity = 1
+					@Type =2
+					@Summary =  "In Dev Tecnomen - rpAlarmOffTrap - " + $rpAlarmText
+					@AlertGroup = $tiAlarmSourceName + $tiAlarmNotificationID
+					@AlertKey = $tiAlarmNotificationID
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+					
+ 			default:
+ 			
+ 					@Severity = 1
+ 					@Type = 1
+ 					@Summary  =  "In Dev Tecnomen - Unknown Specific Trap"
+ 					@AlertGroup = "Tecnomen"
+    		@Domain = "IN"
+    		@Vendor= "Siemens" 
+ 					@AlertKey = $specific-trap
+ 					details($*)
+
+# setting z_node FF jan 2010
+#if (regmatch ($tiAlarmDescription, ".*resourceMonitoring.*"))
+#        {
+        #resourceMonitoring: Netmon error for NE 'INCluster6': Node 'in4ce2' down
+        #IN26-KHI/N1
+#        $sum1 = extract($tiAlarmDescription, "in[0-9]+[A-Za-z]+([0-9])")
+#         log (DEBUG, "FF sum =" + $tiAlarmDescription)
+#         log (DEBUG, "FF sum1 =" + $sum1)
+#        $node1 = extract (@Node, "IN[0-9]+-[A-Za-z]+/([A-Za-z]+)")
+#         log (DEBUG, "FF node1 =" + $node1)
+#        @Z_Node = $node1 + $sum1
+#         log (DEBUG, "FF ZNode =" + @Z_Node)
+#        }
+
+}
+
+
+        #@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + @Type
+        @Identifier = @Node + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + $tiAlarmDescription + " " +  @Manager + @Type
+        details($*)
+

@@ -1,0 +1,64 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CFS-MIB.adv.include.snmptrap.rules 1.0
+#    2006/09/19 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CFS-MIB
+#
+###############################################################################
+log(DEBUG, "<<<<< Entering... cisco-CISCO-CFS-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ciscoCFSFeatureActionNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoCFSFeatureActionNotif"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "cfsFeatureOpEntry." + $cfsFeatureOpName_Raw 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### ciscoCFSMergeFailNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoCFSMergeFailNotif"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "Feature: " + $1 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### ciscoCFSDiscoveryCompleteNotif
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoCFSDiscoveryCompleteNotif"
+        $OS_OsiLayer = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CFS-MIB.adv.include.snmptrap.rules >>>>>")

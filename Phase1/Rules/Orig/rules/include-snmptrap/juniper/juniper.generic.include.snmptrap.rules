@@ -1,0 +1,161 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper.generic.include.snmptrap.rules 5.0
+#    2008/05/16 Gerry van der Zanden
+#
+###############################################################################
+#
+# 5.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-05
+#
+###############################################################################
+#
+# 1.1 - Fixed a bug which caused generic traps from any enterprise whose
+#       enterprise ID started with 2636 being handled as traps from Juniper.
+#
+# 1.0 - Initial Release.
+#
+#       Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+###############################################################################
+
+else if (nmatch($enterprise, ".1.3.6.1.4.1.2636."))
+{
+    @Agent = "Generic-Juniper"
+    @Class = "40200"
+    
+    switch($generic-trap)
+    {
+        case "2"|"3": ### linkDown, linkUp
+                            
+            if(nmatch($OID4, "1.3.6.1.2.1.31.1.1.1.1"))
+            {
+                ##########
+                # $1 = ifIndex - A unique value for each interface. Its value
+                #        ranges between 1 and the value of ifNumber. The value
+                #        for each interface must remain constant at least from
+                #        one re-initialization of the entity's network
+                #        management system to the next re-initialization.                
+                # $2 = ifAdminStatus - The desired state of the interface. The
+                #        testing(3) state indicates that no operational packets
+                #        can be passed.
+                # $3 = ifOperStatus - The current operational state of the
+                #        interface. The testing(3) state indicates that no
+                #        operational packets can be passed.
+                # $4 = ifName - The textual name of the interface. The value of
+                #        this object should be the name of the interface as
+                #        assigned by the local device and should be suitable
+                #        for use in commands entered at the device's 'console'.
+                #        This might be a text name, such as 'le0' or a simple
+                #        port number, such as '1', depending on the interface
+                #        naming syntax of the device. If several entries in the
+                #        ifTable together represent a single interface as named
+                #        by the device, then each will have the same value of
+                #        ifName.  Note that for an agent which responds to SNMP
+                #        queries concerning an interface on some other
+                #        (proxied) device, then the value of ifName for such an
+                #        interface is the proxied device's local name for it.
+                #        If there is no local name, or this object is otherwise
+                #        not applicable, then this object contains a
+                #        zero-length string.
+                ##########
+                            
+                if(regmatch($2, "^.*[A-Za-z].*$")||regmatch($3, "^.*[A-Za-z].*$"))
+                {
+                    $MIBFileNotNull = 1
+                }
+                            
+                $ifIndex = $1
+                $ifAdminStatus = lookup($2, ifAdminStatus) + " ( " + $2 + " )"
+                $ifOperStatus = lookup ($3, ifOperStatus) + " ( " + $3 + " )"
+                $ifName = $4
+                details($ifIndex,$ifAdminStatus,$ifOperStatus,$ifName)
+                                
+                switch($2)
+                {
+                    case "2": ### Down
+                        @Summary = @Summary + ", Administratively  ( " + $4 + " )"
+                        @Severity = 2
+                    case "3": ### Testing - in some test mode
+                        @Summary = @Summary + ", Testing  ( " + $4 + " )"
+                        @Severity = 2
+                    default:
+                        @Summary = @Summary + "  ( " + $4 + " )"
+                }
+                @Identifier = @Identifier + " " + $2 + " " + $3
+            }
+            else if(nmatch($OID4, "1.3.6.1.2.1.2.2.1.2"))
+            {
+                ##########
+                # $1 = ifIndex - A unique value for each interface. Its value
+                #        ranges between 1 and the value of ifNumber. The value
+                #        for each interface must remain constant at least from
+                #        one re-initialization of the entity's network
+                #        management system to the next re-initialization.                
+                # $2 = ifAdminStatus - The desired state of the interface. The
+                #        testing(3) state indicates that no operational packets
+                #        can be passed.
+                # $3 = ifOperStatus - The current operational state of the
+                #        interface. The testing(3) state indicates that no
+                #        operational packets can be passed.
+                # $4 = ifDescr - A textual string containing information about
+                #        the interface. This string should include the name of
+                #        the manufacturer, the product name and the version of
+                #        the interface hardware/software.
+                ##########
+                            
+                $ifIndex = $1
+                $ifAdminStatus = lookup($2, ifAdminStatus) + " ( " + $2 + " )"
+                $ifOperStatus = lookup ($3, ifOperStatus) + " ( " + $3 + " )"
+                $ifDescr = $4
+                details($ifIndex,$ifAdminStatus,$ifOperStatus,$ifDescr)
+                                
+                switch($2)
+                {
+                    case "2": ### Down
+                        @Summary = @Summary + ", Administratively  ( " + $4 + " )"
+                        @Severity = 2
+                    case "3": ### Testing - in some test mode
+                        @Summary = @Summary + ", Testing  ( " + $4 + " )"
+                        @Severity = 2
+                    default:
+                        @Summary = @Summary + "  ( " + $4 + " )"
+                }
+                @Identifier = @Identifier + " " + $2 + " " + $3
+            }
+            else
+            {
+                ##########
+                # $1 = ifIndex - A unique value for each interface. Its value
+                #        ranges between 1 and the value of ifNumber. The value
+                #        for each interface must remain constant at least from
+                #        one re-initialization of the entity's network
+                #        management system to the next re-initialization.
+                ##########
+                            
+                $ifIndex = $1
+                details($ifIndex)
+                
+                @Summary = @Summary + "  ( ifEntry." + $1 + " )"
+            }
+                            
+        default:
+    }
+    
+    ### The following statement adds the Juniper model information to the Agent Field
+    
+    @Agent = @Agent + " " + lookup(extract($enterprise, "\.([0-9]+)$"), juniperProducts)
+}

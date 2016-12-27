@@ -1,0 +1,309 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-BITS-CLOCK-MIB.include.snmptrap.rules 1.0
+#    2006/05/02 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-BITS-CLOCK-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.459": ### Cisco Building Integrated Timing Supply (BITS) Clocking Sources - Notifications from CISCO-BITS-CLOCK-MIB (20050121)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-BITS-CLOCK-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Building Integrated Timing Supply"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoBitsClockSource
+
+            ##########
+            # $1 = entPhysicalDescr 
+            # $2 = cBitsClkSourceDescription 
+            # $3 = cBitsClkSourceRoleAdmin 
+            # $4 = cBitsClkSourceRoleCurrent 
+            ##########
+            
+             $entPhysicalDescr = $1
+            $cBitsClkSourceDescription = $2
+            $cBitsClkSourceRoleAdmin = lookup($3, cBitsClkSourceRoleAdmin) + " ( " + $3 + " )"
+            $cBitsClkSourceRoleCurrent = lookup($4, cBitsClkSourceRoleCurrent) + " ( " + $4 + " )"
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-BITS-CLOCK-MIB-ciscoBitsClockSource"
+
+            @AlertGroup = "BITS Clock Source Status"
+            @AlertKey = "cBitsClkSourceEntry." + $entPhysicalIndex
+            switch($4)
+            {
+                case "0": ### unavailable
+                    switch($3)
+                    {
+                        case "1": ### primary
+                            $SEV_KEY = $OS_EventId + "_unavailable_primary"
+                            @Summary = "BITS Clock Source Unavailable, Administratively Primary"
+            
+                            $DEFAULT_Severity = 4 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### secondary 
+                            $SEV_KEY = $OS_EventId + "_unavailable_secondary"
+                            @Summary = "BITS Clock Source Unavailable, Administratively Secondary" 
+            
+                            $DEFAULT_Severity = 4 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### tertiary 
+                            $SEV_KEY = $OS_EventId + "_unavailable_tertiary"
+                            @Summary = "BITS Clock Source Unavailable, Administratively Tertiary" 
+            
+                            $DEFAULT_Severity = 4 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: 
+                            $SEV_KEY = $OS_EventId + "_unavailable_unknown"
+                            @Summary = "BITS Clock Source Unavailable, Administratively Unknown" 
+            
+                            $DEFAULT_Severity = 4 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "1": ### primary 
+                    switch($3)
+                    {
+                        case "1": ### primary
+                            $SEV_KEY = $OS_EventId + "_primary_primary"
+                            @Summary = "BITS Clock Source Primary, Administratively Primary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### secondary
+                            $SEV_KEY = $OS_EventId + "_primary_secondary"
+                            @Summary = "BITS Clock Source Primary, Administratively Secondary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### tertiary
+                            $SEV_KEY = $OS_EventId + "_primary_tertiary"
+                            @Summary = "BITS Clock Source Primary, Administratively Tertiary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_primary_unknown"
+                            @Summary = "BITS Clock Source Primary, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    } 
+                case "2": ### secondary 
+                    switch($3)
+                    {
+                        case "1": ### primary
+                            $SEV_KEY = $OS_EventId + "_secondary_primary"
+                            @Summary = "BITS Clock Source Secondary, Administratively Primary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### secondary
+                            $SEV_KEY = $OS_EventId + "_secondary_secondary"
+                            @Summary = "BITS Clock Source Secondary, Administratively Secondary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### tertiary
+                            $SEV_KEY = $OS_EventId + "_secondary_tertiary"
+                            @Summary = "BITS Clock Source Secondary, Administratively Tertiary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_secondary_unknown"
+                            @Summary = "BITS Clock Source Secondary, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    } 
+                case "3": ### tertiary 
+                    switch($3)
+                    {
+                        case "1": ### primary
+                            $SEV_KEY = $OS_EventId + "_tertiary_primary"
+                            @Summary = "BITS Clock Source Tertiary, Administratively Primary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### secondary
+                            $SEV_KEY = $OS_EventId + "_tertiary_secondary"
+                            @Summary = "BITS Clock Source Tertiary, Administratively Secondary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### tertiary
+                            $SEV_KEY = $OS_EventId + "_tertiary_tertiary"
+                            @Summary = "BITS Clock Source Tertiary, Administratively Tertiary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_tertiary_unknown"
+                            @Summary = "BITS Clock Source Tertiary, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    } 
+                default: 
+                    switch($3)
+                    {
+                        case "1": ### primary
+                            $SEV_KEY = $OS_EventId + "_unknown_primary"
+                            @Summary = "BITS Clock Source Status Unknown, Administratively Primary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### secondary
+                            $SEV_KEY = $OS_EventId + "_unknown_secondary"
+                            @Summary = "BITS Clock Source Status Unknown, Administratively Secondary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### tertiary
+                            $SEV_KEY = $OS_EventId + "_unknown_tertiary"
+                            @Summary = "BITS Clock Source Status Unknown, Administratively Tertiary"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "BITS Clock Source Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    } 
+            }
+            @Summary = @Summary + "  ( Clock Source: " + $1 + ", " + $2 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3 + " " + $4
+
+            details($entPhysicalDescr,$cBitsClkSourceDescription,$cBitsClkSourceRoleAdmin,$cBitsClkSourceRoleCurrent,$entPhysicalIndex)
+            
+        case "2": ### ciscoBitsClockFreerun
+
+            ##########
+            # $1 = entPhysicalDescr 
+            ##########
+            
+            $entPhysicalDescr = $1
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-BITS-CLOCK-MIB-ciscoBitsClockFreerun"
+
+            @AlertGroup = "BITS Clock Source Status"
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "BITS Clock Source: External Clock Unavailable, Internal Clock in Freerun  ( Clock Source: " + $1 + " )" 
+
+            $DEFAULT_Severity = 3 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalDescr,$entPhysicalIndex)
+
+        case "3": ### ciscoBitsClockHoldover
+
+            ##########
+            # $1 = entPhysicalDescr 
+            ##########
+
+            $entPhysicalDescr = $1
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-BITS-CLOCK-MIB-ciscoBitsClockHoldover"
+
+            @AlertGroup = "BITS Clock Source Status"
+            @AlertKey = "entPhysicalEntry." + $entPhysicalIndex
+            @Summary = "BITS Clock Source: External Clock Unavailable, Internal Clock in Holdover  ( Clock Source: " + $1 + " )"
+
+            $DEFAULT_Severity = 4 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalDescr,$entPhysicalIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-BITS-CLOCK-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-BITS-CLOCK-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-BITS-CLOCK-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-BITS-CLOCK-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-BITS-CLOCK-MIB.include.snmptrap.rules >>>>>")

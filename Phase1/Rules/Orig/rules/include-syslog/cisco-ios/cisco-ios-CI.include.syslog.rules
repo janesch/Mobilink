@@ -1,0 +1,414 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CI.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CI": ### Cisco 7500 Platform Chassis Interface
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CI.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BLOWER":
+    
+            @AlertGroup = "CI-Blower"
+            @AlertKey = ""
+    
+        case "BLOWEROK":
+    
+            ##########
+            # The chassis fan tray is operating normally.
+            #
+            # %CI-6-BLOWEROK : Fan tray module OK
+            ##########
+            
+            @AlertGroup = "CI-Blower"
+            @AlertKey = ""
+            @Severity = 1
+            @Type = 2
+    
+        case "BLOWSHUT":
+    
+            ##########
+            # One of the six blowers in a five-slot chassis has
+            # failed. All blowers are needed for router operation
+            # because each blower cools a separate region of the
+            # card(s) in the chassis. If a blower failure persists
+            # for 2 minutes, the router will shut itself down and
+            # will need to be power cycled.
+            #
+            # %CI-1-BLOWSHUT: Blower failure, shutdown in [dec]
+            # seconds
+            ##########
+    
+            @AlertGroup = "CI-Blower"
+            @AlertKey = ""
+    
+        case "BPLANE":
+    
+            ##########
+            # Copy the error message exactly as it appears on the
+            # console or in the system log, contact your Cisco
+            # technical support representative, and provide the
+            # representative with the gathered information.
+            #
+            # %CI-6-BPLANE: CI type [int] differs from NVRAM type
+            # [int]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "COND":
+    
+            ##########
+            # The router is restarting after a soft shutdown
+            # because of an over temperature condition. The
+            # router has determined that the temperature rose
+            # above the board shutdown trip point, and a soft
+            # shutdown has occurred. The power supplies, fans,
+            # and CI continue to run.
+            #
+            # The router is restarting because the system has
+            # cooled below the board restart trip point. A
+            # counter is started after the first time the router
+            # is shut down because of an over temperature
+            # condition. If the router shuts down and restarts
+            # repeatedly, the router will undergo a hard
+            # shutdown, which requires a power cycle to recover.
+            # The counter will be reset to zero when the router
+            # has been up for six hours and the router temperature
+            # has not risen above the board shutdown trip point.
+            #
+            # %CI-4-COND: Restarting with [int] recent soft power
+            # shutdowns(or system just powered-on)
+            ##########
+    
+            @AlertKey = ""
+
+        case "CORETEMPCRITICAL":
+    
+            ##########
+            # The temperature of the processor card has exceeded
+            # the critical limit. An automatic shutdown will occur
+            # if the temperature exceeds the critical limit for
+            # more than two minutes. The possible causes of this
+            # error are a malfunctioning fan or a short circuit on
+            # the processor card.
+            #
+            # %CI-1-CORETEMPCRITICAL: Core CRITICAL Temperature
+            # limit exceeded
+            ##########
+    
+            @AlertGroup = "CI-CoreTemp"
+            @AlertKey = ""
+            @Severity = 5
+            @Type = 1
+                
+        case "CORETEMPMAJOR":
+    
+            ##########
+            # The temperature of the processor card has exceeded
+            # the major limit. The possible causes of this error
+            # are a malfunctioning fan or a short circuit on the
+            # processor card.
+            #
+            # %CI-3-CORETEMPMAJOR: Core Major Temperature limit
+            # exceeded
+            ##########
+    
+            @AlertGroup = "CI-CoreTemp"
+            @AlertKey = ""
+            @Severity = 4
+            @Type = 1
+    
+        case "CORETEMPMINOR":
+    
+            ##########
+            # The temperature of the processor card has exceeded
+            # the minor limit. The possible causes of this error
+            # are a malfunctioning fan or a short circuit on the
+            # processor card.
+            #
+            # %CI-3-CORETEMPMINOR: Core Minor Temperature limit
+            # exceeded
+            ##########
+    
+            @AlertGroup = "CI-CoreTemp"
+            @AlertKey = ""
+            @Severity = 3
+            @Type = 1
+    
+        case "CORETEMPOK":
+    
+            ##########
+            # The temperature next to the core of the processor
+            # card is normal.
+            #
+            # %CI-6-CORETEMPOK: Core Temperature OK
+            ##########
+    
+            @AlertGroup = "CI-CoreTemp"
+            @AlertKey = ""
+            @Severity = 1
+            @Type = 2
+    
+        case "CTRLRTYPE":
+    
+            ##########
+            # The CI was manufactured incorrectly.
+            #
+            # %CI-3-CTRLRTYPE: Wrong controller type [hex]
+            ##########
+    
+            @AlertKey = ""
+
+        case "ENVCRIT":
+    
+            ##########
+            # One of the measured environmental test points has
+            # exceeded an extreme threshold.
+            #
+            # %CI-2-ENVCRIT: [chars] measured at [chars]
+            ##########
+    
+            @AlertGroup = "CI-Env"
+            @AlertKey = extract($Message, "(.*) measured")
+    
+        case "ENVWARN":
+    
+            ##########
+            # One of the measured environmental test points has
+            # exceeded the warning threshold.
+            #
+            # %CI-4-ENVWARN: [chars] measured at [chars]
+            ##########
+    
+            @AlertGroup = "CI-Env"
+            @AlertKey = extract($Message, "(.*) measured")
+    
+        case "INLETTEMPCRITICAL":
+    
+            ##########
+            # The air intake temperature critical limit has been
+            # exceeded. The system will automatically shut down in
+            # two minutes if the air intake temperature does not
+            # drop below the critical limit.
+            #
+            # %CI-1-INLETTEMPCRITICAL: Inlet temperature CRITICAL
+            # limit exceeded
+            ##########
+    
+            @AlertGroup = "CI-InletTemp"
+            @AlertKey = ""
+            @Severity = 5
+            @Type = 1
+    
+        case "INLETTEMPMAJOR":
+    
+            ##########
+            # The air intake temperature major limit has been
+            # exceeded.
+            #
+            # %CI-3-INLETTEMPMAJOR: Inlet temperature major limit
+            # exceeded
+            ##########
+    
+            @AlertGroup = "CI-InletTemp"
+            @AlertKey = ""
+            @Severity = 4
+            @Type = 1
+    
+        case "INLETTEMPMINOR":
+    
+            ##########
+            # The air intake temperature minor limit has been
+            # exceeded.
+            #
+            # %CI-3-INLETTEMPMINOR: Inlet temperature minor limit
+            # exceeded
+            ##########
+    
+            @AlertGroup = "CI-InletTemp"
+            @AlertKey = ""
+            @Severity = 3
+            @Type = 1
+
+        case "INLETTEMPOK":
+    
+            ##########
+            # The temperature of the chassis air intake is normal.
+            #
+            # %CI-6-INLETTEMPOK: Inlet temperature normal
+            ##########
+    
+            @AlertGroup = "CI-InletTemp"
+            @AlertKey = ""
+            @Severity = 1
+            @Type = 2
+    
+        case "INT":
+    
+            ##########
+            # An unexpected interrupt has occurred. This is a
+            # serious software error, which will be followed by a
+            # core dump.
+            #
+            # %CI-2-INT: Unexpected interrupt - status [hex]
+            ##########
+    
+            @AlertKey = extract($Message, " status (.*)$")
+    
+        case "MAXOUTPUT":
+    
+            ##########
+            # The power supply is delivering its maximum rated
+            # current. This condition is not a problem unless the
+            # current continues to increase beyond the rated limit
+            # of the power supply, which can cause hardware damage.
+            #
+            # %CI-4-MAXOUTPUT: Power supply [int] [dec]V is at or
+            # near rated output
+            ##########
+    
+            @AlertKey = extract($Message, "supply ([0-9]+) ")
+    
+        case "NOFAN":
+    
+            ##########
+            # The chassis fan tray does not exist.
+            #
+            # %CI-1-NOFAN: Fan tray empty
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOTFOUND":
+    
+            ##########
+            # The system software could not detect the presence of
+            # a CI card.
+            #
+            # %CI-4-NOTFOUND: Chassis Interface not found
+            ##########
+    
+            @AlertKey = ""
+    
+        case "PARTFANFAIL":
+    
+            ##########
+            # The chassis fan tray is not fully functioning.
+            #
+            # %CI-3-PARTFANFAIL: Single fan failure
+            ##########
+    
+            @AlertKey = ""
+    
+        case "PSFAIL":
+    
+            ##########
+            # The power entry module has failed.
+            #
+            # %CI-3-PSFAIL : Power entry module [int] failure   
+            ##########
+            
+            @AlertGroup = "CI-PowerSupply"
+            @AlertKey = "Power Supply: " + extract($Message, " ([0-9]+) failure")
+    
+        case "PSOK":
+    
+            ##########
+            # The power entry module is operating normally.
+            #
+            # %CI-6-PSOK : Power entry module [int] OK   
+            ##########
+            
+            @AlertGroup = "CI-PowerSupply"
+            @AlertKey = "Power Supply: " + extract($Message, " ([0-9]+) OK")
+            @Severity = 1
+            @Type = 2
+    
+        case "SHUTFANGONE":
+    
+            ##########
+            # The chassis fan does not exist.
+            #
+            # %CI-0-SHUTFANGONE: System shutting down due to
+            # missing fan tray
+            ##########
+    
+            @AlertKey = ""
+    
+        case "SLOTCOMP":
+    
+            ##########
+            # The CI software has detected a possible inconsistency
+            # in the CI hardware.
+            #
+            # %CI-3-SLOTCOMP: Inconsistent [chars] slot [hex]
+            ##########
+    
+            @AlertKey = extract($Message, "Inconsistent (.*)$")
+    
+        case "SYSLOAD":
+    
+            ##########
+            # The electrical current usage of the system exceeds
+            # the capacity of a single power supply. During this
+            # condition, power supplies must not be removed from
+            # the system.
+            #
+            # %CI-4-SYSLOAD: System [dec]V load exceeds single
+            # power supply [int] capacity
+            ##########
+    
+            @AlertKey = extract($Message, "supply (.*) capacity")
+    
+        case "TOTALFANFAIL":
+    
+            ##########
+            # The chassis fan tray has totally failed.
+            #
+            # %CI-1-TOTALFANFAIL: Total fan tray failure
+            ##########
+    
+            @AlertKey = ""
+
+        case "UNBALANCE":
+    
+            ##########
+            # The difference in electrical current output between
+            # the two power supplies is out of tolerance for the
+            # system design. One of the power supplies may be
+            # failing or is about to fail.
+            #
+            # %CI-4-UNBALANCE: Unbalanced [dec]V output from dual
+            # power supplies
+            ##########
+    
+            @AlertKey = ""
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CI.include.syslog.rules >>>>>")

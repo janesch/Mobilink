@@ -1,0 +1,786 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF_ATMF-IMA-MIB.include.snmptrap.rules 1.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF_ATMF-IMA-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.10.29800.2"|".1.3.6.1.4.1.353.5.7.1.2": ### Inverse Multiplexing for ATM (IMA) Interfaces - Notifications from IMA-MIB (draft-ietf-atommib-imamib-00.txt) and ATM Forum's IMA-MIB
+
+    log(DEBUG, "<<<<< Entering... IETF_ATMF-IMA-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF_ATMF-IMA-MIB"
+    @Class = "40087"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### imaFailureAlarm
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaAlarmStatus
+            # $3 = imaAlarmType
+            ##########
+
+            $ifIndex = $1
+            $imaAlarmStatus = lookup($2, ImaAlarmStatus) + " ( " + $2 + " )"
+            $imaAlarmType = lookup($3, ImaAlarmType)
+            $imaAlarmType_Abbr = lookup($3, ImaAlarmType_Abbr)
+            
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaFailureAlarm"
+
+            @AlertGroup = "ATM IMA Interface Status ( " + $imaAlarmType_Abbr + " )"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "ATM IMA Interface Failure, " + $imaAlarmType + "  ( " + @AlertKey + " )"
+            switch($2)
+            {
+                case "1": ### cleared
+                    @Summary = "End of " + @Summary
+                    
+                    $SEV_KEY = $OS_EventId + "_" + $imaAlarmType_Abbr + "_cleared"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### declared
+                    $SEV_KEY = $OS_EventId + "_" + $imaAlarmType_Abbr + "_declared"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    $SEV_KEY = $OS_EventId + "_" + $imaAlarmType_Abbr + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+            
+            $imaAlarmType = $imaAlarmType + " ( " + $3 + " )"
+            details($ifIndex,$imaAlarmStatus,$imaAlarmType)
+
+        case "2": ### imaGroupUnavailSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaGroupThreshUnavailSecs
+            # $3 = imaGroupCurrentUnavailSecs
+            ##########
+
+            $ifIndex = $1
+            $imaGroupThreshUnavailSecs = $2 + " secs."
+            $imaGroupCurrentUnavailSecs = $3 + " secs."
+            $imaGroupIndex = extract($OID1, "\.([0-9]+)$")
+            details($ifIndex,$imaGroupThreshUnavailSecs,$imaGroupCurrentUnavailSecs,$imaGroupIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaGroupUnavailSecsCrossing"
+
+            @AlertGroup = "ATM IMA Group Unavailable Secs. 15 Min. Threshold"
+            @AlertKey = "imaGroupCurrentEntry." + $imaGroupIndex
+            @Summary = "ATM IMA Group Unavailable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### imaGroupNeNumFailuresCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaGroupThreshNeNumFailures
+            # $3 = imaGroupCurrentNeNumFailures
+            ##########
+
+            $ifIndex = $1
+            $imaGroupThreshNeNumFailures = $2
+            $imaGroupCurrentNeNumFailures = $3
+            $imaGroupIndex = extract($OID1, "\.([0-9]+)$")
+            details($ifIndex,$imaGroupThreshNeNumFailures,$imaGroupCurrentNeNumFailures,$imaGroupIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaGroupNeNumFailuresCrossing"
+
+            @AlertGroup = "ATM IMA Group NE Failures 15 Min. Threshold"
+            @AlertKey = "imaGroupCurrentEntry." + $imaGroupIndex
+            @Summary = "ATM IMA Group Near-End Failures, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### imaGroupFeNumFailuresCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaGroupThreshFeNumFailures
+            # $3 = imaGroupCurrentFeNumFailures
+            ##########
+
+            $ifIndex = $1
+            $imaGroupThreshFeNumFailures = $2
+            $imaGroupCurrentFeNumFailures = $3
+            $imaGroupIndex = extract($OID1, "\.([0-9]+)$")
+            details($ifIndex,$imaGroupThreshFeNumFailures,$imaGroupCurrentFeNumFailures,$imaGroupIndex)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaGroupFeNumFailuresCrossing"
+
+            @AlertGroup = "ATM IMA Group FE Failures 15 Min. Threshold"
+            @AlertKey = "imaGroupCurrentEntry." + $imaGroupIndex
+            @Summary = "ATM IMA Group Far-End Failures, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### imaLinkImaViolationsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshImaViolations
+            # $3 = imaLinkCurrentImaViolations
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshImaViolations = $2
+            $imaLinkCurrentImaViolations = $3
+            details($ifIndex,$imaLinkThreshImaViolations,$imaLinkCurrentImaViolations)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkImaViolationsCrossing"
+
+            @AlertGroup = "ATM IMA Link ICP Violations 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link ICP Violations, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### imaLinkOifAnomaliesCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshOifAnomalies
+            # $3 = imaLinkCurrentOifAnomalies
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshOifAnomalies = $2
+            $imaLinkCurrentOifAnomalies = $3
+            details($ifIndex,$imaLinkThreshOifAnomalies,$imaLinkCurrentOifAnomalies)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkOifAnomaliesCrossing"
+
+            @AlertGroup = "ATM IMA Link OIF Anomalies 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link OIF Anomalies, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### imaLinkNeSevErroredSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshNeSevErroredSecs
+            # $3 = imaLinkCurrentNeSevErroredSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshNeSevErroredSecs = $2 + " secs."
+            $imaLinkCurrentNeSevErroredSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshNeSevErroredSecs,$imaLinkCurrentNeSevErroredSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkNeSevErroredSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link NE SES 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Near-End Severely Errored Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### imaLinkFeSevErroredSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshFeSevErroredSecs
+            # $3 = imaLinkCurrentFeSevErroredSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshFeSevErroredSecs = $2 + " secs."
+            $imaLinkCurrentFeSevErroredSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshFeSevErroredSecs,$imaLinkCurrentFeSevErroredSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkFeSevErroredSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link FE SES 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Far-End Severely Errored Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### imaLinkNeUnavailSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshNeUnavailSecs
+            # $3 = imaLinkCurrentNeUnavailSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshNeUnavailSecs = $2 + " secs."
+            $imaLinkCurrentNeUnavailSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshNeUnavailSecs,$imaLinkCurrentNeUnavailSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkNeUnavailSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link NE Unavailable Secs. 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Near-End Unavailable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### imaLinkFeUnavailSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshFeUnavailSecs
+            # $3 = imaLinkCurrentFeUnavailSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshFeUnavailSecs = $2 + " secs."
+            $imaLinkCurrentFeUnavailSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshFeUnavailSecs,$imaLinkCurrentFeUnavailSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF-IMA-MIB-imaLinkFeUnavailSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link FE Unavailable Secs. 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Far-End Unavailable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "11": ### imaLinkNeTxUnusableSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshNeTxUnusableSecs
+            # $3 = imaLinkCurrentNeTxUnusableSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshNeTxUnusableSecs = $2 + " secs."
+            $imaLinkCurrentNeTxUnusableSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshNeTxUnusableSecs,$imaLinkCurrentNeTxUnusableSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkNeTxUnusableSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link NE Tx Unusable Secs. 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Near-End Transmit LSM Unusable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "12": ### imaLinkNeRxUnusableSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshNeRxUnusableSecs
+            # $3 = imaLinkCurrentNeRxUnusableSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshNeRxUnusableSecs = $2 + " secs."
+            $imaLinkCurrentNeRxUnusableSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshNeRxUnusableSecs,$imaLinkCurrentNeRxUnusableSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkNeRxUnusableSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link NE Rx Unusable Secs. 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Near-End Receive LSM Unusable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### imaLinkFeTxUnusableSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshFeTxUnusableSecs
+            # $3 = imaLinkCurrentFeTxUnusableSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshFeTxUnusableSecs = $2 + " secs."
+            $imaLinkCurrentFeTxUnusableSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshFeTxUnusableSecs,$imaLinkCurrentFeTxUnusableSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkFeTxUnusableSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link FE Tx Unusable Secs. 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Far-End Transmit LSM Unusable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "14": ### imaLinkFeRxUnusableSecsCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshFeRxUnusableSecs
+            # $3 = imaLinkCurrentFeRxUnusableSecs
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshFeRxUnusableSecs = $2 + " secs."
+            $imaLinkCurrentFeRxUnusableSecs = $3 + " secs."
+            details($ifIndex,$imaLinkThreshFeRxUnusableSecs,$imaLinkCurrentFeRxUnusableSecs)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkFeRxUnusableSecsCrossing"
+
+            @AlertGroup = "ATM IMA Link FE Rx Unusable Secs. 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Far-End Receive LSM Unusable Seconds, " + $3 + " secs."
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2 + " secs."
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "15": ### imaLinkNeTxNumFailuresCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshNeTxNumFailures
+            # $3 = imaLinkCurrentNeTxNumFailures
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshNeTxNumFailures = $2
+            $imaLinkCurrentNeTxNumFailures = $3
+            details($ifIndex,$imaLinkThreshNeTxNumFailures,$imaLinkCurrentNeTxNumFailures)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkNeTxNumFailuresCrossing"
+
+            @AlertGroup = "ATM IMA Link NE Tx Failures 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Near-End Transmit Failures, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "16": ### imaLinkNeRxNumFailuresCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshNeRxNumFailures
+            # $3 = imaLinkCurrentNeRxNumFailures
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshNeRxNumFailures = $2
+            $imaLinkCurrentNeRxNumFailures = $3
+            details($ifIndex,$imaLinkThreshNeRxNumFailures,$imaLinkCurrentNeRxNumFailures)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkNeRxNumFailuresCrossing"
+
+            @AlertGroup = "ATM IMA Link NE Rx Failures 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Near-End Receive Failures, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "17": ### imaLinkFeTxNumFailuresCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshFeTxNumFailures
+            # $3 = imaLinkCurrentFeTxNumFailures
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshFeTxNumFailures = $2
+            $imaLinkCurrentFeTxNumFailures = $3
+            details($ifIndex,$imaLinkThreshFeTxNumFailures,$imaLinkCurrentFeTxNumFailures)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkFeTxNumFailuresCrossing"
+
+            @AlertGroup = "ATM IMA Link FE Tx Failures 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Far-End Transmit Failures, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "18": ### imaLinkFeRxNumFailuresCrossing
+
+            ##########
+            # $1 = ifIndex
+            # $2 = imaLinkThreshFeRxNumFailures
+            # $3 = imaLinkCurrentFeRxNumFailures
+            ##########
+
+            $ifIndex = $1
+            $imaLinkThreshFeRxNumFailures = $2
+            $imaLinkCurrentFeRxNumFailures = $3
+            details($ifIndex,$imaLinkThreshFeRxNumFailures,$imaLinkCurrentFeRxNumFailures)
+
+            $OS_EventId = "SNMPTRAP-IETF_ATMF-IMA-MIB-imaLinkFeRxNumFailuresCrossing"
+
+            @AlertGroup = "ATM IMA Link FE Rx Failures 15 Min. Threshold"
+            @AlertKey = "imaLinkCurrentEntry." + $1
+            @Summary = "ATM IMA Link Far-End Receive Failures, " + $3
+            if(int($3) >= int($2)) ### true
+            {
+                @Summary = @Summary + ", Exceeds " + $2
+                
+                $SEV_KEY = $OS_EventId + "_true"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+            }
+            else ### false
+            {
+                @Summary = @Summary + ", Below " + $2
+                
+                $SEV_KEY = $OS_EventId + "_false"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF_ATMF-IMA-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF_ATMF-IMA-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF_ATMF-IMA-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF_ATMF-IMA-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF_ATMF-IMA-MIB.include.snmptrap.rules >>>>>")

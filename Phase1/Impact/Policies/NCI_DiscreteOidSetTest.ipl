@@ -1,0 +1,64 @@
+/*****************************************************************************
+This policy demonstrates how to do an SNMP SET operation for a particular OID.
+
+The Discrete Oid type is basically the same as the Packed Oid type except that
+there is only a single oid allowed to "get" or "set" at a time.  This oid can 
+be specified in the table in the Data Type editor, or passed in as a parameter 
+using syntax similar to:
+
+Oid = '.1.2.3.4.0'.
+
+The GetByFilter action module takes the (optinal) HostId and (optional) UserId 
+(for SNMPv3). If these are provided, they override the settings from the Data 
+Source.
+
+HowToRun this policy
+--------------------
+1) Make sure the Data Source/Data Type are set up with proper authentication
+   settings and SNMP parameters.
+
+2) Make sure an SNMP agent on the proper host and proper portId is running and 
+   one which has implemented the RFC1213.
+
+3) The SnmpDiscreteOid Data Type was already pre-imported as a part of the 
+   installation, so no need to worry about it.
+
+4) This policy can be executed by sending an nci_trigger with the HostId in it.
+
+*****************************************************************************/
+
+Type = "SNMPDiscreteOid";
+ObjectToCopy = NewObject();
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting DiscreteOidSetTest with Type = " + Type + " at " + StartTime + " ***");
+
+/* Mandatory Fields */
+ObjectToCopy.Oid = ".1.3.6.1.2.1.1.4.0"; /* Note this OID is an instance OID */
+ObjectToCopy.Value = "DiscreteOid Test worked"; /* Value that has to be set */
+
+/* Optional Fields.  This overrides the values in the datasource. */
+/* ObjectToCopy.HostId = @HostId; */
+
+/* Optional Field for SNMPv3.  This overrides the values in the datasource. */
+/*ObjectToCopy.UserId = "netcool"; */
+
+/* This is where the actual SNMP SET is being done */
+log("Setting oid " + ObjectToCopy.Oid + " to value " + ObjectToCopy.Value);
+AddDataItem(Type, ObjectToCopy);
+
+/* Verify we changed the value. */
+Filter = "Oid = '" + ObjectToCopy.Oid + "'";
+GetByFilter(Type, Filter, CountOnly);
+
+if (OrgNode.ErrorString == "") {
+  /*  Print the valid GET results */
+  log("mibVarOid = " + OrgNode.Oid);
+  log("mibVarValue = " + OrgNode.Value + " (Should be " + ObjectToCopy.Value + ")");
+  log("ErrorString = " + OrgNode.ErrorString);
+} else {
+  log("Error doing the SNMPGET is " + OrgNode.ErrorString);
+}
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with DiscreteOidSetTest at " + EndTime +" ***");

@@ -1,0 +1,166 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-DRAFT-MSDP-MIB.include.snmptrap.rules 1.0
+#    2006/03/28 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  DRAFT-MSDP-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.3.92.1.1.7": ### Multicast Source Discovery Protocol (MSDP) Management - Notifications from DRAFT-MSDP-MIB (991216)
+
+    log(DEBUG, "<<<<< Entering... IETF-DRAFT-MSDP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-DRAFT-MSDP-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### msdpEstablished
+
+            ##########
+            # $1 = msdpPeerFsmEstablishedTransitions
+            ##########
+
+            $msdpPeerFsmEstablishedTransitions = $1
+            $msdpPeerRemoteAddress = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-DRAFT-MSDP-MIB-msdpEstablished"
+
+            @AlertGroup = "MSDP Peer Status"
+            @AlertKey = "msdpPeerEntry." + $msdpPeerRemoteAddress
+            @Summary = "MSDP Peer Established  ( MSDP Peer: " + $msdpPeerRemoteAddress + " )"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2 
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($msdpPeerFsmEstablishedTransitions,$msdpPeerRemoteAddress)
+
+        case "2": ### msdpBackwardTransition
+
+            ##########
+            # $1 = msdpPeerState
+            ##########
+
+            $msdpPeerState = lookup($1, msdpPeerState) + " ( " + $1 + " )"
+            $msdpPeerRemoteAddress = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-IETF-DRAFT-MSDP-MIB-msdpBackwardTransition"
+
+            @AlertGroup = "MSDP Peer Status"
+            @AlertKey = "msdpPeerEntry." + $msdpPeerRemoteAddress
+            switch($1)
+            {
+                case "1": ### inactive 
+                    $SEV_KEY = $OS_EventId + "_inactive"
+                    @Summary = "MSDP TCP Peer Connection Inactive"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### listen 
+                    $SEV_KEY = $OS_EventId + "_listen"
+                    @Summary = "MSDP TCP Peer Connection Listening" 
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### connecting 
+                    $SEV_KEY = $OS_EventId + "_connecting"
+                    @Summary = "MSDP TCP Peer Connection Connecting"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### established 
+                    $SEV_KEY = $OS_EventId + "_established"
+                    @Summary = "MSDP TCP Peer Connection Established"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### disabled 
+                    $SEV_KEY = $OS_EventId + "_disabled"
+                    @Summary = "MSDP TCP Peer Connection Disabled"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:  
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "MSDP TCP Peer Connection Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( MSDP Peer: " + $msdpPeerRemoteAddress + " )"
+          
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($msdpPeerState,$msdpPeerRemoteAddress)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-DRAFT-MSDP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-DRAFT-MSDP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-DRAFT-MSDP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-DRAFT-MSDP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-DRAFT-MSDP-MIB.include.snmptrap.rules >>>>>")

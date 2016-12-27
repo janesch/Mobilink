@@ -1,0 +1,280 @@
+###############################################################################
+#
+#    Copyright (C) 1994 - 2002 Micromuse, Inc.
+#    All Rights Reserved
+#
+#    RESTRICTED RIGHTS:
+#
+#    This file may have been supplied under a license.  It may be used,
+#    disclosed, and/or copied only as permitted under such license agreement.
+#    Any copy must contain the above copyright notice and this restricted
+#    rights notice.  Use, copying, and/or disclosure of the file is strictly
+#    prohibited unless otherwise provided in the license agreement.
+#
+###############################################################################
+
+include "$NC_RULES_HOME/include-snmp/OTA/ota_lookup"
+include "$NC_RULES_HOME/include-snmp/OTA/ota_eventid_lookup"
+include "$NC_RULES_HOME/include-snmp/ADM/invigo_lookup"
+include "$NC_RULES_HOME/include-snmp/I2000/I2000_lookup"
+include "$NC_RULES_HOME/include-snmp/BT/BT_lookup"
+table ics_sev_lookup = "$NC_RULES_HOME/include-snmp/I2000/ics_sev_lookup"
+default = {"UNKNOWN"}
+table ics_sev_lookup2 = "$NC_RULES_HOME/include-snmp/I2000/ics_sev_lookup2"
+default = {"UNKNOWN"}
+table ics_eventid_lookup = "$NC_RULES_HOME/include-snmp/I2000/ics_eventid_lookup"
+default = {"NET_VAS_IMP_001"}
+table ics_alertgroup_lookup = "$NC_RULES_HOME/include-snmp/I2000/ics_alertgroup_lookup"
+default = {"ICS ALARM"}
+table evc_scp_eventid_lookup = "$NC_RULES_HOME/include-snmp/I2000/evc_scp_eventid_lookup"
+default = {"NET_VAS_IMP_001"}
+table evc_smp_eventid_lookup = "$NC_RULES_HOME/include-snmp/I2000/evc_smp_eventid_lookup"
+default = {"NET_VAS_IMP_001"}
+table evc_gfep_eventid_lookup = "$NC_RULES_HOME/include-snmp/I2000/evc_gfep_eventid_lookup"
+default = {"NET_VAS_IMP_001"}
+table evc_rbi_eventid_lookup = "$NC_RULES_HOME/include-snmp/I2000/evc_rbi_eventid_lookup"
+default = {"NET_VAS_IMP_001"}
+table evc_alertgroup_lookup = "$NC_RULES_HOME/include-snmp/I2000/evc_alertgroup_lookup"
+default = {"EVC ALARM"}
+table evc_gfep_alertgroup_lookup = "$NC_RULES_HOME/include-snmp/I2000/evc_gfep_alertgroup_lookup"
+default = {"EVC GFEP ALARM"}
+table MotoVarbindValTable = "$NC_RULES_HOME/include-snmp/Motorola/motorola.m2r.varbind.lookup"
+default = {"UNKNOWN"}
+table DragonWaveVarbindValTable = "$NC_RULES_HOME/include-snmp/DragonWave/dragonwave.m2r.varbind.lookup"
+default = {"UNKNOWN"}
+table motorola_node = "$NC_RULES_HOME/include-snmp/Motorola/motorola_node.lookup"
+default = {"UNKNOWN"}
+table main_lookup = "$NC_RULES_HOME/include-snmp/Motorola/motorola_wimax_main.lookup"
+default = {"Unknown","Unknown","Unknown"}
+table dragonwave_node_link = "/opt/IBM/tivoli/netcool/rules/include-snmp/DragonWave/dragonwave_node_link"
+default = {"UNKNOWN", "UNKNOWN"}
+
+# Added by Mihai Strava from Innovise 14 Jul 2011
+### HLR ###
+include "$NC_RULES_HOME/include-snmp/HLR/bcsi-HA-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/HLR/bcsi-SW-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/HLR/siemens-RTP-MIB-EVENT-MGMT.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/HLR/siemens-RTP-MIB-SS7-MGMT.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/HLR/sun-SMA-NOTIFICATION-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/HLR/sun-SUNSTORAGEAGENT-NOTIFICATION-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/HLR/sni-INC-MIB-AL.include.snmptrap.lookup"
+
+### TEKMEDIA ###
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-GEN-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-SMS-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-SS7-MIB.include.snmptrap.lookup"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-NODE.include.snmptrap.lookup"
+
+#####################################################################
+# End of lookup table Includes
+#####################################################################
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+        switch(@Summary)
+        {
+        case "Running ...":
+                @Severity = 1
+                @AlertGroup = "probestat"
+                @Type = 2
+        case "Going Down ...":
+                @Severity = 5
+                @AlertGroup = "probestat"
+                @Type = 1
+        default:
+                @Severity = 1
+        }
+        @AlertKey = @Agent
+        @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+        @Manager = "mttrapd"
+	@ExpireTime = 600
+    
+	#######################################################################
+	# End of default Manager, Agent, and Class
+	#######################################################################
+
+	##########
+	# Check if an SNMPv2 trap and convert to SNMPv1 style tokens
+	##########
+    
+	if (exists($notify)) ### if $notify exists then this is an SNMPv2 trap
+	{
+		@Node = $PeerAddress
+		@NodeAlias = $PeerIPaddress
+                
+		##########
+        	# Remove the artifacts of ucd_snmp library being 'helpful'. We'll only remove
+        	# the first .iso., everything else should be just plain numbers. With the
+        	# mttrapd probe, this has to be done by specifying /dev/null as the mib file.
+        	##########
+    
+        	if (regmatch($notify, "\.iso\." ))
+        	{
+			$notify = ".1." + extract($notify, "\.iso\.(.*)")
+        	}
+    
+        	if (nmatch($notify, ".1.3.6.1.6.3.1.1.5")) ### Trap is an SNMPv2 Generic Trap
+        	{
+			$enterprise = extract($notify, "(.*)\.[0-9]+$")
+			$specific-trap = "0"
+			$generic-trap = int(extract($notify, ".*\.([0-9]+)$"))-1
+		}
+        	else ### Trap is Enterprise Specific
+        	{
+			#if(match(extract($notify, "\.([0-9]+)\.[0-9]+$"), "0))
+			if(match(extract($notify, "\.([0-9]+)\.[0-9]+$"), "0"))
+			{
+				$enterprise = extract($notify, "(.*)\.[0-9]+\.[0-9]+$")
+			}
+			else
+			{
+				$enterprise = extract($notify, "(.*)\.[0-9]+$")
+			}
+			$specific-trap = extract($notify, ".*\.([0-9]+)$")
+			$generic-trap = "6"
+		}
+	}
+    	else ### This is an SNMPv1 Trap
+    	{
+		@Node = $Node
+        	if(exists($IPAddress)) ### Trap is from NNM or NV Probe
+        	{
+            		@NodeAlias = $IPAddress
+        	}
+        	else
+        	{
+            		@NodeAlias = $IPaddress
+        	}
+    	}
+    
+    	##########
+    	# End of SNMPv2 to SNMPv1 conversion
+    	##########
+    
+    	if (match($generic-trap, "6")) ### (Enterprise Specific Trap)
+    	{
+
+        	switch($enterprise)
+        	{
+			case "dummy case statement": ### This will prevent syntax errors in case no includes are added below.
+          
+            		###################################################################
+			# ****************************************************************#
+            		# Enter M2Rules Includes below with the following syntax:
+            		#
+            		# include "$NC_RULES_HOME/include-snmp/<rulesfile>.m2r.rules"
+			# ****************************************************************#
+            		###################################################################
+        
+	
+            		include "$NC_RULES_HOME/include-snmp/OTA/aum.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/ADM/invigo.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/I2000/I2000.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/OMG/OMG.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/GCASH/GCASH.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/MMSC/MMSC.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/BT/BT.m2r.include"
+            		include "$NC_RULES_HOME/include-snmp/DragonWave/dragonwave.m2r.include.rules"
+            		include "$NC_RULES_HOME/include-snmp/Motorola/motorola.m2r.include.rules"
+
+# Added by Mihai Strava from Innovise 14 Jul 2011
+
+### AVS ###
+include "$NC_RULES_HOME/include-snmp/AVS/hp-HPNSAECC-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/AVS/hp-HPIPFTRAP-MIB.include.snmptrap.rules"
+
+### HLR ###
+include "$NC_RULES_HOME/include-snmp/HLR/bcsi-HA-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/bcsi-SW-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/netSnmp-NET-SNMP-AGENT-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/siemens-RTP-MIB-EVENT-MGMT.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/siemens-RTP-MIB-PROCESS-MGMT.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/siemens-RTP-MIB-SS7-MGMT.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/sun-SMA-NOTIFICATION-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/sun-SUN-FM-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/sun-SUNSTORAGEAGENT-NOTIFICATION-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/ucdavis-UCD-SNMP-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/HLR/sni-INC-MIB-AL.include.snmptrap.rules"
+
+### TEKMEDIA ###
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-FAF-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-GEN-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-LGP-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-SMS-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-SS7-MIB.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmp/TEKELEC/mbalance-TEXTPASS-XS-TIE-MIB.include.snmptrap.rules"
+
+			default:
+                
+				@Summary = "Unknown Enterprise OID: " + $enterprise + " :: specific-trap: " + $specific-trap
+                		@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager
+        	
+
+		}
+
+	
+	}
+    	else ### Check the Generic Traps
+    	{
+		##########
+		# Include Generic Trap Defaults
+		##########
+
+
+		include "$NC_RULES_HOME/snmp_include/generic_trap.rules"
+
+
+	}
+
+
+	switch(@OmcEms)
+	{
+
+		case "dummy case statement": ### This will prevent syntax errors in case no includes are added below.
+
+
+       		###################################################################
+		# ****************************************************************#
+       		# Enter Customized Includes Rules Files:
+       		#
+       		# include "$NC_RULES_HOME/include-snmp/<technology>/<rulesfile>.rules"
+		# ****************************************************************#
+       		###################################################################
+
+
+		case "OTA":
+       			include "$NC_RULES_HOME/include-snmp/OTA/ota_mobilink.rules"
+
+		case "ADM":
+       			include "$NC_RULES_HOME/include-snmp/ADM/adm_mobilink.rules"
+
+		case "I2000":
+       			include "$NC_RULES_HOME/include-snmp/I2000/I2000_mobilink.rules"
+
+		case "OMG":
+       			include "$NC_RULES_HOME/include-snmp/OMG/OMG_mobilink.rules"
+
+		case "GCASH":
+       			include "$NC_RULES_HOME/include-snmp/GCASH/GCASH_mobilink.rules"
+
+		case "MMSC":
+       			include "$NC_RULES_HOME/include-snmp/MMSC/MMSC_mobilink.rules"
+
+		case "BT":
+       			include "$NC_RULES_HOME/include-snmp/BT/BT_mobilink.rules"
+
+		case "Motorola Wimax":
+			include "$NC_RULES_HOME/include-snmp/Motorola/motorola_wimax_mobilink.rules"
+
+		case "DragonWave Wimax":
+			include "$NC_RULES_HOME/include-snmp/DragonWave/dragonwave_wimax_mobilink.rules"
+
+		default:
+	
+	}
+
+#details($*)
+}

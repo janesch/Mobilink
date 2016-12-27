@@ -1,0 +1,323 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-DFC-MIB.include.snmptrap.rules 6.0
+#    2008/04/08 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-DFC-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.11": ### Juniper Dynamic Flow Capture - Notifications from JUNIPER-DFC-MIB (20050708)
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-DFC-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-DFC"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxDfcSoftPpsThresholdExceeded
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcInputPktRate 
+            # $3 = jnxDfcPpsSoftOverloadLowWatermark 
+            # $4 = jnxDfcPpsSoftOverloadHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcInputPktRate = $2 + " pps" 
+            $jnxDfcPpsSoftOverloadLowWatermark = $3 + " pps"
+            $jnxDfcPpsSoftOverloadHighWatermark = $4 + " pps"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcSoftPpsThresholdExceeded"
+
+            @AlertGroup = "DFC Input Packet Rate Soft Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Input Packet Rate, " + $2 + " Exceeded Soft Threshold, " + $4
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcInputPktRate,$jnxDfcPpsSoftOverloadLowWatermark,$jnxDfcPpsSoftOverloadHighWatermark)
+
+        case "2": ### jnxDfcSoftPpsUnderThreshold
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcInputPktRate 
+            # $3 = jnxDfcPpsSoftOverloadLowWatermark 
+            # $4 = jnxDfcPpsSoftOverloadHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcInputPktRate = $2 + " pps"
+            $jnxDfcPpsSoftOverloadLowWatermark = $3 + " pps"
+            $jnxDfcPpsSoftOverloadHighWatermark = $4 + " pps"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcSoftPpsUnderThreshold"
+
+            @AlertGroup = "DFC Input Packet Rate Soft Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Input Packet Rate, " + $2 + " Under Soft Threshold, " + $3
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcInputPktRate,$jnxDfcPpsSoftOverloadLowWatermark,$jnxDfcPpsSoftOverloadHighWatermark)
+
+        case "3": ### jnxDfcHardPpsThresholdExceeded
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcInputPktRate 
+            # $3 = jnxDfcPpsHardOverloadLowWatermark 
+            # $4 = jnxDfcPpsHardOverloadHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcInputPktRate = $2 + " pps"
+            $jnxDfcPpsHardOverloadLowWatermark = $3 + " pps"
+            $jnxDfcPpsHardOverloadHighWatermark = $4 + " pps"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcHardPpsThresholdExceeded"
+
+            @AlertGroup = "DFC Input Packet Rate Hard Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Input Packet Rate, " + $2 + " Exceeded Hard Threshold, " + $4
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcInputPktRate,$jnxDfcPpsHardOverloadLowWatermark,$jnxDfcPpsHardOverloadHighWatermark)
+
+        case "4": ### jnxDfcHardPpsUnderThreshold
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcInputPktRate 
+            # $3 = jnxDfcPpsHardOverloadLowWatermark 
+            # $4 = jnxDfcPpsHardOverloadHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcInputPktRate = $2 + " pps"
+            $jnxDfcPpsHardOverloadLowWatermark = $3 + " pps"
+            $jnxDfcPpsHardOverloadHighWatermark = $4 + " pps"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcHardPpsUnderThreshold"
+
+            @AlertGroup = "DFC Input Packet Rate Hard Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Input Packet Rate, " + $2 + " Under Hard Threshold, " + $3
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcInputPktRate,$jnxDfcPpsHardOverloadLowWatermark,$jnxDfcPpsHardOverloadHighWatermark)
+
+        case "5": ### jnxDfcSoftMemThresholdExceeded
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcFlowsUsage 
+            # $3 = jnxDfcCriteriaUsage 
+            # $4 = jnxDfcMemSoftOverloadLowWatermark 
+            # $5 = jnxDfcMemSoftOverloadHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcFlowsUsage = $2
+            $jnxDfcCriteriaUsage = $3 + ", %"
+            $jnxDfcMemSoftOverloadLowWatermark = $4 + ", %"
+            $jnxDfcMemSoftOverloadHighWatermark = $5 + ", %"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcSoftMemThresholdExceeded"
+
+            @AlertGroup = "DFC Memory Soft Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Memory Load, " + $3 + " Exceeded Soft Threshold, " + $5 + "  ( Flows Usage: " + $2 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcFlowsUsage,$jnxDfcCriteriaUsage,$jnxDfcMemSoftOverloadLowWatermark,$jnxDfcMemSoftOverloadHighWatermark)
+
+        case "6": ### jnxDfcSoftMemUnderThreshold
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcFlowsUsage 
+            # $3 = jnxDfcCriteriaUsage 
+            # $4 = jnxDfcMemSoftOverloadLowWatermark 
+            # $5 = jnxDfcMemSoftOverloadHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcFlowsUsage = $2
+            $jnxDfcCriteriaUsage = $3 + ", %"
+            $jnxDfcMemSoftOverloadLowWatermark = $4 + ", %"
+            $jnxDfcMemSoftOverloadHighWatermark = $5 + ", %"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcSoftMemUnderThreshold"
+
+            @AlertGroup = "DFC Memory Soft Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Memory Load, " + $3 + " Under Soft Threshold, " + $4 + "  ( Flows Usage: " + $2 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcFlowsUsage,$jnxDfcCriteriaUsage,$jnxDfcMemSoftOverloadLowWatermark,$jnxDfcMemSoftOverloadHighWatermark)
+
+        case "7": ### jnxDfcHardMemThresholdExceeded
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcFlowsUsage 
+            # $3 = jnxDfcFlowLowWatermark 
+            # $4 = jnxDfcFlowHighWatermark 
+            # $5 = jnxDfcCriteriaUsage 
+            # $6 = jnxDfcCriteriaLowWatermark 
+            # $7 = jnxDfcCriteriaHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcFlowsUsage = $2
+            $jnxDfcFlowLowWatermark = $3
+            $jnxDfcFlowHighWatermark = $4
+            $jnxDfcCriteriaUsage = $5 + ", %"
+            $jnxDfcCriteriaLowWatermark = $6 + ", %"
+            $jnxDfcCriteriaHighWatermark = $7 + ", %"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcHardMemThresholdExceeded"
+
+            @AlertGroup = "DFC Memory Hard Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Memory Load, " + $5 + " Exceeded Hard Threshold, " + $7 + "  ( Flows Usage: " + $2 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcFlowsUsage,$jnxDfcFlowLowWatermark,$jnxDfcFlowHighWatermark,$jnxDfcCriteriaUsage,$jnxDfcCriteriaLowWatermark,$jnxDfcCriteriaHighWatermark)
+
+        case "8": ### jnxDfcHardMemUnderThreshold
+
+            ##########
+            # $1 = jnxDfcInterfaceName 
+            # $2 = jnxDfcFlowsUsage 
+            # $3 = jnxDfcFlowLowWatermark 
+            # $4 = jnxDfcFlowHighWatermark 
+            # $5 = jnxDfcCriteriaUsage 
+            # $6 = jnxDfcCriteriaLowWatermark 
+            # $7 = jnxDfcCriteriaHighWatermark 
+            ##########
+
+            $jnxDfcInterfaceName = $1
+            $jnxDfcFlowsUsage = $2
+            $jnxDfcFlowLowWatermark = $3
+            $jnxDfcFlowHighWatermark = $4
+            $jnxDfcCriteriaUsage = $5 + ", %"
+            $jnxDfcCriteriaLowWatermark = $6 + ", %"
+            $jnxDfcCriteriaHighWatermark = $7 + ", %"
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-DFC-MIB-jnxDfcHardMemUnderThreshold"
+
+            @AlertGroup = "DFC Memory Hard Threshold"
+            @AlertKey = ""
+            @Summary = "DFC Memory Load, " + $5 + " Under Hard Threshold, " + $6 + "  ( Flows Usage: " + $2 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxDfcInterfaceName,$jnxDfcFlowsUsage,$jnxDfcFlowLowWatermark,$jnxDfcFlowHighWatermark,$jnxDfcCriteriaUsage,$jnxDfcCriteriaLowWatermark,$jnxDfcCriteriaHighWatermark)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-DFC-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-DFC-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-DFC-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-DFC-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-DFC-MIB.include.snmptrap.rules >>>>>")

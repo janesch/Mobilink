@@ -1,0 +1,100 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-DOT11-QOS-MIB.include.snmptrap.rules 1.0
+#    2006/03/23 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DOT11-QOS-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.416": ### Cisco Quality Of Service on LAN Devices - Notifications from CISCO-DOT11-QOS-MIB (20031124)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-DOT11-QOS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-DOT11 QOS"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cdot11QosChangeNotif
+
+            ##########
+            # $1 = cdot11TrafficClass 
+            ##########
+
+            $cdot11TrafficClass = lookup ($1, CDott11TrafficClass) 
+            $ifIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cdot11TrafficQueue = extract($OID1, "\.([0-9]+)$")              
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DOT11-QOS-MIB-cdot11QosChangeNotif"
+
+            @AlertGroup = "QOS Configuration Status"
+            @AlertKey = "cdot11QosConfigEntry." + $ifIndex + "." + $cdot11TrafficQueue
+            @Summary = "Quality Of Service Changed to " + $cdot11TrafficClass + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13 
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $cdot11TrafficClass = $cdot11TrafficClass + "  ( " + $1 + " )" 
+            details($cdot11TrafficClass,$ifIndex,$cdot11TrafficQueue)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-DOT11-QOS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-DOT11-QOS-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DOT11-QOS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DOT11-QOS-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DOT11-QOS-MIB.include.snmptrap.rules >>>>>")

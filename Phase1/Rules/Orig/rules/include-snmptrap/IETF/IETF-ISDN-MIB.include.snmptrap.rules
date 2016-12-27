@@ -1,0 +1,188 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-ISDN-MIB.include.snmptrap.rules 2.1 
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ISDN-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Assigned Class# 40086 - IETF (Internet Engineering Task Force)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+
+case ".1.3.6.1.2.1.10.20.2": ### ISDN - Notifications from RFC2127 
+
+    log(DEBUG, "<<<<< Entering... IETF-ISDN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-ISDN-MIB"
+    @Class = "40086"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### isdnMibCallInformation
+        
+            ##########
+            # $1 = ifIndex
+            # $2 = isdnBearerOperStatus
+            # $3 = isdnBearerPeerAddress
+            # $4 = isdnBearerPeerSubAddress
+            # $5 = isdnBearerCallSetupTime
+            # $6 = isdnBearerInfoType 
+            # $7 = isdnBearerCallOrigin
+            ##########
+ 
+            $ifIndex = $1
+            $isdnBearerOperStatus = lookup($2, isdnBearerOperStatus) + " ( " + $2 + " )"
+            $isdnBearerPeerAddress = $3
+            $isdnBearerPeerSubAddress = $4
+            $isdnBearerCallSetupTime = $5
+            $isdnBearerInfoType = lookup($6, isdnBearerInfoType)
+            $isdnBearerCallOrigin = lookup($7, isdnBearerCallOrigin)
+                        
+            $OS_EventId = "SNMPTRAP-IETF-ISDN-MIB-isdnMibCallInformation"
+            
+            @AlertGroup = "ISDN Call Status"
+            @AlertKey = "isdnBearerEntry." + $1
+            if(!match($isdnBearerCallOrigin, "Unknown"))
+            {
+                @Summary = $isdnBearerCallOrigin + " "
+            }
+            if(!match($isdnBearerInfoType, "Unknown"))
+            {
+                @Summary = @Summary + $isdnBearerInfoType + " "
+            }
+            @Summary = @Summary + "ISDN Call"
+            if(!match($3, ""))
+            {
+                switch($7)
+                {
+                    case "2": ### originate
+                        @Summary = @Summary + " to " + $3
+                    case "3": ### answer
+                        @Summary = @Summary + " from " + $3
+                    case "4": ### callback
+                        @Summary = @Summary + " from " + $3
+                    default:
+                }
+            }
+            
+            switch($2)
+            {
+                case "1": ### idle
+                    @Summary = @Summary + " Idle"
+                    
+                    $SEV_KEY = $OS_EventId + "_idle"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### connecting
+                    @Summary = @Summary + " Connecting"
+                    
+                    $SEV_KEY = $OS_EventId + "_connecting"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### connected
+                    @Summary = @Summary + " Connected"
+                    
+                    $SEV_KEY = $OS_EventId + "_connected"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### active
+                    @Summary = @Summary + " Active"
+                    
+                    $SEV_KEY = $OS_EventId + "_active"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = @Summary + " Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3 + " " + $4 + " " + $6 + " " + $7
+            
+            $isdnBearerInfoType = $isdnBearerInfoType + " " + $6
+            $isdnBearerCallOrigin = $isdnBearerCallOrigin + " " + $7
+            details($ifIndex,$isdnBearerOperStatus,$isdnBearerPeerAddress,$isdnBearerPeerSubAddress,$isdnBearerCallSetupTime,$isdnBearerInfoType,$isdnBearerCallOrigin)
+            
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-ISDN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-ISDN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ISDN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-ISDN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-ISDN-MIB.include.snmptrap.rules >>>>>")

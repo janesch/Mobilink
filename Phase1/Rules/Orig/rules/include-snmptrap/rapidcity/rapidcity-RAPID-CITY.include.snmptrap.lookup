@@ -1,0 +1,713 @@
+###############################################################################
+#
+# Licensed Materials - Property of IBM
+# Restricted Materials of IBM
+#
+# (C)Copyright IBM Corp. 2006 All Rights Reserved.
+#
+# rapidcity-RAPID-CITY.include.snmptrap.lookup 1.3 
+# 2006/11/08 Robert Cowart
+#
+###############################################################################
+#
+# 1.3 - Added updated values to rcSysAction table.
+#
+#     - Added the following tables: rcSysActionL2, rcSysActionL3, and
+#         rcSysActionRwa.
+#
+# 1.2 - Added the following tables: rcPosSonetTrapType,
+#         rcPosSonetTrapIndication, rcTlsEndptWatermarkIndication,
+#         rcTlsTdcTestResultIndication, rcTlsTdcTestRttExceedIndication,
+#         rcSysActionL1, rcVlanNewLoopDetectedAction,
+#         rcTlsUniIpServiceWatermarkIndication, rcBanRingTrapIndication,
+#         rcPlugOptModTemperatureStatus, rcPlugOptModVoltageStatus,
+#         rcPlugOptModBiasStatus, rcPlugOptModTxPowerStatus,
+#         rcPlugOptModRxPowerStatus, rcPlugOptModAux1Status,
+#         rcPlugOptModAux2Status, rcPlugOptModAux1Monitoring,
+#         rcPlugOptModAux2Monitoring.
+#
+# 1.1 - Added the following tables: rc2kAtmPvcOamVcStatus, rcCliPasswordChange,
+#         rcCliPassChangeResult, rcChasEmModeError, rcL2RedundancyHaCpuState,
+#         rcSysAction, rcIpBgpPeerState, and rcSysDnsRequestType.
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+
+table dvmrpInterfaceOperState =
+{
+    {"1","Up"}, ### up
+    {"2","Down"}, ### down
+}
+default = "Unknown"
+
+table rcCardAdminStatus =
+{
+    ##########
+    # Used to indicate the administrative status of this card.
+    ##########
+
+    {"1","Up"}, ### up
+    {"2","Down"}, ### down
+    {"3","Testing"} ### testing
+}
+default = "Unknown"
+
+table rcCardOperStatus =
+{
+    ##########
+    # Used to indicate the operational status of this card.
+    ##########
+
+    {"1","Up"}, ### up
+    {"2","Down"}, ### down
+    {"3","Testing"}, ### testing
+    {"4","Unknown"}, ### unknown
+    {"5","Dormant"} ### dormant
+}
+default = "Unknown"
+
+table rcErrorLevel =
+{
+    ##########
+    # Error level indicator for the last error reported in the system.
+    ##########
+
+    {"0","Informative Information"}, ### Informative Information
+    {"1","Warning Condition"}, ### Warning Condition
+    {"2","Error Condition"}, ### Error Condition
+    {"3","Manufacturing Information"}, ### Manufacturing Information
+    {"4","Fatal Condition"} ### Fatal Condition
+}
+default = "Unknown"
+
+table rcChasPowerSupplyOperStatus =
+{
+    ##########
+    # Actual status of the power supply:
+    #   - unknown(1) - status can not be determined.
+    #   - empty(2) - power supply not installed.
+    #   - up(3) - present and supplying power.
+    #   - down(4) - present, but failure indicated.
+    ##########
+
+    {"1","Unknown"}, ### unknown
+    {"2","Empty"}, ### empty
+    {"3","Up"}, ### up
+    {"4","Down"} ### down
+}
+default = "Unknown"
+
+table rcChasFanOperStatus =
+{
+    ##########
+    # Actual status of the Fan:
+    #   - unknown(1) - status can not be determined.
+    #   - up(2) - present and supplying power.
+    #   - down(3) - present, but failure indicated.
+    ##########
+    
+    {"1","Unknown"}, ### unknown
+    {"2","Up"}, ### up
+    {"3","Down"} ### down
+}
+default = "Unknown"
+
+table rc2kCardFrontAdminStatus =
+{
+    ##########
+    # Used to indicate the administrative status of this card.
+    ##########
+    
+    {"1","Up"}, ### up
+    {"2","Down"}, ### down
+    {"3","Testing"} ### testing
+}
+default = "Unknown"
+
+table rc2kCardFrontOperStatus =
+{
+    ##########
+    # Used to indicate the operational status of this card.
+    ##########
+
+    {"1","Up"}, ### up
+    {"2","Down"}, ### down
+    {"3","Testing"}, ### testing
+    {"4","Unknown"}, ### unknown
+    {"5","Dormant"} ### dormant
+}
+default = "Unknown"
+
+table rc2kAtmPvcOamVcStatus =
+{
+    ##########
+    # Indicate the status of PVC link.
+    #   Not Managed - VC is not being managed by OAM. 
+    #   Down Verify - An OAM loopback failed. End-to-end F5 OAM loopback cells
+    #     are sent at retry frequency to verify the VC is really down. After
+    #     down-count unsuccessful retries, the VC goes to the down state (see
+    #     definition of rc2kAtmPvcOamLoopbackDownCount).
+    #   Down - VC has not received responses to by end-to-end F5 OAM loopback
+    #     cells.
+    #   Up Verify - An OAM loopback was successful. End-to-end F5 OAM loopback
+    #     cells are sent at retry frequency to verify the VC is really up.
+    #     After up-count successive and successful loopback retries, the VC
+    #     goes to the Up state (see definition of
+    #     rc2kAtmPvcOamLoopbackUpCount).
+    #   Up - End-to-end loopbacks are successful.
+    ##########
+    
+    {"1","Not Managed"}, ### notManaged
+    {"2","Down-Verify"}, ### downVerify
+    {"3","Down"}, ### down
+    {"4","Up-Verify"}, ### upVerify
+    {"5","Up"} ### up
+}
+default = "Unknown"
+
+table rcCliPasswordChange =
+{
+    ##########
+    # Used to indication which password is changed when sending a
+    # rcCliPasswordChange trap.
+    ##########
+    
+    {"1","RO"}, ### ro
+    {"2","L1"}, ### l1
+    {"3","L2"}, ### l2
+    {"4","L3"}, ### l3
+    {"5","RW"}, ### rw
+    {"6","RWA"}, ### rwa
+    {"7","SLB Operator"}, ### slboper
+    {"8","L4 Operator"}, ### l4oper
+    {"9","Operator"}, ### oper
+    {"10","SLB Administrator"}, ### slbadmin
+    {"11","L4 Administrator"}, ### l4admin
+    {"12","SSL Administrator"}, ### ssladmin
+    {"13","Comm STR RO"}, ### commStrRo
+    {"14","Comm STR RW"}, ### commStrRw
+    {"15","Comm STR L3"}, ### commStrl3
+    {"16","Comm STR L2"}, ### commStrl2
+    {"17","Comm STR L1"}, ### commStrl1
+    {"18","Web Password RO"} ### webPassWdRo
+}
+default = "Unknown"
+
+table rcCliPassChangeResult =
+{
+    ##########
+    # Used to indication the result of changing password when sending a
+    # rcPasswordChange trap.
+    ##########
+    
+    {"1","Success"}, ### success
+    {"2","Fail"}, ### fail
+}
+default = "Unknown"
+
+table rcChasEmModeError =
+{
+    ##########
+    # Used to indicate the Em-mode error status.
+    ##########
+    
+    {"1","None"}, ### none
+    {"2","Non-128K Card Offline"}, ### non128KCardOffLine
+    {"3","Check Slave Configuration N Reset For EM M Mode"}, ### checkSlaveConfigNResetForEmMMode
+    {"4","Mismatch Reset For EM Mode"}, ### mismatchResetForEmMode
+    {"5","Mismatch EM Mode Master Slave"}, ### mismatchEmModeMasterSlave
+    {"6","Incompatible Master Reset For EM Mode"}, ### incompatMasterResetForEmMode
+    {"7","Put Slave Off EM Imcompatible"}, ### putSlaveOffEmImcompat
+    {"8","Slave 8690 EM Incompatible Going Offline"}, ### slave8690EmIncompatGoingOffline
+    {"9","CPU 8690 Disable EM"} ### cpu8690DisableEm
+}
+default = "Unknown"
+
+table rcL2RedundancyHaCpuState =
+{
+    ##########
+    # Indicate the Ha-CPU state.
+    #
+    # initialization - indicate the CPU is in this state. 
+    # oneWayActive - Modules that need to be synchronized have registered with
+    #   the framework (either locally or a message was received from remote CPU
+    #   (1).
+    # twoWayActive - Modules that need to be synchronized have registered with
+    #   the framework (either locally or a message was received from remote CPU
+    #   (2).
+    # synchronized  - Table based synchroniztion was completed on the current
+    #   CPU (3).
+    # remoteIncompatible - CPUs framework version is incompatible with the
+    #   remote CPU (4).
+    # error - If an invalid event is generated in a given state the CPU enters
+    #   Error state (5).
+    # disabled - High Availability is not enabled (6).
+    # peerNotConnected - no peer connection is established (7).
+    # peerConnected - peer connection is established (8).
+    # lostPeerConnection - lost connection to peer/Standby CPU (9).
+    # notSynchronized - Table Sync is not complete (10).
+    ##########
+    
+    {"0","Initialization"}, ### initialization
+    {"1","One-Way Active"}, ### oneWayActive
+    {"2","Two-Way Active"}, ### twoWayActive
+    {"3","Synchronized"}, ### synchronized
+    {"4","Remote Incompatible"}, ### remoteIncompatible
+    {"5","Error"}, ### error
+    {"6","Disabled"}, ### disabled
+    {"7","Peer Not Connected"}, ### peerNotConnected
+    {"8","Peer Connected"}, ### peerConnected
+    {"9","Lost Peer Connection"}, ### lostPeerConnection
+    {"10","Not Synchronized"} ### notSynchronized
+}
+default = "Unknown"
+
+table rcSysAction =
+{
+    ##########
+    # Initiate a system action.
+    ##########
+    
+    {"1","None"}, ### none - none of the following
+    {"2","Hard Reset"}, ### hardReset - power on tests
+    {"3","Soft Reset"}, ### softReset - reset w/o power on tests
+    {"4","Save to NVRAM"}, ### saveToNVRAM - save current config to NVRAM
+    {"5","Reset Counters"}, ### resetCounters - reset all statistic counters
+    {"6","Save to Standby NVRAM"}, ### saveToStandbyNVRAM - save config to slave NVRAM
+    {"7","CPU Switchover"}, ### cpuSwitchOver - CPU board switch-over
+    {"8","Check Software in Flash"}, ### checkSwInFlash
+    {"9","Check Software in Pcmcia"}, ### checkSwInPcmcia
+    {"10","Reset Console"}, ### resetConsole
+    {"11","Reset Modem"}, ### resetModem
+    {"12","Flush IP Route Table"}, ### flushIpRouteTbl
+    {"13","Save Runtime Configuration"}, ### saveRuntimeConfig - 8k only
+    {"14","Save Runtime Configuration to Slave"}, ### saveRuntimeConfigToSlave - 8k only
+    {"15","Save Boot Configuration"}, ### saveBootConfig - 8k only
+    {"16","Save Slave Boot Configuration"}, ### saveSlaveBootConfig - 8k only
+    {"17","Reset IST Statistics Counters"}, ### resetIstStatCounters
+    # {"18",""}, ### being used in rel2.2
+    # {"19",""}, ### being used in rel2.2
+    # {"20",""}, ### reserve
+    # {"21",""} ### reserve
+    {"22","Reset ESM Port Statistics"} ### resetEsmPortStats
+}
+default = "Unknown"
+
+table rcIpBgpPeerState =
+{
+    ##########
+    # The BGP peer connection state.
+    ##########
+    
+    {"1","Idle"}, ### idle
+    {"2","Connect"}, ### connect
+    {"3","Active"}, ### active
+    {"4","Open Sent"}, ### opensent
+    {"5","Open Confirmed"}, ### openconfirm
+    {"6","Established"} ### established
+}
+default = "Unknown"
+
+table rcSysDnsRequestType =
+{
+    ##########
+    # DNS Type: Whether it was Dns Request or a Response.
+    ##########
+    
+    {"0","Request"}, ### request
+    {"1","Response"} ### response
+}
+default = "Unknown"
+
+table rcPosSonetTrapType =
+{
+    ##########
+    # Used to indicate a particular type of Sonet trap.
+    ##########
+    
+    {"1","Section Alarm"}, ### sectionAlarm
+    {"2","Line Alarm"}, ### lineAlarm
+    {"3","Path Alarm"} ### pathAlarm    
+}
+default = "Unknown"
+                      
+table rcPosSonetTrapIndication =
+{
+    ##########
+    # Used to indicate an indication for a Sonet trap.
+    ##########
+    
+    {"1","No Defect"}, ### noDefect
+    {"2","Section Loss of Signal"}, ### sectionLossOfSignal
+    {"3","Section Loss of Frame"}, ### sectionLossOfFrame
+    {"4","Line Alarm Indication"}, ### lineAlarmIndication
+    {"5","Line Remote Defect Indication"}, ### lineRemoteDefectIndication
+    {"6","Path Loss of Pointer"}, ### pathLossOfPointer
+    {"7","Path Alarm Indication"}, ### pathAlarmIndication
+    {"8","Path Remote Defect Indication"}, ### pathRemoteDefectIndication
+    {"9","Path Unequipped"}, ### pathUnequipped
+    {"10","Path Signal Label Mismatch"}, ### pathSignalLabelMismatch
+    {"11","Path Trace Mismatch"} ### pathTraceMismatch
+}
+default = "Unknown"
+
+table rcTlsEndptWatermarkIndication =
+{
+    ##########
+    # A Watermark indication signifies that the Mac Table for the endpoint has
+    # reached its high watermark or already full.
+    ##########
+    
+    {"1","Threashold Reached"}, ### threasholdReached
+    {"2","Table Full"} ### tableFull
+}
+default = "Unknown"
+
+table rcTlsTdcTestResultIndication =
+{
+    ##########
+    # The TDC Test has passed or failed.
+    ##########
+    
+    {"1","Passed"}, ### tdcTestPass
+    {"2","Failed"} ### tdcTestFail
+}
+default = "Unknown"
+
+table rcTlsTdcTestRttExceedIndication =
+{
+    ##########
+    # The Tdc Test RTT has exceeded the preset threshold or not.
+    ##########
+    
+    {"1","OK"}, ### tdcTestRttOK
+    {"2","Threshold Exceeded"} ### tdcTestRttExceed
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcCfmTrunkCcmIndication = 
+{
+################################################################################
+# A Trunk CCM indication signifies that the trunk CCM operational status
+# has changed state to UP or DOWN
+################################################################################
+	{"1","up (1)"},
+	{"2","down (2)"}
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcCfmServiceGroupCcmIndication = 
+{
+################################################################################
+# A Service Group CCM indication signifies that the service group CCM 
+# operational status has changed state to UP or DOWN
+################################################################################
+	{"1","up (1)"},
+	{"2","down (2)"}
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcCfmEndPointCcmIndication = 
+{
+################################################################################
+# A Endpoint CCM indication signifies that the endpoint CCM 
+# operational status has changed state to UP or DOWN
+################################################################################
+	{"1","up (1)"},
+	{"2","down (2)"}
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcCfmTrunkGroupProtected = 
+{
+################################################################################
+# signifies trunk group was protected or was not protected
+################################################################################
+	{"1","wasprotected (1)"},
+	{"2","wasnotprotected (2)"}
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcCfmMepCcmIndication = 
+{
+################################################################################
+# CCM indication signifies the MEP CCM 
+# operational status
+################################################################################
+	{"1","down (1)"},
+	{"2","up (2)"},
+	{"3","learned (3)"},
+	{"4","update (4)"}
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcCfmTrunkGroupIndication = 
+{
+################################################################################
+# A Trunk group CCM indication signifies what kind of protection failure
+# within the trunk group
+################################################################################
+	{"1","majorFailure (1)"},
+	{"2","primaryFailed (2)"},
+	{"3","secondaryFailed (3)"},
+	{"4","manualSwitched (4)"},
+	{"5","reversion (5)"}
+}
+default = "Unknown"
+
+table rapidCity-RAPID-CITY-rcPlugOptModTemperatureStatus = 
+{
+################################################################################
+# Used to indicate the current temperature status
+################################################################################
+	{"1","normal (1)"},
+	{"2","highWarning (2)"},
+	{"3","highAlarm (3)"},
+	{"4","lowWarning (4)"},
+	{"5","lowAlarm (5)"}
+}
+default = "Unknown"
+
+table rcSysActionL1 =
+{
+    ##########
+    # Initiate a system action for layer1 user.
+    ##########
+    
+    {"1","None"}, ### none
+    {"2","Reset Counters"}, ### resetCounters - reset all statistic counters
+    {"3","Save to NVRAM"}, ### saveToNVRAM
+    {"4","Save to Standby NVRAM"}, ### saveToStandbyNVRAM - save config to slave NVRAM
+    {"5","Check Software in Flash"}, ### checkSwInFlash
+    {"6","Check Software in Pcmcia"}, ### checkSwInPcmcia
+    {"7","Save Runtime Configuration"}, ### saveRuntimeConfig - 8k only
+    {"8","Save Runtime Configuration to Slave"}, ### saveRuntimeConfigToSlave - 8k only
+    {"9","Save Boot Configuration"}, ### saveBootConfig - 8k only
+    {"10","Save Slave Boot Configuration"} ### saveSlaveBootConfig - 8k only
+}
+default = "Unknown"
+
+table rcVlanNewLoopDetectedAction =
+{
+    ##########
+    # This value is used to specify the action which needs to be taken once a
+    # loop is detected on a specific port.
+    ##########
+    
+    {"1","Port Down"}, ### portDown
+    {"2","VLAN Blocked"}, ### vlanBlock
+    {"3","MAC Discarded"} ### macDiscard
+}
+default = "Unknown"
+
+table rcTlsUniIpServiceWatermarkIndication =
+{
+    ##########
+    # A Watermark indication signifies that the Ip Table for the Uni Ip (Cust
+    # Ip) has reached its high watermark or already full.
+    ##########
+    
+    {"1","Threashold Reached"}, ### threasholdReached
+    {"2","Table Full"} ### tableFull
+}
+default = "Unknown"
+
+table rcBanRingTrapIndication =
+{
+    ##########
+    # The type of trap send is represented.
+    ##########
+ 
+    {"1","Normal"}, ### normal
+    {"2","Cut"}, ### cut
+    {"3","Down"}, ### down
+    {"4","Administratively Disabled"} ### adminDisable
+}
+default = "Unknown"
+
+table rcPlugOptModTemperatureStatus =
+{
+    ##########
+    # Used to indicate the current temperature status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModVoltageStatus =
+{
+    ##########
+    # Used to indicate the current voltage status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModBiasStatus =
+{
+    ##########
+    # Used to indicate the current laser bias status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModTxPowerStatus =
+{
+    ##########
+    # Used to indicate the current transmitter power status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModRxPowerStatus =
+{
+    ##########
+    # Used to indicate the current receiver power status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModAux1Status =
+{
+    ##########
+    # Used to indicate the current Aux1 status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModAux2Status =
+{
+    ##########
+    # Used to indicate the current Aux2 status.
+    ##########
+    
+    {"1","Normal"}, ### normal
+    {"2","High Warning"}, ### highWarning
+    {"3","High Alarm"}, ### highAlarm
+    {"4","Low Warning"}, ### lowWarning
+    {"5","Low Alarm"} ### lowAlarm
+}
+default = "Unknown"
+
+table rcPlugOptModAux1Monitoring =
+{
+    ##########
+    # This value tells what Aux1 is measuring.
+    ##########
+    
+    {"0","Auxiliary Monitoring Not Implemented"},
+    {"1","APD Bias Voltage"}, ### mV (units of 10 mV)
+    {"2","Reserved"},
+    {"3","TEC Current"}, ### (mA)
+    {"4","Laser Temperature"},
+    {"5","Laser Wavelength"},
+    {"6","+5V Supply Voltage"},
+    {"7","+3.3V Supply Voltage"},
+    {"8","+1.8V Supply Voltage"},
+    {"9","-5.2V Supply Voltage"},
+    {"10","+5.0V Supply Current"}, ### (unit of 100 uA)
+    {"13","+3.3V Supply Current"}, ### (unit of 100 uA)
+    {"14","+1.8V Supply Current"}, ### (unit of 100 uA)
+    {"15","-5.2V Supply Current"}, ### (unit of 100 uA)
+}
+default = "Unknown"
+        
+table rcPlugOptModAux2Monitoring =
+{
+    ##########
+    # This value tells you what AUX2 is measuring.        
+    ##########
+    
+    {"0","Auxiliary Monitoring Not Implemented"},
+    {"1","APD Bias Voltage"}, ### mV (units of 10 mV)
+    {"2","Reserved"},
+    {"3","TEC Current"}, ### (mA)
+    {"4","Laser Temperature"},
+    {"5","Laser Wavelength"},
+    {"6","+5V Supply Voltage"},
+    {"7","+3.3V Supply Voltage"},
+    {"8","+1.8V Supply Voltage"},
+    {"9","-5.2V Supply Voltage"},
+    {"10","+5.0V Supply Current"}, ### (unit of 100 uA)
+    {"13","+3.3V Supply Current"}, ### (unit of 100 uA)
+    {"14","+1.8V Supply Current"}, ### (unit of 100 uA)
+    {"15","-5.2V Supply Current"}, ### (unit of 100 uA)
+}
+default = "Unknown"
+
+table rcSysActionL2 =
+{
+    ##########
+    # Initiate a system action for layer2 user.
+    ##########
+    
+    {"1","None"}, ### none
+    {"2","Reset IST Statistic Counters"}, ### resetIstStatCounters
+	{"3","Reset ESM Port Statistics"} ### resetEsmPortStats
+}
+default = "Unknown"
+
+table rcSysActionL3 =
+{
+    ##########
+    # Initiate a system action for layer3 user.
+    ##########
+    
+    {"1","None"}, ### none
+    {"2","Flush IP Route Table"}, ### flushIpRouteTbl
+}
+default = "Unknown"
+
+table rcSysActionRwa =
+{
+    ##########
+    # Initiate a system action.
+    ##########
+    
+    {"1","None"}, ### none - none of the following
+    {"2","Hard Reset"}, ### hardReset - power on tests
+    {"3","Soft Reset"}, ### softReset - reset w/o power on tests
+    {"4","CPU Switchover"}, ### cpuSwitchOver - CPU board switch-over
+	{"5","Reset Console"}, ### resetConsole
+    {"6","Reset Modem"}, ### resetModem
+    # {"7",""}, ### being used in rel2.2
+    # {"8",""}, ### being used in rel2.2
+    # {"9",""}, ### reserve
+    # {"10",""}, ### reserve
+}
+default = "Unknown"

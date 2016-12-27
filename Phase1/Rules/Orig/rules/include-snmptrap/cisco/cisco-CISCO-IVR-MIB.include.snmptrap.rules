@@ -1,0 +1,414 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IVR-MIB.include.snmptrap.rules 1.0
+#    2006/05/12 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IVR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.371": ### Cisco Inter Virutal Storage Area Network (Inter-VSAN) Routing - Notifications from CISCO-IVR-MIB (20050303)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IVR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Inter-VSAN Routing"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### civrZoneActivationDoneNotify
+
+            ##########
+            # $1 = civrZoneSetName 
+            # $2 = civrZoneSetActvatDeactvatResult 
+            # $3 = civrZoneSetActDeactPartialSucss 
+            ##########
+
+            $civrZoneSetName = $1
+            $civrZoneSetActvatDeactvatResult = lookup($2, civrZoneSetActvatDeactvatResult) + " ( " + $2 + " )"
+            $civrZoneSetActDeactPartialSucss = lookup($3, TruthValue) + " ( " + $3 + " )"
+            $civrZoneSetIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IVR-MIB-civrZoneActivationDoneNotify"
+
+            @AlertKey = "civrZoneSetEntry." + $civrZoneSetIndex
+            switch($2)
+            {
+                case "1": ### activateSuccess
+                    $SEV_KEY = $OS_EventId + "_activateSuccess"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Successful"
+
+                    $DEFAULT_Severity = 1 
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### activateFailureNoMembers 
+                    $SEV_KEY = $OS_EventId + "_activateFailureNoMembers"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed, No Members in Zoneset"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### activateFailureZoneOneorLessMem 
+                    $SEV_KEY = $OS_EventId + "_activateFailureZoneOneorLessMem"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failure, One or Less Members in Zoneset"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### activateFailureNoTopology 
+                    $SEV_KEY = $OS_EventId + "_activateFailureNoTopology"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed, No IVR Topology"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### activateFailureNoPerVsanSucc 
+                    $SEV_KEY = $OS_EventId + "_activateFailureNoPerVsanSucc"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed in All 'Activate VSANs'"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### activateFailureNoZoneset 
+                    $SEV_KEY = $OS_EventId + "_activateFailureNoZoneset"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed, No Zoneset"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### activateFailureNoVsans 
+                    $SEV_KEY = $OS_EventId + "_activateFailureNoVsans"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed, No Activate VSANs"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### activateFailureFabricUnstable 
+                    $SEV_KEY = $OS_EventId + "_activateFailureFabricUnstable"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed, Fabric Unstable"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    $DEFAULT_ExpireTime = 0
+                case "13": ### activating 
+                    $SEV_KEY = $OS_EventId + "_activating"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation In Progress"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "15": ### idle 
+                    $SEV_KEY = $OS_EventId + "_idle"
+                    @AlertGroup = "IVR Zoneset Status"
+                    @Summary = "IVR Zoneset Idle"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "17": ### activateFailureFabric 
+                    $SEV_KEY = $OS_EventId + "_activateFailureFabric"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Failed"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "19": ### activatePartialSuccessFabric 
+                    $SEV_KEY = $OS_EventId + "_activatePartialSuccessFabric"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Partially Successful"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "22": ### activatingReadyToAdv 
+                    $SEV_KEY = $OS_EventId + "_activatingReadyToAdv"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "Switches Ready to Advertise Device Changes"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "23": ### activatingAdvertising 
+                    $SEV_KEY = $OS_EventId + "_activatingAdvertising"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "Switches Adverstising device Changes"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Activation Status Unknown"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( Zoneset: " + $1 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            details($civrZoneSetName,$civrZoneSetActvatDeactvatResult,$civrZoneSetActDeactPartialSucss,$civrZoneSetIndex)
+        
+        case "2": ### civrZoneDeactivationDoneNotify
+
+            ##########
+            # $1 = civrZoneSetName 
+            # $2 = civrZoneSetActvatDeactvatResult 
+            # $3 = civrZoneSetActDeactPartialSucss 
+            ##########
+
+            $civrZoneSetName = $1
+            $civrZoneSetActvatDeactvatResult = lookup($2, civrZoneSetActvatDeactvatResult) + " ( " + $2 + " )"
+            $civrZoneSetActDeactPartialSucss = lookup($3, TruthValue) + " ( " + $3 + " )"
+            $civrZoneSetIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IVR-MIB-civrZoneDeactivationDoneNotify"
+
+            @AlertKey = "civrZoneSetEntry." + $civrZoneSetIndex
+            switch($2)
+            {
+                case "9": ### deactivateSuccess 
+                    $SEV_KEY = $OS_EventId + "_deactivateSuccess"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Successful"
+
+                    $DEFAULT_Severity = 1 
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "10": ### deactivateFailureNoActiveZs 
+                    $SEV_KEY = $OS_EventId + "_deactivateFailureNoActiveZs"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Failed, No Active Zoneset"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "11": ### deactivateFailureNoPerVsanSucc 
+                    $SEV_KEY = $OS_EventId + "_deactivateFailureNoPerVsanSucc"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Failed in all 'Activate VSANs'"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "12": ### deactivateFailureFabricUnstable 
+                    $SEV_KEY = $OS_EventId + "_deactivateFailureFabricUnstable"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Failed, Fabric Unstable"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "14": ### deactivating  
+                    $SEV_KEY = $OS_EventId + "_deactivating"
+                    @AlertGroup = "IVR Zoneset Activation Status"
+                    @Summary = "IVR Zoneset Deactivation In Progress"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "15": ### idle 
+                    $SEV_KEY = $OS_EventId + "_idle"
+                    @AlertGroup = "IVR Zoneset Status"
+                    @Summary = "IVR Zoneset Idle"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "16": ### deactivateSuccessFcNatShutup13 
+                    $SEV_KEY = $OS_EventId + "_deactivateSuccessFcNatShutup13"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Successful, Shutup 1.3 Switch in NAT Mode"
+
+                    $DEFAULT_Severity = 1 
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "18": ### deactivateFailureFabric 
+                    $SEV_KEY = $OS_EventId + "_deactivateFailureFabric"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Failed"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "20": ### deactivatePartialSuccessFabric 
+                    $SEV_KEY = $OS_EventId + "_deactivatePartialSuccessFabric"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Deactivation Partially Successful"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "21": ### deviceCleanupInProgress 
+                    $SEV_KEY = $OS_EventId + "_deviceCleanupInProgress"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Device Cleanup In Progress"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @AlertGroup = "IVR Zoneset Deactivation Status"
+                    @Summary = "IVR Zoneset Status Unknown"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( Zoneset: " + $1 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            details($civrZoneSetName,$civrZoneSetActvatDeactvatResult,$civrZoneSetActDeactPartialSucss,$civrZoneSetIndex)
+
+      case "3": ### civrDomainConflictNotify
+
+            ##########
+            # $1 = civrZoneEnforcedZoneMemberID 
+            # $2 = civrZoneEnforcedZoneMemberVsan 
+            # $3 = civrZoneMemberFabricId 
+            # $4 = civDomainIdConflictVsan 
+            ##########
+
+             $civrZoneEnforcedZoneMemberID = $1
+            $civrZoneEnforcedZoneMemberVsan = $2
+            $civrZoneMemberFabricId = $3
+            $civDomainIdConflictVsan = $4
+            $civrZoneMemberParentIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $civrZoneMemberIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IVR-MIB-civrDomainConflictNotify"
+
+            @AlertGroup = "IVR Domain Conflict Status"
+            @AlertKey = "civrZoneEnforcedZoneMemberEntry." + $civrZoneMemberParentIndex + "." + $civrZoneMemberIndex
+            @Summary = "IVR Domain IDs Conflict  ( VSAN: " + $4 + " )"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($civrZoneEnforcedZoneMemberID,$civrZoneEnforcedZoneMemberVsan,$civrZoneMemberFabricId,$civDomainIdConflictVsan,$civrZoneMemberParentIndex,$civrZoneMemberIndex)
+
+        case "4": ### civrAfidConfigNotify
+
+            ##########
+            # $1 = civrAfidMisConfigLocalAfid 
+            # $2 = civrAfidMisConfigRemoteAfid 
+            # $3 = civrAfidMisConfigLocalSWwn 
+            # $4 = civrAfidMisConfigRemoteSWwn 
+            # $5 = civrAfidMisConfigVsan 
+            # $6 = civrTopologyMisConfigReason 
+            ##########
+
+            $civrAfidMisConfigLocalAfid = $1
+            $civrAfidMisConfigRemoteAfid = $2
+            $civrAfidMisConfigLocalSWwn = $3
+            $civrAfidMisConfigRemoteSWwn = $4
+            $civrAfidMisConfigVsan = $5
+            $civrTopologyMisConfigReason = lookup($6, civrTopologyMisConfigReason)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IVR-MIB-civrAfidConfigNotify"
+
+            @AlertGroup = "IVR AFID Configuration Status"
+            @AlertKey = "VSAN: " + $5 + ", Local Switch: " + $3 + ", Remote Switch: " + $4 + ", Local AFID: " + $1 + ", Remote AFID: " + $2 
+            switch($6)
+            {
+                case "1": ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### afidMismatch 
+                    $SEV_KEY = $OS_EventId + "_afidMismatch"
+
+                    $DEFAULT_Severity = 3 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown"
+
+                    $DEFAULT_Severity = 2 
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = "IVR AFID Mis-Configuration, " + $civrTopologyMisConfigReason + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+            $civrTopologyMisConfigReason = $civrTopologyMisConfigReason + " ( " + $6 + " )"
+            details($civrAfidMisConfigLocalAfid,$civrAfidMisConfigRemoteAfid,$civrAfidMisConfigLocalSWwn,$civrAfidMisConfigRemoteSWwn,$civrAfidMisConfigVsan,$civrTopologyMisConfigReason)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IVR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IVR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IVR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IVR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IVR-MIB.include.snmptrap.rules >>>>>")

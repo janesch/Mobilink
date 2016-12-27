@@ -1,0 +1,1778 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-MPLS-LSR-MIB.include.snmptrap.rules 1.0
+#    2006/05/15 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  MPLS-LSR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.3.96.2": ### MPLS Label Switch Router - Notifications from MPLS-LSR-MIB (20000426) 
+
+    log(DEBUG, "<<<<< Entering... IETF-MPLS-LSR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IETF-MPLS-LSR-MIB"
+    @Class = "40086"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### mplsInSegmentUp
+
+            ##########
+            # $1 = mplsInSegmentIfIndex 
+            # $2 = mplsInSegmentLabel 
+            # $3 = mplsInSegmentAdminStatus 
+            # $4 = mplsInSegmentOperStatus 
+            ##########
+
+            $mplsInSegmentIfIndex = $1
+            $mplsInSegmentLabel = $2
+            $mplsInSegmentAdminStatus = lookup($3, mplsInSegmentAdminStatus) + " ( " + $3 + " )"
+            $mplsInSegmentOperStatus = lookup($4, mplsInSegmentOperStatus) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-LSR-MIB-mplsInSegmentUp"
+
+            @AlertGroup = "MPLS In-Segment Status"
+            @AlertKey = "mplsInSegmentEntry." + $1 + "." + $2
+            switch($4)
+            {
+                case "1": ### up
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS In-Segment Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS In-Segment Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS In-Segment Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS In-Segment Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS In-Segment Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS In-Segment Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS In-Segment Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS In-Segment Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### testing 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### unknown 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### dormant 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### notPresent 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### lowerLayerDown 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3 + " " + $4
+
+            details($mplsInSegmentIfIndex,$mplsInSegmentLabel,$mplsInSegmentAdminStatus,$mplsInSegmentOperStatus)
+
+        case "2": ### mplsInSegmentDown
+
+            ##########
+            # $1 = mplsInSegmentIfIndex 
+            # $2 = mplsInSegmentLabel 
+            # $3 = mplsInSegmentAdminStatus 
+            # $4 = mplsInSegmentOperStatus 
+            ##########
+
+            $mplsInSegmentIfIndex = $1
+            $mplsInSegmentLabel = $2
+            $mplsInSegmentAdminStatus = lookup($3, mplsInSegmentAdminStatus) + " ( " + $3 + " )"
+            $mplsInSegmentOperStatus = lookup($4, mplsInSegmentOperStatus) + " ( " + $4 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-LSR-MIB-mplsInSegmentDown"
+
+            @AlertGroup = "MPLS In-Segment Status"
+            @AlertKey = "mplsInSegmentEntry." + $1 + "." + $2
+            switch($4)
+            {
+                case "1": ### up
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS In-Segment Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS In-Segment Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS In-Segment Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS In-Segment Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS In-Segment Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS In-Segment Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS In-Segment Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS In-Segment Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### testing 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS In-Segment in Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### unknown 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### dormant 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS In-Segment Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### notPresent 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS In-Segment Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### lowerLayerDown 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS In-Segment Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown 
+                    switch($3)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS In-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3 + " " + $4
+
+            details($mplsInSegmentIfIndex,$mplsInSegmentLabel,$mplsInSegmentAdminStatus,$mplsInSegmentOperStatus)
+
+        case "3": ### mplsOutSegmentUp
+
+            ##########
+            # $1 = mplsOutSegmentIndex 
+            # $2 = mplsInSegmentAdminStatus 
+            # $3 = mplsInSegmentOperStatus 
+            ##########
+            
+            $mplsOutSegmentIndex = $1
+            $mplsOutSegmentAdminStatus = lookup($2, mplsOutSegmentAdminStatus) + " ( " + $2 + " )"
+            $mplsOutSegmentOperStatus = lookup($3, mplsOutSegmentOperStatus) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-LSR-MIB-mplsOutSegmentUp"
+
+            @AlertGroup = "MPLS Out-Segment Status"
+            @AlertKey = "mplsOutSegmentEntry." + $1
+            switch($3)
+            {
+                case "1": ### up
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS Out-Segment Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS Out-Segment Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS Out-Segment Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS Out-Segment Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS Out-Segment Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS Out-Segment Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS Out-Segment Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Out-Segment Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### testing 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### unknown 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### dormant 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### notPresent 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### lowerLayerDown 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+
+            details($mplsOutSegmentIndex,$mplsOutSegmentAdminStatus,$mplsOutSegmentOperStatus)
+
+        case "4": ### mplsOutSegmentDown
+
+            ##########
+            # $1 = mplsOutSegmentIndex 
+            # $2 = mplsInSegmentAdminStatus 
+            # $3 = mplsInSegmentOperStatus 
+            ##########
+
+            $mplsOutSegmentIndex = $1
+            $mplsOutSegmentAdminStatus = lookup($2, mplsOutSegmentAdminStatus) + " ( " + $2 + " )"
+            $mplsOutSegmentOperStatus = lookup($3, mplsOutSegmentOperStatus) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-LSR-MIB-mplsOutSegmentDown"
+
+            @AlertGroup = "MPLS Out-Segment Status"
+            @AlertKey = "mplsOutSegmentEntry." + $1
+            switch($3)
+            {
+                case "1": ### up
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS Out-Segment Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS Out-Segment Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS Out-Segment Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS Out-Segment Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS Out-Segment Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS Out-Segment Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS Out-Segment Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Out-Segment Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### testing 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS Out-Segment in Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### unknown 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### dormant 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS Out-Segment Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### notPresent 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS Out-Segment Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### lowerLayerDown 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS Out-Segment Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown 
+                    switch($2)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Out-Segment Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0 
+                   }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2 + " " + $3
+
+            details($mplsOutSegmentIndex,$mplsOutSegmentAdminStatus,$mplsOutSegmentOperStatus)
+
+        case "5": ### mplsXCUp
+
+            ##########
+            # $1 = mplsXCIndex 
+            # $2 = mplsInSegmentIfIndex 
+            # $3 = mplsInSegmentLabel 
+            # $4 = mplsOutSegmentIndex 
+            # $5 = mplsXCAdminStatus 
+            # $6 = mplsXCOperStatus 
+            ##########
+            
+            $mplsXCIndex = $1
+            $mplsInSegmentIfIndex = $2
+            $mplsInSegmentLabel = $3
+            $mplsOutSegmentIndex = $4
+            $mplsXCAdminStatus = lookup($5, mplsXCAdminStatus) + " ( " + $5 + " )"
+            $mplsXCOperStatus = lookup($6, mplsXCOperStatus) + " ( " + $6 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-LSR-MIB-mplsXCUp"
+
+            @AlertGroup = "MPLS Cross-Connect Status"
+            @AlertKey = "mplsXCEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            switch($6)
+            {
+                case "1": ### up
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### testing 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### unknown 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### dormant 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### notPresent 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### lowerLayerDown 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0 
+                   }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+
+            details($mplsXCIndex,$mplsInSegmentIfIndex,$mplsInSegmentLabel,$mplsOutSegmentIndex,$mplsXCAdminStatus,$mplsXCOperStatus)
+
+        case "6": ### mplsXCDown
+
+            ##########
+            # $1 = mplsXCIndex 
+            # $2 = mplsInSegmentIfIndex 
+            # $3 = mplsInSegmentLabel 
+            # $4 = mplsOutSegmentIndex 
+            # $5 = mplsXCAdminStatus 
+            # $6 = mplsXCOperStatus 
+            ##########
+
+            $mplsXCIndex = $1
+            $mplsInSegmentIfIndex = $2
+            $mplsInSegmentLabel = $3
+            $mplsOutSegmentIndex = $4
+            $mplsXCAdminStatus = lookup($5, mplsXCAdminStatus) + " ( " + $5 + " )"
+            $mplsXCOperStatus = lookup($6, mplsXCOperStatus) + " ( " + $6 + " )"
+
+            $OS_EventId = "SNMPTRAP-IETF-MPLS-LSR-MIB-mplsXCDown"
+
+            @AlertGroup = "MPLS Cross-Connect Status"
+            @AlertKey = "mplsXCEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            switch($6)
+            {
+                case "1": ### up
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_up_up"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Up"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_up_down"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_up_testing"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_up_unknown"
+                            @Summary = "MPLS Cross-Connect Up, Administratively Unknown"
+
+                            $DEFAULT_Severity = 1
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "2": ### down
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_down_up"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_down_down"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_down_testing"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_down_unknown"
+                            @Summary = "MPLS Cross-Connect Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### testing 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_testing_up"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_testing_down"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_testing_testing"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_testing_unknown"
+                            @Summary = "MPLS Cross-Connect in Testing, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 12
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "4": ### unknown 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "5": ### dormant 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_dormant_up"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_dormant_down"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_dormant_testing"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_dormant_unknown"
+                            @Summary = "MPLS Cross-Connect Dormant, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "6": ### notPresent 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_notPresent_up"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_notPresent_down"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_notPresent_testing"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_notPresent_unknown"
+                            @Summary = "MPLS Cross-Connect Not Present, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "7": ### lowerLayerDown 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_up"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Up"
+
+                            $DEFAULT_Severity = 4
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_down"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_testing"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Testing"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_lowerLayerDown_unknown"
+                            @Summary = "MPLS Cross-Connect Lower Layer Down, Administratively Unknown"
+
+                            $DEFAULT_Severity = 3
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown 
+                    switch($5)
+                    {
+                        case "1": ### up
+                            $SEV_KEY = $OS_EventId + "_unknown_up"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Up"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### down
+                            $SEV_KEY = $OS_EventId + "_unknown_down"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Down"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### testing 
+                            $SEV_KEY = $OS_EventId + "_unknown_testing"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Testing"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default:
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "MPLS Cross-Connect Status Unknown, Administratively Unknown"
+
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0 
+                   }
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5 + " " + $6
+
+            details($mplsXCIndex,$mplsInSegmentIfIndex,$mplsInSegmentLabel,$mplsOutSegmentIndex,$mplsXCAdminStatus,$mplsXCOperStatus)
+
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IETF-MPLS-LSR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IETF-MPLS-LSR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-MPLS-LSR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IETF/IETF-MPLS-LSR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IETF-MPLS-LSR-MIB.include.snmptrap.rules >>>>>")

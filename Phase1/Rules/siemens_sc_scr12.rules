@@ -1,0 +1,123 @@
+
+#
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       
+#       
+#       (C) Copyright IBM Corp. 2007. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#       Example rules file for the Netcool/OMNIbus Probe 
+#       for Siemens Switch Commander SCR12 
+#
+#
+#######################################################################
+#
+#
+# Available Elements:
+#
+#$OSI Alarm     
+#$Alarm_Object   
+#$Managed_Object      
+#$Event_Type     
+#$Event_Time     
+#$DateTime      
+#$UTC           
+#$Probable_Cause         
+#$Perceived_Severity     
+#$Additional_Text  
+#
+#######################################################################
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+#
+# This section deals with internal probe events
+#
+    switch(@Summary)
+    {
+    case "Running ...":
+            @Severity = 1
+            @AlertGroup = "probestat"
+            @Type = 2
+    case "Going Down ...":
+            @Severity = 5
+            @AlertGroup = "probestat"
+            @Type = 1
+
+    case "Unable to get events":
+    	    @Severity = 5
+	    @AlertGroup = "probestat"
+	    @AlertKey = @Agent
+	    @Type = 1	 	    
+	    
+    default:
+	#            @Severity = 2
+    }
+    @AlertKey = @Agent
+    @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+	@Manager = "siemens sc scr12 probe on " + hostname()
+	@AlertGroup = "SiemensSC_SCR12"
+    @Class = 9207 
+    @Agent = "siemens_sc_scr12"
+
+ 
+		
+	if ( exists($r_perceivedSeverity) ) {
+
+	 	@Type = 2
+	
+		# These are the only allowed values for perceived serverity
+
+ 		if (match($r_perceivedSeverity,"cleared")) {
+			@Severity = 0
+			@Type = 1
+		} else if (match($r_perceivedSeverity,"critical")) {
+			@Severity = 5 
+		} else if (match($r_perceivedSeverity,"major")) {
+			@Severity = 4
+		} else if (match($r_perceivedSeverity,"minor")) {
+			@Severity = 3
+		} else if (match($r_perceivedSeverity,"warning")) {
+			@Severity = 2	
+		} 
+	}  else {
+		@Severity = 1
+		@Type = 13 
+	}
+
+	@Identifier = $Event+$nsap+$MOInstance
+
+ #Modified Summary to include AdditionalLine00+": "+$a_Internal_Category by FF Innovise ESM on 05.08.10
+	
+	#@Summary = $Event+": "+$r_additionalText
+ 	@Summary = $Event+": "+$AdditionalLine00+": "+$a_Internal_Category 
+	@AlertKey = $MOInstance
+	@AlertGroup = $Event
+	@EventType = $EventName
+
+ #Modified Node to include sssNeID FF Innovise ESM on 05.08.10
+
+	if (regmatch( $MOInstance, ".*sssNeId.*"))
+        {
+               $node =extract($MOInstance, ".*string..([A-Za-z0-9]*)") 
+               @Node = $node 
+        }
+	else	
+	{	
+        	@Node = "sssNeId Unknown" 
+	}        
+
+	#@Node = $nsap+": "+$ManObj
+	@NodeAlias = @Node
+}
+
+ #details($*)

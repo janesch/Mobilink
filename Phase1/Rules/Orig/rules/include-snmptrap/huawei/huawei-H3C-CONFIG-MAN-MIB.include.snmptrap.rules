@@ -1,0 +1,198 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-CONFIG-MAN-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-CONFIG-MAN-MIB release V2.0
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-CONFIG-MAN-MIB release V1.6
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.2.4.2": ### Huawei - Notifications from H3C-CONFIG-MAN-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-CONFIG-MAN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cCfgManEventlog
+
+            ##########
+            # The object calculates the checksum on the current config per
+            # 10 minutes and even if it is different from the saved config but
+            # if a trap has been sent with the same checksum then don't send
+            # again until the checksum is different.
+            #
+            # $1 = h3cCfgLogSrcCmd - Specify the source command brought the log.
+            # $2 = h3cCfgLogSrcData - The configuration data source for
+            #        the event.
+            # $3 = h3cCfgLogDesData - The configuration data destination for
+            #        the event.
+            ##########
+
+            $h3cCfgLogSrcCmd = lookup($1,h3cCfgLogSrcCmd)
+            $h3cCfgLogSrcData = lookup($2,h3cCfgLogSrcData) 
+            $h3cCfgLogDesData = lookup($3,h3cCfgLogDesData)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-CONFIG-MAN-MIB-h3cCfgManEventlog"
+
+            @AlertGroup = "Configuration Change"
+            @AlertKey = "Cmd: " + $h3cCfgLogSrcCmd + ", Src: " + $h3cCfgLogSrcData + ", Dest: " + $h3cCfgLogDesData
+            @Summary = "System Configuration Change  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 900
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $h3cCfgLogSrcCmd = $h3cCfgLogSrcCmd + " ( " + $1 + " )"
+            $h3cCfgLogSrcData = $h3cCfgLogSrcData + " ( " + $2 + " )"
+            $h3cCfgLogDesData = $h3cCfgLogDesData + " ( " + $3 + " )"
+            details($h3cCfgLogSrcCmd,
+                    $h3cCfgLogSrcData,
+                    $h3cCfgLogDesData)
+
+        case "2": ### h3cCfgOperateCompletion
+
+            ##########
+            # When create h3cCfgOperateTable successfully,
+            # a notification may be generated.
+            #
+            # $1 = h3cCfgOperateType - Specify the type of operation on
+            #        configuration. 
+            # $2 = h3cCfgOperateTime - Record the time taken for the operation.
+            #        This object will be like a stopwatch, starting when the
+            #        operation starts, and stopping when the operation completes.
+            # $3 = h3cCfgOperateState - The status of the specified operation.
+            # $4 = h3cCfgOperateEndTime - The value of sysUpTime when the
+            #        configuration operation is finished.
+            ##########
+
+            $h3cCfgOperateType = lookup($1,h3cCfgOperateType) 
+            $h3cCfgOperateTime = $2
+            $h3cCfgOperateState = lookup($3,h3cCfgOperateState)
+            $h3cCfgOperateEndTime = $4
+        $h3cCfgOperateIndex = extract($OID1,"\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-CONFIG-MAN-MIB-h3cCfgOperateCompletion"
+
+            @AlertGroup = "Configuration Operation Status"
+            @AlertKey = "h3cCfgOperateEntry." + $h3cCfgOperateIndex
+             
+            switch($3)
+            {
+                case "1": ### In Progress
+
+                    $OS_EventId = $OS_EventId + "_inProgress"
+
+                    @Summary = "Configuration Operation in Progress  ( " + $h3cCfgOperateType + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### Success
+
+                    $OS_EventId = $OS_EventId + "_success"
+
+                    @Summary = "Configuration Operation Successfully Completed  ( " + $h3cCfgOperateType + " )"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default: ### Failure
+
+                    $OS_EventId = $OS_EventId + "_failure"
+
+                    @Summary = "Configuration Operation Failed : " + $h3cACfgOperateState + "  ( " + $h3cCfgOperateType + " )"
+                    update(@Summary)
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $3
+
+            $h3cCfgOperateType = $h3cCfgOperateType + " ( " + $1 + " )"
+            $h3cCfgOperateState = $h3cCfgOperateState + " ( " + $3 + " )"
+            details($h3cCfgOperateType,
+                    $h3cCfgOperateTime,
+                    $h3cCfgOperateState,
+                    $h3cCfgOperateEndTime,
+                    $h3cCfgOperateIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-CONFIG-MAN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-CONFIG-MAN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-CONFIG-MAN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-CONFIG-MAN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-H3C-CONFIG-MAN-MIB.include.snmptrap.rules >>>>>")

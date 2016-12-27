@@ -1,0 +1,177 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ATM-IF-MIB.include.snmptrap.rules 1.1
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ATM-IF-MIB
+#
+###############################################################################
+#
+# 1.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.14": ### Cisco ATM Interface - Notifications from CISCO-ATM-IF-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ATM-IF-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-ATM Interface"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoAtmIfEvent
+
+            ##########
+            # $1 = ciscoAtmIfIlmiFSMState 
+            # $2 = ciscoAtmIfSscopFSMState 
+            ##########
+
+            $ciscoAtmIfIlmiFSMState = lookup($1, ciscoAtmIfIlmiFSMState) + " ( " + $1 + " )"
+            $ciscoAtmIfSscopFSMState = lookup($2, ciscoAtmIfSscopFSMState)
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ATM-IF-MIB-ciscoAtmIfEvent"
+
+            @AlertGroup = "ATM Interface ILMI/SSCOP Status"
+            @AlertKey = "atmInterfaceConfEntry." + $ifIndex
+            switch($1)
+            {
+                case "1": ### down
+                    @Summary = "ATM Interface ILMI Down"
+                    
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### restarting
+                    @Summary = "ATM Interface ILMI Restarting"
+                    
+                    $SEV_KEY = $OS_EventId + "_restarting"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### waitDevType
+                    @Summary = "ATM Interface ILMI Awaiting Device Type"
+                    
+                    $SEV_KEY = $OS_EventId + "_waitDevType"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### deviceAndPortTypeComplete
+                    @Summary = "ATM Interface ILMI Device and Port Type Complete"
+                    
+                    $SEV_KEY = $OS_EventId + "_deviceAndPortTypeComplete"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### awaitPnniConfig
+                    @Summary = "ATM Interface ILMI Awaiting PNNI Configuration"
+                    
+                    $SEV_KEY = $OS_EventId + "_awaitPnniConfig"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### pnniConfigComplete
+                    @Summary = "ATM Interface ILMI PNNI Configuration Complete"
+                    
+                    $SEV_KEY = $OS_EventId + "_pnniConfigComplete"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### awaitRestartAck
+                    @Summary = "ATM Interface ILMI Awaiting Restart Acknowledgement"
+                    
+                    $SEV_KEY = $OS_EventId + "_awaitRestartAck"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### upAndNormal
+                    @Summary = "ATM Interface ILMI Up and Normal"
+                    
+                    $SEV_KEY = $OS_EventId + "_upAndNormal"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "ATM Interface ILMI Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + ", SSCOP " + $ciscoAtmIfSscopFSMState + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+            
+            $ciscoAtmIfSscopFSMState = $ciscoAtmIfSscopFSMState + " ( " + $2 + " )"
+            details($ciscoAtmIfIlmiFSMState,$ciscoAtmIfSscopFSMState)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ATM-IF-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ATM-IF-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ATM-IF-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ATM-IF-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ATM-IF-MIB.include.snmptrap.rules >>>>>")

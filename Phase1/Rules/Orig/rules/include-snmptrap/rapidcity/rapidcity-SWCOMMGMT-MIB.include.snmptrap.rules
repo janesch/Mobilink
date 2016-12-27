@@ -1,0 +1,132 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    rapidcity-SWCOMMGMT-MIB.include.snmptrap.rules 1.0
+#    2006/02/16 Rajyalakshmi Reddy 
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  SWCOMMGMT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2272.1.201.1.1": ### Nortel SWCOMMGMT - Notifications from SWCOMMGMT-MIB
+
+    log(DEBUG, "<<<<< Entering... rapidcity-SWCOMMGMT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Nortel-SWCOMMGMT-MIB"
+    @Class = ""
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### primaryPowerOn
+
+            $OS_EventId = "SNMPTRAP-rapidcity-SWCOMMGMT-MIB-primaryPowerOn"
+
+            @AlertGroup = "Primary Power Status"
+            @AlertKey = ""
+            @Summary = "Primary Power On"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### primaryPowerOff
+            
+            $OS_EventId = "SNMPTRAP-rapidcity-SWCOMMGMT-MIB-primaryPowerOff"
+
+            @AlertGroup = "Primary Power Status"
+            @AlertKey = ""
+            @Summary = "Primary Power Off"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### redundantPowerOn
+
+            $OS_EventId = "SNMPTRAP-rapidcity-SWCOMMGMT-MIB-redundantPowerOn"
+
+            @AlertGroup = "Redundant Power Status"
+            @AlertKey = ""
+            @Summary = "Redundant Power On"
+
+            $DEFAULT_Severity = 1 
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### redundantPowerOff
+           
+            $OS_EventId = "SNMPTRAP-rapidcity-SWCOMMGMT-MIB-redundantPowerOff"
+
+            @AlertGroup = "Redundant Power Status"
+            @AlertKey = ""
+            @Summary = "Redundant Power Off"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, rapidcity-SWCOMMGMT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, rapidcity-SWCOMMGMT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/rapidcity/rapidcity-SWCOMMGMT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/rapidcity/rapidcity-SWCOMMGMT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... rapidcity-SWCOMMGMT-MIB.include.snmptrap.rules >>>>>")

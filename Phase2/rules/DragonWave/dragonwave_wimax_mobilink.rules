@@ -1,0 +1,40 @@
+####################################################################################################
+# Alex Silva (09-06-2011) Mobilink specific rules fro Motorola Wimax Traps
+####################################################################################################
+	@Class = 204300
+	@Manager = @OmcEms
+	@Agent = @Manager + "@" + hostname()
+	@Information = $1 + ":::" + $2 + ":::" + $3 + ":::" + $4 + ":::" + $5 + ":::" + $6 + ":::" + $7 + ":::" + $8 + ":::" + $9
+
+	if(regmatch(@Summary, "Cleared"))
+	{
+		@Severity = 1
+		@Type = 2
+		@ExpireTime = 0
+	}
+
+	switch(@Severity)
+	{
+		case "5" | "4" | "3":
+			@ExpireTime = 0
+
+		default:
+	}
+
+	if(regmatch(@Summary, "V1Trap"))
+        {
+		@Summary = extract(@Summary, "^(.*)V1Trap")
+	}
+
+	[@Node,$linkName] = lookup(@Node, dragonwave_node_link)
+
+	if(!match(@Node,"UNKNOWN"))
+	{
+		@Summary = @Summary + " :: Link: " + $linkName
+	}
+	#@SiteCode = substr(@Node,0,7)
+	
+
+	@Identifier = @Node + @AlertKey + @AlertGroup + @Type + @Severity + @Class
+
+details($*)

@@ -1,0 +1,902 @@
+###############################################################################
+#
+#	mbalance-TEXTPASS-GEN-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for TekMedia GEN alarms
+#
+#       V0.1	20110704	Mihai Strava of Innovise
+###############################################################################
+
+case ".1.3.6.1.4.1.9679.1.1":  ### - gen (from TEXTPASS-GEN-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-GEN-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "NETBOSS1"
+    	@Domain = "CORE"
+    	@Vendor = "Tekelec"
+	@Manager = "MTTrapd-GEN"
+
+	@Class = "302020"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Agent = "TEXTPASS-GEN-MIB"
+	@AlertGroup = "GENTrap"
+
+	$OS_EventId = "NET_TEK_GEN_001"
+
+	[$node] =  lookup($IPaddress, mbalance-TEXTPASS-node)
+	@Node = $node
+	@NodeAlias = $node
+
+	switch($specific-trap) {
+		case "1": ### - memoryExhausted
+			#######################
+			#
+			# Memory of TextPass has exhausted
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+			
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $deviceType + " memoryExhausted" 
+			@Summary = "memoryExhausted: # Memory of TextPass has exhausted"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "2": ### - attemptToExceedLicensedThroughput
+			#######################
+			#
+			# The throughput in terms of transactions per unit of time as
+			# defined in the license for this TextPass device is not sufficient
+			# to handle the actual load.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " attemptToExceedLicensedThroughput"
+			@Summary = "attemptToExceedLicensedThroughput: # The throughput in terms of transactions per unit of time as defined in the license for this TextPass device is not sufficient to handle the actual load"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "3": ### - attemptToExceedNumOfLicensedTrunks
+			#######################
+			#
+			# The maximum number of trunks as defined in the license for this
+			# TextPass device does not allow the activation of any additional
+			# trunk.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " attemptToExceedNumOfLicensedTrunks"
+			@Summary = "attemptToExceedNumOfLicensedTrunks: # The maximum number of trunks as defined in the license for this TextPass device does not allow the activation of any additional trunk"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "4": ### - attemptToExceedNumOfLicensedLinks
+			#######################
+			#
+			# The maximum number of links as defined in the license for this
+			# TextPass device does not allow the activation of any additional
+			# link.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " attemptToExceedNumOfLicensedLinks"
+			@Summary = "attemptToExceedNumOfLicensedLinks: # The maximum number of links as defined in the license for this TextPass device does not allow the activation of any additional link"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "5": ### - attemptToUseNonLicensedFeature
+			#######################
+			#
+			# A non licensed feature is being configured. This is denied.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " attemptToUseNonLicensedFeature"
+			@Summary = "attemptToUseNonLicensedFeature: # A non licensed feature is being configured. This is denied"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "6": ### - deviceOperationalStateChanged
+			#######################
+			#
+			# Operational state of the TextPass device has changed.
+			#
+			# $1 = deviceOperationalState
+			#
+			#      Operational state of the TextPass device.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			
+			$deviceOperationalState = lookup($1,mbalance-TEXTPASS-GEN-MIB-deviceOperationalState)
+			$deviceType = $2
+
+			if (int($1)==0 || int($1)==1 || int($1)==3 || int($1)==4)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==2)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "deviceOperationalStateChanged "+$deviceType
+			@Summary = "deviceOperationalStateChanged: # Operational state of the TextPass device has changed: " + $deviceOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "7": ### - licenseExpired
+			#######################
+			#
+			# The validity period of the license has been expired.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " licenseExpired"
+			@Summary = "licenseExpired: # The validity period of the license has been expired"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "8": ### - licenseWillExpire
+			#######################
+			#
+			# The License will expire within the given hours.
+			#
+			# $1 = licHourTimer
+			#
+			#      Number of operational hours this license is still valid.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$licHourTimer = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 2
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $licHourTimer+$deviceType
+			@Summary = "licenseWillExpire: # The License will expire in " + $licHourTimer + " hours"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "9": ### - networkDiscoveryNodeAdded
+			#######################
+			#
+			# A TextPass node has been added to the TextPass solution
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 2
+			@Severity = 1
+			
+			@AlertKey = $deviceType+" networkDiscoveryNode"
+			@Summary = "networkDiscoveryNodeAdded: # A TextPass node has been added to the TextPass solution. Last error: " + $lastSnmpErrorString
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "10": ### - networkDiscoveryNodeLeft
+			#######################
+			#
+			# A TextPass node has left from the TextPass solution
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 3
+			
+			@AlertKey = $deviceType+" networkDiscoveryNode"
+			@Summary = "networkDiscoveryNodeLeft: # A TextPass node has left from the TextPass solution. Last error: " + $lastSnmpErrorString
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "11": ### - sctpCongestionStarted
+			#######################
+			#
+			# SCTP network layer is congested
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 3
+			
+			@AlertKey = "sctpCongestion "+$deviceType
+			@Summary = "sctpCongestionStarted: # SCTP network layer is congested. Last error: " + $lastSnmpErrorString
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "12": ### - sctpCongestionCeased
+			#######################
+			#
+			# SCTP network layer congestion has ended
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 2
+			@Severity = 1
+			
+			@AlertKey = "sctpCongestion "+$deviceType
+			@Summary = "sctpCongestionCeased: # SCTP network layer congestion has ended. Last error: " + $lastSnmpErrorString
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "13": ### - unableToAcceptConnection
+			#######################
+			#
+			# An error occurred while accepting a new connection. See the error
+			# sting for more information on the listener and the error
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $lastSnmpErrorString+$deviceType
+			@Summary = "unableToAcceptConnection: # An error occurred while accepting a new connection. See the error string for more information on the listener and the error"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "14": ### - applicationUnknown
+			#######################
+			#
+			# An unknown (not configured) application tried to login.
+			# See error string for more information.
+			# The application has been refused.
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 2
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $lastSnmpErrorString+$deviceType
+			@Summary = "applicationUnknown: # An unknown (not configured) application tried to login. See error string for more information. The application has been refused"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "15": ### - applicationNotMatch
+			#######################
+			#
+			# An application which is recognised by CLI uses a different login
+			# name.
+			# See error string for more information.
+			# The application has been refused.
+			#
+			# $1 = lastSnmpErrorString
+			#
+			#      Used for identifying the last error which occurred
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$lastSnmpErrorString = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 2
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $lastSnmpErrorString+$deviceType
+			@Summary = "applicationNotMatch: # An application which is recognised by CLI uses a different login name. See error string for more information. The application has been refused"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "16": ### - licGracePeriodStarted
+			#######################
+			#
+			# Some of the hardware serial numbers has changed (e.g. you
+			# swapped the SS7 card because of a defect). This means the grace
+			# period now started. During the grace period you will have time to
+			# request a new license with the new hardware serial numbers. The
+			# previous license will be active for 14 days. After this period
+			# the TextPass device will cease to work. While the grace period is
+			# active you will receive a licGracePeriodActive every hour.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " licGracePeriod"
+			@Summary = "licGracePeriodStarted for " + $deviceType
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "17": ### - licGracePeriodActive
+			#######################
+			#
+			# The Grace Period is active because a serial number changed (e.g.
+			# you swapped the SS7 card because of a defect). You will need to
+			# request a new license before the end of the grace period,
+			# otherwise the TextPass device will stop working. See the
+			# licGracePeriodTimer to see how much time is left. Request a new
+			# license with the new serial numbers. This trap will be repeated
+			# every hour, until the grace period has ended by activating a new
+			# license.
+			#
+			# $1 = licGracePeriodTimer
+			#
+			#      The total time left in the grace period in timeticks (1/100 th
+			#      of seconds).
+			#      In case the grace period has ended or is not active then the
+			#      value is 0.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$licGracePeriodTimer = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " licGracePeriod"
+			@Summary = "licGracePeriodActive for " + $deviceType + " for " + $licGracePeriodTimer + " timeticks (1/100 th of seconds)"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "18": ### - licGracePeriodPassed
+			#######################
+			#
+			# The Grace Period is over, the Textass device will cease working.
+			# A new license needs to be installed before starting the product
+			# again.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " licGracePeriod"
+			@Summary = "licGracePeriodPassed: # The Grace Period is over, the Textass device will cease working. A new license needs to be installed before starting the product again"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "19": ### - licGracePeriodRevoked
+			#######################
+			#
+			# A new license has been installed with the new serial numbers.
+			# The Grace Period has now ended and the TextPass device will
+			# continue to work without interruption.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 2
+			@Severity = 1
+			
+			@AlertKey = $deviceType + " licGracePeriod"
+			@Summary = "licGracePeriodRevoked: # A new license has been installed with the new serial numbers. # The Grace Period has now ended and the TextPass device will # continue to work without interruption."
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "20": ### - invalidProcessCount
+			#######################
+			#
+			# The process instances count for the configured processes is
+			# outside parameters.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " invalidProcessCount"
+			@Summary = "invalidProcessCount: # The process instances count for the configured processes is outside parameters"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "21": ### - invalidCpuLoad
+			#######################
+			#
+			# The CPU load is outside the configured parameters for this host
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " invalidCpuLoad"
+			@Summary = "invalidCpuLoad: # The CPU load is outside the configured parameters for this host"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "22": ### - invalidDiskUsage
+			#######################
+			#
+			# The disk(s) usage is outside the configured parameters for this
+			# host
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " invalidDiskUsage"
+			@Summary = "invalidDiskUsage: # The disk(s) usage is outside the configured parameters for this host"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "23": ### - lowAvailableMemory
+			#######################
+			#
+			# Indicates very little swap space left.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " lowAvailableMemory"
+			@Summary = "lowAvailableMemory: # Indicates very little swap space left"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "24": ### - ifOperationalStateChanged
+			#######################
+			#
+			# The network interface(s) operational state has changed.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 2
+			
+			@AlertKey = $deviceType + " ifOperationalStateChanged"
+			@Summary = "ifOperationalStateChanged: # The network interface(s) operational state has changed"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "25": ### - invalidProcessMemoryUsage
+			#######################
+			#
+			# Process(es) memory usage exceeds pre-defined limit for this
+			# host.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " invalidProcessMemoryUsage"
+			@Summary = "invalidProcessMemoryUsage: # Process(es) memory usage exceeds pre-defined limit for this host"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "26": ### - systemLogError
+			#######################
+			#
+			# An error was detected on the system log.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " systemLogError"
+			@Summary = "systemLogError: # An error was detected on the system log."
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "31": ### - watchdogStarted
+			#######################
+			#
+			# The watchdog process has been started.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 2
+			@Severity = 1
+			
+			@AlertKey = $deviceType + " watchdog"
+			@Summary = "watchdogStarted: # The watchdog process has been started."
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "32": ### - watchdogStopped
+			#######################
+			#
+			# The watchdog process has been stopped on user request or after
+			# shutdown of the application process.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			
+			@AlertKey = $deviceType + " watchdog"
+			@Summary = "watchdogStopped: # The watchdog process has been stopped on user request or after shutdown of the application process."
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "33": ### - applicationStartFailure
+			#######################
+			#
+			# Starting the application process by the watchdog failed.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			
+			@AlertKey = $deviceType + " applicationStart"
+			@Summary = "applicationStartFailure: # Starting the application process by the watchdog failed"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "34": ### - applicationStarted
+			#######################
+			#
+			# The application process has been started by the watchdog.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 2
+			@Severity = 1
+			
+			@AlertKey = $deviceType + " applicationStart"
+			@Summary = "applicationStarted: # The application process has been started by the watchdog"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "35": ### - applicationConfigFailure
+			#######################
+			#
+			# Configuration of the application process failed.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " applicationConfigFailure"
+			@Summary = "applicationConfigFailure: # Configuration of the application process failed"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "36": ### - applicationHeartBeatMissed
+			#######################
+			#
+			# The application process failed to send its heartbeat in time.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " applicationHeartBeatMissed"
+			@Summary = "applicationHeartBeatMissed: # The application process failed to send its heartbeat in time"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "37": ### - applicationExited
+			#######################
+			#
+			# The application process has exited on user request.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " applicationExited"
+			@Summary = "applicationExited: # The application process has exited on user request"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "38": ### - applicationTerminated
+			#######################
+			#
+			# The application process has been terminated by the watchdog.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " applicationTerminated"
+			@Summary = "applicationTerminated: # The application process has been terminated by the watchdog"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "39": ### - applicationShutdown
+			#######################
+			#
+			# The application process has been shutdown by the watchdog
+			# because of too many failures.
+			#
+			# $1 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$deviceType = $1
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+			
+			@AlertKey = $deviceType + " applicationShutdown"
+			@Summary = "applicationShutdown: # The application process has been shutdown by the watchdog because of too many failures"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-GEN-MIB.include.snmptrap.rules >>>>>")

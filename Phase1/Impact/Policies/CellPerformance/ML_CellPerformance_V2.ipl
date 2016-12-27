@@ -1,0 +1,153 @@
+/*    Cell Performance Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+     V 1.0    20100909    Chris Janes    Original
+     V 1.1      20100929    Chris Janes     Correlation by BSC added
+
+
+    EventReader Filter:
+        EventID = 'CellPer_001'
+
+*/
+
+Log("************ ML Cell Performance Start NEW***********");
+
+log("Return ImpactFlag = 5 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer);
+
+
+// Is there an existing Synthetic Event
+
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "BSCName = "+ @BSCName + " and Class = 200026 And Severity > 0";
+log("SyntheticEventFilter = " + SyntheticEventFilter  );
+
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEventFilter = Length(SyntheticEvent);
+//if so set LogTicket = 1
+log("NumSyntheticEventFilter = " + NumSyntheticEventFilter );
+    
+if (NumSyntheticEventFilter = 0)
+{
+    site_name = @Site;
+    SleepTime = 0;
+    alarm_id = 'Cell Performance';
+    MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+    //    20100927     End of Change
+    @Grade = SleepTime;
+    ReturnEvent(EventContainer);
+    
+    log (" TT has not created yet: Hibernate for: " +  sleep_time + " seconds ");
+
+
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    @HibernateFlag = 1;        
+    ReturnEvent(EventContainer);
+
+    Action_key = 'CellPerformance' + @ServerSerial + @ServerName;
+    Hibernate(Action_key, "Sleeping", SleepTime);
+
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    @HibernateFlag = 2;        
+    ReturnEvent(EventContainer);
+
+    // Is the event still there
+
+    ExistingCellPerDataType = "OS_Status";
+    ExistingCellPerFilter = "ServerSerial = "+ @ServerSerial + " and ServerName = '" + @ServerName + "' And Severity > 0";
+    log("ExistingCellPerFilter = " + ExistingCellPerFilter  );
+
+    ExistingCellPer = GetByFilter(ExistingCellPerDataType, ExistingCellPerFilter,False);
+    NumExistingCellPer = Length(ExistingCellPer);
+    //if so set LogTicket = 1
+    log("NumExistingCellPer = " + NumExistingCellPer );
+    
+    if (NumExistingCellPer == 0)
+    {
+        // Event no longer Exists
+        Exit();
+    }
+    else
+    {
+        // Is there an existing Synthetic Event?
+
+        SyntheticEventDataType = "OS_Status";
+        SyntheticEventFilter = "BSCName = "+ @BSCName + " and Class = 200026 And Severity > 0";
+        log("SyntheticEventFilter = " + SyntheticEventFilter  );
+
+        SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+        NumSyntheticEventFilter = Length(SyntheticEvent);
+        //if so set LogTicket = 1
+        log("NumSyntheticEventFilter = " + NumSyntheticEventFilter );
+
+        if (NumSyntheticEventFilterOutput == 0)
+        {
+            // Create Synthetic Event
+                Log("Create New Event");
+                NewEvent = NewEvent(DefaultEventReader);
+                NewEvent.EventReaderName = "DefaultEventReader";
+                NewEvent.EventId = 'CellPer_001';
+                NewEvent.ImpactFlag = 2;
+                NewEvent.Domain=EventContainer.Domain;
+                NewEvent.Site=EventContainer.Site;
+                NewEvent.NePriority=EventContainer.NePriority;
+                NewEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+                NewEvent.OmcEms='Impact';
+                NewEvent.Region=EventContainer.Region;
+                NewEvent.ManCity=EventContainer.ManCity;
+                NewEvent.CovCity=EventContainer.CovCity;
+                NewEvent.Agent = "Netcool Impact";
+                NewEvent.AlertGroup = 'Cell Performance';
+                NewEvent.AlertKey = EventContainer.BSCName ;
+                NewEvent.EventType = EventContainer.EventType ;
+                NewEvent.Network= EventContainer.Network;
+                NewEvent.Identifier= "CellPer" + @EventType  + @BSCName + @Node ;
+                NewEvent.Summary= "Cell Performance Alarm Handling for " + @BSCName + " ";
+                NewEvent.Severity= 4;
+                NewEvent.Type= 1;
+                NewEvent.Tally= 1;
+                NewEvent.HibernateFlag = 99;
+                NewEvent.Node= EventContainer.Node;
+                NewEvent.NodeAlias= EventContainer.NodeAlias;
+                NewEvent.SyntheticServerName = "";
+                NewEvent.SyntheticServerSerial = 0;
+                NewEvent.FirstOccurrence = NowTime ;
+                NewEvent.LastOccurrence = NowTime ;
+                NewEvent.LogTicket = 1;
+                NewEvent.Class = 200026;
+                AddDataItem('Status', NewEvent);
+                Log("New Event Created ")
+        }
+    }
+
+}
+
+//Update Source Event
+EventContainer.SyntheticServerName = Synthetic_Event[0].ServerName;        
+EventContainer.SyntheticServerSerial = Synthetic_Event[0].ServerSerial;        
+ReturnEvent(EventContainer);
+
+
+
+//Update Synthetic Event's Journal
+EventTime = localtime(@FirstOccurrence , "dd/MM/yy HH:mm:ss");
+if (@Type == 2)
+{
+    TypeText = 'Resolution';
+}
+else
+{
+    TypeText = 'Problem';
+}
+JournalInsert = TypeText + " Event Raised Node: " + @Node + " EventType: " + @AlertGroup + " EventTime: " + EventTime + " Event Text: " + @Summary;        
+MobiLib.ParentJournalInsert(SyntheticEvent[0].ServerName, SyntheticEvent[0].ServerSerial, JournalInsert);
+
+
+log("Return ImpactFlag = 6 to indicate policy has completed");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer); 

@@ -1,0 +1,328 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-MIMSTP-MIB.include.snmptrap.rules 6.0
+#    2008/03/10 Anchala Bansal
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-MIMSTP-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.3.46.1.3": ### Juniper Multiple Spanning Tree Protocol - Notifications from JUNIPER-MIMSTP-MIB 
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-MIMSTP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Multiple Spanning Tree Protocol"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxMIMstGenTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstGenTrapType 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstGenTrapType = lookup($2, jnxMIMstGenTrapType) + " ( " + $2 + " )"
+            $jnxMIDot1sJuniperMstContextId = extract($OID1, "\.([0-9]+)$")
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstGenTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIDot1sJuniperMstEntry." + $jnxMIDot1sJuniperMstContextId
+            switch($2)
+            {
+                case "0": ### none
+                    $SEV_KEY = $OS_EventId + "_none"
+                    @Summary = "None of the General Event Occurs"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "1": ### up
+                    $SEV_KEY = $OS_EventId + "_up"
+                    @Summary = "Protocol Up Event Occurs"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### down
+                    $SEV_KEY = $OS_EventId + "_down"
+                    @Summary = "Protocol Down Event Occurs"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Unknown Event Occurs"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxMIMstBrgAddress,$jnxMIMstGenTrapType,$jnxMIDot1sJuniperMstContextId)
+
+        case "2": ### jnxMIMstErrTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstGlobalErrTrapType 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstGlobalErrTrapType = lookup($2, jnxMIMstGlobalErrTrapType) + " ( " + $2 + " )"
+            $jnxMIDot1sJuniperMstContextId = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstErrTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIDot1sJuniperMstEntry." + $jnxMIDot1sJuniperMstContextId
+            switch($2)
+            {
+                case "0": ### none
+                    $SEV_KEY = $OS_EventId + "_none"
+                    @Summary = "None of the Error Event Occurs"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 13
+                    $DEFAULT_ExpireTime = 1800
+                case "1": ### memfail
+                    $SEV_KEY = $OS_EventId + "_memfail"
+                    @Summary = "Memory Allocation Failure Occurs"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### bufffail
+                    $SEV_KEY = $OS_EventId + "_bufffail"
+                    @Summary = "Buffer Allocation Failure Occurs"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Unknown Error Event Occurs"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxMIMstBrgAddress,$jnxMIMstGlobalErrTrapType,$jnxMIDot1sJuniperMstContextId)
+
+        case "3": ### jnxMIMstNewRootTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstOldDesignatedRoot 
+            # $3 = jnxMIMstMstiBridgeRegionalRoot 
+            # $4 = jnxMIMstMstiInstanceIndex 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstOldDesignatedRoot = $2
+            $jnxMIMstMstiBridgeRegionalRoot = $3
+            $jnxMIMstMstiInstanceIndex = $4
+            $jnxMIDot1sJuniperMstContextId = extract($OID4, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstNewRootTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIMstMstiBridgeEntry." + $jnxMIDot1sJuniperMstContextId + "." + $4 
+            @Summary = "New Root Bridge Selected in Topology"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxMIMstBrgAddress,$jnxMIMstOldDesignatedRoot,$jnxMIMstMstiBridgeRegionalRoot,$jnxMIMstMstiInstanceIndex,$jnxMIDot1sJuniperMstContextId)
+
+        case "4": ### jnxMIMstTopologyChgTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstMstiInstanceIndex 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstMstiInstanceIndex = $2
+            $jnxMIDot1sJuniperMstContextId = extract($OID2, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstTopologyChgTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIMstMstiBridgeEntry." + $jnxMIDot1sJuniperMstContextId + "." + $2
+            @Summary = "Change in Topology Detected"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxMIMstBrgAddress,$jnxMIMstMstiInstanceIndex,$jnxMIDot1sJuniperMstContextId)
+
+        case "5": ### jnxMIMstProtocolMigrationTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstPortTrapIndex 
+            # $3 = jnxMIMstForceProtocolVersion 
+            # $4 = jnxMIMstPortMigrationType 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstPortTrapIndex = $2
+            $jnxMIMstForceProtocolVersion = lookup($3, jnxMIMstForceProtocolVersion) + " ( " + $3 + " )"
+            $jnxMIMstPortMigrationType = lookup($4, jnxMIMstPortMigrationType)
+            $jnxMIDot1sJuniperMstContextId = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstProtocolMigrationTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIDot1sJuniperMstEntry." + $jnxMIDot1sJuniperMstContextId + "," + "jnxMIMstPortTrapNotificationEntry." + $2
+            @Summary = "Port Protocol Migration of Type " + $jnxMIMstPortMigrationType + "Happens in Port"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $jnxMIMstPortMigrationType = $jnxMIMstPortMigrationType + " ( " + $4 + " )" 
+            details($jnxMIMstBrgAddress,$jnxMIMstPortTrapIndex,$jnxMIMstForceProtocolVersion,$jnxMIMstPortMigrationType,$jnxMIDot1sJuniperMstContextId)
+
+        case "6": ### jnxMIMstInvalidBpduRxdTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstPortTrapIndex 
+            # $3 = jnxMIMstPktErrType 
+            # $4 = jnxMIMstPktErrVal 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstPortTrapIndex = $2
+            $jnxMIMstPktErrType = lookup($3, jnxMIMstPktErrType)
+            $jnxMIMstPktErrVal = $4
+            $jnxMIDot1sJuniperMstContextId = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstInvalidBpduRxdTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIDot1sJuniperMstEntry." + $jnxMIDot1sJuniperMstContextId + "," + "jnxMIMstPortTrapNotificationEntry." + $2
+            @Summary = "Invalid Packet of Type: " + $jnxMIMstPktErrType + " Received on Port"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $jnxMIMstPktErrType = lookup($3, jnxMIMstPktErrType) + " ( " + $3 + " )"
+            details($jnxMIMstBrgAddress,$jnxMIMstPortTrapIndex,$jnxMIMstPktErrType,$jnxMIMstPktErrVal,$jnxMIDot1sJuniperMstContextId)
+
+        case "7": ### jnxMIMstRegionConfigChangeTrap
+
+            ##########
+            # $1 = jnxMIMstBrgAddress 
+            # $2 = jnxMIMstMstiConfigIdSel 
+            # $3 = jnxMIMstMstiRegionName 
+            # $4 = jnxMIMstMstiRegionVersion 
+            # $5 = jnxMIMstMstiConfigDigest 
+            ##########
+
+            $jnxMIMstBrgAddress = $1
+            $jnxMIMstMstiConfigIdSel = $2
+            $jnxMIMstMstiRegionName = $3
+            $jnxMIMstMstiRegionVersion = $4
+            $jnxMIMstMstiConfigDigest = $5
+            $jnxMIDot1sJuniperMstContextId = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIMSTP-MIB-jnxMIMstRegionConfigChangeTrap"
+
+            @AlertGroup = "Multiple Spanning Tree Protocol Status"
+            @AlertKey = "jnxMIDot1sJuniperMstEntry." + $jnxMIDot1sJuniperMstContextId
+            @Summary = "Configuration Identifier of MST Region Changes"
+
+            $DEFAULT_Severity = 2 
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($jnxMIMstBrgAddress,$jnxMIMstMstiConfigIdSel,$jnxMIMstMstiRegionName,$jnxMIMstMstiRegionVersion,$jnxMIMstMstiConfigDigest)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-MIMSTP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-MIMSTP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-MIMSTP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-MIMSTP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-MIMSTP-MIB.include.snmptrap.rules >>>>>")

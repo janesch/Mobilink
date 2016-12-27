@@ -1,0 +1,84 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    IETF-MPLS-LDP-STD-MIB.adv.include.snmptrap.rules 1.0
+#    2007/05/08 Alka Girdhar
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-MPLS-LDP-STD-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-MPLS-LDP-STD-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### mplsLdpInitSessionThresholdExceeded
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsLdpInitSessionThresholdExceeded"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsLdpEntityEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### mplsLdpPathVectorLimitMismatch
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsLdpPathVectorLimitMismatch"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsLdpSessionEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex + "." + $mplsLdpPeerLdpId
+        $OS_LocalRootObj = "mplsLdpEntityEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### mplsLdpSessionUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsLdpSessionUp"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj =  "mplsLdpSessionEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex + "." + $mplsLdpPeerLdpId
+        $OS_LocalRootObj = "mplsLdpEntityEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "4": ### mplsLdpSessionDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsLdpSessionDown"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsLdpSessionEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex + "." + $mplsLdpPeerLdpId 
+        $OS_LocalRootObj = "mplsLdpEntityEntry." + $mplsLdpEntityLdpId + "." + $mplsLdpEntityIndex
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-MPLS-LDP-STD-MIB.adv.include.snmptrap.rules >>>>>")

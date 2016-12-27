@@ -1,0 +1,153 @@
+# ----------------------------------------------------------------
+# 
+#       Licensed Materials - Property of IBM
+#
+#       5724-P09
+#
+#       (C) Copyright IBM Corp. 1994 - 2006, 2007. All Rights Reserved
+#
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+# 	Ident: $Id$
+# 
+# ------------------------------------------------------------------
+#######################################################################
+#	This rulesfile has been developed in accordance to the IBM Netcool 
+#	Rules Files Best Practices to perform the following functionality
+#
+#	1. De-duplicate events
+#	2. Generic-Clear  to correlate Problems/Resolutions
+#	3. Readable alarm summaries
+#######################################################################
+# Available elements:
+#	$ClassName - Class name of the TEC event
+#	$EventSeqNo - Event sequence number of this event
+#	All other elements are dynamically created, based on the name/value
+#	pairs in the event.
+#######################################################################
+
+			
+@Manager = %Manager +" probe on " + hostname()
+@AlertGroup = $ClassName
+@Class = 6601
+@Agent = "ITM" 
+#@Agent = $source
+@Type = 1
+@Grade = 1
+
+if(exists($msg))
+{
+    if(regmatch($msg, "^'.*'$"))
+    {
+       $msg = extract($msg, "^'(.*)'$")
+    }
+}
+
+if(exists($date))
+{
+    if(regmatch($date, "^'.*'$"))
+    {
+       $date = extract($date, "^'(.*)'$")
+    }
+}
+
+if(exists($hostname))
+{
+    @Identifier = $hostname
+}
+
+if(exists($source))
+{
+    @AlertKey = $source
+    @Identifier = @Identifier + ":" + $source
+}
+
+if(exists($sub_source))
+{
+    @AlertKey = @AlertKey + ":" + $sub_source
+    @Identifier = @Identifier + ":" + $sub_source
+}
+
+if(exists($sub_origin))
+{
+    @AlertKey = @AlertKey + ":" + $sub_origin 
+    @Identifier = @Identifier + ":" + $sub_origin
+}
+
+if( exists( $severity ) )
+{
+    switch ( $severity )
+    {
+        case "FATAL" :
+            @Severity = 5
+	case "60":
+            @Severity = 5
+	case "CRITICAL":
+            @Severity = 5
+	case "50":
+            @Severity = 5
+	case "MINOR":
+	    @Severity = 3
+        case "40":
+            @Severity = 3
+	case "WARNING":
+            @Severity = 2
+	case "30":
+            @Severity = 2
+	default:
+            @Severity = 1
+     }
+}
+
+if(exists($origin))
+{
+    @Node = $hostname 
+    #@Node = $origin
+    @NodeAlias = $origin
+}
+
+@Identifier = @Identifier + ":" + $ClassName	
+
+
+if(exists ($server_path))
+{
+    $num_servers = split($server_path, servers, ",")
+    $num_detail = split(servers[$num_servers], server_detail, "'")
+    $num_info = split(server_detail[int($num_detail)-1], server_info, " ")
+    @TECServerHandle=server_info[2]
+    @TECDateReception = server_info[3]
+    @TECEventHandle=server_info[4]
+}
+
+@Summary = $msg
+@TECHostname = $hostname
+@TECFQHostname = $fqhostname
+@TECDate = $date
+@TECRepeatCount = $repeat_count
+@LastOccurrence = getdate
+@FirstOccurrence = getdate
+@TECStatus = $status
+
+
+#
+# Handle TEC event status
+#
+
+switch ($status)
+{
+    CASE "CLOSED":
+        @Type = 2
+        @Severity = 0
+    CASE "30":
+        @Type = 2
+        @Severity = 0
+    CASE "ACK":
+	@Acknowledged = 1
+    CASE "20":
+	@Acknowledged = 1
+    default:
+}
+
+

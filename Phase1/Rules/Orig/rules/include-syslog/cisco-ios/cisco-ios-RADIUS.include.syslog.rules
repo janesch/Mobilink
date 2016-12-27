@@ -1,0 +1,122 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-RADIUS.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "RADIUS": ### Remote Access Dial-In User Service (RADIUS) facility
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-RADIUS.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ALLDEADSERVER":
+        
+            ##########
+            # All RADIUS servers in the server group were found to be
+            # unresponsive after the RADIUS server request, with the ID
+            # that is used by the RADIUS server protocol, was
+            # retransmitted and timed out. This message appears only if
+            # the radius-server deadtime command has been entered to
+            # cause unavailable servers to be immediately skipped.
+            #
+            # %RADIUS-3-ALLDEADSERVER: Group [chars]: No active radius servers
+            # found. Id [dec].
+            ##########
+            
+            @AlertGroup = "RADIUS-Server Group Status"
+            if(regmatch($Message, "Group"))
+            {
+                @AlertKey = "Server Group: " + extract($Message, "Group (.*): No ")
+            }
+            else
+            {
+                @AlertKey = "Server Group: NULL"
+            }
+        
+        case "NOSERV":
+            
+            ##########
+            # The specified server is not on the master list. If it
+            # remains undefined, unexpected results may occur.
+            #
+            # %RADIUS-4-NOSERV : Warning: Server
+            # [IP_address]:[dec],[dec] is not defined.
+            ##########
+            
+            @AlertKey = "Server: " + extract($Message, " Server (.*) is not ")
+        
+        case "NOSERVERS":
+            
+            ##########
+            # RADIUS is attempting to send a request to a host, but no
+            # hosts are configured.
+            #
+            # %RADIUS-3-NOSERVERS : No Radius hosts configured.
+            ##########
+            
+            @AlertKey = ""
+        
+        case "SERVERALIVE":
+            
+            ##########
+            # A RADIUS group server in which all the servers were
+            # previously found dead has started responding again. This
+            # message follows the %RADIUS-3-ALLDEADSERVER command and
+            # shows that a server has become available after previously
+            # being unavailable.
+            #
+            # %RADIUS-6-SERVERALIVE: Group [chars]: Radius server
+            # [IP_address]:[dec],[dec] is responding again (previously
+            # dead).
+            ##########
+            
+            @AlertGroup = "RADIUS-Server Group Status"
+            if(regmatch($Message, "Group"))
+            {
+                @AlertKey = "Server Group: " + extract($Message, " Group (.*): Radius ")
+            }
+            else
+            {
+                @AlertKey = "Server Group: NULL"
+            }
+            @Severity = 1
+            @Type = 2
+        
+        case "SERVREF":
+            
+            ##########
+            # The server that is being removed is still referenced by a
+            # server group.
+            #
+            # %RADIUS-4-SERVREF : Warning: Server
+            # [IP_address]:[dec],[dec] is still referenced by server
+            # group.
+            ##########
+            
+            @AlertKey = "Server: " + extract($Message, " Server (.*) is still ")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-RADIUS.include.syslog.rules >>>>>")

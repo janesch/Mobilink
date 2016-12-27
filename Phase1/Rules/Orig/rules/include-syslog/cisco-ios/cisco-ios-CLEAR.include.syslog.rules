@@ -1,0 +1,82 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CLEAR.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CLEAR": ### Clear Facility
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-CLEAR.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "COUNTERS":
+    
+            ##########
+            # The counters have been cleared on the interface or interfaces.
+            #
+            # %CLEAR-5-COUNTERS: Clear counter on [chars] [chars] by [chars]
+            ##########
+    
+            if(regmatch($Message, " interface "))
+            {
+                $MOI_Local = extract($Message, "interface (.*) by")
+                $MOIType_Local = "interface"
+                include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+                
+                @AlertKey = "Interface: " + $MOI_Local
+            }
+            else
+            {
+                @AlertKey = "Interface(s): " + extract($Message, "on (.*) by")
+            }
+    
+        case "EXT_COUNT":
+    
+            ##########
+            # The extended counters have been cleared on the interface or
+            # interfaces.
+            #
+            # %CLEAR-5-EXT_COUNT: Clear extended [chars] counters on [chars] by
+            # [chars]
+            ##########
+    
+            if(regmatch($Message, " interface "))
+            {
+                $MOI_Local = extract($Message, "interface (.*) by")
+                $MOIType_Local = "interface"
+                include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+                
+                @AlertKey = "Interface: " + $MOI_Local
+            }
+            else
+            {
+                @AlertKey = "Interface(s): " + extract($Message, "on (.*) by")
+            }
+    
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CLEAR.include.syslog.rules >>>>>")

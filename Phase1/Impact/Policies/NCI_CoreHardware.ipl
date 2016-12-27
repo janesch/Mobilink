@@ -1,0 +1,176 @@
+////////////////////////////////////////////////
+//
+//	CoreHardware.ipl
+//
+//	Impact policy for Mobilink - Core Hardware Alarms
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100524	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+// Find the SubGroup of Core Hardware
+//	GenSet		200006
+//	LowVoltage	200007
+//	Wadpa		200008
+//	Trunk		200009
+//	Msoft		200010
+
+// For Testing using genSet
+
+SubGroupClass = 200006;
+
+//Set Default Sleeptime
+Default_SleepTime = 60;
+Assoc_NE = @Node;
+// Note there is a requirement for Enrichment - this is being handled by Policy StdEnrich
+
+// is there an exosting Synthetic Event/Ticket
+
+DataType = "Status";		// this needs to be setup
+Filter = "Class = " + SubGroupClass + "";		// this needs to be setup
+CountOnly = False;
+Existing_Event= GetByFilter(DataType, Filter, CountOnly);
+Num_Existing_Event= Num;
+
+
+if (Num_Existing_Event> 0)
+{
+	// Update Existing Ticket
+	log("TT Exists");
+	log("ServerName = " + Existing_Event[0].ServerName );
+	log("ServerSerial = " + Existing_Event[0].ServerSerial );
+	//Update Child Event with Parent Details
+	if(EventContainer.ParentSerial == 0)
+	{
+		EventContainer.ParentName = Existing_Event[0].ServerName ;
+		EventContainer.ParentSerial = Existing_Event[0].ServerSerial ;
+		ReturnEvent(EventContainer);
+	}
+
+}
+elseif(@ImpactFlag <> 0)
+{
+	// Do Nothing as Impact flag is set
+	//log("Impact Flag is SET");
+}
+elseif(@Agent == 'Impact')
+{
+	EventContainer.ImpactFlag = 3;
+	ReturnEvent(EventContainer);
+}
+else
+{
+	// Get Sleep Time
+	DataType = "CMDB_SleepTime";		// this needs to be setup
+	Filter = "Node = '" + @Node + "'";		// this needs to be setup
+	CountOnly = False;
+	CMDB_SleepTime = GetByFilter(DataType, Filter, CountOnly);
+	Num_CMDB__SleepTime = Num;
+	if(Num_CMDB_SleepTime == 0)
+	{
+		//No record for this so set default Time 
+		SleepTime = Default_SleepTime ;
+	}
+	else
+	{
+		SleepTime = CMDB_SleepTime[0].SleepTime;
+		if (SleepTime == 0)
+		{
+			SleepTime = Default_SleepTime ;
+		}
+	}
+	EventContainer.ImpactFlag = 1;
+	ReturnEvent(EventContainer);
+	ActionKey = "CoreHardware" + @ServerSerial + @ServerName;
+	Log("Going To Sleep "  + ActionKey + " for " + SleepTime + " Sec");
+	Hibernate(ActionKey , wait, SleepTime);
+
+	EventContainer.ImpactFlag = 2;
+	ReturnEvent(EventContainer);
+	Log ("Wake Up " + ActionKey );
+	RemoveHibernation(ActionKey);	
+
+	// Does the event still exist?
+	DataType = "Status";		// this needs to be setup
+	Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+	CountOnly = False;
+	Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+	Num_Existing_Event = Num;
+
+	if (Num_Existing_Event = 0)
+	{
+		// Event nolonger existd
+		Log("Event No Longer Exists");
+	}
+	else
+	{
+		//Does the Synthetic Event Exist?
+//		Log("Event DOES Exists");
+		DataType = "Status";		// this needs to be setup
+		Filter = "Class = " + SubGroupClass  + "and AlertGroup = '" + Assoc_NE + "'";		// this needs to be setup
+		NowTime = GetDate();
+		CountOnly = False;
+		Existing_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+		Num_Existing_Synthetic_Event = Num;
+
+		if(Num_Existing_Synthetic_Event == 0)
+		{
+			// Create New Synthetic Event
+			Log("Create New Event");
+			NewEvent = NewEvent(DefaultEventReader);
+			NewEvent.EventReaderName = "DefaultEventReader";
+			NewEvent.Domain=EventContainer.Domain;
+			NewEvent.Region=EventContainer.Region;
+			NewEvent.ManCity=EventContainer.ManCity;
+			NewEvent.CovCity=EventContainer.CovCity;
+			NewEvent.Agent = "Impact";
+			NewEvent.MaximoStatus= 1;
+			NewEvent.AlertGroup = Assoc_NE;
+			NewEvent.AlertKey = SubGroupClass ;
+			NewEvent.Identifier= "CoreHardware 20100521" + Assoc_NE + SubGroupClass ;
+			NewEvent.Summary= "Core Hardware Alarm Handling for " + Assco_NE ;
+			NewEvent.Severity= 5;
+			NewEvent.Type= 1;
+			NewEvent.Tally= 1;
+			NewEvent.Node= "Impact";
+			NewEvent.ParentName = "";
+			NewEvent.ParentSerial = 0;
+			NewEvent.FirstOccurrence = NowTime ;
+			NewEvent.LastOccurrence = NowTime ;
+			NewEvent.Class = SubGroupClass ;
+			AddDataItem('Status', NewEvent);
+
+
+
+			// Get Synthetic Event Data
+			DataType = "Status";		// this needs to be setup
+			Filter = "Class = " + SubGroupClass  + "and AlertGroup = '" + Assoc_NE + "'";		// this needs to be setup
+			NowTime = GetDate();
+			CountOnly = False;
+			New_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+			Num_New_Synthetic_Event = Num;
+
+			// Get latest version of the child Event
+			DataType = "Status";		// this needs to be setup
+			Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+			CountOnly = False;
+			Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+			Num_Existing_Event = Num;
+Log("ParentJournalInsert");
+			MobiLib.ParentJournalInsert(New_Synthetic_Event[0].ServerName, New_Synthetic_Event[0].ServerSerial, "Parent Journal Insert");
+
+			Existing_Event[0].ParentName = New_Synthetic_Event[0].ServerName ;
+			Existing_Event[0].ParentSerial = New_Synthetic_Event[0].ServerSerial ;
+			ReturnEvent(Existing_Event);
+
+		}
+		else
+		{
+			//UPdatre TT
+			Existing_Synthetic_Event.Tally = Existing_Synthetic_Event.Tally + 1;
+			Existing_Synthetic_Event.LastOccurrence = NowTime ;
+			ReturnEvent(Existing_Synthetic_Event);
+		}
+	}
+}

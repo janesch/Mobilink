@@ -1,0 +1,67 @@
+/***************************************************************************
+This policy demonstrates how to do an SNMP SET operation for a PackedOid Data 
+Type. It uses the AddDataItem action module.
+
+HowToRun this policy
+--------------------
+1) Make sure the Data Source/Data Type have the correct authentication
+   information and Field/OID values.
+
+2) Make sure an SNMP agent on the proper host and proper portId is
+   running and one which has implemented the RFC1213.
+
+3) The SysInfo Data Type was already pre-imported as a part of the 
+   installation, so no need to worry about it.
+
+4) Then send a trigger to execute this policy.
+
+****************************************************************************/
+
+Type = "SysInfo";
+ObjectToCopy = NewObject();
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting PackedOidSetTest with Type = " + Type + " at " + StartTime + " ***");
+
+// If you set HostId, it will override value in datasource.
+//ObjectToCopy.HostId = @HostId;
+// If you set UserId, it will override value in datasource.
+/*ObjectToCopy.UserId = "netcool";  For snmpv3 related stuff */
+
+/* The fields for which SNMP SET to be done and their values */
+
+ObjectToCopy.SysLocation = "Dallas";
+ObjectToCopy.SysName = "my resource";
+AddDataItem(Type, ObjectToCopy);
+
+// Check our results by doing a get.
+GetByFilter(Type, "", CountOnly);
+
+if (OrgNode.ErrorString == "") {
+  /* Displaying the results of the successful GET operation */  
+  log("SysName = " + OrgNodes[0].SysName + " (Expected value is " + ObjectToCopy.SysName + ")");
+  log("SysLocation = " + OrgNodes[0].SysLocation + " (Expected value is " + ObjectToCopy.SysLocation + ")");
+} else {
+  log("**Error doing SNMP GET operation **");
+  log("Error is " + OrgNode.ErrorString);
+}
+
+//  Now set it to something else.
+ObjectToCopy.SysLocation = "Monterey";
+ObjectToCopy.SysName = "some guy";
+AddDataItem(Type, ObjectToCopy);
+
+// Check our results by doing a get.
+GetByFilter(Type, "", CountOnly);
+
+if (OrgNode.ErrorString == "") {
+  /* Displaying the results of the successful GET operation */  
+  log("SysName = " + OrgNodes[0].SysName + " (Expected value is " + ObjectToCopy.SysName + ")");
+  log("SysLocation = " + OrgNodes[0].SysLocation + " (Expected value is " + ObjectToCopy.SysLocation + ")");
+} else {
+  log("**Error doing SNMP GET operation **");
+  log("Error is " + OrgNode.ErrorString);
+}
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with PackedOidSetTest at " + EndTime + " ***");

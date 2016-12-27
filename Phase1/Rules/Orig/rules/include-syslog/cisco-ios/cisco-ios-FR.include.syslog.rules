@@ -1,0 +1,213 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-FR.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "FR": ### Frame Relay
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-FR.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BQ_DEQ_ERR":
+            
+            ##########
+            # An invalid packet on the Frame Relay broadcast queue was dropped.
+            #
+            # %FR-3-BQ_DEQ_ERR: fr_bq_proc: unknown packet on broadcast queue,
+            # packet dropped!
+            ##########
+            
+            @AlertKey = ""
+            
+        case "BQ_DEQ_PTR":
+            
+            ##########
+            # An invalid datagram start was received on the Frame Relay
+            # broadcast queue. The packet was dropped.
+            #
+            # %FR-3-BQ_DEQ_PTR: fr_br_proc: hdr-[hex] size-[dec] dlci-[hex]
+            # [hex] [hex]
+            ##########
+            
+            $MOI_Local = extract($Message, "dlci-(.*)$")
+            
+            @AlertKey = "DLCI: " + $MOI_Local
+            
+        case "BQ_ENQ_ERR":
+            
+            ##########
+            # A broadcast packet with an invalid datagram start in the
+            # fr_oqueue has been received. The packet was dropped.
+            #
+            # %FR-3-BQ_ENQ_ERR: fr_oqueue: Invalid datagramstart [hex] [hex],
+            # pak dropped
+            ##########
+            
+            @AlertKey = ""
+            
+        case "DLCICHANGE":
+            
+            ##########
+            # The state of the Frame Relay PVC specified by the DLCI has
+            # changed.
+            #
+            # %FR-5-DLCICHANGE: Interface [chars] - DLCI [dec] state changed to
+            # [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ii]nterface (.*) - DLCI")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", DLCI: " + extract($Message, "DLCI ([0-9]+) state")
+            $CLARIFIER = rtrim(extract($Message, "changed to (.*)$"))
+            switch($CLARIFIER)
+            {
+                case "ACTIVE":
+                    @Severity = 1
+                    @Type = 2
+                case "DELETED":
+                    @Severity = 2
+                    @Type = 1
+                case "DOWN":
+                    @Severity = 3
+                    @Type = 1
+                default:
+                    @Severity = 2
+                    @Type = 1
+            }
+        
+        case "DLCIDELETE":
+            
+            ##########
+            # An attempt was made to remove a PVC DLCI while it was still being
+            # used.
+            #
+            # %FR-4-DLCIDELETE: Interface [chars] - DLCI [dec] - PVC use count
+            # [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ii]nterface (.*) - DLCI")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", DLCI: " + extract($Message, "DLCI ([0-9]+) ")
+            
+        case "FRTSZEROCIR":
+            
+            ##########
+            # An attempt was made to configure a zero CIR. It should not be
+            # possible to configure a zero CIR; to do so would prevent data
+            # transmission on the VC.
+            #
+            # %FR-3-FRTSZEROCIR: FRTS: attempt to configure zero CIR
+            ##########
+            
+            @AlertKey = ""
+            
+        case "INCORRECT_INT":
+            
+            ##########
+            # The output subinterface specified in the packet is incorrect. The
+            # broadcast packet was dropped.
+            #
+            # %FR-3-INCORRECT_INT: Incorrect output (sub)interface, broadcast
+            # packet dropped!
+            ##########
+            
+            @AlertKey = ""
+            
+        case "MLPOFR_ERROR":
+            
+            ##########
+            # The configuration of MLPPP-over-Frame Relay on the Frame Relay
+            # PVC is either incorrect or incomplete.
+            #
+            # %FR-3-MLPOFR_ERROR: MLPoFR not configured properly on Link
+            # [chars] Bundle [chars]:[chars]
+            ##########
+            
+            @AlertKey = "Link: " + extract($Message, "Link (.*) Bundle") + ", Bundle: " + extract($Message, "Bundle (.*)$")
+            
+        case "NNISUBINTF":
+            
+            ##########
+            # An attempt was made to change the state of a subinterface on the
+            # Frame Relay NNI.
+            #
+            # %FR-4-NNISUBINTF: Subinterface not supported on Frame Relay NNI
+            ##########
+            
+            @AlertKey = ""
+            
+        case "NOMEMORY":
+            
+            ##########
+            # The requested operation could not be accomplished because of a
+            # low memory condition.
+            #
+            # %FR-3-NOMEMORY: No memory for [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "for (.*)$")
+            
+            @AlertKey = $MOI_Local
+            
+        case "NULL_PTR_DEREF":
+            
+            ##########
+            # A null pointer is being dereferenced.
+            #
+            # %FR-3-NULL_PTR_DEREF: Dereferencing NULL pointer [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "pointer (.*)$")
+            
+            @AlertKey = "Pointer: " + $MOI_Local
+            
+        case "SVC_SETUP":
+            
+            ##########
+            # The system detected an error during an attempt to set up a
+            # Frame-Relay SVC. There might have been an attempt to set up a SVC
+            # using a DLCI that is already in use.
+            #
+            # %FR-3-SVC_SETUP: [chars]: interface [chars]: DLCI [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "[Ii]nterface (.*):? DLCI")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", DLCI: " + extract($Message, "DLCI ([0-9]+)")
+            
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-FR.include.syslog.rules >>>>>")

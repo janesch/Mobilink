@@ -1,0 +1,212 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-DIST-DIRECTOR-MIB.include.snmptrap.rules 1.0
+#    2006/04/17 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DIST-DIRECTOR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.197.2": ### Cisco Distributed Director - Notifications from CISCO-DIST-DIRECTOR-MIB (20010314)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-DIST-DIRECTOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Distributed Director"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoDistDirEventServerUp
+
+            ##########
+            # $1 = cddServerPortStatus 
+            ##########
+
+            $cddServerPortStatus = lookup($1, cddServerPortStatus) + " ( " + $1 + " )"
+            $cddServerAddrType_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$") 
+            $cddServerAddrType = lookup($cddServerAddrType_Raw, InetAddressType) + " ( " + $cddServerAddrType_Raw + " )"
+            $cddServerAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+$")
+            $cddServerPortNum = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DIST-DIRECTOR-MIB-ciscoDistDirEventServerUp"
+            
+            @AlertGroup = "Distributed Director Status"
+            @AlertKey = "cddServerPortEntry." + $cddServerAddrType_Raw + "." + $cddServerAddr + "." + $cddServerPortNum
+            switch($1)
+            {
+                case "1": ### up 
+                    @Summary = "Distributed Director Service Available"
+
+                    $SEV_KEY = $OS_EventId + "_up"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### down
+                    @Summary = "Distributed Director Service Unavailable"
+
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### undetermined
+                    @Summary = "Distributed Director Service Status Unknown"
+
+                    $SEV_KEY = $OS_EventId + "_undetermined"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "Distributed Director Service Status Unknown "
+
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )" 
+ 
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager +  " " + $specific-trap + " " + $1
+
+            details($cddServerPortStatus,$cddServerAddrType,$cddServerAddr,$cddServerPortNum)
+
+        case "2": ### ciscoDistDirEventServerDown
+
+            ##########
+            # $1 = cddServerPortStatus 
+            ##########
+
+            $cddServerPortStatus = lookup($1, cddServerPortStatus) + " ( " + $1 + " )"
+            $cddServerAddrType_Raw = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $cddServerAddrType = lookup($cddServerAddrType_Raw, InetAddressType) + " ( " + $cddServerAddrType_Raw + " )"
+            $cddServerAddr = extract($OID1, "\.([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+$")
+            $cddServerPortNum = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DIST-DIRECTOR-MIB-ciscoDistDirEventServerDown"
+
+            @AlertGroup = "Distributed Director Status"
+            @AlertKey = "cddServerPortEntry." + $cddServerAddrType_Raw + "." + $cddServerAddr + "." + $cddServerPortNum
+            switch($1)
+            {
+                case "1": ### up
+                    @Summary = "Distributed Director Service Available"
+
+                    $SEV_KEY = $OS_EventId + "_up"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### down
+                    @Summary = "Distributed Director Service Unavailable"
+
+                    $SEV_KEY = $OS_EventId + "_down"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### undetermined
+                    @Summary = "Distributed Director Service Status Unknown"
+
+                    $SEV_KEY = $OS_EventId + "_undetermined"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "Distributed Director Service Status Unknown "
+
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+	    }
+
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager +  " " + $specific-trap + " " + $1
+
+            details($cddServerPortStatus,$cddServerAddrType,$cddServerAddr,$cddServerPortNum)
+
+
+        case "3": ### ciscoDistDirEventHitRateHigh
+
+            ##########
+            # $1 = cddGeneralQueryRate 
+            ##########
+
+            $cddGeneralQueryRate = $1    
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DIST-DIRECTOR-MIB-ciscoDistDirEventHitRateHigh"
+
+            @AlertGroup = "DNS/HTTP Queries/Requests Status" 
+            @AlertKey = ""
+            @Summary = "DNS/HTTP Queries/Requests Hit Rate High"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager +  " " + $specific-trap
+
+            details($cddGeneralQueryRate)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-DIST-DIRECTOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-DIST-DIRECTOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DIST-DIRECTOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DIST-DIRECTOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DIST-DIRECTOR-MIB.include.snmptrap.rules >>>>>")

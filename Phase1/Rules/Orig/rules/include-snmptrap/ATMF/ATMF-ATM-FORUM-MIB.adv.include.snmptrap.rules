@@ -1,0 +1,63 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    ATMF-ATM-FORUM-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ATM-FORUM-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... ATMF-ATM-FORUM-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### atmfVpcChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "atmfVpcChange"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "atmfVpcEntry." + $1 + "." + $2
+        $OS_LocalRootObj = "atmfPortEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### atmfVccChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "atmfVccChange"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "atmfVccEntry." + $1 + "." + $3 + "." + $2
+        $OS_LocalSecObj = "atmfVpcEntry." + $1 + "." + $3
+        $OS_LocalRootObj = "atmfPortEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... ATMF-ATM-FORUM-MIB.adv.include.snmptrap.rules >>>>>")

@@ -1,0 +1,260 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-SCSI-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-SCSI-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.95.2": ### Cisco SCSI - Notifications from CISCO-SCSI-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-SCSI-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-SCSI"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoScsiTgtDevStatusChanged
+
+            ##########
+            # $1 = ciscoScsiTgtDeviceStatus
+            ##########
+
+            $ciscoScsiTgtDeviceStatus = lookup($1, ciscoScsiTgtDeviceStatus) + " ( " + $1 + " )"
+            $ciscoScsiInstIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $ciscoScsiDeviceIndex = extract($OID1, "\.([0-9]+)$")
+            details($ciscoScsiTgtDeviceStatus,$ciscoScsiInstIndex,$ciscoScsiDeviceIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SCSI-MIB-ciscoScsiTgtDevStatusChanged"
+
+            @AlertGroup = "SCSI Device Status"
+            @AlertKey = "ciscoScsiTgtDevEntry." + $ciscoScsiInstIndex + "." + $ciscoScsiDeviceIndex
+            switch($1)
+            {
+                case "1": ### unknown
+                    @Summary = "SCSI Device Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### available
+                    @Summary = "SCSI Device Available"
+                    
+                    $SEV_KEY = $OS_EventId + "_available"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### broken
+                    @Summary = "SCSI Device Broken"
+                    
+                    $SEV_KEY = $OS_EventId + "_broken"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### readying
+                    @Summary = "SCSI Device Readying"
+                    
+                    $SEV_KEY = $OS_EventId + "_readying"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### abnormal
+                    @Summary = "SCSI Device Abnormal"
+                    
+                    $SEV_KEY = $OS_EventId + "_abnormal"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### nonAddrFailure
+                    @Summary = "SCSI Non-Addressable Device Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_nonAddrFailure"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### nonAddrFailReadying
+                    @Summary = "SCSI Non-Addressable Device Failure, Readying"
+                    
+                    $SEV_KEY = $OS_EventId + "_nonAddrFailReadying"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### nonAddrFailAbnormal
+                    @Summary = "SCSI Non-Addressable Device Failure, Abnormal"
+                    
+                    $SEV_KEY = $OS_EventId + "_nonAddrFailAbnormal"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "SCSI Device Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "2": ### ciscoScsiLuStatusChanged
+
+            ##########
+            # $1 = ciscoScsiLuStatus 
+            ##########
+
+            $ciscoScsiLuStatus = lookup($1, ciscoScsiLuStatus) + " ( " + $1 + " )"
+            $ciscoScsiInstIndex = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $ciscoScsiDeviceIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $ciscoScsiLuIndex = extract($OID1, "\.([0-9]+)$")
+            details($ciscoScsiLuStatus,$ciscoScsiInstIndex,$ciscoScsiDeviceIndex,$ciscoScsiLuIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SCSI-MIB-ciscoScsiLuStatusChanged"
+
+            @AlertGroup = "SCSI LUN Status"
+            @AlertKey = "ciscoScsiLuEntry." + $ciscoScsiInstIndex + "." + $ciscoScsiDeviceIndex + "." + $ciscoScsiLuIndex
+            switch($1)
+            {
+                case "1": ### unknown
+                    @Summary = "SCSI LUN Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### available
+                    @Summary = "SCSI LUN Available"
+                    
+                    $SEV_KEY = $OS_EventId + "_available"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### notAvailable
+                    @Summary = "SCSI LUN Not Available"
+                    
+                    $SEV_KEY = $OS_EventId + "_notAvailable"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### broken
+                    @Summary = "SCSI LUN Broken"
+                    
+                    $SEV_KEY = $OS_EventId + "_broken"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### readying
+                    @Summary = "SCSI LUN Readying"
+                    
+                    $SEV_KEY = $OS_EventId + "_readying"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### abnormal
+                    @Summary = "SCSI LUN Abnormal"
+                    
+                    $SEV_KEY = $OS_EventId + "_abnormal"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "SCSI LUN Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-SCSI-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-SCSI-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SCSI-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SCSI-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-SCSI-MIB.include.snmptrap.rules >>>>>")

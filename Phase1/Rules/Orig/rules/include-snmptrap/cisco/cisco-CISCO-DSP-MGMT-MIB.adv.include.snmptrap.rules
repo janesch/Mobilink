@@ -1,0 +1,62 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-DSP-MGMT-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DSP-MGMT-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-DSP-MGMT-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### cdspMIBCardStateNotification
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4011
+        $OS_X733SpecificProb = "cdspMIBCardStateNotification"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "cdspCardStatusEntry." + $entPhysicalIndex
+        $OS_LocalRootObj = "entPhysicalEntry." + $entPhysicalIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### cdspOperStateNotification
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4011
+        $OS_X733SpecificProb = "cdspOperStateNotification"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "CdspStatusEntry." + $entPhysicalIndex
+        $OS_LocalRootObj = "entPhysicalEntry." + $entPhysicalIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DSP-MGMT-MIB.adv.include.snmptrap.rules >>>>>")

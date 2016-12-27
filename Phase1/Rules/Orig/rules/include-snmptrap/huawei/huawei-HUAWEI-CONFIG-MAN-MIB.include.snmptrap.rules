@@ -1,0 +1,183 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-CONFIG-MAN-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  HUAWEI-CONFIG-MAN-MIB release V1.0
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  HUAWEI-CONFIG-MAN-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.6.10.2": ### Huawei Technologies - Notifications from HUAWEI-CONFIG-MAN-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-CONFIG-MAN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwCfgManEventlog
+
+            ##########
+            # $1 = hwCfgLogSrcCmd
+            # $2 = hwCfgLogSrcData
+            # $3 = hwCfgLogDesData
+            ##########
+
+            $hwCfgLogSrcCmd = lookup($1,hwCfgLogSrcCmd) 
+            $hwCfgLogSrcData = lookup($2,hwCfgLogSrcData)
+            $hwCfgLogDesData = lookup($3,hwCfgLogDesData)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-CONFIG-MAN-MIB-hwCfgManEventlog"
+
+            @AlertGroup = "Configuration Change"
+            @AlertKey = "Cmd: " + $hwCfgLogSrcCmd + ", Src: " + $hwCfgLogSrcData + ", Dest: " + $hwCfgLogDesData
+            @Summary = "System Configuration Change  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 900
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $hwCfgLogSrcCmd = $hwCfgLogSrcCmd + " ( " + $1 + " )"
+            $hwCfgLogSrcData = $hwCfgLogSrcData + " ( " + $2 + " )"
+            $hwCfgLogDesData = $hwCfgLogDesData + " ( " + $3 + " )"
+            details($hwCfgLogSrcCmd,
+                    $hwCfgLogSrcData,
+                    $hwCfgLogDesData)
+
+        case "2": ### hwCfgOperateCompletion
+
+            ##########
+            # $1 = hwCfgOperateType
+            # $2 = hwCfgOperateTime
+            # $3 = hwCfgOperateState
+            # $4 = hwCfgOperateEndTime
+            ##########
+
+            $hwCfgOperateType = lookup($1,hwCfgOperateType) 
+            $hwCfgOperateTime = $2
+            $hwCfgOperateState = lookup($3,hwCfgOperateState)
+            $hwCfgOperateEndTime = $4
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-CONFIG-MAN-MIB-hwCfgOperateCompletion"
+
+            @AlertGroup = "Configuration Operation Status"
+            @AlertKey = "Type: " + $hwCfgOperateType 
+
+            switch($3)
+            {
+            case "1":  ### In Progress
+                @Summary = "Config Operation in Progress  ( " + $hwCfgOperateType + " )"
+
+                $SEV_KEY = $OS_EventId + "_inProgress"
+                $DEFAULT_Severity = 2
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+            case "2":  ### Success
+                @Summary = "Config Operation Successfully Completed  ( " + $hwCfgOperateType + " )"
+
+                $SEV_KEY = $OS_EventId + "_success"
+                $DEFAULT_Severity = 1
+                $DEFAULT_Type = 2
+                $DEFAULT_ExpireTime = 0
+
+            case "3":   ### Failure
+                @Summary = "Config Operation Failed : " + $hwCfgOperateState + "  ( " + $hwCfgOperateType + " )"
+
+                $SEV_KEY = $OS_EventId + "_failure"
+                $DEFAULT_Severity = 3
+                $DEFAULT_Type = 1
+                $DEFAULT_ExpireTime = 0
+
+             default: ### Unknown
+                 @Summary = "Flash Operation Unknown"
+
+                 $SEV_KEY = $OS_EventId + "_unknown"
+                 $DEFAULT_Severity = 2
+                 $DEFAULT_Type = 1
+                 $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + $hwCfgOperateState
+
+            $hwCfgOperateType = $hwCfgOperateType + " ( " + $1 + " )"
+            $hwCfgOperateState = $hwCfgOperateState + " ( " + $3 + " )"
+            details($hwCfgOperateType,$hwCfgOperateTime,
+                    $hwCfgOperateState,$hwCfgOperateEndTime)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-CONFIG-MAN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-CONFIG-MAN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-CONFIG-MAN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-CONFIG-MAN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-CONFIG-MAN-MIB.include.snmptrap.rules >>>>>")

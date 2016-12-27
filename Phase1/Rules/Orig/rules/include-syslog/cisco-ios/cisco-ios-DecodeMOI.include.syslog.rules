@@ -1,0 +1,826 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-DecodeMOI.include.syslog.rules 1.1
+#    2005/03/08 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+#     - Modified for discrete handling of interface names for each interface
+#       type.  This more granular approach captures additional related
+#       conditions while also improving accuracy.
+#
+#     - Normalized various Cisco interface type indentifiers to improve the
+#       recognition of related conditions.
+#
+# 1.0 - Initial Release.
+#       
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-ios-DecodeMOI.include.syslog.rules >>>>>")
+
+switch($MOIType)
+{
+    case "card"|"slot":
+    
+        if(regmatch($MOI, "^[0-9]+$"))
+        {
+            $MOI_PriObj = "Slot: " + $MOI
+            $MOI_RootObj = $MOI_PriObj
+            $VAR_RelateRO2PO = 1
+            $VAR_RelateRO2SO = 0
+            $VAR_RelateSO2PO = 0
+        }
+        else
+        {
+            $MOI_PriObj = "Sub-Slot: " + $MOI
+            $MOI_RootObj = "Slot: " + extract($MOI, "^([0-9]+)")
+            $VAR_RelateRO2PO = 3
+            $VAR_RelateRO2SO = 0
+            $VAR_RelateSO2PO = 0
+        }
+            
+    case "controller":
+    
+        switch(extract($MOI, "^([A-Z][0-9]+) [0-9]+"))
+        {
+            case "E1":
+            
+                ##########
+                # Controller E1 <number> -- Cisco 4000 series
+                # Controller E1 <slot>/<port> -- Cisco 7200 series
+                # Controller E1 <slot>/<port-adapter>/<port> -- Cisco 7000
+                #   series and Cisco 7500 series
+                ##########
+                
+                if(regmatch($MOI, "^E1 [0-9]+$")) ### E1 <number>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^E1 [0-9]+/[0-9]+$")) ### E1 <slot>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^E1 ([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^E1 [0-9]+/[0-9]+/[0-9]+$")) ### E1 <slot>/<port-adapter>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^E1 ([0-9]+)/[0-9]+/[0-9]+$")
+                    $MOI_SecObj = "Port Adapter: " + extract($MOI, "^E1 ([0-9]+/[0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else
+                {
+                    $MOI_PriObj = $MOI
+                
+                    if(regmatch($MOI, "^E1 [0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^E1  ([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                        
+                        if(regmatch($MOI, "^E1 [0-9]+/[0-9/]+/[0-9]+$"))
+                        {
+                            $MOI_SecObj = "Port Adapter: " + extract($MOI, "^E1 ([0-9]+/[0-9/]+)/[0-9]+$")
+                            $VAR_RelateRO2SO = 3
+                            $VAR_RelateSO2PO = 3
+                        }
+                    }
+                }
+            
+            case "T1":
+            
+                ##########
+                # Controller T1 <number> -- Cisco 4000 series
+                # Controller T1 <slot>/<port> -- Cisco 7200 series and Cisco
+                #   7500 Series
+                # Controller T1 <slot>/<port-adapter>/<port> -- Cisco 7000
+                #   series and Cisco 7500 series
+                # Controller T1 <dial-shelf>/<slot>/<t3-port>:<t1-num> -- Cisco
+                #   AS5800 Access Servers
+                ##########
+                
+                if(regmatch($MOI, "^T1 [0-9]+$")) ### T1 <number>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^T1 [0-9]+/[0-9]+$")) ### T1 <slot>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^T1 ([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^T1 [0-9]+/[0-9]+/[0-9]+$")) ### T1 <slot>/<port-adapter>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^T1 ([0-9]+)/[0-9]+/[0-9]+$")
+                    $MOI_SecObj = "Port Adapter: " + extract($MOI, "^T1 ([0-9]+/[0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^T1 [0-9]+/[0-9]+/[0-9]+:[0-9]+$")) ### T1 <dial-shelf>/<slot>/<t3-port>:<t1-num>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^T1 ([0-9]+/[0-9]+)/[0-9]+:[0-9]+$")
+                    $MOI_SecObj = "T3 " + extract($MOI, "^T1 ([0-9]+/[0-9]+/[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else
+                {
+                    $MOI_PriObj = $MOI
+                
+                    if(regmatch($MOI, "^T1 [0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^T1 ([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                        
+                        if(regmatch($MOI, "^T1 [0-9]+/[0-9/]+/[0-9]+$"))
+                        {
+                            $MOI_SecObj = "Port Adapter: " + extract($MOI, "^T1 ([0-9]+/[0-9/]+)/[0-9]+$")
+                            $VAR_RelateRO2SO = 3
+                            $VAR_RelateSO2PO = 3
+                        }
+                    }
+                }
+            
+            case "T3":
+            
+                ##########
+                # Controller T3 <slot>/<port>
+                # Controller T3 <slot>/<port-adapter>/<port> -- Cisco 7500
+                #   Series Routers
+                # Controller T3 <slot>/<port-adapter>/<port>:<t1-channel> --
+                #   Cisco 7500 Series Routers
+                # Controller T3 <dial-shelf>/<slot>/<t3-port> -- Cisco AS5800
+                #   Access Servers
+                ##########
+                
+                if(regmatch($MOI, "^T3 [0-9]+$")) ### T3 <number>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^T3 [0-9]+/[0-9]+$")) ### T3 <slot>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^T3 ([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^T3 [0-9]+/[0-9]+/[0-9]+$")) ### T3 <slot>/<port-adapter>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^T3 ([0-9]+)/[0-9]+/[0-9]+$")
+                    $MOI_SecObj = "Port Adapter: " + extract($MOI, "^T3 ([0-9]+/[0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^T3 [0-9]+/[0-9]+/[0-9]+:[0-9]+$")) ### T3 <slot>/<port-adapter>/<port>:<t1-channel>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^T3 ([0-9]+)/[0-9]+/[0-9]+:[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(T3 [0-9]+/[0-9]+/[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else
+                {
+                    $MOI_PriObj = $MOI
+                
+                    if(regmatch($MOI, "^T3 [0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^T3  ([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                        
+                        if(regmatch($MOI, "^T3 [0-9]+/[0-9/]+/[0-9]+$"))
+                        {
+                            $MOI_SecObj = "Port Adapter: " + extract($MOI, "^T3 ([0-9]+/[0-9/]+)/[0-9]+$")
+                            $VAR_RelateRO2SO = 3
+                            $VAR_RelateSO2PO = 3
+                        }
+                    }
+                }
+            
+            default:
+            
+                $MOI_PriObj = $MOI
+                
+                if(regmatch($MOI, "^[A-Z0-9]+ [0-9]+/"))
+                {
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^[A-Z0-9]+  ([0-9]+)/")
+                    $VAR_RelateRO2PO = 3
+                    
+                    if(regmatch($MOI, "^[A-Z0-9]+ [0-9]+/[0-9/]+/[0-9]+$"))
+                    {
+                        $MOI_SecObj = "Port Adapter: " + extract($MOI, "^[A-Z0-9]+ ([0-9]+/[0-9/]+)/[0-9]+$")
+                        $VAR_RelateRO2SO = 3
+                        $VAR_RelateSO2PO = 3
+                    }
+                }
+                else
+                {
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                    $VAR_RelateRO2SO = 0
+                    $VAR_RelateSO2PO = 0
+                }
+        }
+    
+    case "interface":
+
+        $InterfaceType = extract($MOI, "^([A-Za-z]+)")
+        switch($InterfaceType)
+        {
+            case "AT":
+                $InterfaceType = "ATM"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "BR":
+                $InterfaceType = "BRI"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Di":
+                $InterfaceType = "Dialer"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Fa":
+                $InterfaceType = "FastEthernet"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Gi":
+                $InterfaceType = "GigabitEthernet"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Hs":
+                $InterfaceType = "Hssi"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Lo":
+                $InterfaceType = "Loopback"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Se":
+                $InterfaceType = "Serial"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Vi":
+                $InterfaceType = "Virtual-Access"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            default:
+        }
+        
+        switch($InterfaceType)
+        {
+            case "ATM":
+            
+                ##########
+                # ATM<number> -- Cisco 4500 and 4700 routers
+                # ATM<number>.<subinterface> -- Cisco 4500 and 4700 routers
+                # ATM<slot>/<port> -- AIP on the Cisco 7500 series routers/ATM
+                #   port adapter on the Cisco 7200 series
+                # ATM<slot>/<port>.<subinterface> -- AIP on the Cisco 7500
+                #   series routers/ATM port adapter on the Cisco 7200 series
+                # ATM<slot>/<port>.<subinterface> elan <elan>
+                # ATM<slot>/<port-adapter>/<port> -- ATM port adapter on the
+                #   Cisco 7500 series routers
+                # ATM<slot>/<port-adapter>/<port>.<subinterface> -- ATM port
+                #   adapter on the Cisco 7500 series routers
+                # ATM<slot>/<port>/ima<ima>
+                ##########
+                
+                if(regmatch($MOI, "^ATM[0-9]+$")) ### ATM<number>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+\.[0-9]+$")) ### ATM<number>.<subinterface>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = extract($MOI, "^(ATM[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+/[0-9]+$")) ### ATM<slot>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^ATM([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+/[0-9]+\.[0-9]+$")) ### ATM<slot>/<port>.<subinterface>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^ATM([0-9]+)/[0-9]+\.[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(ATM[0-9]+/[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+/[0-9]+\.[0-9]+ elan .*$")) ### ATM<slot>/<port>.<subinterface> elan <elan>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^(ATM[0-9]+)/[0-9]+\.[0-9]+ elan .*$")
+                    $MOI_SecObj = extract($MOI, "^(ATM[0-9]+/[0-9]+)\.[0-9]+ elan .*$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+/[0-9]+/[0-9]+$")) ### ATM<slot>/<port-adapter>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^ATM([0-9]+)/[0-9]+/[0-9]+$")
+                    $MOI_SecObj = "Port Adapter: " + extract($MOI, "^ATM([0-9]+/[0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+/[0-9]+/[0-9]+\.[0-9]+$")) ### ATM<slot>/<port-adapter>/<port>.<subinterface>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^ATM([0-9]+)/[0-9]+/[0-9]+\.[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(ATM[0-9]+/[0-9]+/[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^ATM[0-9]+/[0-9]+/ima.*$")) ### ATM<slot>/<port>/ima<ima>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^ATM([0-9]+)/[0-9]+/ima.*$")
+                    $MOI_SecObj = extract($MOI, "^(ATM[0-9]+/[0-9]+)/ima.*$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else
+                {
+                    $MOI_PriObj = $MOI
+                
+                    if(regmatch($MOI, "^ATM[0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^ATM([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                        
+                        if(regmatch($MOI, "^ATM[0-9]+/[0-9/]+/[0-9]+$"))
+                        {
+                            $MOI_SecObj = "Port Adapter: " + extract($MOI, "^ATM([0-9]+/[0-9/]+)/[0-9]+$")
+                            $VAR_RelateRO2SO = 3
+                            $VAR_RelateSO2PO = 3
+                        }
+                    }
+                    else
+                    {
+                        $MOI_RootObj = $MOI_PriObj
+                        $VAR_RelateRO2PO = 1
+                        $VAR_RelateRO2SO = 0
+                        $VAR_RelateSO2PO = 0
+                    }
+                }
+            
+            case "BRI":
+            
+                ##########
+                # BRI<number>
+                # BRI<number>.<subinterface>
+                # BRI<number>:<bchannel>
+                # BRI<slot>/<port> -- Cisco 7500 series and Cisco 7200 series
+                # BRI<slot>/<port>.<subinterface> -- Cisco 7500 series and Cisco 7200 series
+                # BRI<slot>/<port>:<bchannel>
+                # 
+                # BR<>/<> TEI <>
+                # BR<>/<>:<>
+                # 
+                # BRI<>: B-Channel <bchannel>
+                ##########
+                
+                $MOI_PriObj = $MOI
+                
+                if(regmatch($MOI, "^BRI[0-9]+$")) ### BRI<number>
+                {
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+\.[0-9]+$")) ### BRI<number>.<subinterface>
+                {
+                    $MOI_RootObj = extract($MOI, "^(BRI[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+:[0-9]+$")) ### BRI<number>:<bchannel>
+                {
+                    $MOI_RootObj = extract($MOI, "^(BRI[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+/[0-9]+$")) ### BRI<slot>/<port>
+                {
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^BRI([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+/[0-9]+\.[0-9]+$")) ### BRI<slot>/<port>.<subinterface>
+                {
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^BRI([0-9]+)/[0-9]+\.[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(BRI[0-9]+/[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+/[0-9]+:[0-9]+$")) ### BRI<slot>/<port>:<bchannel>
+                {
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^BRI([0-9]+)/[0-9]+:[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(BRI[0-9]+/[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+/[0-9]+,? TEI [0-9]+$")) ### BRI<>/<>, TEI <>
+                {
+                    if(regmatch($MOI, "^BRI[0-9]+/[0-9]+, TEI [0-9]+$"))
+                    {
+                        $MOI = extract($MOI, "^(BRI[0-9]+/[0-9]+), TEI [0-9]+$") + extract($MOI, "^BRI[0-9]+/[0-9]+,( TEI [0-9]+)$")
+                        $MOI_PriObj = $MOI
+                    }
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^BRI([0-9]+)/[0-9]+ TEI [0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(BRI[0-9]+/[0-9]+) TEI [0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^BRI[0-9]+: B-Channel [0-9]+$")) ### BRI<>: B-Channel <bchannel>
+                {
+                    $MOI_RootObj = extract($MOI, "^(BRI[0-9]+:) B-Channel [0-9]+$")
+                    $MOI_PriObj = $MOI_RootObj + extract($MOI, "^BRI[0-9]+: B-Channel ([0-9]+)$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else
+                {
+                    if(regmatch($MOI, "^BRI[0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^BRI([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                    }
+                                        
+                    if(regmatch($MOI, "^BRI[0-9]+/[0-9/]+/[0-9]+$"))
+                    {
+                        $MOI_SecObj = "Port Adapter: " + extract($MOI, "^BRI([0-9]+/[0-9/]+)/[0-9]+$")
+                        $VAR_RelateRO2SO = 3
+                        $VAR_RelateSO2PO = 3
+                    }
+                }                
+                
+            case "Hssi":
+            
+                ##########
+                # Hssi<unit>
+                # Hssi<slot>/<port> -- Cisco 7500 Series
+                # Hssi<slot>/<port>.<subinterface>
+                ##########
+                
+                if(regmatch($MOI, "^Hssi[0-9]+$")) ### Hssi<unit>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^Hssi[0-9]+/[0-9]+$")) ### Hssi<slot>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Hssi([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^Hssi[0-9]+/[0-9]+\.[0-9]+$")) ### Hssi<slot>/<port>.<subinterface>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Hssi([0-9]+)/[0-9]+\.[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(Hssi[0-9]+/[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else
+                {
+                    $MOI_PriObj = $MOI
+                
+                    if(regmatch($MOI, "^Hssi[0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^Hssi([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                        
+                        if(regmatch($MOI, "^Hssi[0-9]+/[0-9/]+/[0-9]+$"))
+                        {
+                            $MOI_SecObj = "Port Adapter: " + extract($MOI, "^Hssi([0-9]+/[0-9/]+)/[0-9]+$")
+                            $VAR_RelateRO2SO = 3
+                            $VAR_RelateSO2PO = 3
+                        }
+                    }
+                    else
+                    {
+                        $MOI_RootObj = $MOI_PriObj
+                        $VAR_RelateRO2PO = 1
+                        $VAR_RelateRO2SO = 0
+                        $VAR_RelateSO2PO = 0
+                    }
+                }
+            
+            case "Serial":
+            
+                ##########
+                # Serial<number> -- Cisco 4000 Series
+                # Serial<number>:<channel-group> -- Cisco 4000 Series
+                # Serial<slot>/<port> -- Cisco 7200 Series
+                # Serial<slot>/<port>.<subinterface>
+                # Serial<slot>/<port>:<channel-group> -- Cisco 7500 Series
+                # Serial<slot>/<port> - DLCI <dlci>
+                # Serial<slot>/<port-adapter>/<port> -- Cisco 7500 Series and
+                #   Cisco 7000 Series with the RSP7000 and RSP7000CI
+                # Serial<slot>/<port-adapter>/<port>.<subinterface>
+                # Serial<slot>/<port-adapter>/<port>:<t1-channel> -- Cisco 7500
+                #   Series with a CT3IP
+                # Serial<dial-shelf>/<slot>/<t3-port>:<t1-num>:<chan-group> --
+                #   Cisco AS5800 Access Servers
+                # Serial<>/<>/<>/<>
+                # Serial<>/<>/<>/<>:<>
+                # Serial<>/<>/<>.<>/<>/<>/<>:<>
+                ##########
+                
+                if(regmatch($MOI, "^Serial[0-9]+$")) ### Serial<number>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+:[0-9]+$")) ### Serial<number>:<channel-group>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = extract($MOI, "^(Serial[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+$")) ### Serial<slot>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+\.[0-9]+$")) ### Serial<slot>/<port>.<subinterface>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+\.[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(Serial[0-9]+/[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+:[0-9]+$")) ### Serial<slot>/<port>:<channel-group>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+:[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(Serial[0-9]+/[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+ - DLCI [0-9]+$")) ### Serial<slot>/<port> - DLCI <dlci>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+ - DLCI [0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(Serial[0-9]+/[0-9]+) - DLCI [0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+/[0-9]+$")) ### Serial<slot>/<port-adapter>/<port>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+/[0-9]+$")
+                    $MOI_SecObj = "Port Adapter: " + extract($MOI, "^Serial([0-9]+/[0-9]+)/[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+/[0-9]+\.[0-9]+$")) ### Serial<slot>/<port-adapter>/<port>.<subinterface>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+/[0-9]+\.[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(Serial[0-9]+/[0-9]+/[0-9]+)\.[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+/[0-9]+:[0-9]+$")) ### Serial<slot>/<port-adapter>/<port>:<t1-channel>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/[0-9]+/[0-9]+:[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^(Serial[0-9]+/[0-9]+/[0-9]+):[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else if(regmatch($MOI, "^Serial[0-9]+/[0-9]+/[0-9]+:[0-9]+:[0-9]+$")) ### Serial<dial-shelf>/<slot>/<t3-port>:<t1-num>:<chan-group>
+                {
+                    $MOI_PriObj = $MOI
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+/[0-9]+)/[0-9]+:[0-9]+:[0-9]+$")
+                    $MOI_SecObj = extract($MOI, "^Serial([0-9]+/[0-9]+/[0-9]+):[0-9]+:[0-9]+$")
+                    $VAR_RelateRO2PO = 3
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                else
+                {
+                    $MOI_PriObj = $MOI
+                
+                    if(regmatch($MOI, "^Serial[0-9]+/"))
+                    {
+                        $MOI_RootObj = "Slot: " + extract($MOI, "^Serial([0-9]+)/")
+                        $VAR_RelateRO2PO = 3
+                        
+                        if(regmatch($MOI, "^Serial[0-9]+/[0-9/]+/[0-9]+$"))
+                        {
+                            $MOI_SecObj = "Port Adapter: " + extract($MOI, "^Serial([0-9]+/[0-9/]+)/[0-9]+$")
+                            $VAR_RelateRO2SO = 3
+                            $VAR_RelateSO2PO = 3
+                        }
+                    }
+                    else
+                    {
+                        $MOI_RootObj = $MOI_PriObj
+                        $VAR_RelateRO2PO = 1
+                        $VAR_RelateRO2SO = 0
+                        $VAR_RelateSO2PO = 0
+                    }
+                }
+            
+            default:
+    
+                if(regmatch($MOI, ".*\(.*\)"))
+                {
+                    $MOI = extract($MOI, "(.*)\(.*\)") + extract($MOI, ".*\((.*)\)")
+                }
+                
+                $MOI_PriObj = $MOI
+                
+                if(regmatch($MOI, "^[A-Za-z\-]+[0-9]+/"))
+                {
+                    $MOI_RootObj = "Slot: " + extract($MOI, "^[A-Za-z\-]+([0-9]+)/")
+                    $VAR_RelateRO2PO = 3
+                }
+                else if(regmatch($MOI, "^[A-Za-z\-]+[0-9]+$"))
+                {
+                    $MOI_RootObj = $MOI_PriObj
+                    $VAR_RelateRO2PO = 1
+                }
+                if(regmatch($MOI, "^[A-Za-z\-]+[0-9]+/[0-9/]+/[0-9]+"))
+                {
+                    $MOI_SecObj = "Port Adapter: " + extract($MOI, "^[A-Za-z\-]+([0-9]+/[0-9/]+)/[0-9]+")
+                    $VAR_RelateRO2SO = 3
+                    $VAR_RelateSO2PO = 3
+                }
+                # if(regmatch($MOI, "^[A-Za-z\-]+[0-9]+/[0-9/:\.]+[/:\.][0-9]+$"))
+                # {
+                #     $MOI_SecObj = "Port Adapter: " + extract($MOI, "^[A-Za-z\-]+([0-9]+/[0-9/:.]+)[/:\.][0-9]+$")
+                #     $VAR_RelateRO2SO = 3
+                #     $VAR_RelateSO2PO = 3
+                # }
+        }
+
+    case "ipaddress":
+    
+        $MOI_NodeAlias = $MOI
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    case "network":
+    
+        $MOI_NodeAlias = $MOI
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    case "port":
+    
+        $InterfaceType = extract($MOI, "^([A-Za-z]+)")
+        switch($InterfaceType)
+        {
+            case "AT":
+                $InterfaceType = "ATM"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "BR":
+                $InterfaceType = "BRI"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Di":
+                $InterfaceType = "Dialer"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Fa":
+                $InterfaceType = "FastEthernet"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Gi":
+                $InterfaceType = "GigabitEthernet"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Hs":
+                $InterfaceType = "Hssi"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Lo":
+                $InterfaceType = "Loopback"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Se":
+                $InterfaceType = "Serial"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            case "Vi":
+                $InterfaceType = "Virtual-Access"
+                $MOI = $InterfaceType + extract($MOI, "^[A-Za-z]+(.*)$")
+            default:
+        }
+        
+        $MOI_PriObj = "Port: " + $MOI
+        
+        if(regmatch($MOI, ".*\(.*\)"))
+        {
+            $MOI = extract($MOI, "(.*)\(.*\)") + extract($MOI, ".*\((.*)\)")
+        }
+        
+        if(regmatch($MOI, "^[0-9]+/[0-9/]+$"))
+        {
+            $MOI_RootObj = "Slot: " + extract($MOI, "^([0-9]+)/")
+            $VAR_RelateRO2PO = 3
+            
+            if(regmatch($MOI, "^[0-9]+/[0-9/]+/[0-9]+$"))
+            {
+                $MOI_SecObj = "Port Adapter: " + extract($MOI, "^([0-9]+/[0-9/]+)/[0-9]+$")
+                $VAR_RelateRO2SO = 3
+                $VAR_RelateSO2PO = 3
+            }
+        }
+        else if(regmatch($MOI, "^[A-Za-z\-]+[0-9]+/"))
+        {
+            $MOI_PriObj = $MOI
+            
+            $MOI_RootObj = "Slot: " + extract($MOI, "^[A-Za-z\-]+([0-9]+)/")
+            $VAR_RelateRO2PO = 3
+            
+            if(regmatch($MOI, "^[A-Za-z\-]+[0-9]+/[0-9/:.]+[/:.][0-9]+$"))
+            {
+                $MOI_SecObj = "Port Adapter: " + extract($MOI, "^[A-Za-z\-]+([0-9]+/[0-9/:.]+)[/:.][0-9]+$")
+                $VAR_RelateRO2SO = 3
+                $VAR_RelateSO2PO = 3
+            }
+        }
+        else
+        {
+            $MOI_RootObj = $MOI_PriObj
+            $VAR_RelateRO2PO = 1
+        }
+
+    case "process":
+    
+        $MOI_PriObj = "PID: " + $MOI
+        $MOI_RootObj = $MOI_PriObj
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    case "route":
+    
+        $MOI_NodeAlias = $MOI
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    case "tcpport":
+    
+        $MOI_PriObj = "TCP Port: " + $MOI
+        $MOI_RootObj = $MOI_PriObj
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    case "udpport":
+    
+        $MOI_PriObj = "UDP Port: " + $MOI
+        $MOI_RootObj = $MOI_PriObj
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+    
+    default:
+    
+        $MOI_PriObj = $MOI
+        $MOI_RootObj = $MOI
+        $VAR_RelateRO2PO = 1
+        $VAR_RelateRO2SO = 0
+        $VAR_RelateSO2PO = 0
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-DecodeMOI.include.syslog.rules >>>>>")

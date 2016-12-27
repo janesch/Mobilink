@@ -1,0 +1,482 @@
+#############################################################################
+#
+#		siemens.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Siemens @vantage Commander traps.
+#		This is based upon INC-MIB-C 
+#
+#	V0.0	20100412	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.160.0":	# legato Traps
+    @Agent = "Legato"
+    @Class = "40425"
+    @OmcEms = $PeerIPaddress
+
+    $OS_ExpireTime = 600
+    @Grade = $specific-trap
+    $OPTION_TypeFieldUsage = "3.6"
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+
+    switch($specific-trap)
+    {
+	case"1001":    # brsTrapCritical
+			
+		$tiAlarmSourceName = $1		# The source of the event (may not be the machine upon  which the event was generated)
+		$tiAlarmSymbNEname = $2		# The symbolic Network Element ( NE ) name.Normally it is different from the source name
+		$tiAlarmNotificationID = $3		#The notification id unique for a whole INCommander  management area and is common for all configured OS's.
+																		# It will be incremented by one for each new event received from any configured network element ( including the INCommander itself ) and could wrap  from 2147483647 to 1.
+																		# Gaps in the notification identifier of consecutive alarm SNMP traps received at the OS site are normal because of the separate EFD processing for each OS.
+				$tiAlarmTransferID = $4				# The OS specific unique transfer identifier. Will be incremented by one for each new event sent to an OS. Could wrap from 2147483647 to 1.
+																		# Gaps in the transfer identifier of consecutive alarm SNMP traps received at the OS site indicates  the lost of SNMP traps sent from the INCommander to the OS.
+
+				@Severity = 5
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapCritical"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+				
+			case"1002":    # brsTrapMajor
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 4
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapMajor"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+				
+			case"1003":    # brsTrapMinor
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 3
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapMinor"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+				
+			case"1004":    # brsTrapWarning
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 2
+				@Type = 1
+				@Summary =  "In Dev Legato - brsTrapWarning"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+				
+			case"1005":    # brsTrapNormal
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 2
+				@Type = 0
+				@Summary =  "In Dev Legato - brsTrapNormal"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+
+
+			case"1006":    # brsTrapReset
+				
+				$tiAlarmSourceName = $1
+				$tiAlarmSymbNEname = $2
+				$tiAlarmNotificationID = $3
+				$tiAlarmTransferID = $4
+
+				@Severity = 1
+				@Type = 2
+				@Summary =  "In Dev Legato - brsTrapReset"
+				@AlertGroup = $tiAlarmSourceName 
+				@AlertKey = $tiAlarmNotificationID
+				
+			default:
+			
+				@Severity = 1
+				@Type = 1
+				@Summary  =  "In Dev Legato - Unknown Specific Trap"
+				@AlertGroup = "Legato"
+				@AlertKey = $specific-trap
+				details($*)
+}
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + @Type
+details($*)
+
+
+case ".1.3.6.1.4.1.231.7.99.4":	#  tiIncTraps Traps
+    @Agent = "tiIncTraps"
+    @Class = "40425"
+    @OmcEms = $PeerIPaddress
+
+    $OS_ExpireTime = 600
+	@Grade = $specific-trap
+    $OPTION_TypeFieldUsage = "3.6"
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+
+###
+# Node field set from variables for Mobilink
+# Giles Blake, 13/07/10
+###
+
+@Node = $11 + "/" + $10
+
+if(regmatch($8, "^.*LINK=.*"))
+	{
+	@Location = extract ($8, "^.*LINK=(.*)")
+	}
+
+###
+# End, 13/07/10
+###
+
+    switch($specific-trap)
+    {
+	case"2301":    								# tiIncTrapCritical
+		$tiAlarmDateTime = $1					# Represents the occurrence date and time of an alarm as display string in the format as defined by the  ASN.1 standard data type
+																	# GeneralizedTime ( used format: YYYYMMDDHHMMSS[+-]HHMM, e.g.: 19960322123000+0100 ). 
+																	#	Refer to IS ISO/IEC 8824 respectively ITU-T Recommendation X.208
+		$tiAlarmReportingObject = $2		# Object Id of the alarm reporting object according to the SNMP object model defined for the NE
+		$tiAlarmFaultyObject = $3				# Object Id of the faulty object according to the SNMP  object model defined for the NE. Could be identical
+																	# with the Object Id of the alarm reporting object.
+		$tiAlarmEventTypeId = $4				#  Event Type Id as integer. This field specifies the type of the alarm being reported.
+		$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+		$tiAlarmSeverity = $5						# The perceived severity of an alarm as integer conforming to the ITU-T Recommendation X.721. 
+																	# Alarm cleared messages are sent with the value cleared
+		$tiAlarmErrorID = $6						# Error Id as integer. This Error Id is specific to the general alarm source type (e.g. SCP, INC).
+		$tiAlarmEndKey = $7						# End Key of an alarm as integer. It indicates whether an alarm cleared message is expected 
+																	#  INTEGER { false(0), true(1) }
+		$tiAlarmDescription = $8				# Represents the description of an alarm
+		$tiAlarmSequenceNumber = $9	# The unique event sequence number. Will be incremented by one for each new event. Could wrap from 2147483647 to 1.
+																	# In case of INCommander internal alarms always 1.
+		$tiAlarmSourceName = $10			# The source of the event (may not be the machine upon which the event was generated)
+		$tiAlarmSymbNEname = $11		# The symbolic Network Element ( NE ) name. Normally it is different from the source name.
+		$tiAlarmNotificationID = $12			# The notification id unique for a whole INCommander  management area and is common for all configured OS's.
+																	# It will be incremented by one for each new event received from any configured network element ( including the 
+																	# INCommander itself ) and could wrap from 2147483647 to 1.
+		$tiAlarmTransferID = $13				# The OS specific unique transfer identifier. Will be incremented by one for each new event  sent to an OS.
+                    															# Could wrap from 2147483647 to 1
+
+		[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+		@Summary =  $tiAlarmDescription
+		@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+		$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+		$LenProcLabel = length ($ProcLabel)
+		@AddText = $LenProcLabel
+			@EventType = $tiAlarmEventTypeText 
+		if(int($LenProcLabel) <3)
+		{
+			@AlertKey = $tiAlarmSourceName
+		}
+		else
+		{
+			@AlertKey = $ProcLabel
+		}
+
+
+	case"2302":    # tiIncTrapMajor
+		$tiAlarmDateTime = $1
+		$tiAlarmReportingObject = $2
+		$tiAlarmFaultyObject = $3
+		$tiAlarmEventTypeId = $4
+		$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+		$tiAlarmSeverity = $5
+		$tiAlarmErrorID = $6
+		$tiAlarmEndKey = $7
+		$tiAlarmDescription = $8
+		$tiAlarmSequenceNumber = $9
+		$tiAlarmSourceName = $10
+		$tiAlarmSymbNEname = $11
+		$tiAlarmNotificationID = $12
+		$tiAlarmTransferID = $13
+
+		[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+		@Summary =  $tiAlarmDescription
+		@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+		$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+		$LenProcLabel = length ($ProcLabel)
+		@AddText = $LenProcLabel
+			@EventType = $tiAlarmEventTypeText 
+		if(int($LenProcLabel) <3)
+		{
+				@AlertKey = $tiAlarmSourceName
+		}
+		else
+		{
+				@AlertKey = $ProcLabel
+		}
+
+
+	case"2303":    # tiIncTrapMinor
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+			@EventType = $tiAlarmEventTypeText 
+			if(int($LenProcLabel) <3)
+			{
+					@AlertKey = $tiAlarmSourceName
+			}
+			else
+			{
+					@AlertKey = $ProcLabel
+			}
+
+
+	case"2304":    # tiIncTrapWarning
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+			@EventType = $tiAlarmEventTypeText 
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+			if(int($LenProcLabel) <3)
+			{
+					@AlertKey = $tiAlarmSourceName
+			}
+			else
+			{
+					@AlertKey = $ProcLabel
+			}
+
+
+	case"2305":    # tiIncTrapNormal
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+			@EventType = $tiAlarmEventTypeText 
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+			if(int($LenProcLabel) <3)
+			{
+					@AlertKey = $tiAlarmSourceName
+			}
+			else
+			{
+					@AlertKey = $ProcLabel
+			}
+
+
+	case"2306":    # tiIncTrapCleared
+			$tiAlarmDateTime = $1
+			$tiAlarmReportingObject = $2
+			$tiAlarmFaultyObject = $3
+			$tiAlarmEventTypeId = $4
+			$tiAlarmEventTypeText = lookup($tiAlarmEventTypeId, tiAlarmEventTypeId)
+			$tiAlarmSeverity = $5
+			$tiAlarmErrorID = $6
+			$tiAlarmEndKey = $7
+			$tiAlarmDescription = $8
+			$tiAlarmSequenceNumber = $9
+			$tiAlarmSourceName = $10
+			$tiAlarmSymbNEname = $11
+			$tiAlarmNotificationID = $12
+			$tiAlarmTransferID = $13
+
+			[@Severity, @Type] =  lookup($tiAlarmSeverity, tiAlarmSeverity)
+			@Summary =  $tiAlarmDescription
+			@AlertGroup = $tiAlarmSourceName + " - " + $tiAlarmNotificationID
+			@EventType = $tiAlarmEventTypeText 
+			$ProcLabel = extract ($tiAlarmDescription, "^([^:]*):.*")
+			$LenProcLabel = length ($ProcLabel)
+			@AddText = $LenProcLabel
+			@EventType = $tiAlarmEventTypeText 
+			if(int($LenProcLabel) <3)
+			{
+					@AlertKey = $tiAlarmSourceName
+			}
+			else
+			{
+					@AlertKey = $ProcLabel
+			}
+
+
+	case"2310":    # tiIncPeriodicalSumRep
+			$tiAlarmSourceName = $1			# The source of the event (may not be the machine upon which the event was generated)
+			$tiAlarmSymbNEname = $2			# The symbolic Network Element ( NE ) name. Normally it is different from the source name.
+			$tiIsConnectionReliable = $3		# Is the host responding to requests ?  INTEGER { false(0), true(1) }
+			[$MaxSeverity , $Discard] =  lookup($4, tiAlarmSeverity)
+			$NumCriticalAlarms = $5				# Number of open critical alarms
+			$NumMajorAlarms = $6					# Number of open major alarms
+			$NumMinorAlarms = $7					# Number of open minor alarms
+			$NumWarnings = $8						# Number of open warning alarms
+			$NumNormalEvents = $9				# Number of open events with severity normal
+			$NumUnknownEvents = $10		# Number of open events with unknown severity
+
+			@Severity = 2
+			@Type = 0
+			@Summary =   $tiAlarmSourceName
+			@URL = "tiIsConnectionReliable = " + $tiIsConnectionReliable + " MaxSeverity = " + $MaxSeverity + " NumCriticalAlarms = " + $NumCriticalAlarms + " NumMajorAlarms = " + $NumMajorAlarms + " NumMinorAlarms = " + $NumMinorAlarms + " NumWarnings = " + $NumWarnings + " NumNormalEvents = " + $NumNormalEvents + " NumUnknownEvents = " + $NumUnknownEvents 
+			@AlertGroup = "PeriodicalSumRep" 
+			@AlertKey = $tiAlarmSourceName
+			@EventType = "Summary"
+
+
+	case"2311":    # tiIncSpontaneousSumRep
+			$tiAlarmSourceName = $1
+			$tiAlarmSymbNEname = $2
+			$tiIsConnectionReliable = $3
+			$MaxSeverity = $4
+			$NumCriticalAlarms = $5
+			$NumMajorAlarms = $6
+			$NumMinorAlarms = $7
+			$NumWarnings = $8
+			$NumNormalEvents = $9
+			$NumUnknownEvents = $10
+
+			@Severity = 2
+			@Type = 0
+			@Summary =  "In Dev TilNc - Spontaneous Alarm Summary Report for  " + $tiAlarmSourceName
+			@URL = "tiIsConnectionReliable = " + $tiIsConnectionReliable + " MaxSeverity = " + $MaxSeverity + " NumCriticalAlarms = " + $NumCriticalAlarms + " NumMajorAlarms = " + $NumMajorAlarms + " NumMinorAlarms = " + $NumMinorAlarms + " NumWarnings = " + $NumWarnings + " NumNormalEvents = " + $NumNormalEvents + " NumUnknownEvents = " + $NumUnknownEvents 
+			@AlertGroup = "SpontaneousSumRep" 
+			@AlertKey = $tiAlarmSourceName
+			@EventType = "Summary"
+
+
+
+
+	default:
+
+			@Severity = 1
+			@Type = 1
+			@Summary  =  "In Dev Tilnc - Unknown Specific Trap"
+			@AlertGroup = "Tilnc"
+			@AlertKey = $specific-trap
+			details($*)
+}
+@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + @Type
+details($*)
+
+
+case ".1.3.6.1.4.1.2451.0":	# Tecnomen Traps
+    @Agent = "Tecnomen"
+    @Class = "40425"
+    @OmcEms = $PeerIPaddress
+
+	@Grade = $specific-trap
+    $OS_ExpireTime = 600
+    $OPTION_TypeFieldUsage = "3.6"
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+    switch($specific-trap)
+    {
+			case"7":    # rpAlarmOnTrap
+					$rpNotificationID = $1						# an identifier for the notification. Notification identifiers must be chosen to be unique  across all notifications of a particular 
+																				#  managed object  throughout the time that the correlation is significant
+					$rpModuleNumber = $2					#  The alarm code is unique within one module (also called component in OMC
+					$rpAlarmCode = $3						# (unique inside one module)
+					$rpSubscriberNumber = $4			#  Available only in MMS alarms
+					$rpEventTimeOn = $5					# This is the time that the alarm was emitted
+					$rpEventType = $6							# This is the time that the alarm was last set to off state.
+					$rpEventTypeText =  lookup($rpEventType, rpEventType)
+					$rpProbableCause = $7				# defines further qualification as to the probable cause of the alarm.
+					$rpPerceivedSeverity = $8				# defines the severity of the alarm
+					$rpProposedRepairAction = $9	# Proposed repair action, if present, provides a suggested repair action for the alarm.
+					$rpAlarmText  = $10						# The alarm text
+					$tiAlarmSourceName = $11			# The source of the event (may not be the machine upon which the event was generated)
+					$tiAlarmSymbNEname = $12		# The symbolic Network Element ( NE ) name. Normally it is different from the source name.
+					$tiAlarmNotificationID = $13			# The notification id unique for a whole INCommander  management area and is common for all configured OS's.
+																				# It will be incremented by one for each new event received from any configured network element ( including the 
+																				# INCommander itself ) and could wrap from 2147483647 to 1.
+					$tiAlarmTransferID = $14				# The OS specific unique transfer identifier. Will be incremented by one for each new event  sent to an OS.
+                    															# Could wrap from 2147483647 to 1
+					
+					[@Severity, @Type] = lookup ($rpPerceivedSeverity, rpPerceivedSeverity)
+					@Summary =  "In Dev Tecnomen - rpAlarmOnTrap - " + $rpAlarmText
+					@AlertGroup = $tiAlarmSourceName + $tiAlarmNotificationID
+					@AlertKey = $tiAlarmNotificationID
+					
+			case"8":    # rpAlarmOffgTrap
+					$rpNotificationID = $1
+					$rpModuleNumber = $2
+					$rpAlarmCode = $3
+					$rpSubscriberNumber = $4
+					$rpEventTimeOn = $5
+					$rpEventType = $6
+					$rpProbableCause = $7
+					$rpPerceivedSeverity = $8
+					$rpProposedRepairAction = $9
+					$rpAlarmText  = $10
+					$tiAlarmSourceName = $11
+					$tiAlarmSymbNEname = $12
+					$tiAlarmNotificationID = $13
+					$tiAlarmTransferID = $14
+					
+					@Severity = 1
+					@Type =2
+					@Summary =  "In Dev Tecnomen - rpAlarmOffTrap - " + $rpAlarmText
+					@AlertGroup = $tiAlarmSourceName + $tiAlarmNotificationID
+					@AlertKey = $tiAlarmNotificationID
+					
+ 			default:
+ 			
+ 					@Severity = 1
+ 					@Type = 1
+ 					@Summary  =  "In Dev Tecnomen - Unknown Specific Trap"
+ 					@AlertGroup = "Tecnomen"
+ 					@AlertKey = $specific-trap
+ 					details($*)
+}
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + @Type
+        details($*)

@@ -1,0 +1,511 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-OSPF.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+#     - Modified @AlertKey of OSPF-ADJCHG messages to include the local
+#       interface over which the adjacency is established.  This fixed a
+#       problem which caused events to be inaccurately deduplicated and thus a
+#       loss of information.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release. 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002).  
+#
+#     - Supports MOI fields in OMNIbus 3.6.
+#       
+###############################################################################
+
+case "OSPF": ### Multicast Source Discovery Protocol
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-OSPF.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ADJCHG":
+    
+            ##########
+            # An OSPF neighbor has changed state. The message describes the
+            # change and the reason for it. This message appears only if the
+            # log-adjacency-changes command is configured for the OSPF process.
+            #
+            # %OSPF-5-ADJCHG: Process [dec], Nbr [IP_address] on [chars] from
+            # [chars] to [chars], [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, " Nbr .* on (.*) from [0-9A-Z]+ to [0-9A-Z]+,? .*")
+            $MOIType_Local = "interface"
+            $MOI_Remote = extract($Message, " Nbr (.*) on .* from [0-9A-Z]+ to [0-9A-Z]+,? .*")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote + ", Interface: " + $MOI_Local
+            
+            switch(extract($Message, " Nbr .* on .* from [0-9A-Z]+ to ([0-9A-Z]+),? .*"))
+            {
+                case "DOWN":
+                    $SEV_KEY = $OS_EventId + "__down"
+                    @Severity = 3
+                    @Type = 1
+                case "FULL":
+                    $SEV_KEY = $OS_EventId + "__full"
+                    @Severity = 1
+                    @Type = 2
+                case "LOADING":
+                    $SEV_KEY = $OS_EventId + "__loading"
+                    @Severity = 2
+                    @Type = 12
+                default:
+            }
+            
+            $CLARIFIER = extract($Message, " Nbr .* on .* from [0-9A-Z]+ to ([0-9A-Z]+,? .*)")
+    
+        case "AREACHG":
+    
+            ##########
+            # An OSPF configuration change has caused a network range to change
+            # areas.
+            #
+            # %OSPF-6-AREACHG: [IP_address][IP_netmask] changed from area
+            # [chars] to area [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "^(.*) changed from ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Area: " + $MOI_Remote
+    
+        case "BADCHKSUM":
+    
+            ##########
+            # OSPF has detected a checksum error in the database that was
+            # caused by memory corruption.
+            #
+            # %OSPF-6-BADCHKSUM: Checksum Failure in database in area [chars]
+            # Link State Id [IP_address] Old Checksum [hex] New Checksum
+            # [hex]\n
+            ##########
+    
+            $MOI_Remote = extract($Message, " State Id (.*) Old ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "BADLENGTH":
+    
+            ##########
+            # The system has received an OSPF packet with a length field that
+            # is less than normal header size or that is inconsistent with the
+            # size of the IP packet in which it arrived. This problem indicates
+            # an error involving the sender of the packet.
+            #
+            # %OSPF-4-BADLENGTH: Invalid length [dec] in OSPF packet type [dec]
+            # from [IP_address] (ID [IP_address]), [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "BADLSAMASK":
+    
+            ##########
+            # The router received an LSA with an invalid LSA mask. The cause is
+            # likely due to an invalid or incorrect configuration from the LSA
+            # originator.
+            #
+            # %OSPF-4-BADLSAMASK: Bad LSA mask: Type [dec], LSID [IP_address]
+            # Mask [IP_address] from [IP_address] \nNOTE: This route will not
+            # be installed in the routing table.
+            ##########
+    
+            $MOI_Remote = extract($Message, " from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "BADLSATYPE":
+    
+            ##########
+            # The router has received an LSA with an invalid LSA type. The
+            # cause for this condition is either a memory corruption or
+            # unexpected behavior on a router.
+            #
+            # %OSPF-4-BADLSATYPE: Invalid lsa: [chars] Type [dec], LSID
+            # [IP_address] from [IP_address], [IP_address], [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, " from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "CONFLICTING_LSAID":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %OSPF-4-CONFLICTING_LSAID: Found LSA with the same host bit set
+            # but using different mask\n Existing: LSA ID
+            # [IP_address][IP_netmask]\n New: Destination
+            # [IP_address][IP_netmask]
+            ##########
+    
+            $MOI_Remote = extract($Message, "LSA ID ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "DBEXIST":
+    
+            ##########
+            # OSPF in having a problem locating the LSA. This condition could
+            # lead to a memory leak.
+            #
+            # %OSPF-3-DBEXIST: area [chars] lsid [IP_address] mask [IP_address]
+            # adv [IP_address] type [dec]
+            ##########
+    
+            $MOI_Remote = extract($Message, "lsid ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) mask")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "DUP_RTRID_AREA":
+    
+            ##########
+            # OSPF has detected a router in the area that has the same router
+            # ID as this routing process. Duplicate router IDs may result in
+            # network instability, causing some destinations to be unreachable.
+            #
+            # %OSPF-4-DUP_RTRID_AREA: Detected router with duplicate router ID
+            # [IP_address] in area [chars]
+            ##########
+    
+            $MOI_Remote = extract($Message, "ID ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) in")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "DUP_RTRID_AS":
+    
+            ##########
+            # The OSPF has received a hello packet from a neighbor that has the
+            # same router ID as this routing process. A full adjacency cannot
+            # be established.
+            #
+            # %OSPF-4-DUP_RTRID_AS: Detected router with duplicate router ID
+            # [IP_address] in Type-4 LSA advertised by [IP_address]
+            ##########
+    
+            $MOI_Remote = extract($Message, "ID ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) in")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "DUP_RTRID_NBR":
+    
+            ##########
+            # OSPF has received a hello packet from a neighbor that has the
+            # same router ID as this routing process. A full adjacency cannot
+            # be established. The OSPF router ID should be unique. Change the
+            # router ID of the neighbor.
+            #
+            # %OSPF-4-DUP_RTRID_NBR: OSPF detected duplicate router-id
+            # [IP_address] from [IP_address] on interface [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "on interface (.*)$")
+            $MOIType_Local = "interface"
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) on")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "ERRRCV":
+    
+            ##########
+            # An invalid OSPF packet was received. Details are included in the
+            # error message. The cause might be a misconfigured OSPF or an
+            # internal error involving the sender.
+            #
+            # %OSPF-4-ERRRCV: Received invalid packet: [chars] from
+            # [IP_address], [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ (.*)$")
+            $MOIType_Local = "interface"
+            $MOI_Remote = extract($Message, "from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "INTERNALERR":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %OSPF-3-INTERNALERR: Internal error: [chars]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "Internal error: (.*)$")
+    
+        case "INVALID_ENCR_PASSWORD":
+    
+            ##########
+            # The user-specified encrypted password is invalid. If the
+            # specified encrypted password is invalid, an error message will be
+            # printed during configuration.
+            #
+            # %OSPF-3-INVALID_ENCR_PASSWORD: Invalid encrypted password [chars].
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "encrypted password (.*)$")
+    
+        case "NOBACKBONE":
+    
+            ##########
+            # The router was flagged as an ABR, but there is no backbone area
+            # in the router.
+            #
+            # %OSPF-3-NOBACKBONE: Flagged as being an ABR without a backbone
+            # area
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOCONNDB":
+    
+            ##########
+            # While calculating OSPF routes, the router could not find the
+            # link-state advertisement that represents the connected route in
+            # the router.
+            #
+            # %OSPF-3-NOCONNDB: No database entry for connected address
+            # [IP_address]
+            ##########
+    
+            $MOI_Remote = extract($Message, "address ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "NOLSA":
+    
+            ##########
+            # The router is not able to find the router link state
+            # advertisement. This problem can occasionally occur and
+            # self-correct. If this message recurs, restart the OSPF process.
+            #
+            # %OSPF-3-NOLSA: Failed to find this routers LSA in [chars]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "LSA in (.*)$")
+    
+        case "NONEIGHBOR":
+    
+            ##########
+            # An OSPF hello, database description, or database request packet
+            # was received, but the router could not identify the sender.
+            #
+            # %OSPF-4-NONEIGHBOR: Received [chars] from unknown neighbor
+            # [IP_address]
+            ##########
+    
+            $MOI_Remote = extract($Message, "neighbor ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+            
+            $CLARIFIER = extract($Message, "Received (.*) from")
+    
+        case "NORTRID":
+    
+            ##########
+            # OSPF failed while attempting to allocate a router ID from the IP
+            # address of one of its interfaces.
+            #
+            # %OSPF-4-NORTRID: OSPF process [dec] cannot start. There must be
+            # at least one "up" IP interface, for OSPF to use as router ID
+            ##########
+    
+            $MOI_Local = extract($Message, "process ([0-9]+) cannot")
+            $MOIType_Local = "process"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "PID: " + $MOI_Local
+    
+        case "NOSELF":
+    
+            ##########
+            # An internal error has occurred.
+            #
+            # %OSPF-3-NOSELF: if [chars] if_state [dec]
+            ##########
+    
+            $MOI_Local = extract($Message, "if (.*) if_state")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, " if_state (.*)$")
+    
+        case "NOSRCPDB":
+    
+            ##########
+            # OSPF has attempted to redistribute a route but could not find a
+            # valid source protocol.
+            #
+            # %OSPF-6-NOSRCPDB: ex_route_callback(): Can't find the src
+            # protocol to redistribute net [IP_address][IP_netmask]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, " net (.*)$")
+    
+        case "NOTREDIST5":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %OSPF-4-NOTREDIST5: db_free: external LSA
+            # [IP_address][IP_netmask]
+            ##########
+    
+            $MOI_Remote = extract($Message, "external LSA ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Neighbor: " + $MOI_Remote
+    
+        case "RDB_NO_LSA":
+    
+            ##########
+            # OSPF has found an inconsistency between its database and the IP
+            # routing table.
+            #
+            # %OSPF-3-RDB_NO_LSA: lsid [IP_address] adv [IP_address] type [dec]
+            # gateway [IP_address] metric [dec] network [IP_address] mask
+            # [IP_address] protocol [hex] attr [hex] net-metric [dec]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "RECONF_VL":
+    
+            ##########
+            # The OSPF process is being reset, and it will select a new router
+            # ID. This process will bring down all virtual links. Virtual-link
+            # configuration must be changed on all virtual-link neighbors for
+            # the links to work again.
+            #
+            # %OSPF-3-RECONF_VL: OSPF process [dec] is changing router-id.
+            # Reconfigure virtual link neighbors with our new router-id
+            ##########
+    
+            $MOI_Local = extract($Message, "process ([0-9]+) cannot")
+            $MOIType_Local = "process"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "PID: " + $MOI_Local
+    
+        case "UNKNOWNSTATE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %OSPF-3-UNKNOWNSTATE: Reached unknown state in neighbor state
+            # machine
+            ##########
+    
+            @AlertKey = ""
+    
+        case "VIRTUAL_IN_NON_BACKBONE":
+    
+            ##########
+            # An internal error has occurred.
+            #
+            # %OSPF-4-VIRTUAL_IN_NON_BACKBONE: Virtual link information found
+            # in non-backbone area: [chars]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = extract($Message, "backbone area: (.*)$")
+    
+        case "WRONG_DEFAULT":
+    
+            ##########
+            # An internal software error has caused the router to try to
+            # generate a default LSA that has the wrong mask and possibly the
+            # wrong metric.
+            #
+            # %OSPF-4-WRONG_DEFAULT: Found generating default LSA with non-zero
+            # mask\n LSA type : [dec] Mask : [IP_address] metric : [int] area :
+            # [chars]
+            ##########
+    
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+    
+        case "ZERO_BANDWIDTH":
+    
+            ##########
+            # The interface has reported its bandwidth as zero.
+            #
+            # %OSPF-6-ZERO_BANDWIDTH: interface [chars] has zero bandwidth
+            ##########
+    
+            $MOI_Local = extract($Message, "interface (.*) has")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        default:
+                    
+            $UseCiscoIosDefaults = 1
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-OSPF.include.syslog.rules >>>>>")

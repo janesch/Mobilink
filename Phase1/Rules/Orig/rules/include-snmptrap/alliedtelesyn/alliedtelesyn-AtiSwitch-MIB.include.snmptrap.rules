@@ -1,0 +1,107 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    alliedtelesyn-AtiSwitch-MIB.include.snmptrap.rules 1.0
+#    2007/05/25 Anchala Bansal
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  AtiSwitch-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.207.8.15.9": ### Allied Telesyn Layer 2 Switches - Traps from AtiSwitch-MIB 
+
+    log(DEBUG, "<<<<< Entering... alliedtelesyn-AtiSwitch-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Allied Telesyn-Layer 2 Switches"
+    @Class = "87007"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### atiswitchFanStopTrap
+
+            $OS_EventId = "SNMPTRAP-alliedtelesyn-AtiSwitch-MIB-atiswitchFanStopTrap"
+
+            @AlertGroup = "Switch Status"
+            @AlertKey = ""
+            @Summary = "Error in Fan Operation Detected"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($*)
+
+        case "2": ### atiswitchTemperatureAbnormalTrap
+
+            $OS_EventId = "SNMPTRAP-alliedtelesyn-AtiSwitch-MIB-atiswitchTemperatureAbnormalTrap"
+
+            @AlertGroup = "Switch Status"
+            @AlertKey = ""
+            @Summary = "Abnormal Temperature of Switch Detected"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($*)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, alliedtelesyn-AtiSwitch-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, alliedtelesyn-AtiSwitch-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/alliedtelesyn/alliedtelesyn-AtiSwitch-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/alliedtelesyn/alliedtelesyn-AtiSwitch-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... alliedtelesyn-AtiSwitch-MIB.include.snmptrap.rules >>>>>")

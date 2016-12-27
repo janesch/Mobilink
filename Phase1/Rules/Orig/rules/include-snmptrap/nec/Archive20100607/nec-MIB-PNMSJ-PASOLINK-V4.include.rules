@@ -1,0 +1,2024 @@
+#############################################################################
+#
+#		nec-MIB-PNMSJ-PASOLINK-V4.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Siemens @vantage Commander traps.
+#		This is based upon INC-MIB-C 
+#
+#	V0.0	20100412	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.119.2.3.69.201.108":	# NEC PPASOLINK-V4 Traps
+    @Agent = "NEC PASOLINK-V4"
+    @Class = "100004"
+    $OS_ExpireTime = 600
+    log(DEBUG, "<<<<< Entering... nec-MIB-PNMSJ-PPASOLINK-V4  >>>>>")
+    $OPTION_TypeFieldUsage = "3.6"
+    $enterpriseName = "pasolinkV4"
+    
+   
+		@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+	    switch($specific-trap)
+	    {
+      case"10":      ### v4partialSummaryTrapOdu
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $v4partialSummaryItemOdu = $8                    ### ODU Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($v4partialSummaryItemOdu, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "v4partialSummaryTrapOdu"
+            @AlertKey = $v4trapSource
+            @Summary = "ODU Summary Status is " + $SeverityText
+
+
+      case"11":      ### v4partialSummaryTrapIdu
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $v4partialSummaryItemIdu = $8                    ### IDU Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($v4partialSummaryItemIdu, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "v4partialSummaryTrapIdu"
+            @AlertKey = $v4trapSource
+            @Summary = "IDU Summary Status is " + $SeverityText
+
+
+      case"12":      ### v4partialSummaryTrapPmc
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $v4partialSummaryItemPmc = $8                    ### PMC Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($v4partialSummaryItemPmc, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "v4partialSummaryTrapPmc"
+            @AlertKey = $v4trapSource
+            @Summary = "PMC Summary Status is " + $SeverityText
+
+
+      case"13":      ### v4partialSummaryTrapAux
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $v4partialSummaryItemAux = $8                    ### AUX.IO Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($v4partialSummaryItemAux, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "v4partialSummaryTrapAux"
+            @AlertKey = $v4trapSource
+            @Summary = "AUX.IO Summary Status is " + $SeverityText
+
+
+      case"14":      ### v4partialSummaryTrapLpm
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $v4partialSummaryItemLpm = $8                    ### Link Performance Monitor Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+			$SeverityText = lookup($v4partialSummaryItemLpm, configItemPpSys2AuxInSeverity)
+
+            @AlertGroup = "v4partialSummaryTrapLpm"
+            @AlertKey = $v4trapSource
+            @Summary = "Link Performance Monitor Summary Status is " + $SeverityText
+
+
+      case"101":      ### alarmTrapV4InputLoss
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4InputLoss = $8                       ### Input Loss  (INTEGER (0..2))
+            $alarmItemV4InputLossValue = lookup($alarmItemV4InputLoss, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4InputLoss"
+            @AlertKey = $v4trapSource
+            @Summary = "Input Loss Status is " + $alarmItemV4InputLossValue
+
+
+      case"102":      ### alarmTrapV4BpOutputLoss
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4BpOutputLoss = $8                    ### BP Output Loss  (INTEGER (0..2))
+            $alarmItemV4BpOutputLossValue = lookup($alarmItemV4BpOutputLoss, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4BpOutputLoss"
+            @AlertKey = $v4trapSource
+            @Summary = "BP Output Loss Status is " + $alarmItemV4BpOutputLossValue
+
+
+      case"103":      ### alarmTrapV4WsInputLoss
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4WsInputLoss = $8                     ### WS Input Loss  (INTEGER (0..2))
+            $alarmItemV4WsInputLossValue = lookup($alarmItemV4WsInputLoss, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4WsInputLoss"
+            @AlertKey = $v4trapSource
+            @Summary = "WS Input Loss Status is " + $alarmItemV4WsInputLossValue
+
+
+      case"104":      ### alarmTrapV4WsBpOutputLoss
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4WsBpOutputLoss = $8                  ### WS BP Output Loss  (INTEGER (0..2))
+            $alarmItemV4WsBpOutputLossValue = lookup($alarmItemV4WsBpOutputLoss, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4WsBpOutputLoss"
+            @AlertKey = $v4trapSource
+            @Summary = "WS BP Output Loss Status is " + $alarmItemV4WsBpOutputLossValue
+
+
+      case"105":      ### alarmTrapV4OduIduLink
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4OduIduLink = $8                      ### Status of ODU IDU Link  (INTEGER (0..2))
+            $alarmItemV4OduIduLinkValue = lookup($alarmItemV4OduIduLink, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4OduIduLink"
+            @AlertKey = $v4trapSource
+            @Summary = "Status of ODU IDU Link Status is " + $alarmItemV4OduIduLinkValue
+
+
+      case"106":      ### alarmTrapV4IfInput
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4IfInput = $8                         ### IF Input  (INTEGER (0..2))
+            $alarmItemV4IfInputValue = lookup($alarmItemV4IfInput, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4IfInput"
+            @AlertKey = $v4trapSource
+            @Summary = "IF Input Status is " + $alarmItemV4IfInputValue
+
+
+      case"107":      ### alarmTrapV4RxApc
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4RxApc = $8                           ### RX APC  (INTEGER (0..2))
+            $alarmItemV4RxApcValue = lookup($alarmItemV4RxApc, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4RxApc"
+            @AlertKey = $v4trapSource
+            @Summary = "RX APC Status is " + $alarmItemV4RxApcValue
+
+
+      case"108":      ### alarmTrapV4TxApc
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4TxApc = $8                           ### TX APC  (INTEGER (0..2))
+            $alarmItemV4TxApcValue = lookup($alarmItemV4TxApc, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4TxApc"
+            @AlertKey = $v4trapSource
+            @Summary = "TX APC Status is " + $alarmItemV4TxApcValue
+
+
+      case"109":      ### alarmTrapV4RxLev
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4RxLev = $8                           ### RX Level  (INTEGER (0..2))
+            $alarmItemV4RxLevValue = lookup($alarmItemV4RxLev, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4RxLev"
+            @AlertKey = $v4trapSource
+            @Summary = "RX Level Status is " + $alarmItemV4RxLevValue
+
+
+      case"110":      ### alarmTrapV4TxPwr
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4TxPwr = $8                           ### TX Power  (INTEGER (0..2))
+            $alarmItemV4TxPwrValue = lookup($alarmItemV4TxPwr, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4TxPwr"
+            @AlertKey = $v4trapSource
+            @Summary = "TX Power Status is " + $alarmItemV4TxPwrValue
+
+
+      case"111":      ### alarmTrapV4LoBer
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4LoBer = $8                           ### Low BER  (INTEGER (0..2))
+            $alarmItemV4LoBerValue = lookup($alarmItemV4LoBer, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4LoBer"
+            @AlertKey = $v4trapSource
+            @Summary = "Low BER Status is " + $alarmItemV4LoBerValue
+
+
+      case"112":      ### alarmTrapV4HiBer
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4HiBer = $8                           ### High BER  (INTEGER (0..2))
+            $alarmItemV4HiBerValue = lookup($alarmItemV4HiBer, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4HiBer"
+            @AlertKey = $v4trapSource
+            @Summary = "High BER Status is " + $alarmItemV4HiBerValue
+
+
+      case"113":      ### alarmTrapV4Ber
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4Ber = $8                             ### BER  (INTEGER (0..2))
+            $alarmItemV4BerValue = lookup($alarmItemV4Ber, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4Ber"
+            @AlertKey = $v4trapSource
+            @Summary = "BER Status is " + $alarmItemV4BerValue
+
+
+      case"114":      ### alarmTrapV4FrameAsync
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4FrameAsync = $8                      ### Frame Async  (INTEGER (0..2))
+            $alarmItemV4FrameAsyncValue = lookup($alarmItemV4FrameAsync, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4FrameAsync"
+            @AlertKey = $v4trapSource
+            @Summary = "Frame Async Status is " + $alarmItemV4FrameAsyncValue
+
+
+      case"115":      ### alarmTrapV4Dem
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4Dem = $8                             ### DEM  (INTEGER (0..2))
+            $alarmItemV4DemValue = lookup($alarmItemV4Dem, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4Dem"
+            @AlertKey = $v4trapSource
+            @Summary = "DEM Status is " + $alarmItemV4DemValue
+
+
+      case"116":      ### alarmTrapV4Mod
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4Mod = $8                             ### MOD  (INTEGER (0..2))
+            $alarmItemV4ModValue = lookup($alarmItemV4Mod, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4Mod"
+            @AlertKey = $v4trapSource
+            @Summary = "MOD Status is " + $alarmItemV4ModValue
+
+
+      case"117":      ### alarmTrapV4CpuAlarm
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4CpuAlarm = $8                        ### CPU Alarm  (INTEGER (0..2))
+            $alarmItemV4CpuAlarmValue = lookup($alarmItemV4CpuAlarm, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4CpuAlarm"
+            @AlertKey = $v4trapSource
+            @Summary = "CPU Alarm Status is " + $alarmItemV4CpuAlarmValue
+
+
+      case"118":      ### alarmTrapV4TxClkLoss
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4TxClkLoss = $8                       ### TX Clock Loss  (INTEGER (0..2))
+            $alarmItemV4TxClkLossValue = lookup($alarmItemV4TxClkLoss, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4TxClkLoss"
+            @AlertKey = $v4trapSource
+            @Summary = "TX Clock Loss Status is " + $alarmItemV4TxClkLossValue
+
+
+      case"119":      ### alarmTrapV4RxClkLoss
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4RxClkLoss = $8                       ### RX Clock Loss  (INTEGER (0..2))
+            $alarmItemV4RxClkLossValue = lookup($alarmItemV4RxClkLoss, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4RxClkLoss"
+            @AlertKey = $v4trapSource
+            @Summary = "RX Clock Loss Status is " + $alarmItemV4RxClkLossValue
+
+
+      case"120":      ### alarmTrapV4PmonDaily
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4PmonDaily = $8                       ### PMON Daily Alarm  (INTEGER (0..2))
+            $alarmItemV4PmonDailyValue = lookup($alarmItemV4PmonDaily, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4PmonDaily"
+            @AlertKey = $v4trapSource
+            @Summary = "Status of total 15min data is " + $alarmItemV4PmonDailyValue
+
+
+      case"121":      ### alarmTrapV4PmonWeekly
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4PmonWeekly = $8                      ### PMON Weekly Alarm  (INTEGER (0..2))
+            $alarmItemV4PmonWeeklyValue = lookup($alarmItemV4PmonWeekly, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4PmonWeekly"
+            @AlertKey = $v4trapSource
+            @Summary = "Status of total 1day data is " + $alarmItemV4PmonWeeklyValue
+
+
+      case"122":      ### alarmTrapV4PasoConnection
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4PasoConnection = $8                  ### Status of Pasolink Connection  (INTEGER (0..2))
+            $alarmItemV4PasoConnectionValue = lookup($alarmItemV4PasoConnection, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4PasoConnection"
+            @AlertKey = $v4trapSource
+            @Summary = "Status of Pasolink Connection Status is " + $alarmItemV4PasoConnectionValue
+
+
+      case"123":      ### alarmTrapV4PmcCommunication
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4PmcCommunication = $8                ### Status of PMC Communication  (INTEGER)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4PmcCommunication"
+            @AlertKey = $v4trapSource
+            @Summary = "Status of PMC Communication Status is " + $alarmItemV4PmcCommunication
+
+
+      case"124":      ### alarmTrapV4LanLinkAlarm
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4LanLinkAlarm = $8                    ### LAN Link Alarm  (INTEGER)
+			$alarmItemV4LanLinkAlarmValue = lookup($alarmItemV4LanLinkAlarm, alarmItemV4NormalAlarmTable)
+			
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+            @AlertGroup = "alarmTrapV4LanLinkAlarm"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Link Alarm Status is " + $alarmItemV4LanLinkAlarmValue
+
+
+      case"125":      ### alarmTrapV4LanCardAlarm
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemV4LanCardAlarm = $8                    ### LAN Card Alarm  (INTEGER (0..2))
+            $alarmItemV4LanCardAlarmValue = lookup($alarmItemV4LanCardAlarm, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "alarmTrapV4LanCardAlarm"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Card Alarm Status is " + $alarmItemV4LanCardAlarmValue
+
+
+      case"126":      ### alarmTrapChUsageError
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemChUsageError = $8                      ### CH Usage Error  (INTEGER)
+            $alarmItemChUsageErrorValue = lookup($alarmItemChUsageError, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "alarmTrapChUsageError"
+            @AlertKey = $v4trapSource
+            @Summary = "CH Usage Error Status is " + $alarmItemChUsageErrorValue
+
+
+      case"127":      ### alarmTrapWsChUsageError
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $alarmItemWsChUsageError = $8                    ### CH Usage Error  (INTEGER)
+            $alarmItemWsChUsageErrorValue = lookup($alarmItemWsChUsageError, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "alarmTrapWsChUsageError"
+            @AlertKey = $v4trapSource
+            @Summary = "CH Usage Error Status is  " + $alarmItemWsChUsageErrorValue
+
+
+      case"201":      ### eventTrapV4WsAlmInh
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4WsAlmInh = $5                        ### WS Alm Inh"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4WsAlmInh"
+            @AlertKey = $v4trapSource
+            @Summary = "WS Alm Inh " + $eventItemV4WsAlmInh
+
+
+      case"202":      ### eventTrapV4Lb2
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Lb2 = $5                             ### LB2"  (INTEGER)
+			$eventItemV4Lb2Value = lookup($eventItemV4Lb2, pasov40ffOn)
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Lb2"
+            @AlertKey = $v4trapSource
+            @Summary = "LB2 is " + $eventItemV4Lb2Value
+
+
+      case"203":      ### eventTrapV4Lb1
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Lb1 = $5                             ### LB1"  (INTEGER)
+			$eventItemV4Lb1Value = lookup($eventItemV4Lb1, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Lb1"
+            @AlertKey = $v4trapSource
+            @Summary = "LB1 " + $eventItemV4Lb1Value
+
+
+      case"204":      ### eventTrapV4AlmInh
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AlmInh = $5                          ### Alm Inh"  (INTEGER)
+			$eventItemV4AlmInhValue = lookup($eventItemV4AlmInh, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AlmInh"
+            @AlertKey = $v4trapSource
+            @Summary = "Alarm Inh is " + $eventItemV4AlmInh
+
+
+      case"205":      ### eventTrapV4Sc4Selector
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Sc4Selector = $5                     ### SC4 Selector"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Sc4Selector"
+            @AlertKey = $v4trapSource
+            @Summary = "SC4 Selector " + $eventItemV4Sc4Selector
+
+
+      case"206":      ### eventTrapV4Sc5Selector
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Sc5Selector = $5                     ### SC5 Selector"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Sc5Selector"
+            @AlertKey = $v4trapSource
+            @Summary = "SC5 Selector " + $eventItemV4Sc5Selector
+
+
+      case"207":      ### eventTrapV4Remote
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Remote = $5                          ### Remote"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Remote"
+            @AlertKey = $v4trapSource
+            @Summary = "Remote " + $eventItemV4Remote
+
+
+      case"208":      ### eventTrapV4TxSelected
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxSelected = $5                      ### Tx Selected"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxSelected"
+            @AlertKey = $v4trapSource
+            @Summary = "Tx Selected " + $eventItemV4TxSelected
+
+
+      case"209":      ### eventTrapV4RxSelected
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4RxSelected = $5                      ### Rx Selected"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4RxSelected"
+            @AlertKey = $v4trapSource
+            @Summary = "Rx Selected " + $eventItemV4RxSelected
+
+
+      case"210":      ### eventTrapV4FrameID
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4FrameID = $5                         ### Frame ID"  (INTEGER)
+			$eventItemV4FrameIDValue = lookup($eventItemV4FrameID, p4mpviFrameID)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4FrameID"
+            @AlertKey = $v4trapSource
+            @Summary = "Frame ID is " + $eventItemV4FrameIDValue
+
+
+      case"211":      ### eventTrapV4BerThreshold
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4BerThreshold = $5                    ### Ber Threshold"  (INTEGER)
+			$eventItemV4BerThresholdValue = lookup($eventItemV4BerThreshold, p4mpviBerThreshold)
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4BerThreshold"
+            @AlertKey = $v4trapSource
+            @Summary = "Ber Threshold is " + $eventItemV4BerThresholdValue
+
+
+      case"212":      ### eventTrapV4AisRcvd
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AisRcvd = $5                         ### Ais Rcvd"  (INTEGER)
+			$eventItemV4AisRcvdValue = lookup($eventItemV4AisRcvd, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AisRcvd"
+            @AlertKey = $v4trapSource
+            @Summary = "Ais Rcvd is  " + $eventItemV4AisRcvdValue
+
+
+      case"213":      ### eventTrapV4AisSend
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AisSend = $5                         ### Ais Send"  (INTEGER)
+			$eventItemV4AisSendValue = lookup($eventItemV4AisSend, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AisSend"
+            @AlertKey = $v4trapSource
+            @Summary = "Ais Send is " + $eventItemV4AisSendValue
+
+
+      case"214":      ### eventTrapV4TxAtt
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxAtt = $5                           ### MTPC TX Power[dB]"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxAtt"
+            @AlertKey = $v4trapSource
+            @Summary = "MTPC TX Power[dB]is - " + $eventItemV4TxAtt
+
+
+      case"215":      ### eventTrapV4BerAis
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4BerAis = $5                          ### Ber Ais"  (INTEGER)
+			$eventItemV4BerAisValue = lookup($eventItemV4BerAis, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4BerAis"
+            @AlertKey = $v4trapSource
+            @Summary = "Ber Ais Control is " + $eventItemV4BerAisValue
+
+
+      case"216":      ### eventTrapV4Cw
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Cw = $5                              ### CW"  (INTEGER)
+			$eventItemV4CwValue = lookup($eventItemV4Cw, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Cw"
+            @AlertKey = $v4trapSource
+            @Summary = "Carrier Wave control is " + $eventItemV4CwValue
+
+
+      case"217":      ### eventTrapV4Maint
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Maint = $5                           ### Maint"  (INTEGER)
+			$eventItemV4MaintValue = lookup($eventItemV4Maint, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Maint"
+            @AlertKey = $v4trapSource
+            @Summary = "Maint control is " + $eventItemV4MaintValue
+
+
+      case"218":      ### eventTrapV4Mute
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Mute = $5                            ### Mute"  (INTEGER)
+			$eventItemV4MuteValue = lookup($eventItemV4Mute, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Mute"
+            @AlertKey = $v4trapSource
+            @Summary = "TX Mute control is " + $eventItemV4Mute
+
+
+      case"219":      ### eventTrapV4AuxOutput
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AuxOutput = $5                       ### Aux Output"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AuxOutput"
+            @AlertKey = $v4trapSource
+            @Summary = "Aux Output " + $eventItemV4AuxOutput
+
+
+      case"220":      ### eventTrapV4RxSel
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4RxSel = $5                           ### Rx Sel"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4RxSel"
+            @AlertKey = $v4trapSource
+            @Summary = "Rx Sel " + $eventItemV4RxSel
+
+
+      case"221":      ### eventTrapV4TxSel
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxSel = $5                           ### Tx Sel"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxSel"
+            @AlertKey = $v4trapSource
+            @Summary = "Tx Sel " + $eventItemV4TxSel
+
+
+      case"222":      ### eventTrapV4RxSelAns
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4RxSelAns = $5                        ### Rx Sel Ans"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4RxSelAns"
+            @AlertKey = $v4trapSource
+            @Summary = "Rx Sel Ans " + $eventItemV4RxSelAns
+
+
+      case"223":      ### eventTrapV4TxSelAns
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxSelAns = $5                        ### Tx Sel Ans"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxSelAns"
+            @AlertKey = $v4trapSource
+            @Summary = "Tx Sel Ans " + $eventItemV4TxSelAns
+
+
+      case"224":      ### eventTrapV4DemInv
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4DemInv = $5                          ### Dem Inv"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4DemInv"
+            @AlertKey = $v4trapSource
+            @Summary = "Dem Inv " + $eventItemV4DemInv
+
+
+      case"225":      ### eventTrapV4Config
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Config = $5                          ### Config"  (INTEGER)
+			$p4mp4vcV4ConfigValue = lookup($eventItemV4Config, p4mp4vcV4Config)
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Config"
+            @AlertKey = $v4trapSource
+            @Summary = "IDU&ODU Config is " + $p4mp4vcV4ConfigValue
+
+
+      case"226":      ### eventTrapV4ManualSw
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4ManualSw = $5                        ### Manual SW"  (INTEGER)
+			$eventItemV4ManualSwValue = lookup($eventItemV4ManualSw,  alarmItemV4AutoManualTable)
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4ManualSw"
+            @AlertKey = $v4trapSource
+            @Summary = "Manual Switch is " + $eventItemV4ManualSwValue
+
+
+      case"227":      ### eventTrapV4BitRate
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4BitRate = $5                         ### Bit Rate"  (INTEGER)
+			$eventItemV4BitRateValue = lookup($eventItemV4BitRate, p4mp4vcV4BitRate)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4BitRate"
+            @AlertKey = $v4trapSource
+            @Summary = "Status of Bit Rate setting is " + $eventItemV4BitRateValue
+
+
+      case"228":      ### eventTrapV4LanMount
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4LanMount = $5                        ### LAN Mount"  (INTEGER)
+			$eventItemV4LanMountValue = lookup($eventItemV4LanMount, alarmItemV4MountNotMountTable)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4LanMount"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN card Mount Info. " + $eventItemV4LanMountValue
+
+
+      case"229":      ### eventTrapV4FeLinkCtrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4FeLinkCtrl = $5                      ### FE Link Ctrl"  (INTEGER)
+			 $eventItemV4FeLinkCtrlValue = lookup( $eventItemV4FeLinkCtrl, alarmItemV4DisableEnableTable)
+			 
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4FeLinkCtrl"
+            @AlertKey = $v4trapSource
+            @Summary = "Far End Link Down control is  " + $eventItemV4FeLinkCtrlValue
+
+
+      case"230":      ### eventTrapV4LanThroughput
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4LanThroughput = $5                   ### LAN Throughput"  (INTEGER)
+			$eventItemV4LanThroughputValue = lookup($eventItemV4LanThroughput, p4mp4vclLanThroughput)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4LanThroughput"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Throughput is " + $eventItemV4LanThroughputValue
+
+
+      case"231":      ### eventTrapV4LanWanSel
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4LanWanSel = $5                       ### LAN WAN Sel"  (INTEGER)
+			$eventItemV4LanWanSelValue = lookup($eventItemV4LanWanSel, pasov40ffOn)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4LanWanSel"
+            @AlertKey = $v4trapSource
+            @Summary = "Framing (LAN/WAN Select) is  " + $eventItemV4LanWanSelValue
+
+
+      case"232":      ### eventTrapV4CasCtrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CasCtrl = $5                         ### Cas Ctrl"  (INTEGER)
+			$eventItemV4CasCtrlValue = lookup($eventItemV4CasCtrl, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CasCtrl"
+            @AlertKey = $v4trapSource
+            @Summary = "CAS control is " + $eventItemV4CasCtrlValue
+
+
+      case"233":      ### eventTrapV4CrcCtrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CrcCtrl = $5                         ### CRC Ctrl"  (INTEGER)
+			$eventItemV4CrcCtrlValue = lookup($eventItemV4CrcCtrl, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CrcCtrl"
+            @AlertKey = $v4trapSource
+            @Summary = "CRC Control is " + $eventItemV4CrcCtrlValue
+
+
+      case"234":      ### eventTrapV4FlowCtrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4FlowCtrl = $5                        ### Flow Ctrl"  (INTEGER)
+			$eventItemV4FlowCtrlValue = lookup($eventItemV4FlowCtrl, pasov40ffOn)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4FlowCtrl"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Flow Control is " + $eventItemV4FlowCtrlValue
+
+
+      case"235":      ### eventTrapV4LanMode
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4LanMode = $5                         ### LAN Mode"  (INTEGER)
+			$eventItemV4LanModeValue = lookup($eventItemV4LanMode, p4mp4vclLanMode)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4LanMode"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Mode is " + $eventItemV4LanModeValue
+
+
+      case"236":      ### eventTrapV4CollisionReport
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CollisionReport = $5                 ### Collision Report"  (INTEGER)
+			$eventItemV4CollisionReportValue = lookup($eventItemV4CollisionReport, alarmItemV4ReportedNotReportedTable)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CollisionReport"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Collision Report is  " + $eventItemV4CollisionReportValue
+
+
+      case"237":      ### eventTrapV4LanReset
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4LanReset = $5                        ### LAN Reset"  (INTEGER)
+			$eventItemV4LanResetValue = lookup($eventItemV4LanReset, p4mp4vclLanReset)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4LanReset"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Reset is  " + $eventItemV4LanResetValue
+
+
+      case"238":      ### eventTrapV4CollAlarm
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CollAlarm = $5                       ### Coll Alarm"  (INTEGER)
+			$eventItemV4CollAlarmValue = lookup($eventItemV4CollAlarm, alarmItemV4NormalCollisionTable)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CollAlarm"
+            @AlertKey = $v4trapSource
+            @Summary = "Collision Alarm is " + $eventItemV4CollAlarmValue
+
+
+      case"239":      ### eventTrapV4CableLengthDs3
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CableLengthDs3 = $5                  ### Cable Length DS3"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CableLengthDs3"
+            @AlertKey = $v4trapSource
+            @Summary = "Cable Length DS3 " + $eventItemV4CableLengthDs3
+
+
+      case"240":      ### eventTrapV4AisEnbDs3
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AisEnbDs3 = $5                       ### AIS Enb DS3"  (INTEGER)
+			$eventItemV4AisEnbDs3Value = lookup($eventItemV4AisEnbDs3, p4mp4vcAisEnbDs3)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AisEnbDs3"
+            @AlertKey = $v4trapSource
+            @Summary = "DS3 Framed AIS Enable " + $eventItemV4AisEnbDs3Value
+
+
+      case"241":      ### eventTrapV4BipolarCodeWs
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4BipolarCodeWs = $5                   ### Bipolar Code WS"  (INTEGER)
+			$eventItemV4BipolarCodeWsValue = lookup($eventItemV4BipolarCodeWs, p4mp4vcBipolarCodeWs)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4BipolarCodeWs"
+            @AlertKey = $v4trapSource
+            @Summary = "Bipolar Code WS " + $eventItemV4BipolarCodeWsValue
+
+
+      case"242":      ### eventTrapV4CableLengthWs
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CableLengthWs = $5                   ### Cable Length WS"  (INTEGER)
+			$eventItemV4CableLengthWsValue = lookup($eventItemV4CableLengthWs, p4mp4vcDsCableLengthWs)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CableLengthWs"
+            @AlertKey = $v4trapSource
+            @Summary = "Cable Length WS is " + $eventItemV4CableLengthWsValue
+
+
+      case"243":      ### eventTrapV4BipolarCode
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4BipolarCode = $5                     ### Bipolar Code"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4BipolarCode"
+            @AlertKey = $v4trapSource
+            @Summary = "Bipolar Code " + $eventItemV4BipolarCode
+
+
+      case"244":      ### eventTrapV4CableLength
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4CableLength = $5                     ### Cable Length"  (INTEGER)
+			$eventItemV4CableLengthValue = lookup($eventItemV4CableLength, p4mp4vcCableLengthDs3)
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4CableLength"
+            @AlertKey = $v4trapSource
+            @Summary = "Cable Length is " + $eventItemV4CableLengthValue
+
+
+      case"245":      ### eventTrapV4Atpc
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Atpc = $5                            ### ATPC"  (INTEGER)
+			$eventItemV4AtpcValue = lookup($eventItemV4Atpc, p4mp4viV4Atpc)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Atpc"
+            @AlertKey = $v4trapSource
+            @Summary = "ATPC information is " + $eventItemV4AtpcValue
+
+
+      case"246":      ### eventTrapV4AtpcRxThreshold
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AtpcRxThreshold = $5                 ### Rx Threshold"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AtpcRxThreshold"
+            @AlertKey = $v4trapSource
+            @Summary = "Rx Threshold is -" + $eventItemV4AtpcRxThreshold
+
+
+      case"247":      ### eventTrapV4AtpcMaxPower
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AtpcMaxPower = $5                    ### ATPC MAX Power"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AtpcMaxPower"
+            @AlertKey = $v4trapSource
+            @Summary = "ATPC MAX Power is -" + $eventItemV4AtpcMaxPower
+
+
+      case"248":      ### eventTrapV4AtpcMinPower
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AtpcMinPower = $5                    ### ATPC MIN Power"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AtpcMinPower"
+            @AlertKey = $v4trapSource
+            @Summary = "ATPC MIN Power is -" + $eventItemV4AtpcMinPower
+
+
+      case"249":      ### eventTrapV4OduAlmMode
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4OduAlmMode = $5                      ### ODU Alm mode"  (INTEGER)
+			$eventItemV4OduAlmModeValue = lookup($eventItemV4OduAlmMode, p4mp4viV4OduAlmMode)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4OduAlmMode"
+            @AlertKey = $v4trapSource
+            @Summary = "ODU Alarm mode " + $eventItemV4OduAlmModeValue
+
+
+      case"250":      ### eventTrapV4TxFreq
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxFreq = $5_hex                          ### Tx Frequency[MHz]"  (OCTET STRING)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxFreq"
+            @AlertKey = $v4trapSource
+            @Summary = "Tx Frequency[MHz] " + $eventItemV4TxFreq
+
+
+      case"251":      ### eventTrapV4RxFreq
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4RxFreq = $5_hex                          ### Rx Frequency[MHz]"  (OCTET STRING)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4RxFreq"
+            @AlertKey = $v4trapSource
+            @Summary = "Rx Frequency[MHz] " + $eventItemV4RxFreq
+
+
+      case"252":      ### eventTrapV4LanCollReport
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4LanCollReport = $5                   ### LAN Coll Report"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4LanCollReport"
+            @AlertKey = $v4trapSource
+            @Summary = "LAN Coll Report " + $eventItemV4LanCollReport
+
+
+      case"253":      ### eventTrapV4TxSwPriority
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxSwPriority = $5                    ### Sw Priority"  (INTEGER)
+			$eventItemV4TxSwPriorityValue = lookup($eventItemV4TxSwPriority,  p4mp4vcTxSwPriority)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxSwPriority"
+            @AlertKey = $v4trapSource
+            @Summary = "TX Switch Priority is " + $eventItemV4TxSwPriorityValue
+
+
+      case"254":      ### eventTrapV4Ne500Ctrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4Ne500Ctrl = $5                       ### NE 500 Ctrl"  (INTEGER)
+			$eventItemV4Ne500CtrlValue = lookup($eventItemV4Ne500Ctrl, alarmItemV4ReportedNotReportedTable)
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4Ne500Ctrl"
+            @AlertKey = $v4trapSource
+            @Summary = "NE500 Report Control is " + $eventItemV4Ne500Ctrl
+
+
+      case"255":      ### eventTrapV4AisRcvdInh
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AisRcvdInh = $5                      ### AIS Rcvd Inh"  (INTEGER)
+			$eventItemV4AisRcvdInhValue = lookup($eventItemV4AisRcvdInh, alarmItemV4ReportedNotReportedTable)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AisRcvdInh"
+            @AlertKey = $v4trapSource
+            @Summary = "AIS Rcvd Inh is " + $eventItemV4AisRcvdInhValue
+
+
+      case"256":      ### eventTrapV4WsAisRcvdInh
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4WsAisRcvdInh = $5                    ### WS AIS Rcvd Inh"  (INTEGER)
+			$eventItemV4WsAisRcvdInhValue = lookup($eventItemV4WsAisRcvdInh, alarmItemV4ReportedNotReportedTable)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4WsAisRcvdInh"
+            @AlertKey = $v4trapSource
+            @Summary = "WS AIS RCVD Report Control is " + $eventItemV4WsAisRcvdInhValue
+
+
+      case"257":      ### eventTrapV4ChUsageErrorCtrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4ChUsageErrorCtrl = $5                ### CH Usage Error Ctrl"  (INTEGER)
+			$eventItemV4ChUsageErrorCtrlValue = lookup($eventItemV4ChUsageErrorCtrl, alarmItemV4ReportedNotReportedTable)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4ChUsageErrorCtrl"
+            @AlertKey = $v4trapSource
+            @Summary = "CH Usage Error Report Control is " + $eventItemV4ChUsageErrorCtrlValue
+
+
+      case"258":      ### eventTrapV4AtpcManualCtrl
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4AtpcManualCtrl = $5                  ### ATPC Manual Ctrl"  (INTEGER)
+			$eventItemV4AtpcManualCtrlValue = lookup($eventItemV4AtpcManualCtrl, pasov40ffOn)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4AtpcManualCtrl"
+            @AlertKey = $v4trapSource
+            @Summary = "Setting of ATPC Manual control signal is " + $eventItemV4AtpcManualCtrlValue
+
+
+      case"259":      ### eventTrapV4BerAisMaint
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4BerAisMaint = $5                     ### Ber Ais Maint"  (INTEGER)
+			$eventItemV4BerAisMaintValue = lookup($eventItemV4BerAisMaint, alarmItemV4EnableDisableTable)
+			
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4BerAisMaint"
+            @AlertKey = $v4trapSource
+            @Summary = "Setting of BER AIS include to Maint is " + $eventItemV4BerAisMaint
+
+
+      case"260":      ### eventTrapV4TxFreqCh
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $eventItemV4TxFreqCh = $5                        ### TX Frequency Channel"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapV4TxFreqCh"
+            @AlertKey = $v4trapSource
+            @Summary = "TX Frequency Channel " + $eventItemV4TxFreqCh
+
+
+      case"400":      ### configPasov4InputName
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $pasov4InputName = $5_hex                            ### Opto Name"  (OCTET STRING)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configPasov4InputName"
+            @AlertKey = $v4trapSource
+            @Summary = "Opto Name" + $pasov4InputName
+
+
+      case"401":      ### configPasov4InputCondition
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $pasov4InputCondition = $5                       ###   (INTEGER)
+            $pasov4InputConditionValue = lookup($pasov4InputCondition, pasov4InputCondition)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configPasov4InputCondition"
+            @AlertKey = $v4trapSource
+            @Summary = "Aux. I/O Input Status Type is "  + $pasov4InputConditionValue
+
+
+      case"402":      ### configPasov4OutputName
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $4                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $pasov4OutputName = $5_hex                           ### Relay Name"  (OCTET STRING)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configPasov4OutputName"
+            @AlertKey = $v4trapSource
+            @Summary = "Relay Name " + $pasov4OutputName
+
+
+      case"501":      ### statusTrapV4AisRcvd
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusTypeV4Ais = $8                            ### Status type of AIS.  (INTEGER (0..2))
+            $statusTypeV4AisValue = lookup($statusTypeV4Ais, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+            $statusItemV4AisRcvd = $9                        ### AIS RCVD  (INTEGER (0..2))
+            $statusItemV4AisRcvdValue = lookup($statusItemV4AisRcvd, pasov4Rcvd )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4AisRcvd"
+            @AlertKey = $v4trapSource
+            @Summary = "AIS RCVD Status is  " + $statusItemV4AisRcvdValue
+
+
+      case"502":      ### statusTrapV4AisSend
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusTypeV4Ais = $8                            ### Status type of AIS.  (INTEGER (0..2))
+            $statusTypeV4AisValue = lookup($statusTypeV4Ais, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+            $statusItemV4AisSend = $9                        ### AIS SEND  (INTEGER (0..2))
+            $statusItemV4AisSendValue = lookup($statusItemV4AisSend, pasov4Send )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4AisSend"
+            @AlertKey = $v4trapSource
+            @Summary = "AIS SEND Status is  " + $statusItemV4AisSendValue
+
+
+      case"503":      ### statusTrapV4WsAisRcvd
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusTypeV4Ais = $8                            ### Status type of AIS.  (INTEGER (0..2))
+            $statusTypeV4AisValue = lookup($statusTypeV4Ais, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+            $statusItemV4WsAisRcvd = $9                      ### WS AIS RCVD  (INTEGER (0..2))
+            $statusItemV4WsAisRcvdValue = lookup($statusItemV4WsAisRcvd, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4WsAisRcvd"
+            @AlertKey = $v4trapSource
+            @Summary = "WS AIS RCVD  Status is  " + $statusItemV4WsAisRcvdValue
+
+
+      case"504":      ### statusTrapV4WsAisSend
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusTypeV4Ais = $8                            ### Status type of AIS.  (INTEGER (0..2))
+            $statusTypeV4AisValue = lookup($statusTypeV4Ais, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+            $statusItemV4WsAisSend = $9                      ### WS AIS SEND  (INTEGER (0..2))
+            $statusItemV4WsAisSendValue = lookup($statusItemV4WsAisSend, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4WsAisSend"
+            @AlertKey = $v4trapSource
+            @Summary = "WS AIS SEND Status is  " + $statusItemV4WsAisSendValue
+
+
+      case"505":      ### statusTrapV4AuxInput
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusTypeV4Aux = $8                            ### Status type of AUX.  (INTEGER (0..3))
+            $statusTypeV4AuxValue = lookup($statusTypeV4Aux, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+            $statusItemV4AuxInputChangeIndex = $9            ### AUX Input Change Index"  (INTEGER)
+            $statusItemV4AuxInput = $10                      ### AUX Input  (INTEGER (0..2))
+            $statusItemV4AuxInputValue = lookup($statusItemV4AuxInput, p4paiPasoInputStatus )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4AuxInput"
+            @AlertKey = $v4trapSource
+            @Summary = "Aux. I/O Input Status is  " + $statusItemV4AuxInputValue
+
+
+      case"506":      ### statusTrapV4AuxInputChangeIndex
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusTypeV4Aux = $8                            ### Status type of AUX.  (INTEGER (0..3))
+            $statusTypeV4AuxValue = lookup($statusTypeV4Aux, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+            $statusItemV4AuxInputChangeIndex = $9            ### AUX Input Change Index"  (INTEGER)
+            $statusItemV4AuxInput = $10                      ### AUX Input  (INTEGER (0..2))
+            $statusItemV4AuxInputValue = lookup($statusItemV4AuxInput, alarmItemV4NormalAlarmTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4AuxInputChangeIndex"
+            @AlertKey = $v4trapSource
+            @Summary = "AUX Input Status is  " + $statusItemV4AuxInputValue
+
+
+      case"507":      ### statusTrapV4CollAlarm
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $v4trapSource = $7                               ### Trap Source"  (OBJECT IDENTIFIER)
+            $v4severity = $4                                 ### Trap Severity  (SeverityValue)
+            $v4alarmType = $5                                ### Alarm Type  (AlarmTypeValue)
+            $v4alarmTypeValue = lookup($v4alarmType, AlarmTypeValue)
+            $v4probableCause = $6                            ### Probable Cause  (ProbableCauseValue)
+            $v4probableCauseValue = lookup($v4probableCause, ProbableCauseValue)
+            $statusItemV4CollAlarm = $8                      ### Collision Alarm  (INTEGER (0..2))
+            $statusItemV4CollAlarmValue = lookup($statusItemV4CollAlarm, alarmItemV4NormalCollisionTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($v4severity, SeverityValue)
+#      	$OS_Severity = 2
+#			$OS_Type = 1
+#			$OS_ExpireTime = 36000
+
+
+            @AlertGroup = "statusTrapV4CollAlarm"
+            @AlertKey = $v4trapSource
+            @Summary = "Collision Alarm Status is  " + $statusItemV4CollAlarmValue
+
+
+      case"600":      ### systemPasov4GetResult
+            $v4trapSequenceNumber = $1                       ### Trap Sequence Number(0..4294967295)"  (Counter)
+            $v4trapDate = $2                                 ### Trap Date (YYYY/MM/DD)"  (DisplayString)
+            $v4trapTime = $3                                 ### Trap Time (HH:MM:SS)"  (DisplayString)
+            $systemPasov4RequestID = $4                      ### Request ID"  (INTEGER)
+            $systemPasov4TargetIpAddress = $5                ### Pasolink V4 IpAddress"  (IpAddress)
+            $systemPasov4Result = $6                         ### Request Result  (INTEGER (0..3))
+            $systemPasov4ResultValue = lookup($systemPasov4Result, systemPasov4ResultTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "systemPasov4GetResult"
+            @AlertKey = $systemPasov4RequestID
+            @Summary = "The result of Request " + $systemPasov4ResultValue
+
+
+				  
+					  
+					  
+			default:
+
+					$OS_Severity = 1
+					$OS_Type = 1
+					@Summary  =  "NEC PASOLINK-V4 - Unknown Specific Trap " + $specific-trap
+					@AlertGroup = "NEC PASOLINK-V4"
+					@AlertKey = $specific-trap
+					details($*)
+		}
+		@Severity = $OS_Severity
+		@Type = $OS_Type
+		@Grade = $specific-trap
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + $OS_Type
+		$OS_X733ProbableCause = $v4ProbableCause
+		$OS_X733EventType = $v4AlarmType
+		update(@Summary)
+		details($*)

@@ -1,0 +1,184 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IMAGE-UPGRADE-MIB.include.snmptrap.rules 1.0
+#    2006/04/11 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IMAGE-UPGRADE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.360": ### Cisco Image Upgrade - Notifications from CISCO-IMAGE-UPGRADE-MIB (20031104)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IMAGE-UPGRADE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Image Upgrade"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciuUpgradeOpCompletionNotify
+
+            ##########
+            # $1 = ciuUpgradeOpCommand
+            #      This object can have following values
+            #         none(1)           
+            #         done(2)
+            #         install(3)
+            #         check(4)
+
+            # $2 = ciuUpgradeOpStatus
+            #      This object can have following values
+            #        none(1)
+            #        invalidOperation(2)
+            #        failure(3)
+            #        inProgress(4)
+            #        success(5)
+            #        abortInProgress(6)
+            #        abortSuccess(7)
+            # $3 = ciuUpgradeOpTimeCompleted
+            ##########
+
+            $ciuUpgradeOpCommand = lookup($1, ciuUpgradeOpCommand)
+            $ciuUpgradeOpStatus = lookup($2, ciuUpgradeOpStatus) + " ( " + $2 + " )"
+            $ciuUpgradeOpTimeCompleted = $3
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IMAGE-UPGRADE-MIB-ciuUpgradeOpCompletionNotify"
+
+            @AlertGroup = "Image " + $ciuUpgradeOpCommand + " Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### none 
+                    $SEV_KEY = $OS_EventId + "_none"           
+                case "2": ### done
+                    $SEV_KEY = $OS_EventId + "_done"                     
+                case "3": ### install
+                    $SEV_KEY = $OS_EventId + "_install"                    
+                case "4": ### check
+                    $SEV_KEY = $OS_EventId + "_check"                    
+                default: ### unknown 
+                    $SEV_KEY = $OS_EventId + "_unknown" 
+            }  
+
+            switch($2)
+            {
+                case "1": ### none 
+                    $SEV_KEY = $SEV_KEY + "_none"  
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Status None"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### invalidOperation
+                    $SEV_KEY = $SEV_KEY + "_invalidOperation" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Invalid"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### failure
+                    $SEV_KEY = $SEV_KEY + "_failure" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Failed"  
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### inProgress
+                    $SEV_KEY = $SEV_KEY + "_inProgress" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " In Progress"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### success
+                    $SEV_KEY = $SEV_KEY + "_success" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Successful"  
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### abortInProgress
+                    $SEV_KEY = $SEV_KEY + "_abortInProgress" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Abort In Progress"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### abortSuccess
+                    $SEV_KEY = $SEV_KEY + "_abortSuccess" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Abort Successful"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown 
+                    $SEV_KEY = $SEV_KEY + "_unknown" 
+                    @Summary = "Image " + $ciuUpgradeOpCommand + " Status Unknown"  
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0             
+            }    
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+            $ciuUpgradeOpCommand = $ciuUpgradeOpCommand + " ( " + $1 + " )"
+            details($ciuUpgradeOpCommand,$ciuUpgradeOpStatus,$ciuUpgradeOpTimeCompleted)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IMAGE-UPGRADE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IMAGE-UPGRADE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IMAGE-UPGRADE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IMAGE-UPGRADE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IMAGE-UPGRADE-MIB.include.snmptrap.rules >>>>>")

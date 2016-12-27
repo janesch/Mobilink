@@ -1,0 +1,11 @@
+insert into custom.ParentChildFilters (FilterName,Definition) values ('FilterName','Definition');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('Slot','(PhysicalSlot = @PhysicalSlot)');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('Node_RemoteNode','(Node = \'@RemoteNode\')');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('Port','(PhysicalPort = @PhysicalPort)');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('Card','(PhysicalCard = \'@PhysicalCard\')');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('Node','(Node = \'@Node\')');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('RemoteNode_Node','(RemoteNode = \'@Node\')');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('Card_RemoteCard','(PhysicalCard = \'@RemoteCard\')');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('AlertGroup','(AlertGroup = \'@AlertGroup\')');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('AEndSite','Is A End of connection');
+insert into custom.ParentChildFilters (FilterName,Definition) values ('BEndSite','Is B End of connection');

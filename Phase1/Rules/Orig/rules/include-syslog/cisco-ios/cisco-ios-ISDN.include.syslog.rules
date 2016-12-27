@@ -1,0 +1,607 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-ISDN.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+#     - Modified extract for setting $MOI_Local to better handle events from
+#       both Syslog or CISCO-SYSLOG-MIB.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "ISDN": ### Integrated Services Digital Network
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-ISDN.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BAD_DSL_FOR_CREATE_DELETE_L2":
+            
+            ##########
+            # The creation or deletion service for the L2 signaling handler or
+            # the given DSL is missing.
+            #
+            # %ISDN-4-BAD_DSL_FOR_CREATE_DELETE_L2: [chars]:
+            # isdn_create_delete_signalling_channel: Unknown DSL [int] for \n
+            # [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "DSL ([0-9]+) ")
+            
+            @AlertKey = "DSL: " + $MOI_Local
+        
+        case "CALL_COLLISION":
+            
+            ##########
+            # A call has been received and has collided with an existing call
+            # on the same channel.
+            #
+            # %ISDN-6-CALL_COLLISION: Interface [chars] Call Cid [hex] Cref
+            # [hex] collision on Channel [dec] in_use_cid [hex] cref [hex],
+            # Channel awarded to the received call
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) Call Cid")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "Channel ([0-9]+) in")
+        
+        case "CHAN_UNAVAILABLE":
+            
+            ##########
+            # The requested channel is not available.
+            #
+            # %ISDN-6-CHAN_UNAVAILABLE: Interface [chars] Requested Channel
+            # [dec] is not available
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) Requested")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "Channel ([0-9]+) is")
+        
+        case "CONNECT":
+            
+            ##########
+            # This is an informational message sent when a call is connected.
+            # The message displays the remote name and number, which it
+            # receives from the PPP authentication or from the location from
+            # which the dialer placed the call.
+            #
+            # %ISDN-6-CONNECT : Interface [chars] is now connected to [chars]
+            # [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) is")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "ISDN-Connection Status"
+            @AlertKey = "Interface: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+        
+        case "DISCONNECT":
+            
+            ##########
+            # This is an informational message sent when a call is
+            # disconnected. This message displays the remote name and number,
+            # which it receives from the PPP authentication or from the
+            # location at which the dialer placed the call. This message also
+            # reports the duration of the call.
+            #
+            # %ISDN-6-DISCONNECT : Interface [chars] disconnected from [chars]
+            # [chars], call lasted [int] seconds
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) disconnected")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "ISDN-Connection Status"
+            @AlertKey = "Interface: " + $MOI_Local
+            @Severity = 3
+            @Type = 1
+        
+        case "GET_STATUS_STATE_FAIL":
+            
+            ##########
+            # An attempt to retrieve the status of a DSL that is not currently
+            # configured has failed.
+            #
+            # %ISDN-4-GET_STATUS_STATE_FAIL: [chars]: isdn_get_status_state:
+            # Unknown DSL [int]
+            ##########
+            
+            $MOI_Local = extract($Message, "DSL ([0-9]+)")
+            
+            @AlertKey = "DSL: " + $MOI_Local
+        
+        case "INVALID_CALLEDNUMBER":
+            
+            ##########
+            # The incoming ISDN call is ignored because the called party number
+            # does not match the LDN that is configured in the router.
+            #
+            # %ISDN-4-INVALID_CALLEDNUMBER: Interface [chars], Ignoring call,
+            # LDN and Called Party Number mismatch
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*),? Ignoring ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+        
+        case "INVALID_EID":
+            
+            ##########
+            # The incoming ISDN call is ignored because the EID delivered in
+            # the incoming setup message cannot be matched.
+            #
+            # %ISDN-4-INVALID_EID: Interface [chars], Ignoring call, EndPoint
+            # Identifier (EID) mismatch
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*),? Ignoring")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+        
+        case "INVALID_EVENT":
+            
+            ##########
+            # The state transition for the ISDN L2 socket process has failed.
+            #
+            # %ISDN-4-INVALID_EVENT: [chars]: Bad Event Received For Current
+            # State
+            ##########
+            
+            @AlertKey = ""
+        
+        case "INVALID_SPID":
+            
+            ##########
+            # The SPID configured in the router has been rejected by the
+            # switch.
+            #
+            # %ISDN-4-INVALID_SPID: Interface [chars], Spid[dec] was rejected
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*),? Spid")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", SPID: " + extract($Message, "Spid ?([0-9]+) ")
+        
+        case "INVALID_TIMER":
+            
+            ##########
+            # An invalid ISDN timer handle has been passed on for timer
+            # operations. This message may indicate a low memory condition.
+            #
+            # %ISDN-6-INVALID_TIMER: [chars]: Invalid Timer Handle, caller
+            # [hex] handle [dec]
+            ##########
+            
+            @AlertKey = "Caller: " + extract($Message, "caller (.*) handle") + ", Handle: " + extract($Message, "handle ([0-9]+)")
+        
+        case "ISDN_CCB_FREE":
+            
+            ##########
+            # A data structure internal to ISDN has leaked.
+            #
+            # %ISDN-3-ISDN_CCB_FREE: [chars]: CCB with call_id [hex] on b
+            # channel [dec] was leaked, but has been freed by ISDN
+            # Housekeeping. Reason: [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "channel ([0-9]+) was")
+            
+            @AlertKey = "B-Channel: " + $MOI_Local
+        
+        case "ISDN_CCB_FREE_FAILS":
+            
+            ##########
+            # A data structure internal to ISDN has leaked and cannot be fixed.
+            #
+            # %ISDN-3-ISDN_CCB_FREE_FAILS: [chars]: CCB with call_id [hex] on b
+            # channel [dec] was leaked (reason: [chars]), and can't be free'd
+            # by ISDN Housekeeping.
+            ##########
+            
+            $MOI_Local = extract($Message, "channel ([0-9]+) was")
+            
+            @AlertKey = "B-Channel: " + $MOI_Local
+        
+        case "ISDN_CCB_LEAK":
+            
+            ##########
+            # A data structure internal to ISDN has leaked.
+            #
+            # %ISDN-4-ISDN_CCB_LEAK: [chars]: CCB with call_id [hex] on b
+            # channel [dec] has been leaked. Reason: [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "channel ([0-9]+) was")
+            
+            @AlertKey = "B-Channel: " + $MOI_Local
+        
+        case "ISDN_FATAL":
+            
+            ##########
+            # ISDN has detected a fatal system error.
+            #
+            # %ISDN-3-ISDN_FATAL: ISDN FATAL ERROR: file [chars], function
+            # [chars], message: [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "file (.*),? function")
+            
+            @AlertKey = "File: " + $MOI_Local + ", Function: " + extract($Message, "function (.*),? message")
+        
+        case "ISDN_GENERAL_TRACEBACK":
+            
+            ##########
+            # A debug traceback condition has occurred.
+            #
+            # %ISDN-2-ISDN_GENERAL_TRACEBACK: [chars]:[dec]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "ISDN_L2_INTERFACE_NOT_REGISTERED":
+            
+            ##########
+            # The ISDN stack has not registered its L2 message handler.
+            #
+            # %ISDN-4-ISDN_L2_INTERFACE_NOT_REGISTERED: [chars]: isdn_to_L2:
+            # Unknown DSL [int] for command [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "DSL ([0-9]+) for")
+            
+            @AlertKey = "DSL: " + $MOI_Local + ", Command: " + extract($Message, "for command (.*)")
+        
+        case "ISDN_NLCB_LEAK":
+            
+            ##########
+            # A data structure internal to ISDN has not been freed.
+            #
+            # %ISDN-4-ISDN_NLCB_LEAK: [chars]: NLCB leak detected. nlcb=[hex]
+            ##########
+            
+            $MOI_Local = extract($Message, "nlcb= ?(.*)$")
+            
+            @AlertKey = "NLCB: " + $MOI_Local
+        
+        case "ISDN_RESOURCE_UNAVAILABLE":
+            
+            ##########
+            # A specified hardware resource could not be allocated.
+            #
+            # %ISDN-3-ISDN_RESOURCE_UNAVAILABLE: [chars]: Resource not
+            # available, at [chars]:[dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "available,? at  (.*)$")
+            
+            @AlertKey = "Resource: " + $MOI_Local
+        
+        case "ISDN_UNEXPECTED_EVENT":
+            
+            ##########
+            # An unexpected event of significance has occurred.
+            #
+            # %ISDN-4-ISDN_UNEXPECTED_EVENT: [chars]: Occurred at [chars]:[dec]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "LAYER2_DOWN":
+            
+            ##########
+            # This informational message is sent when an ISDN Layer 2 logical
+            # link is down. It also shows the TEI associated with this logical
+            # link.
+            #
+            # %ISDN-3-LAYER2_DOWN : Layer 2 for Interface [chars], TEI [int]
+            # changed to down
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) changed")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "ISDN-LAYER2_Status"
+            @AlertKey = "Interface: " + extract($Message, "Interface ([^ ,]+)") + ", TEI: " + extract($Message, " TEI ([0-9]+)")
+            @Severity = 3
+            @Type = 1
+        
+        case "LAYER2_UP":
+            
+            ##########
+            # This informational message is sent when an ISDN Layer 2 logical
+            # link is up. It also shows the TEI associated with this logical
+            # link.
+            #
+            # %ISDN-3-LAYER2_UP : Layer 2 for Interface [chars], TEI [int]
+            # changed to up
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) changed")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "ISDN-LAYER2_Status"
+            @AlertKey = "Interface: " + extract($Message, "Interface ([^ ,]+)") + ", TEI: " + extract($Message, " TEI ([0-9]+)")
+            @Severity = 1
+            @Type = 2
+        
+        case "LAYER2DOWN":
+            
+            ##########
+            # An ISDN Layer 2 logical link is down. The TEI associated with
+            # this logical link is shown.
+            #
+            # %ISDN-6-LAYER2DOWN : Layer 2 for Interface [chars], TEI [int]
+            # changed to down
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) changed")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "ISDN-LAYER2_Status"
+            @AlertKey = "Interface: " + extract($Message, "Interface ([^ ,]+)") + ", TEI: " + extract($Message, " TEI ([0-9]+)")
+            @Severity = 3
+            @Type = 1
+        
+        case "LAYER2UP":
+            
+            ##########
+            # An ISDN Layer 2 logical link is up. The TEI associated with this
+            # logical link is shown.
+            #
+            # %ISDN-6-LAYER2UP : Layer 2 for Interface [chars], TEI
+            # [int] changed to up
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) changed")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "ISDN-LAYER2_Status"
+            @AlertKey = "Interface: " + extract($Message, "Interface ([^ ,]+)") + ", TEI: " + extract($Message, " TEI ([0-9]+)")
+            @Severity = 1
+            @Type = 2
+        
+        case "NFAS_STATUS_CHANGE":
+            
+            ##########
+            # The NFAS D-channel status has changed.
+            #
+            # %ISDN-6-NFAS_STATUS_CHANGE: [chars] [chars] [chars] [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        case "NO_TIMER":
+            
+            ##########
+            # The ISDN protocol cannot start new timers for its operation. This
+            # message may indicate a low memory condition.
+            #
+            # %ISDN-6-NO_TIMER: No Free Timer Entry, caller [hex], timers used
+            # [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "caller (.*),? timers")
+            
+            @AlertKey = "Caller: " + $MOI_Local
+        
+        case "NOMEMORY":
+            
+            ##########
+            # The requested operation could not be accomplished because of
+            # insufficient memory.
+            #
+            # %ISDN-1-NOMEMORY: Unit [dec], no memory for [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "Unit (.*),? no memory ")
+            
+            @AlertKey = "Unit: " + $MOI_Local
+        
+        case "OPEN_TEMP_SOCKET_FAIL":
+            
+            ##########
+            # The reopen attempt for a required temporary socket has failed.
+            # Without this socket, the L2 socket process will fail.
+            #
+            # %ISDN-4-OPEN_TEMP_SOCKET_FAIL: [chars]: Failed to Open Required
+            # Temporary Socket[chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "Socket ?(.*)$")
+            
+            @AlertKey = "Socket: " + $MOI_Local
+        
+        case "REPEATED_SETUP":
+            
+            ##########
+            # This informational message is sent when a duplicate setup message
+            # is received on an ISDN B-channel. This condition indicates that
+            # the rate of calls being received is momentarily greater than the
+            # rate of calls that can be processed.
+            #
+            # %ISDN-6-REPEATED_SETUP: Interface [chars] Call Cid [hex] Cref
+            # [hex] received a retransmitted setup on channel [dec] in_use_cid
+            # [hex] cref [hex].
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) Call")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "channel ([0-9]+) in")
+        
+        case "RESTART":
+            
+            ##########
+            # This informational message indicates that an ISDN logical link
+            # has restarted.
+            #
+            # %ISDN-4-RESTART: Interface [chars] [chars] [chars] message with
+            # restart class of [chars] chan [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface ([A-Za-z0-9/:\-]+) ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "chan ([0-9]+) ?$")
+        
+        case "RLM_STATUS_CHANGE":
+            
+            ##########
+            # ISDN has been notified by the RLM component of a \n status change
+            # in the RLM link.
+            #
+            # %ISDN-4-RLM_STATUS_CHANGE: ISDN SC [chars]: Status Changed to:
+            # [chars].
+            ##########
+            
+            $MOI_Local = extract($Message, "ISDN SC (.*):? Status")
+            
+            @AlertKey = "ISDN SC: " + $MOI_Local
+        
+        case "SERV_AUDIT_C1":
+            
+            ##########
+            # This informational message indicates that a service audit trigger
+            # condition exists on the specified interface.
+            #
+            # %ISDN-4-SERV_AUDIT_C1: Interface [chars] service audit trigger
+            # condition [dec] on channel [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) service")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "channel ([0-9]+) ?$")
+        
+        case "SERV_AUDIT_C2":
+            
+            ##########
+            # This informational message indicates that a service audit trigger
+            # condition exists on the specified interface.
+            #
+            # %ISDN-5-SERV_AUDIT_C2: Interface [chars] service audit trigger
+            # condition [dec] on channel [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) service")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "channel ([0-9]+) ?$")
+        
+        case "SERV_AUDIT_C3":
+            
+            ##########
+            # This informational message indicates that a service audit trigger
+            # condition exists on the specified interface.
+            #
+            # %ISDN-6-SERV_AUDIT_C3: Interface [chars] service audit trigger
+            # condition [dec] on channel [dec]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) service")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "channel ([0-9]+) ?$")
+        
+        case "SERVICE":
+            
+            ##########
+            # This informational message indicates that a service condition
+            # exists on the specified interface.
+            #
+            # %ISDN-4-SERVICE: Interface [chars] [chars] [chars] message for
+            # chan [dec] state [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface ([A-Za-z0-9/:\-]+) ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Channel: " + extract($Message, "chan ([0-9]+) state")
+        
+        case "SPURIOUS_CONNECT":
+            
+            ##########
+            # An unknown TCP connection was accepted and then refused.
+            #
+            # %ISDN-4-SPURIOUS_CONNECT: [chars]: Spurious Connection Accepted
+            # and Closed on port [int]
+            ##########
+            
+            $MOI_Local = extract($Message, "port ([0-9]+)")
+            $MOIType_Local = "tcpport"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "TCP Port: " + $MOI_Local
+        
+        case "STATUS":
+            
+            ##########
+            # This informational message shows the ISDN status of an interface.
+            #
+            # %ISDN-4-STATUS: Interface [chars] [chars] [chars] st [hex] ev
+            # [hex] cid [hex] cref [hex]
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface ([A-Za-z0-9/:\-]+) ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-ISDN.include.syslog.rules >>>>>")

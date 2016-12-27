@@ -1,0 +1,209 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    cisco-CISCO-SNA-LLC-MIB.include.snmptrap.rules 1.0
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-SNA-LLC-MIB
+#
+#          -  Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.8.2": ### Cisco SNA Logical Link Control - Notifications from CISCO-SNA-LLC-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-SNA-LLC-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-SNA LLC"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+    
+    switch ($specific-trap)
+    {
+        case "1": ### llcCcStatusChange
+        
+            ##########
+            # $1 = llcCcOperState 
+            # $2 = llcCcOperLastFailTime
+            # $3 = llcCcOperLastFailCause 
+            # $4 = llcCcOperLastFailFRMRInfo 
+            ##########
+        
+            $llcCcOperState = lookup($1, llcCcOperState) + " ( " + $1 + " )"
+	    $llcCcOperLastFailTime = $2
+            $llcCcOperLastFailCause = lookup($3, llcCcOperLastFailCause) + " ( " + $3 + " )"
+            $llcCcOperLastFailFRMRInfo = $4
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-SNA-LLC-MIB-llcCcStatusChange"
+
+            @AlertGroup = "llcCc Status Change"
+            @AlertKey = extract($OID1, "8\.1\.3\.2\.1\.1\.(.*)$") ### ifIndex.llcPortVirtualIndex.llcSapNumber.llcCcRMac.llcCcRSap
+
+            switch ($1)
+            {
+                case "1": ### aDM
+                    $SEV_KEY = $OS_EventId + "_aDM"
+                    @Summary = "LLC Connection Component aDM  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### setup
+                    $SEV_KEY = $OS_EventId + "_setup"
+                    @Summary = "LLC Connection Component Setup  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### normal
+                    $SEV_KEY = $OS_EventId + "_normal"
+                    @Summary = "LLC Connection Component Normal  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### busy
+                    $SEV_KEY = $OS_EventId + "_busy"
+                    @Summary = "LLC Connection Component Busy  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "5": ### reject
+                    $SEV_KEY = $OS_EventId + "_reject"
+                    @Summary = "LLC Connection Component Rejected  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "6": ### await
+                    $SEV_KEY = $OS_EventId + "_await"
+                    @Summary = "LLC Connection Component Waiting  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "7": ### awaitBusy
+                    $SEV_KEY = $OS_EventId + "_awaitBusy"
+                    @Summary = "LLC Connection Component Waiting, Busy  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "8": ### awaitReject
+                    $SEV_KEY = $OS_EventId + "_awaitReject"
+                    @Summary = "LLC Connection Component Waiting, Rejected  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "9": ### dConn
+                    $SEV_KEY = $OS_EventId + "_dConn"
+                    @Summary = "LLC Connection Component Disconnected  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "10": ### reset
+                    $SEV_KEY = $OS_EventId + "_reset"
+                    @Summary = "LLC Connection Component Reset  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "11": ### error
+                    $SEV_KEY = $OS_EventId + "_error"
+                    @Summary = "LLC Connection Component Error  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "12": ### conn
+                    $SEV_KEY = $OS_EventId + "_conn"
+                    @Summary = "LLC Connection Component Connected  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "13": ### resetCheck
+                    $SEV_KEY = $OS_EventId + "_resetCheck"
+                    @Summary = "LLC Connection Component Reset, Check  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "14": ### resetWait
+                    $SEV_KEY = $OS_EventId + "_resetWait"
+                    @Summary = "LLC Connection Component Reset, Waiting  ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "LLC Connection Component Status Unknown ( ifIndex.PortVirtual.SapNumber.CcRMac.CcRSap = " + @AlertKey + " )"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            details($llcCcOperState,$llcCcOperLastFailTime,$llcCcOperLastFailCause,$llcCcOperLastFailFRMRInfo)
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-SNA-LLC-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId,cisco-CISCO-SNA-LLC-MIB_sev)
+    }
+
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+    ##########
+    # End of Severity via Lookup.
+    ##########
+
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SNA-LLC-MIB.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-SNA-LLC-MIB.user.include.snmptrap.rules"
+
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-SNA-LLC-MIB.include.snmptrap.rules >>>>>")

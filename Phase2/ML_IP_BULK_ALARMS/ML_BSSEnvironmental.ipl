@@ -1,0 +1,527 @@
+ ///////////////////////////////////////////////////////////////////////////////
+    //
+    // BSSEnvironmental.ipl    
+    //
+    // Impact policy for Mobilink - BSS Environmental Alarms
+    // Chris Janes of Innovise ESM
+    //
+    // V0.0 20100706 Chris Janes Original
+    // V0.1 20100-820
+    // V0.2 20101001    Chris Janes    Event Time on Journal changed to work on
+    //                                                  LastOccurrence rather than FirstOccurrence
+    // V0.3 20101006    Chris Janes    Field NePriority replaced with BusImportance
+    // V0.4 20110718    Chris Janes    INC22618
+    //
+    // The policy expects only events to be processed by it to arrive
+    ///////////////////////////////////////////////////////////////////////////////
+     
+    log("0XXX Start Serial = " + @Serial +"#Type:"+@Type+"#Severity:"+@Severity+"#BSC_Name:"+@BSC_Name+"#BTS_Name:"+@BTS_Name);
+    AlarmSerial = @Serial;
+    AlarmClass = @Class;
+    AlarmNodeAlias = @NodeAlias;
+    EventContainer.ImpactFlag = 5;
+    ReturnEvent(EventContainer);
+    eventId = "SYN_BSSE_002";
+    eventClass = 200012;
+    // work out if a BTS or BSC class needed
+    if(@Class=2057 and @Node like "BTS=0"){
+            eventId = "SYN_BSSE_003";
+            eventClass = 200061;
+    }else{
+        if (@BTS_Name == ''){
+            //bts field is not populated so pop the EventId and class based on that - BSC level
+            eventId = "SYN_BSSE_003";
+            eventClass = 200061;
+        } 
+    }
+// 20110303 MS added logic for creating SYN_BSS_ENV events
+    NetworkElementDataType = "NETWORKELEMENT";
+    NetworkElementFilter= "ID_NAME = '"+@SiteCode+"'";
+    NetworkElementEntries = GetByFilter(NetworkElementDataType, NetworkElementFilter,False);
+    NumNetworkElementEntries = Length(NetworkElementEntries );
+    log("IBMDEBUG: BSS1#number of rows returned is :" + NumNetworkElementEntries);
+
+    if (NumNetworkElementEntries > 0)
+    {
+       eventId = "SYN_BSSE_ENV";
+       eventClass = 200062;
+     }    
+    log("00XXX Serial = " + AlarmSerial + " eventClass = " + eventClass );
+    CountOnly = False;
+    //SyntheticMatchSQL = " Class = "+eventClass+" and Node = '" + @Node + "' and Severity > 0 and OmcEms = '" + @OmcEms + "'";
+    //23/06/2011 - NP Modified below SQL to optimized performance
+    SyntheticMatchSQL = " Severity=5 and EventId='"+eventId+"' and Node = '" + @Node + "' and OmcEms = '" + @OmcEms + "'";
+    paramSummary=@Summary;
+    paramType=@Type;
+    paramNodeAlias=@NodeAlias;
+    paramLastOcc=@LastOccurrence;
+    paramSerial=@Serial;
+    if(@Type==2){
+        paramSerial=@ProblemSerial;
+    }
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // check for moto resolutions - special case
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (@Type ==2 and @Class == 2057) {
+        // calculate the summary to use based on the summary of matching problem event
+        log ("01XXX got Motorola resolution event Serial = " + @Serial + " Type = " + @Type);
+        OSDataType = "OS_Status";
+        OSFilter =" Class = "  +@Class + " and Node = '" + @Node + "' and Type = 1 and AlertKey = '" + @AlertKey + "' and AlertGroup = '" + @AlertGroup + "' and Manager = '" + @Manager + "'";
+        OSMatch = GetByFilter(OSDataType,OSFilter,False);
+        OSMatchCount = length(OSMatch);
+        log("IBMDEBUG: BSS2#number of rows returned is :" + OSMatchCount);
+        if (OSMatchCount > 0) {
+            SummaryToUse = OSMatch[0].Summary;
+        } else {
+            log("1XXX No matching problem event found for resolution event Serial = " + @Serial);
+            SummaryToUse = "Match not found";
+        } 
+    } else {
+        SummaryToUse = @Summary;
+    }
+    log("11XXX alarm Serial = " + AlarmSerial+ " Node = " + @Node);
+    // Loop thru possible match strings from impact_lookup table
+    DataType = "SUMMARY_LOOKUP";
+    BSSFilter = "class = " + AlarmClass + " and domain = 'BSS' and ALARM_TYPE in ('Power','Temperature')" ;
+    log("12XXX  Serial = " + AlarmSerial + " filter =  " + BSSFilter);
+    BSSLookupResults= GetByFilter(DataType, BSSFilter,False);
+    NumBSSLookupResults = length(BSSLookupResults);
+    log("IBMDEBUG: BSS3#number of rows returned is :" + NumBSSLookupResults);
+    rowNumber = 0;
+    // some defaults
+    match = false;
+    SubSet = "Other";
+    while (rowNumber < NumBSSLookupResults) {
+        // check if alarm summary matches to summary pattern from SUMMARY_LOOKUP
+            log ("B4 log = " + match);
+            if (match = false) {
+                        matchString = ".*" + BSSLookupResults[rowNumber].SUMMARY + ".*";
+                      if (toUpper(SummaryToUse) LIKE toUpper(matchString)) {
+                log("14XXX  Serial = " + AlarmSerial +"#Type:"+@Type+ " found a match for matchString =  " + matchString );
+                SubSet = BSSLookupResults[rowNumber].ALARM_TYPE;
+                match = true;
+            }
+        }        
+        rowNumber  = rowNumber  + 1;
+    }
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // is there an existing synthetic event?
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    DataType = "OS_Status";  
+    log("4XXX Serial= " + AlarmSerial + " SyntheticMatchSQL = " + SyntheticMatchSQL );
+    Existing_Event= GetByFilter(DataType, SyntheticMatchSQL , CountOnly);
+    log("IBMDEBUG: BSS4#number of rows returned is :" + Length(Existing_Event));
+    Num_Existing_Event= Num;
+    log("5XXX Serial= " + AlarmSerial+"#Type:"+@Type + " Number of existing synthetic events is = " + Num_Existing_Event);
+    if (Num_Existing_Event> 0)
+    {
+        // 20101028 JL  add to synthetic event IF in scope
+        // this includes resolution events that are in scope
+        if (SubSet != "Other"){
+            log("6XXX Serial= " + AlarmSerial + " Adding this event to the synthetic event ");  
+            if(EventContainer.SyntheticServerSerial == 0)
+            {
+                EventContainer.SyntheticServerName = Existing_Event[0].ServerName ;
+                EventContainer.SyntheticServerSerial = Existing_Event[0].ServerSerial ;
+                EventContainer.HibernateFlag = 3 ;
+                ReturnEvent(EventContainer);
+            }
+        
+            if (@Type==1) 
+            {
+            // Modified by Alex Silva 01-07-2011
+                se_bss_server_serial = Existing_Event[0].ServerSerial;
+                MobiLib.AddGenericJournal(se_bss_server_serial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                // MobiLib.AddGenericJournal(Existing_Event[0].ServerSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+            }
+        } else {
+            log("61XX Serial= " + AlarmSerial + " NOT Adding the network event to the synthetic event ~ it is invalid");  
+        }
+    }
+    elseif(@HibernateFlag<> 0 AND @HibernateFlag <> 3 AND @HibernateFlag <> 2)
+    {
+        // exclude iterations of events that are currently in hibernate i.e. HibernateFlag is 1
+        log("7XXX Serial= " + AlarmSerial + " Hibernate flag not supported: Number of existing synthetic events is = " + Num_Existing_Event);
+        
+    }
+    elseif(SubSet == 'Other' OR @Type == 2) 
+    {
+        // only deal with events that fit into a defined subset, the rest are put into 'Other' which we then ignore
+        // 20101028 JL don't create for resolution events (type 2) either
+        log("8XXX Serial= " + AlarmSerial + " Subset is " + SubSet + " Type is " + @Type);
+        EventContainer.ImpactFlag = 5;
+        ReturnEvent(EventContainer);
+    }
+    elseif(EventContainer.HibernateFlag = 2 AND EventContainer.Tally > 1) 
+    {
+        // will only get here if event has already been through a hibernate, did not raise an SE, and has now come back through
+        
+        //
+        // Hibernate then create synthetic event
+        //
+        log("800XXX Serial= " + AlarmSerial + " No Synthetic event found ");
+        site_name = @Site;
+        SleepTime = 0;
+        alarm_id = SubSet;
+                   
+        MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+        log("801XXX Serial= " + AlarmSerial + " SleepTime =  " + SleepTime);
+        
+        // adjust sleepTime
+        stdSleepTime = SleepTime;
+        newSleepTime = Int(stdSleepTime / @Tally);
+        // flag we are in hibernate
+        EventContainer.HibernateFlag = 1;
+        EventContainer.Grade= newSleepTime ;
+        ReturnEvent(EventContainer);
+        // serverserial of network event used to ensure unique
+        ActionKey = "BSSEnvironmental" + @ServerSerial + @ServerName + @LastOccurrence;
+        
+        Log("802XX Going To Sleep "  + ActionKey + " for " + newSleepTime + " Sec");
+        
+        Hibernate(ActionKey , wait, newSleepTime );
+        
+        // 
+        // Hibernate done ----------update hibernate flag 
+        //
+        EventContainer.HibernateFlag = 2;
+        ReturnEvent(EventContainer);
+        
+        Log ("803XXX Serial = " + AlarmSerial + " Wake Up " + ActionKey );
+        // tidy up dataitem
+        RemoveHibernation(ActionKey); 
+        //
+        // Does the event network still exist?
+        //
+        DataType = "OS_Status";  
+        // Filter = "ServerSerial = " + EventContainer.ServerSerial; 
+        // Added by Alex Silva (08-01-2010)
+        SD_Filter = "ServerSerial = " + EventContainer.ServerSerial + " And Severity > 2 ";  
+        log("804XXX Serial =  " + AlarmSerial + " Filter = " + SD_Filter);
+        Existing_Event = GetByFilter(DataType, SD_Filter, CountOnly);
+        log("IBMDEBUG: BSS5#number of rows returned is :" + Length(Existing_Event));
+        Num_Existing_Event = Num;
+        if (Num_Existing_Event = 0)
+        {
+            log("805XXX Serial =  " + AlarmSerial + " Network Event No Longer Exists ");
+        }
+        else
+        {
+            //
+            // Network event still exists - check if a matching synthetic event already exists
+            //
+            log("806XXX Serial =  " + AlarmSerial + " Network Event still exists ");
+            synchronized(BSS_ChecknCreate_SE_Block){
+            DataType = "OS_Status";         
+            NowTime = GetDate();
+            Existing_Synthetic_Event = GetByFilter(DataType, SyntheticMatchSQL , CountOnly);
+            log("IBMDEBUG: BSS6#number of rows returned is :" + Length(Existing_Synthetic_Event));
+            Num_Existing_Synthetic_Event = Num;
+            log ("807XXX Serial = " + AlarmSerial+"SubSet:"+SubSet + " Num_Existing_Synthetic_Event = " + Num_Existing_Synthetic_Event );
+            if(Num_Existing_Synthetic_Event == 0)
+            {
+                // Create New Synthetic Event
+                log("808XXX Serial =  " + AlarmSerial + " creating new synth event ");            
+                BSSEnvSynEvent = NewObject();
+                BSSEnvSynEvent.Node = EventContainer.Node;
+                BSSEnvSynEvent.NodeAlias= AlarmNodeAlias ;
+                BSSEnvSynEvent.EventId = eventId;
+                BSSEnvSynEvent.ImpactFlag = 2;
+                BSSEnvSynEvent.Domain=EventContainer.Domain;
+                BSSEnvSynEvent.Site=EventContainer.Site;
+                BSSEnvSynEvent.BusImportance=EventContainer.BusImportance;
+                BSSEnvSynEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+                BSSEnvSynEvent.OmcEms=EventContainer.OmcEms;
+                BSSEnvSynEvent.Region=EventContainer.Region;
+                BSSEnvSynEvent.ManCity=EventContainer.ManCity;
+                BSSEnvSynEvent.CovCity=EventContainer.CovCity;
+                BSSEnvSynEvent.Vendor=EventContainer.Vendor;
+                BSSEnvSynEvent.Agent = EventContainer.Agent;
+                BSSEnvSynEvent.MaximoStatus= 1;
+                BSSEnvSynEvent.AlertGroup = SubSet;
+                BSSEnvSynEvent.AlertKey = SubSet ;
+                BSSEnvSynEvent.EventType = @EventType ;
+                BSSEnvSynEvent.Network= @Network;
+                BSSEnvSynEvent.Identifier= "BSSEnvironmental" + @EventType  + @Domain + @Node + @LastOccurrence;
+                BSSEnvSynEvent.Summary= "BSS Environmental Alarm Handling for " + AlarmNodeAlias ;
+                BSSEnvSynEvent.Severity= 5;
+                BSSEnvSynEvent.Type= 1;
+                BSSEnvSynEvent.Tally= 1;
+                BSSEnvSynEvent.HibernateFlag = 99;
+                BSSEnvSynEvent.SyntheticServerName = "";
+                BSSEnvSynEvent.SyntheticServerSerial = 0;
+                BSSEnvSynEvent.FirstOccurrence = @FirstOccurrence;
+                BSSEnvSynEvent.LastOccurrence = @LastOccurrence;
+                BSSEnvSynEvent.LogTicket = 1;
+                BSSEnvSynEvent.Class = eventClass ;
+                
+                BSSEnvSynEvent.SiteCode= @SiteCode;
+                BSSEnvSynEvent.BTS_Name= @BTS_Name;
+                BSSEnvSynEvent.BSC_Name= @BSC_Name;            
+                BSSEnvSynEvent.AdvCorrServerSerial = @Serial;
+
+                // 20110718 INC22618 Chris Janes 
+                BSSEnvSynEvent.OwnerUID = 65534;
+                // 20110718 End Change
+
+                AddDataItem('OS_Status', BSSEnvSynEvent);
+                
+                //ReturnEvent(EventContainer);
+                
+                Log("809XXX Serial = " + AlarmSerial + " New Synthetic Event Submitted to object server");
+                
+                // wait for 30 seconds for the event to be created
+                ActionKey = "BSSEnvironmental" + @ServerSerial + @ServerName;
+                Log("810XXX Serial = " + AlarmSerial + " + AlarmSerial + Going To Sleep "  + ActionKey + " for  30");
+                // hibernate for 30 seconds
+                Hibernate(ActionKey , wait, 30);
+                
+                // update the hibernate flag
+                EventContainer.HibernateFlag = 3;
+                ReturnEvent(EventContainer);
+                // hibernate done
+                RemoveHibernation(ActionKey); 
+                Log ("811XXX Serial = " + AlarmSerial + " Wake Up " + ActionKey );
+                
+                // find the synthetic alarm serial that was created
+                DataType = "OS_Status";  
+                New_Synthetic_Event = GetByFilter(DataType, SyntheticMatchSQL , CountOnly);
+                log("IBMDEBUG: BSS7#number of rows returned is :" + Length(New_Synthetic_Event));
+                Num_New_Synthetic_Event = Num;
+                
+                if (Num_New_Synthetic_Event > 0) {
+     
+                   Log("812XXX Serial = " + AlarmSerial + " Parent serial =  " + New_Synthetic_Event[0].ServerSerial);
+                
+                    if (@Type==1) 
+                    {
+                    // Modified by Alex Silva 01-07-2011
+                        se_bss_server_serial = New_Synthetic_Event[0].ServerSerial;
+                        MobiLib.AddGenericJournal(se_bss_server_serial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                     //   MobiLib.AddGenericJournal(New_Synthetic_Event[0].ServerSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                    }
+                    @SyntheticServerName = New_Synthetic_Event[0].ServerName ;
+                    @SyntheticServerSerial = New_Synthetic_Event[0].ServerSerial ;
+                    ReturnEvent(EventContainer);
+                } else {
+                    log ("813XXX New synthetic server serial not found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                }
+            }
+            else
+            {
+                //
+                // synthetic event existed after hibernate for the network event
+                //
+                log("814XXX Serial = " + AlarmSerial +  " Synthetic Event Exists");
+                //Update Source Event with Synthetic EventDetails
+                if(EventContainer.SyntheticServerSerial == 0) {
+                    EventContainer.SyntheticServerName = Existing_Synthetic_Event[0].ServerName ;
+                    EventContainer.SyntheticServerSerial = Existing_Synthetic_Event[0].ServerSerial ;
+                    EventContainer.HibernateFlag = 3 ;
+                    
+                }
+                JournalInsert = "Event Summary: " + @Summary + " :: Event Serial: " + @Serial; 
+                journal_timestamp = @LastOccurrence;
+                log("815XXX Serial = " + AlarmSerial +  " Existing_Synthetic_Event =  " + Existing_Synthetic_Event[0].ServerSerial + " paramLastOcc = " + paramLastOcc + " paramSummary = " + paramSummary  + " Type= " + paramType+ " NodeAlias = " + AlarmNodeAlias);
+                if (@Type==1) 
+                {
+                // Modified by Alex Silva 01-07-2011
+                    se_bss_server_serial = Existing_Synthetic_Event[0].ServerSerial;
+                    MobiLib.AddGenericJournal(se_bss_server_serial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                    // MobiLib.AddGenericJournal(Existing_Synthetic_Event[0].ServerSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                }
+            }
+            }//end of synch block
+        }
+    }    
+    else 
+    {
+        if (EventContainer.HibernateFlag = 3 AND EventContainer.Tally > 1 AND EventContainer.SyntheticServerSerial > 0) 
+        {
+            // JL deal with duplicate network events that have come back through the policy and have old TTNumber etc populated
+            // we have got here so we know the SyntheticServerSerial does not exist!!!!
+            // 14/02/2011 clear up the SSS fields from previous values to avoid any confusion
+            EventContainer.SyntheticServerSerial = 0;
+            EventContainer.TTNumber= '';
+            EventContainer.TicketStatus= '';
+            log("81XXX Serial= " + AlarmSerial + " Cleaned up the ticket fields ");
+        }
+        
+        //
+        // Hibernate then create synthetic event
+        //
+        log("9XXX Serial= " + AlarmSerial + " No Synthetic event found ");
+        site_name = @Site;
+        SleepTime = 0;
+        alarm_id = SubSet;
+        if (alarm_id == "Other") {
+            log("10XXX Serial= " + AlarmSerial + " Using default seelp time of 60 ");
+            SleepTime = 60;
+        } else {
+            MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+             log("100XXX Serial= " + AlarmSerial + " SleepTime =  " + SleepTime);
+        }
+           
+        // flag we are in hibernate
+        EventContainer.HibernateFlag = 1;
+        EventContainer.Grade= SleepTime;
+        ReturnEvent(EventContainer);
+        // serverserial of network event used to ensure unique
+        ActionKey = "BSSEnvironmental" + @ServerSerial + @ServerName + @LastOccurrence;
+        //SleepTime = 1200;         // TODO - this is for soft launch only
+        Log("101XX Going To Sleep "  + ActionKey + " for " + SleepTime + " Sec");
+        
+        Hibernate(ActionKey , wait, SleepTime);
+        Log ("12XXX Serial = " + AlarmSerial + " Wake Up " + ActionKey );        
+        // tidy up dataitem
+        RemoveHibernation(ActionKey); 
+        // 
+        // Hibernate done ----------update hibernate flag 
+        //
+        @HibernateFlag = 2;
+        ReturnEvent(EventContainer);
+        //
+        // Does the event network still exist?
+        //
+        DataType = "OS_Status";  
+        // Filter = "ServerSerial = " + EventContainer.ServerSerial; 
+        // Added by Alex Silva (08-01-2010)
+        SD_Filter = "ServerSerial = " + EventContainer.ServerSerial + " And Severity > 2 ";  
+        log("13XXX Serial =  " + AlarmSerial + " Filter = " + SD_Filter);
+        Existing_Event = GetByFilter(DataType, SD_Filter, CountOnly);
+        log("IBMDEBUG: BSS8#number of rows returned is :" + Length(Existing_Event));
+        Num_Existing_Event = Num;
+        if (Num_Existing_Event = 0)
+        {
+            log("14XXX Serial =  " + AlarmSerial + " Network Event No Longer Exists ");
+        }
+        else
+        {
+            //
+            // Network event still exists - check if a matching synthetic event already exists
+            //
+            log("15XXX Serial =  " + AlarmSerial + " Network Event still exists ");
+            synchronized(BSS_ChecknCreate_SE_Block){
+            DataType = "OS_Status";         
+            NowTime = GetDate();
+            Existing_Synthetic_Event = GetByFilter(DataType, SyntheticMatchSQL , CountOnly);
+            log("IBMDEBUG: BSS9#number of rows returned is :" + Length(Existing_Synthetic_Event));
+            Num_Existing_Synthetic_Event = Num;
+            log ("16XXX Serial = " + AlarmSerial+"SubSet:"+SubSet + " Num_Existing_Synthetic_Event = " + Num_Existing_Synthetic_Event );
+            if(Num_Existing_Synthetic_Event == 0)
+            {
+                // Create New Synthetic Event
+                log("17XXX Serial =  " + AlarmSerial + " creating new synth event ");            
+                BSSEnvSynEvent = NewObject();
+                BSSEnvSynEvent.Node = EventContainer.Node;
+                BSSEnvSynEvent.NodeAlias= AlarmNodeAlias ;
+                BSSEnvSynEvent.EventId = eventId;
+                BSSEnvSynEvent.ImpactFlag = 2;
+                BSSEnvSynEvent.Domain=EventContainer.Domain;
+                BSSEnvSynEvent.Site=EventContainer.Site;
+                BSSEnvSynEvent.BusImportance=EventContainer.BusImportance;
+                BSSEnvSynEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+                BSSEnvSynEvent.OmcEms=EventContainer.OmcEms;
+                BSSEnvSynEvent.Region=EventContainer.Region;
+                BSSEnvSynEvent.ManCity=EventContainer.ManCity;
+                BSSEnvSynEvent.CovCity=EventContainer.CovCity;
+                BSSEnvSynEvent.Vendor=EventContainer.Vendor;
+                BSSEnvSynEvent.Agent = EventContainer.Agent;
+                BSSEnvSynEvent.Maximo= 1;
+                BSSEnvSynEvent.AlertGroup = SubSet;
+                BSSEnvSynEvent.AlertKey = SubSet ;
+                BSSEnvSynEvent.EventType = @EventType ;
+                BSSEnvSynEvent.Network= @Network;
+                BSSEnvSynEvent.Identifier= "BSSEnvironmental" + @EventType  + @Domain + @Node + @LastOccurrence;
+                BSSEnvSynEvent.Summary= "BSS Environmental Alarm Handling for " + AlarmNodeAlias ;
+                BSSEnvSynEvent.Severity= 5;
+                BSSEnvSynEvent.Type= 1;
+                BSSEnvSynEvent.Tally= 1;
+                BSSEnvSynEvent.HibernateFlag = 99;
+                BSSEnvSynEvent.SyntheticServerName = "";
+                BSSEnvSynEvent.SyntheticServerSerial = 0;
+                BSSEnvSynEvent.FirstOccurrence = @FirstOccurrence;
+                BSSEnvSynEvent.LastOccurrence = @LastOccurrence;
+                BSSEnvSynEvent.LogTicket = 1;
+                BSSEnvSynEvent.Class = eventClass ;
+                
+                BSSEnvSynEvent.SiteCode= @SiteCode;
+                BSSEnvSynEvent.BTS_Name= @BTS_Name;
+                BSSEnvSynEvent.BSC_Name= @BSC_Name;            
+                BSSEnvSynEvent.AdvCorrServerSerial = @Serial;
+
+                // 20110718 INC22618 Chris Janes 
+                BSSEnvSynEvent.OwnerUID = 65534;
+                // 20110718 End Change
+
+                AddDataItem('OS_Status', BSSEnvSynEvent);
+                
+                //ReturnEvent(EventContainer);
+                
+                Log("161XXX Serial = " + AlarmSerial + " New Synthetic Event Submitted to object server");
+                
+                // wait for 30 seconds for the event to be created
+                ActionKey = "BSSEnvironmental" + @ServerSerial + @ServerName;
+                Log("17XXX Serial = " + AlarmSerial + " + AlarmSerial + Going To Sleep "  + ActionKey + " for  30");
+                // hibernate for 30 seconds
+                Hibernate(ActionKey , wait, 30);
+                
+                // hibernate done
+                RemoveHibernation(ActionKey); 
+                // update the hibernate flag
+                @HibernateFlag = 3;
+                ReturnEvent(EventContainer);
+                Log ("18XXX Serial = " + AlarmSerial + " Wake Up " + ActionKey );
+                
+                // find the synthetic alarm serial that was created
+                DataType = "OS_Status";  
+                New_Synthetic_Event = GetByFilter(DataType, SyntheticMatchSQL , CountOnly);
+                log("IBMDEBUG: BSS10#number of rows returned is :" + Length(New_Synthetic_Event));
+                Num_New_Synthetic_Event = Num;
+                
+                if (Num_New_Synthetic_Event > 0) {
+     
+                   Log("19XXX Serial = " + AlarmSerial + " Parent serial =  " + New_Synthetic_Event[0].ServerSerial);
+                
+                    if (@Type==1) 
+                    {
+                    // Modified by Alex Silva 01-07-2011
+                        se_bss_server_serial = New_Synthetic_Event[0].ServerSerial;
+                        MobiLib.AddGenericJournal(se_bss_server_serial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                    }
+                    @SyntheticServerName = New_Synthetic_Event[0].ServerName ;
+                    @SyntheticServerSerial = New_Synthetic_Event[0].ServerSerial ;
+                    ReturnEvent(EventContainer);
+                } else {
+                    log ("20XXX New synthetic server serial not found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                }
+            }
+            else
+            {
+                //
+                // synthetic event existed after hibernate for the network event
+                //
+                log("21XXX Serial = " + AlarmSerial +  " Synthetic Event Exists");
+                //Update Source Event with Synthetic EventDetails
+                if(EventContainer.SyntheticServerSerial == 0) {
+                    EventContainer.SyntheticServerName = Existing_Synthetic_Event[0].ServerName ;
+                    EventContainer.SyntheticServerSerial = Existing_Synthetic_Event[0].ServerSerial ;
+                    EventContainer.HibernateFlag = 3 ;
+                    //ReturnEvent(EventContainer);
+                }
+                JournalInsert = "Event Summary: " + @Summary + " :: Event Serial: " + @Serial; 
+                journal_timestamp = @LastOccurrence;
+                log("22XXX Serial = " + AlarmSerial +  " Existing_Synthetic_Event =  " + Existing_Synthetic_Event[0].ServerSerial + " paramLastOcc = " + paramLastOcc + " paramSummary = " + paramSummary  + " Type= " + paramType+ " NodeAlias = " + AlarmNodeAlias);
+                if (@Type==1) 
+                {
+                    // Modified by Alex Silva 01-07-2011
+                    se_bss_server_serial = Existing_Synthetic_Event[0].ServerSerial;
+                    MobiLib.AddGenericJournal(se_bss_server_serial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+                }
+            }
+            }//end of synch block
+        }
+    }
+    // say goodbye and leave nicely
+    EventContainer.ImpactFlag = 6;
+    ReturnEvent(EventContainer);

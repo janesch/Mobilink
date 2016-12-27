@@ -1,0 +1,139 @@
+#############################################################################
+#
+#		nec-MIB-PNMS.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Siemens @vantage Commander traps.
+#		This is based upon INC-MIB-C 
+#
+#	V0.0	20100427	Original	Chris Janes of Innovise-ESM	
+# V0.01	20100811	Change to Node	Chris Janes of Innovise EMS
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.119.2.3.69.201":	# NNEC-SMI Traps
+    @Agent = "NEC-SMI"
+    @Class = "100005"
+    @OmcEms = $PeerIPaddress
+    
+    #	20100811 		Change by Chris Janes of Innovise ESM
+    #								the change is to set Node to a friendly name rather than an IP address
+    $NewNode = lookup(@Node, friendlyname)
+    if(match($NewNode, "Unknown"))
+    {
+			# lookup failed leave @Node alone
+			@Node = @Node + " Lookup Failed"
+	}
+	else
+	{
+			@Node = $NewNode
+	}
+	#	20100811	End of Change
+	
+    $OS_ExpireTime = 600
+    log(DEBUG, "<<<<< Entering... nec-MIB-PNMS >>>>>")
+    $OPTION_TypeFieldUsage = "3.6"
+    $enterpriseName = "pnms"
+
+   
+	@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+    switch($specific-trap)
+    {
+      	case"100":      ### alarmNESummary
+            $pasoComAlarmTrapSequenceNumber = $1          ### Trap Sequence Number(1-65536)"  (Counter)
+            $pasoComAlarmDate = $2                         					### TrapDate (YYYY/MM/DD)"  (OCTET STRING)
+            $pasoComAlarmTime = $3                         					### TrapTime (HH:MM:SS)"  (OCTET STRING)
+			$pasoComAlarmSeverity = $4										### Severity (CCITT Rec. X.733) Refer to SeverityValue
+			$pasoComAlarmType = $5											### Alarm Type (CCITT Rec. X.733) Refer to AlarmTypeValue
+			$pasoComProbableCause = $6									### Probable Cause (CCITT Rec. X.733)  Refer to ProbableCauseValue
+            $pasoComAlarmSource = $7                       				### TrapSource"  (Pasolink OID)
+            $pasoComNeSummaryItemStatusId = $8          		### Aux Input Item Name"  (DisplayString)
+			$pasoComNeSummaryItemStatusIdText = lookup($pasoComNeSummaryItemStatusId, pasoComNeSummaryItemStatusId)
+			
+			$AlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+			$ProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+			[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pasoComAlarmSeverity, SeverityValue)
+
+            @AlertGroup = "alarmNESummary"
+            @AlertKey = $pasoComAlarmSource
+            @Summary = "Network Element Summary Status is  " + $pasoComNeSummaryItemStatusIdText 
+update(@AlertKey)
+
+      	case"101":      ### alarmRadioSummary
+            $pasoComAlarmTrapSequenceNumber = $1          ### Trap Sequence Number(1-65536)"  (Counter)
+            $pasoComAlarmDate = $2                         					### TrapDate (YYYY/MM/DD)"  (OCTET STRING)
+            $pasoComAlarmTime = $3                         					### TrapTime (HH:MM:SS)"  (OCTET STRING)
+			$pasoComAlarmSeverity = $4										### Severity (CCITT Rec. X.733) Refer to SeverityValue
+			$pasoComAlarmType = $5											### Alarm Type (CCITT Rec. X.733) Refer to AlarmTypeValue
+			$pasoComProbableCause = $6									### Probable Cause (CCITT Rec. X.733)  Refer to ProbableCauseValue
+            $pasoComAlarmSource = $7                       				### TrapSource"  (Pasolink OID)
+            $pasoComAssortmentSummaryItemStatusId = $8          		### Aux Input Item Name"  (DisplayString)
+			$pasoComAssortmentSummaryItemStatusIdText = lookup($pasoComAssortmentSummaryItemStatusId, pasoComAssortmentSummaryItemStatusId)
+			
+			$AlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+			$ProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+			[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmNESummary"
+            @AlertKey = ""
+            @Summary = "Radio Summary Status is  " + $pasoComNeSummaryItemStatusIdText 
+
+      	case"102":      ### alarmBaseBandSummary
+            $pasoComAlarmTrapSequenceNumber = $1          ### Trap Sequence Number(1-65536)"  (Counter)
+            $pasoComAlarmDate = $2                         					### TrapDate (YYYY/MM/DD)"  (OCTET STRING)
+            $pasoComAlarmTime = $3                         					### TrapTime (HH:MM:SS)"  (OCTET STRING)
+			$pasoComAlarmSeverity = $4										### Severity (CCITT Rec. X.733) Refer to SeverityValue
+			$pasoComAlarmType = $5											### Alarm Type (CCITT Rec. X.733) Refer to AlarmTypeValue
+			$pasoComProbableCause = $6									### Probable Cause (CCITT Rec. X.733)  Refer to ProbableCauseValue
+            $pasoComAlarmSource = $7                       				### TrapSource"  (Pasolink OID)
+            $pasoComAssortmentSummaryItemStatusId = $8          		### Aux Input Item Name"  (DisplayString)
+			$pasoComAssortmentSummaryItemStatusIdText = lookup($pasoComAssortmentSummaryItemStatusId, pasoComAssortmentSummaryItemStatusId)
+			
+			$AlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+			$ProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+			[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmNESummary"
+            @AlertKey = ""
+            @Summary = "BaseBand Summary Status is  " + $pasoComNeSummaryItemStatusIdText 
+
+      	case"103":      ### alarmEquipmentSummary
+            $pasoComAlarmTrapSequenceNumber = $1          ### Trap Sequence Number(1-65536)"  (Counter)
+            $pasoComAlarmDate = $2                         					### TrapDate (YYYY/MM/DD)"  (OCTET STRING)
+            $pasoComAlarmTime = $3                         					### TrapTime (HH:MM:SS)"  (OCTET STRING)
+			$pasoComAlarmSeverity = $4										### Severity (CCITT Rec. X.733) Refer to SeverityValue
+			$pasoComAlarmType = $5											### Alarm Type (CCITT Rec. X.733) Refer to AlarmTypeValue
+			$pasoComProbableCause = $6									### Probable Cause (CCITT Rec. X.733)  Refer to ProbableCauseValue
+            $pasoComAlarmSource = $7                       				### TrapSource"  (Pasolink OID)
+            $pasoComAssortmentSummaryItemStatusId = $8          		### Aux Input Item Name"  (DisplayString)
+			$pasoComAssortmentSummaryItemStatusIdText = lookup($pasoComAssortmentSummaryItemStatusId, pasoComAssortmentSummaryItemStatusId)
+			
+			$AlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+			$ProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+			[$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmNESummary"
+            @AlertKey = ""
+            @Summary = "Equipment Summary Status is  " + $pasoComNeSummaryItemStatusIdText 
+
+			  
+					  
+		default:
+
+			$OS_Severity = 1
+			$OS_Type = 1
+			@Summary  =  "NEC-SMI - Unknown Specific Trap " + $specific-trap
+			@AlertGroup = "NEC-SMI"
+			@AlertKey = $specific-trap
+			details($*)
+		}
+		@Severity = $OS_Severity
+		@Type = $OS_Type
+		@Grade = $specific-trap
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + $OS_Type
+		$OS_X733ProbableCause = $pnProbableCause
+		$OS_X733EventType = $pnAlarmType
+		@EventType = $AlarmTypeValue
+		@Network = 2
+		update(@Summary)
+		details($*)

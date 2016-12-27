@@ -1,0 +1,40 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    PreClass.include.syslog.rules 1.1
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+#     - Modified to support AdvCorrCauseType.
+#
+# 1.0 - Initial Release.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... PreClass.include.syslog.rules >>>>>")
+
+if(match(@Type, "2"))
+{
+    $OS_AdvCorrCauseType = 4
+}
+else
+{
+    if(exists($SEV_KEY))
+    {
+        $OS_AdvCorrCauseType = lookup($SEV_KEY, syslogPreClass)
+    }
+    else
+    {
+        $OS_AdvCorrCauseType = lookup($OS_EventId, syslogPreClass)
+    }
+}
+
+log(DEBUG, "<<<<< Leaving... PreClass.include.syslog.rules >>>>>")

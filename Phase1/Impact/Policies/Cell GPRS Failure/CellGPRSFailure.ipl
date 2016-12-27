@@ -1,0 +1,178 @@
+/*            ML_CellGPRS Policy
+    The following Cell GPRS failure events should be correlated together after 5 minutes sleep
+    time to allow the alarm to clear. If the alarm does not clear after 5 minutes, using enrichment
+    with BSC and to allow them to be associated together correctly.
+     EventReader Filter:
+    EventId = CellGPRS_001
+    V 1.0    10-09-2010    Chris Janes
+    
+*/
+
+/*
+    This is where the event is enriched according to Source
+*/
+BscName = '';
+JournalInsert = 'Default Journal Message';
+// Alcatel Events
+if(@Class == 4915)
+{
+    // Code needs to go here wen we know where to get the source info from the event 
+    // and where to lookup the enriched Events
+    /*
+        BscName = '';
+        JournalInsert = '';
+        Cell ID = '';
+        SiteCode = '';
+        Cell Name = '';
+    */
+}
+
+// Huawei Events
+if(@Class == 8891)
+{
+    // Code needs to go here wen we know where to get the source info from the event 
+    // and where to lookup the enriched Events
+    /*
+        BscName = '';
+        JournalInsert = '';
+        Cell ID = '';
+        SiteCode = '';
+        Cell Name = '';
+    */
+}
+
+// Motorola Events
+if(@Class == 2057)
+{
+    // Code needs to go here wen we know where to get the source info from the event 
+    // and where to lookup the enriched Events
+    /*
+        BscName = '';
+        JournalInsert = '';
+        Cell ID = '';
+        SiteCode = '';
+        Cell Name = '';
+    */
+}
+
+// SGSN Events
+if(@Class == 999998)// Note this needs the correct value inserted
+{
+    // Code needs to go here wen we know where to get the source info from the event 
+    // and where to lookup the enriched Events
+    /*
+        BscName = '';
+        JournalInsert = '';
+    */
+}
+
+// Test Events
+if(@Class == 999999)
+{
+    BscName = EventContainer.AlertGroup;
+    JournalInsert = 'Test event has been inserted from ' + BscName;
+
+}
+
+// Here we check if we have a valid BscName
+
+if (BscName == '')
+{
+    Exit;
+}
+
+sleep_time = 300;
+log (" Hibernate for: " +  sleep_time + " seconds ");
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+EventContainer.HibernateFlag = 1;        
+ReturnEvent(EventContainer);
+
+Action_key = 'CellGPRS' + @ServerSerial + @ServerName;
+Hibernate(Action_key, "Sleeping", sleep_time);
+
+//Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+RemoveHibernation(Action_key); 
+
+EventContainer.HibernateFlag = 2;        
+ReturnEvent(EventContainer);
+
+
+// Does the Source Event still exist?
+DataType = "Status";  // this needs to be setup
+Filter = "ServerSerial = " + EventContainer.ServerSerial + " and ServerName = " + EventContainer.ServerName + " and Severity > 0";  
+log("Filter = " + Filter);
+CountOnly = False;
+Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_Existing_Event = Num;
+
+// If the Event has cleared then Exit
+if (Num_Existing_Event == 0)
+{
+    EventContainer.ImpactFlag = 5;        
+    ReturnEvent(EventContainer);    
+    Exit();
+}
+
+
+//Does the Synthetic event exist?
+DataType = "Status";  // this needs to be setup
+Filter = "Class = 200016 and AlertGroup = '" + BscName+ "'";  
+log("Filter = " + Filter);
+CountOnly = False;
+Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_Synthetic_Event = Num;
+
+// If there is no Synthetic Event Create One
+if (Num_Synthetic_Event == 0)
+{
+    NewEvent = NewEvent(DefaultEventReader);
+    NewEvent.EventReaderName = "DefaultEventReader";
+    NewEvent.Domain=EventContainer.Domain;
+    NewEvent.Region=EventContainer.Region;
+    NewEvent.ManCity=EventContainer.ManCity;
+    NewEvent.CovCity=EventContainer.CovCity;
+    NewEvent.Agent = "Netcool Impact";
+    NewEvent.AlertGroup = BSCNAME;
+    NewEvent.AlertKey = '' ;
+    NewEvent.EventType = "Communications Alarm ;
+    NewEvent.Identifier= "CellGPRS20100521" +   BSCNAME ;
+    NewEvent.Summary= "Cell GPRS Failure Alarm Handling for " + BSCNAME;
+    NewEvent.Severity= 5;
+    NewEvent.Type= 1;
+    NewEvent.Tally= 1;
+    NewEvent.HibernateFlag = 99;
+    NewEvent.Node= EventContainer.Node;
+    NewEvent.SyntheticServerName = "";
+    NewEvent.SyntheticServerSerial = 0;
+    NewEvent.FirstOccurrence = NowTime ;
+    NewEvent.LastOccurrence = NowTime ;
+    NewEvent.LogTicket = 1;
+    NewEvent.Class = 200016;
+    AddDataItem('Status', NewEvent);
+}
+  
+  
+while(Num_Synthetic_Event == 0)
+{
+    //Wait % seconds
+    Hibernate(Action_key, "Sleeping", 5 );
+    RemoveHibernation(Action_key); 
+
+
+    //Does the Synthetic event exist?
+    DataType = "Status";  // this needs to be setup
+    Filter = "Class = 200016 and AlertGroup = '" + BscName+ "'";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Synthetic_Event = Num;
+}
+
+//Update Source Event
+EventContainer.SyntheticServerName = Synthetic_Event[0].ServerName;        
+EventContainer.SyntheticServerSerial = Synthetic_Event[0].ServerSerial;        
+ReturnEvent(EventContainer);
+
+
+//Update Synthetic Event's Journal
+MobiLib.ParentJournalInsert(Synthetic_Event[0].ServerName, Synthetic_Event[0].ServerSerial, JournalInsert);

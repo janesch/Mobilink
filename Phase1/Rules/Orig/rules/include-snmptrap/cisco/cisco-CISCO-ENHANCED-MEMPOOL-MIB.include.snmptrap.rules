@@ -1,0 +1,103 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ENHANCED-MEMPOOL-MIB.include.snmptrap.rules 1.0
+#    22006/03/29 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ENHANCED-MEMPOOL-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.221": ### Cisco Memory Pools of Physical Entities - Notifications from CISCO-ENHANCED-MEMPOOL-MIB (20030224)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ENHANCED-MEMPOOL-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Enhanced Memory Pool"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cempMemBufferNotify
+
+            ##########
+            # $1 = cempMemBufferName 
+            # $2 = cempMemBufferPeak 
+            # $3 = cempMemBufferPeakTime 
+            ##########
+
+            $cempMemBufferName = $1
+            $cempMemBufferPeak = $2
+            $cempMemBufferPeakTime = $3
+            $entPhysicalIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $cempMemBufferPoolIndex = extract($OID1, "\.([0-9]+)$")              
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ENHANCED-MEMPOOL-MIB-cempMemBufferNotify"
+
+            @AlertGroup = "Memory Buffer Pool Status"
+            @AlertKey = "cempMemBufferPoolEntry." + $entPhysicalIndex + "." + $cempMemBufferPoolIndex
+            @Summary = "Memory Buffer Pool Peak Buffers Updated  ( Buffer Pool: " + $1 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13 
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($cempMemBufferName,$cempMemBufferPeak,$cempMemBufferPeakTime,$entPhysicalIndex,$cempMemBufferPoolIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ENHANCED-MEMPOOL-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ENHANCED-MEMPOOL-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ENHANCED-MEMPOOL-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ENHANCED-MEMPOOL-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ENHANCED-MEMPOOL-MIB.include.snmptrap.rules >>>>>")

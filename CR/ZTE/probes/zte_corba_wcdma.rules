@@ -1,0 +1,371 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       5724-P16 
+#       
+#       (C) Copyright IBM Corp. 2008. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#######################################################################
+#Available tokens
+#
+#The following tokens come from the FilterableData name/value pairs:
+#NV_NOTIFICATION_ID
+#NV_EVENT_TIME
+#NV_SYSTEM_DN
+#NV_MANAGED_OBJECT_CLASS
+#NV_MANAGED_OBJECT_INSTANCE
+#NV_ALARM_ID
+#NV_PROBABLE_CAUSE
+#NV_PERCEIVED_SEVERITY
+#NV_SPECIFIC_PROBLEMS
+#NV_ADDITIONAL_TEXT
+#NV_ACK_TIME
+#NV_ACK_USER_ID
+#NV_ACK_SYSTEM_ID
+#NV_ACK_STATE
+#NV_COMMENTS
+#NV_BACKED_UP_STATUS 
+#NV_BACK_UP_OBJECT 
+#NV_THRESHOLD_INFO
+#NV_TREND_INDICATION 
+#NV_STATE_CHANGE_DEFINITION
+#NV_MONITORED_ATTRIBUTES
+#NV_PROPOSED_REPAIR_ACTIONS
+#NV_CORRELATED_NOTIFICATIONS 
+#NV_REASON
+#CLEAR_USER_ID
+#CLEAR_SYSTEM_ID
+#NV_ALARM_LIST_ALIGNMENT_REQUIREMENT
+#NV_SERVICE_USER
+#NV_SERVICE_PROVIDER
+#NV_SECURITY_ALARM_DETECTOR
+#NV_VENDOR_SPECIFIC_ALARM_TYPE 
+#NV_ALARM_RAISED_TIME
+#NV_ALARM_CLEARED_TIME
+#NV_ALARM_CHANGED_TIME
+#NV_NOTIFICATION_CATEGORY_SET
+#AI_VS_PERCEIVED_SEVERITY
+#AI_VS_ALARM_TYPE
+#AI_VS_OTHER
+#######################################################################
+#
+# This lookup will only work if the probe is run from $OMNIHOME/probes
+# If the probe is run elsewhere this path will need to be customised.
+include "/opt/IBM/tivoli/netcool/omnibus/probes/includes/Corba_zte_wcdma.lookup"
+table event_type= "/opt/IBM/tivoli/netcool/omnibus/probes/includes/zte_wcdma_even_type.lookup"
+default = "Not Found"
+#
+#######################################################################
+# Alex Silva of Innovise (October 2011)
+#######################################################################
+
+
+@Class = 5010
+
+if(match(@Manager,"ProbeWatch"))
+{
+#
+# This section deals with internal probe events
+#
+
+	switch(@Summary)
+	{
+		case "Running ...":
+			@Severity = 1
+			@AlertGroup = "probestat"
+			@Type = 2
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertKey = @Agent
+
+		case "Unable to get events":
+			@Severity = 5
+			@AlertGroup = "probestat"
+			@AlertKey = @Agent
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@Type = 1
+
+		case "Going Down ...":
+			@Severity = 5
+			@AlertGroup = "probestat"
+			@Type = 1
+			@Summary = @Agent + " probe on " + @Node + ": " + @Summary
+			@AlertKey = @Agent
+
+		case "START SYNCHRONIZATION":
+			@Type = 1
+			@Severity = 3
+			@AlertGroup = "Resync"
+			@AlertKey = "Resync"
+			@Summary = @Agent + " probe on " + @Node + ":START SYNCHRONIZATION"
+
+		case "END SYNCHRONIZATION":
+			@Type = 2
+			@Severity = 1
+			@Summary = @Agent + " probe on " + @Node + ":END SYNCHRONIZATION"
+			@AlertGroup = "Resync"
+			@AlertKey = "Resync"
+
+	        case "START ASYNCHRONOUS RESYNCH":
+       		        @Type = 1
+               		@Severity = 3
+                	@AlertGroup = "Resync"
+                	@AlertKey = "Resync"
+                	@Summary = @Agent + " probe on " + @Node + ":START ASYNCHRONOUS RESYNCH"
+
+	        case "END ASYNCHRONOUS RESYNCH":
+       		        @Type = 2
+               		@Severity = 1
+                	@Summary = @Agent + " probe on " + @Node + ":END ASYNCHRONOUS RESYNCH"
+                	@AlertGroup = "Resync"
+                	@AlertKey = "Resync"
+
+		default:
+			@Severity = 1
+	}
+	@Identifier = @Type + @AlertGroup + @Agent + @AlertKey + @Node + @Summary
+} 
+else
+{
+	log(DEBUG, "<<<<< Entering.... ZTE WCDMA rules >>>>>")
+
+# Setting Manager, Agent and OmcEms
+	@Manager = %Manager 
+	#@EventId = $NV_ALARM_ID
+	#@Agent = $NV_SYSTEM_DN
+	@Agent = @Manager + "@" + hostname()
+	@OmcEms = @Manager
+	@Domain = "BSS"
+	@Vendor = "ZTE"
+
+
+# Setting Node and AlertKey
+	if(exists($NV_MANAGED_OBJECT_INSTANCE_ISO-8859-1))
+	{
+		@Node = $NV_MANAGED_OBJECT_INSTANCE_ISO-8859-1
+	}
+	else if (exists($NV_MANAGED_OBJECT_INSTANCE))
+	{
+		@Node = $NV_MANAGED_OBJECT_INSTANCE
+	}
+
+	if(exists($NV_ALARM_ID_ISO-8859-1))
+	{
+		@AlertKey = $NV_ALARM_ID_ISO-8859-1
+	}
+	else if (exists($NV_ALARM_ID))
+	{
+		@AlertKey = $NV_ALARM_ID
+	}
+
+
+
+# Setting Severity, AlertGroup and Summary
+	if( exists( $NV_PERCEIVED_SEVERITY))
+	{
+		@Severity = lookup($NV_PERCEIVED_SEVERITY, PerceivedSeverity_t)
+	}
+
+	if( exists( $NV_PROBABLE_CAUSE))
+        {
+                $ProbCause = lookup($NV_PROBABLE_CAUSE, ProbableCause_t)
+		@AlertGroup = $ProbCause
+		@Summary = @AlertGroup
+        }
+
+# Setting EventType
+	if (exists( $EVENT_TYPE ) && !match($EVENT_TYPE,"notifyHeartbeat") && !match($EVENT_TYPE,"notifyFileReady") && !match($EVENT_TYPE,"notifyFilePreparationError"))
+        {
+                $EVENT_TYPE = lookup($EVENT_TYPE,EventType_t)
+        }
+
+	if (exists( $EVENT_NAME) )
+        {
+                if(!exists($XMLParsing))
+                {
+               		 $EVENT_NAME = lookup($EVENT_NAME,EventName_t)
+                }
+                else
+                {
+        	        $EVENT_NAME = "No Event Name"
+                }
+		@EventType = $EVENT_NAME
+        }
+
+
+# Setting NodeAlias
+	if( exists( $NV_ADDITIONAL_TEXT_ISO-8859-1))
+	{
+		if(regmatch($NV_ADDITIONAL_TEXT_ISO-8859-1, "OFFICENAME:"))
+		{
+			@NodeAlias= extract($NV_ADDITIONAL_TEXT_ISO-8859-1, "OFFICENAME:([^;]+)")
+		}
+		if(regmatch($NV_ADDITIONAL_TEXT_ISO-8859-1, "OBJECTTYPE:CELL.*OBJECTNAME:"))
+		#if(regmatch($NV_ADDITIONAL_TEXT_ISO-8859-1, "CellID:"))
+		{
+			#$cell_id = extract($NV_ADDITIONAL_TEXT_ISO-8859-1, "CellID:([^,]+)")
+			#@NodeAlias = @NodeAlias + ":CellID:" + $cell_id
+			$cell_name = extract($NV_ADDITIONAL_TEXT_ISO-8859-1, "OBJECTNAME:([^;]+)")
+			@NodeAlias = @NodeAlias + ":" + $cell_name 
+		}
+	} 
+	else if(exists( $NV_ADDITIONAL_TEXT))
+	{
+		if(regmatch($NV_ADDITIONAL_TEXT, "OFFICENAME:"))
+                {
+                        @NodeAlias= extract($NV_ADDITIONAL_TEXT, "OFFICENAME:([^;]+)")
+                }
+		if (regmatch($NV_ADDITIONAL_TEXT, "OBJECTTYPE:CELL.*OBJECTNAME:"))
+		#if (regmatch($NV_ADDITIONAL_TEXT, "CellID:"))
+		{
+			#$cell_id = extract($NV_ADDITIONAL_TEXT, "CellID:([^,]+)")
+			#@NodeAlias = @NodeAlias + ":CellID:" + $cell_id
+			$cell_name = extract($NV_ADDITIONAL_TEXT, "OBJECTNAME:([^;]+)")
+			@NodeAlias = @NodeAlias + ":" + $cell_name
+		}
+	}
+
+# Enriching the Summary
+	if( exists($NV_SPECIFIC_PROBLEM_ISO-8859-1))
+	{
+		$specific_problem = extract($NV_SPECIFIC_PROBLEM_ISO-8859-1, "([^(]+)")
+		@Summary = $specific_problem
+	}
+	else if(exists($NV_SPECIFIC_PROBLEM))
+	{
+		$specific_problem = extract($NV_SPECIFIC_PROBLEM, "([^(]+)")
+		 @Summary = $specific_problem
+	}
+
+
+#Use the NV_EVENT_TIME timestamp to set FirstOccurrence and LastOccurrence:
+	# NV_EVENT_TIME = "10/20/11 7:57:37 PM"
+	if ( exists($NV_EVENT_TIME))
+        {
+                # NV_EVENT_TIME = "7/12/10 8:25:34 PM"
+                $month = extract($NV_EVENT_TIME, "^([^/]+)")
+                $hour = extract($NV_EVENT_TIME, "[0-9]+/[0-9]+/[0-9]+ ([^ ]+)")
+                $day_year = extract($NV_EVENT_TIME, "^[0-9]+/([^ ]+)")
+                $am_pm = extract($NV_EVENT_TIME, "[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+ (.*$)$")
+                if(int($month) < 10)
+                {
+
+                        $month = "0" + $month
+                }
+                if (int($hour) < 10)
+                {
+                        $hour = "0" + $hour
+                }
+                $mm_dd_yy = $month + "/"  + $day_year
+                $emsDate = $mm_dd_yy + $hour + $am_pm
+
+                @FirstOccurrence = DateToTime($emsDate,"%m/%d/%y%I:%M:%S%p")
+                @LastOccurrence  = DateToTime($emsDate,"%m/%d/%y%I:%M:%S%p")
+
+                log(DEBUG, "FirstOccurrence:" +  @FirstOccurrence)
+
+                log(DEBUG, "LastOccurrence:" +  @LastOccurrence)
+
+        }
+	switch(@Severity)
+	{
+		case "1":
+			@Type = 2
+		default:
+			@Type = 1
+	}
+
+# Fixing Enviromental Alarm EventType
+	$event_type_tmp = lookup(@AlertGroup, event_type)
+	if(match($event_type_tmp, "Not Found"))
+	{
+		$event_type_tmp = lookup(@Summary, event_type)
+		if(!match($event_type_tmp, "Not Found"))
+                {
+                        @EventType = $event_type_tmp
+                }
+	}
+	else
+	{
+		@EventType = $event_type_tmp
+	}
+
+
+##########################################################################################
+# Setting EventId
+##########################################################################################
+
+	# BSS Env
+	switch(@Summary)
+	{
+		case "LOW VOLTAGE" | "RECTIFIER MAJOR" | "RECTIFIER MINOR" | "AIR CONDITIONER ALARM" | "AIR CONDITIONER ALARM" | "Environmental temperature is high":
+			@EventId = "BSSE_001"
+			if(int(@Type) == 1)
+			{
+				@Severity = 4
+			}
+		
+		case "Site Abis control link broken" | "Link Broken Between OMM and NE":
+			# Site Down Network Event
+			@EventId = "NET_BSS_ZTE_SD_001"
+		
+		case "Cell interruption alarm":			
+			# Cell Down Network Event
+			@EventId = "NET_BSS_ZTE_CD_001"
+			if(int(@Type) == 1)
+                        {
+                                @Severity = 4
+                        }
+
+		case "E1/T1 input port unavailable" | "E1/T1 output port unavailable":
+			# Partila Site Down Link Related Network Event
+			 @EventId = "NET_BSS_ZTE_PSDLR_001"
+
+		case "The link between the Server and the NE Agent is broken":
+			# X25 Failure  Network Event
+			#@EventId = "H_X25_001"
+
+
+
+		default:
+	}
+	
+	@Identifier = @Node + @AlertKey +  @AlertGroup + @Type + @Manager + @EventType + $specific_problem
+
+############################################################
+# EVENTS TO BE DISCARDED
+############################################################
+	if(match($EVENT_TYPE, "notifyHeartbeat"))
+	{
+		discard
+	}
+	
+
+	switch(@AlertGroup)
+        {
+		case "QUEUE_SIZE_EXCEEDED" | "REINITIALIZED"  :
+			discard
+
+		default:
+	}
+
+	switch(@Summary)
+        {
+		case "PPP link broken" | "PPP Link Broken"  :
+			discard
+
+		default:
+	}
+	##########
+	# Printing the full event-details
+	##########
+	
+	#details($*)
+	
+	log(DEBUG, "<<<<< Leaving.... ZTE WCDMA rules >>>>>")
+}
+details($*)

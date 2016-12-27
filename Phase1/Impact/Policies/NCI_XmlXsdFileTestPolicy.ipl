@@ -1,0 +1,30 @@
+/* This policy explains how to parse the data from an XML file */
+/* The schema being used here of XSD format and is specified   */
+/* TOC.xsd file that is packaged along with this dsa. Before   */
+/* running this policy, make sure you create the XmlXsdFileToc */
+/* and the other data types in the TOC.xsd file, by running the*/
+/* "CreateXsdTypes" script in the bin directory.               */
+
+log("XmlXsdFileTestPolicy");
+
+/* First look up the top node of the file using the lookupByFilter */
+dataType = "XmlXsdFileTOC";
+lookupFilter = "";  
+OrgNodes = GetByFilter(dataType, lookupFilter, false);
+
+/* From here get link to the next element of the Xml file, i.e. Book */
+/* Here we demonstrate how to use the GetByLinks action module to    */
+/* get access to the element contained this File                     */
+dataTypes = {"XSDFTEST_JavaXML_Book"};
+TopNodes = GetByLinks(dataTypes, "", 10000, OrgNodes);
+
+/* Now that we got to the top node, book, you can either use a       */
+/* GetByLinks action module like above or use the following method to*/
+/* get access to the element contained in the book, the element      */
+/* Contents. You can similarly parse all the contained elements      */
+BookNode = TopNodes[0].links.XSDFTEST_JavaXML_Contents.first;
+log("BookNode.xmlns_JavaXML = " + TopNodes[0].xmlns_JavaXML);
+
+
+
+

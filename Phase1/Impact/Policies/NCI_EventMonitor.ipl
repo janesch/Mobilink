@@ -1,0 +1,49 @@
+/*
+	Chris Janes
+	This Policy is used to Monitor the number of Events and raise 
+	An event and continue to update Whilst the alert count is Above
+	a predetermined number
+
+	V 1.0	20100521	Chris Janes	Original
+Line 8 */
+Events = DirectSQL("ObjectServer", "Select count(*) from alerts.status", false);
+NoEvents = RExtract(Events[0], "\s([0-9]*)");
+DataType = "Status";
+Filter = "Agent = 'Impact' and AlertGroup = 'TotalEventCount'";
+CountOnly = False;
+
+SynEvent = GetByFilter(DataType, Filter, CountOnly);
+NumSynEvent = Num;
+log ("NumSynEvent = " + NumSynEvent );
+log ("NoEvents = " + NoEvents );
+NowTime = GetDate();
+Log ("NowTime  = " + NowTime );
+If (NoEvents > 25)
+{
+// is there an existing Event?
+	if(NumSynEvent == 1)
+	{
+		Log("Update Existing Event");
+		SynEvent.AlertKey = NoEvents;
+		SynEvent.Summary= "TotalEventCount is" + NoEvents;
+		SynEvent.LastOccurrence = NowTime ;
+		ReturnEvent(SynEvent);
+	}
+	else
+	{
+		//Create a new Event
+		Log("Create New Event");
+		NewEvent = NewEvent(DefaultEventReader);
+		NewEvent.EventReaderName = "DefaultEventReader";
+		NewEvent.Agent = "Impact";
+		NewEvent.AlertGroup = "TotalEventCount";
+		NewEvent.Identifier= "TotalEventCount 20100521";
+		NewEvent.Summary= "TotalEventCount is" + NoEvents;
+		NewEvent.Severity= 5;
+		NewEvent.Type= 1;
+		NewEvent.FirstOccurrence = NowTime ;
+		NewEvent.LastOccurrence = NowTime ;
+		
+		ReturnEvent(NewEvent);
+	}
+}

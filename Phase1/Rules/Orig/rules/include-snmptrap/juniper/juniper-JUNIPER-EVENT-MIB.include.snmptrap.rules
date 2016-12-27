@@ -1,0 +1,126 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-EVENT-MIB.include.snmptrap.rules 6.0
+#    2008/04/08 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-EVENT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.13": ### Juniper Generic Event - Notifications from JUNIPER-EVENT-MIB (20030417)
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-EVENT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Event"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxEventTrap
+
+            ##########
+            # $1 = jnxEventTrapDescr 
+            ##########
+
+            $jnxEventTrapDescr = $1
+            $jnxEventAvAttribute = $2
+            $jnxEventAvValue = $3
+	    $jnxEventAvIndex = extract($OID2, "\.3\.6\.1\.4\.1\.2636\.3\.37\.1\.2\.1\.2\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-EVENT-MIB-jnxEventTrap"
+
+            @AlertGroup = "Juniper Generic Event"
+
+	    if(exists($2) && exists($3))
+	    {
+            	@AlertKey = "jnxEventAvEntry." + $jnxEventAvIndex
+
+            @Summary = "Event: " + $1 + "  ( " + @AlertKey + " )"
+	    }	
+	    else
+	    {
+            	@AlertKey = ""
+
+	    @Summary = "Event: " + $1
+	    }
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+	    if(exists($2) && exists($3))
+	    {
+            	details($jnxEventTrapDescr,$jnxEventAvAttribute,$jnxEventAvValue,$jnxEventAvIndex)
+	    }	
+	    else
+	    {
+            	details($jnxEventTrapDescr)
+	    }
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-EVENT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-EVENT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-EVENT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-EVENT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-EVENT-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,62 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-CCH323.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "CCH323":
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-CCH323.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "GTWY_UNREGSTR":
+            
+            ##########
+            # A gateway has unregistered from the gatekeeper.
+            #
+            # %CCH323-2-GTWY_UNREGSTR : Gateway [chars] unregistered
+            # from Gatekeeper [chars]   
+            ##########
+            
+            @AlertGroup = "CCH323-Register"
+            @AlertKey = "Gateway: " + extract($Message, "Gateway (.*) unreg")
+        
+        case "REGSTR":
+            
+            ##########
+            # A gateway has registered with the gatekeeper.
+            #
+            # %CCH323-6-REGSTR : Gateway [chars] registered with
+            # Gatekeeper [chars]
+            ##########
+            
+            @AlertGroup = "CCH323-Register"
+            @AlertKey = "Gateway: " + extract($Message, "Gateway (.*) reg")
+            @Severity = 1
+            @Type = 2
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-CCH323.include.syslog.rules >>>>>")

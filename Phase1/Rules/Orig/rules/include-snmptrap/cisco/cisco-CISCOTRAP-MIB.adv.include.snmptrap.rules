@@ -1,0 +1,56 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCOTRAP-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CISCOTRAP-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCOTRAP-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "0": ### reload
+        
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 0
+        $OS_X733SpecificProb = "reload"
+        $OS_OsiLayer = 0
+
+    case "1": ### tcpConnectionClose
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 0
+        $OS_X733SpecificProb = "tcpConnectionClose"
+        $OS_OsiLayer = 4
+        
+        $OS_LocalPriObj = "tcpConnEntry." + $tcpConnLocalAddress + "." + $tcpConnLocalPort + "." + $tcpConnRemAddress + "." + $tcpConnRemPort
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCOTRAP-MIB.adv.include.snmptrap.rules >>>>>")

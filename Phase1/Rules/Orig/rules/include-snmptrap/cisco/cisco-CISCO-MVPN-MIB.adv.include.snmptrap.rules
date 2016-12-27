@@ -1,0 +1,45 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    cisco-CISCO-MVPN-MIB.adv.include.snmptrap.rules 1.0
+#    2007/05/15 Alka Girdhar
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  cisco-CISCO-MVPN-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-MVPN-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "2": ### ciscoMvpnMvrfChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "ciscoMvpnMvrfChange"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "ciscoMvpnGenericEntry." + $mplsVpnVrfName_Raw 
+        $OS_LocalRootObj = "mplsVpnVrfEntry." + $mplsVpnVrfName_Raw
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-MVPN-MIB.adv.include.snmptrap.rules >>>>>")

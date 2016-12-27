@@ -1,0 +1,39 @@
+////////////////////////////////////////////////
+//
+//	MaintenanceEnd.ipl
+//
+//	Impact policy for Mobilink - Sets new Events into Maintenance
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100525	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+//Log("MaintEnd" + @Node);
+//EventContainer.MaintFlag = 0;
+//ReturnEvent(EventContainer);
+
+
+DataType = "Status";
+Filter = "MaintFlag > 1 and MaintEnd < " + getdate();
+CountOnly = False;
+Log("Filter = " + Filter );
+
+OldMaint = GetByFilter(DataType, Filter, CountOnly);
+
+NumEvents = Num;
+log("NumEvents = " + NumEvents );
+log("OldMaint = " + OldMaint );
+
+
+I = NumEvents ;
+While (I > 0) 
+{
+	Log("Node = " + OldMaint[I-1].Node);
+	OldMaint[I-1].MaintFlag = 0;
+	I = I - 1;
+}
+
+//ReturnEvent(OldMaint);
+
+

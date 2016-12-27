@@ -1,0 +1,290 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-AAA.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "AAA": ### TACACS+ Authentication, Authorization, and Accounting security
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-AAA.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "AAAMULTILINKERROR": 
+    
+            ##########
+            # An AAA internal error has occurred.
+            #
+            # %AAA-2-AAAMULTILINKERROR : [chars]([hex]): Acct db for Id
+            # [hex] absent
+            ##########
+        
+            @AlertKey = extract($Message, "for Id ([a-zA-z0-9]+) absent")
+        
+        case "ATTRFORMATERR":
+    
+            ##########
+            # An attribute was found with an invalid or unknown format.
+            #
+            # %AAA-3-ATTRFORMATERR : Attribute with unknown format
+            # [dec]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "AUTHORMLISTUNDEF":
+    
+            ##########
+            # The method list specified in the error message has not
+            # yet been defined but has been used in a command.
+            #
+            # %AAA-3-AUTHORMLISTUNDEF : Authorization method list
+            # '[chars]' is not defined. Please define it.
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "method list (.*) is not")
+    
+        case "BADCURSOR":
+    
+            ##########
+            # An AAA client has provided an invalid attribute cursor to
+            # AAA.
+            #
+            # %AAA-3-BADCURSOR : invalid cursor index [dec] max [dec]
+            # service [chars] protocol [chars]
+            ##########
+    
+            @AlertKey = "Index: " + extract($Message, "index ([0-9]+) max") + ", Max: " + extract($Message, "max ([0-9]+) service") + ", Service: " + extract($Message, "service (.*) protocol") + ", Protocol: " + extract($Message, " protocol (.*)$")
+    
+        case "BADHDL":
+    
+            ##########
+            # An AAA client has provided an invalid attribute list
+            # handle to AAA.
+            #
+            # %AAA-3-BADHDL : invalid hdl AAA ID [int], hdl [hex],
+            # [chars] 
+            ##########
+    
+            @AlertKey = "AAA ID: " + extract($Message, "AAA ID ([0-9]+)") + ", Handle: " + extract($Message, ", hdl ([a-zA-Z0-9]+),")
+    
+        case "BADLIST": 
+    
+            ##########
+            # An AAA client has provided an invalid attribute list to
+            # AAA.
+            #
+            # %AAA-3-BADLIST : invalid list AAA ID [int]
+            ##########
+    
+            @AlertKey = "AAA ID: " + extract($Message, "AAA ID ([0-9]+)")
+    
+        case "BADMETHOD":
+    
+            ##########
+            # A method list function has encountered a method list that
+            # was unknown or that could not be processed.
+            #
+            # %AAA-3-BADMETHOD : Cannot process [chars] method [int]
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "method ([0-9]+)")
+    
+        case "BADPROTOCOL":
+    
+            ##########
+            # The AAA subsystem has encountered an unknown protocol
+            # type.
+            #
+            # %AAA-3-BADPROTOCOL : Unknown protocol [int]
+            ##########
+    
+            @AlertKey = "Protocol: " + extract($Message, "protocol ([0-9]+)")
+    
+        case "BADSERVICE":
+    
+            ##########
+            # The AAA subsystem has encountered an unknown service
+            # type.
+            #
+            # %AAA-3-BADSERVICE : Unknown service [int]
+            ##########
+    
+            @AlertKey = "Service: " + extract($Message, "service ([0-9]+)")
+    
+        case "BUFFER_OVERFLOW":
+    
+            ##########
+            # An unusually large number of RADIUS attributes has caused
+            # AAA to overflow the RADIUS I/O buffer.
+            #
+            # %AAA-3-BUFFER_OVERFLOW : Radius I/O buffer has overflowed
+            ##########
+    
+            @AlertKey = ""
+    
+        case "FORKFAIL":
+    
+            ##########
+            # An attempt to fork a process has failed.
+            #
+            # %AAA-2-FORKFAIL : Cannot fork process [chars]
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "fork process (.*)")
+    
+        case "IPILLEGALMSG":
+    
+            ##########
+            # A process has sent an illegal message to IP to which IP
+            # has not subscribed.
+            #
+            # %AAA-3-IPILLEGALMSG : Invalid use of ip_pid([int])
+            ##########
+    
+            @AlertKey = "ip_pid: " + extract($Message, "ip_pid\(([0-9]+)\)")
+    
+        case "ISDNINTF":
+    
+            ##########
+            # Virtual profiles and virtual access interfaces are
+            # required to apply configuration to ISDN. Configuration
+            # can not be applied to individual ISDN channels.
+            #
+            # %AAA-3-ISDNINTF : [chars] [chars]: Can not apply
+            # configuration to ISDN channel: "[chars]"
+            ##########
+    
+            @AlertKey = ""
+    
+        case "MLIST_INTERNAL_ERROR":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAA-3-MLIST_INTERNAL_ERROR : method list '[chars]':
+            # [chars]
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "method list (.*):")
+    
+        case "MLIST_TOO_MANY_METHODS":
+    
+            ##########
+            # An internal software error has occurred. An AAA client
+            # attempted to add too many methods to a method list.
+            #
+            # %AAA-3-MLIST_TOO_MANY_METHODS : method list '[chars]'
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "method list (.*)")
+    
+        case "NOTABLE":
+    
+            ##########
+            # A resource failure involving AAA has occurred.
+            #
+            # %AAA-3-NOTABLE : AAA ID [int]
+            ##########
+    
+            @AlertKey = "AAA ID: " + extract($Message, "AAA ID ([0-9]+)")
+    
+        case "NULLCURSOR":
+    
+            ##########
+            # An AAA client has provided a nonexistent attribute cursor to AAA.
+            #
+            # %AAA-3-NULLCURSOR : Null cursor
+            ##########
+    
+            @AlertKey = ""
+    
+        case "PARSEERR":
+    
+            ##########
+            # All attempts to parse the specified per-user unconfigure
+            # command have failed. The specified unconfigure command
+            # was not unconfigured.
+            #
+            # %AAA-3-PARSEERR : parser is unable to parse [chars]
+            # per-user unconfigure command
+            #
+            # or
+            #
+            # %AAA-3-PARSEERR : Error([dec]) parser is unable to parse
+            # [chars] per-user command
+            ##########
+    
+            @AlertKey = "Command: " + extract($Message, " to parse (.*) per-user ")
+    
+        case "SERVER_INTERNAL_ERROR":
+    
+            ##########
+            # An internal software error has occurred in the AAA server
+            # group subsystem.
+            #
+            # %AAA-3-SERVER_INTERNAL_ERROR : Server '[IP_address]':
+            # [chars]
+            ##########
+    
+            @AlertKey = "Server: " + extract($Message, "Server ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+):")
+    
+        case "SG_DEADTIME_FORKFAIL":
+    
+            ##########
+            # An internal software error has occurred. The most likely
+            # cause for this condition is system memory exhaustion.
+            #
+            # %AAA-3-SG_DEADTIME_FORKFAIL : Failed to fork process for
+            # [chars].
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, " process for (.*)")
+    
+        case "SG_INTERNAL_ERROR":
+    
+            ##########
+            # An internal software error has occurred in the AAA server
+            # group subsystem.
+            #
+            # %AAA-3-SG_INTERNAL_ERROR : server group '[chars]':
+            # [chars]
+            ##########
+    
+            @AlertKey = "Server Group: " + extract($Message, " server group (.*)")
+    
+        case "SORTFAIL":
+    
+            ##########
+            # The attributes received from the AAA server could not be sorted.
+            #
+            # %AAA-3-SORTFAIL : [chars] :Peruser Could not sort the
+            # [chars] attributes
+            ##########
+    
+            @AlertKey = "Attributes: " + extract($Message, "not sort the (.*) attributes")
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-AAA.include.syslog.rules >>>>>")

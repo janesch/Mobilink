@@ -1,0 +1,2202 @@
+#############################################################################
+#
+#		MIB-PNMSJ-PASOLINK-NEO-CPV.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Siemens @vantage Commander traps.
+#		This is based upon INC-MIB-C 
+#
+#	V0.0	20100412	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+
+case ".1.3.6.1.4.1.119.2.3.69.201.116":	# NEC PASOLINK-CPV Traps
+    @Agent = "NEC PASOLINK-CPV"
+    @Class = "100003"
+    $OS_ExpireTime = 600
+    log(DEBUG, "<<<<< Entering... nec-MIB-PNMSJ-NEC PASOLINK-CPV >>>>>")
+    $OPTION_TypeFieldUsage = "3.6"
+    $enterpriseName = "pasolinkNeoCpv"
+    
+   
+		@URL = "ST = " + $specific-trap + " 1= " + $1 + " 2= " + $2 + " 3= " + $3 + " 4= " + $4 + " 5= " + $5 + " 6= " + $6
+	    switch($specific-trap)
+	    {
+      case"704":      ### configTrapPnSys3AuxInItemName
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInItemName = $5              ### AUX Input name."  (DisplayString (SIZE (0..32)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInItemName"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "AUX Input name status has changed "
+
+
+      case"705":      ### configTrapPnSys3AuxInItemType
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInItemType = $5              ### Configuration for AUX Input.  (INTEGER (0..3))
+            $configItemPnSys3AuxInItemTypeValue = lookup($configItemPnSys3AuxInItemType, configItemPnSys3AuxInItemTypeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInItemType"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Configuration for AUX Input status has changed  to " + $configItemPnSys3AuxInItemTypeValue
+
+
+      case"706":      ### configTrapPnSys3AuxInOpenState
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInOpenState = $5             ### Name of AUX input used in open state."  (DisplayString (SIZE (0..32)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInOpenState"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Name when AUX Input is open status status has changed "
+
+
+      case"707":      ### configTrapPnSys3AuxInCloseState
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInCloseState = $5            ### Name of AUX input used in close state."  (DisplayString (SIZE (0..32)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInCloseState"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Name when AUX Input is close status status has changed "
+
+
+      case"708":      ### configTrapPnSys3AuxInSeverity
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInSeverity = $5              ### Severity when AUX Input is alarm.  (SeverityValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInSeverity"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Sevirity when AUX Input is alarm status has changed "
+
+
+      case"709":      ### configTrapPnSys3AuxInAlarmType
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInAlarmType = $5             ### Alarm Type when AUX Input is alarm.  (AlarmTypeValue)
+            $configItemPnSys3AuxInAlarmTypeValue = lookup($configItemPnSys3AuxInAlarmType, AlarmTypeValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInAlarmType"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Alarm Type when AUX Input is alarm status has changed" 
+
+
+      case"710":      ### configTrapPnSys3AuxInProbableCause
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxInProbableCause = $5         ### ProbableCause when AUX Input is alarm.  (ProbableCauseValue)
+            $configItemPnSys3AuxInProbableCauseValue = lookup($configItemPnSys3AuxInProbableCause, ProbableCauseValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxInProbableCause"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "ProbableCause when AUX Input is alarm status has changed "
+
+
+      case"711":      ### configTrapPnSys3AuxOutItemName
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxOutItemName = $5             ### AUX Input name."  (DisplayString (SIZE (0..32)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxOutItemName"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "AUX Input name status has changed "
+
+
+      case"712":      ### configTrapPnSys3AuxOutOpenState
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxOutOpenState = $5            ### Name of AUX output used in open state."  (DisplayString (SIZE (0..32)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxOutOpenState"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Name when AUX Output is open status status has changed "
+
+
+      case"713":      ### configTrapPnSys3AuxOutCloseState
+            $sys3PnTrapSequenceNumber = $1                   ### PTR=trapGroupGroup.trapSequenceNumber"  (Counter)
+            $sys3PnTrapDate = $2                             ### PTR=trapGroupGroup.trapDate"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapTime = $3                             ### PTR=trapGroupGroup.trapTime"  (DisplayString (SIZE (0..16)))
+            $sys3PnTrapSource = $4                           ### PTR=trapGroupGroup.trapSource"  (OBJECT IDENTIFIER)
+            $configItemPnSys3AuxOutCloseState = $5           ### Name of AUX output used in close state."  (DisplayString (SIZE (0..32)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "configTrapPnSys3AuxOutCloseState"
+            @AlertKey =  $sys3PnTrapSource 
+            @Summary = "Name when AUX Output is close status status has changed "
+
+
+      case"201":      ### partialSummaryTrapTRU
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $partialSummaryItemTRU = $8                      ### TRU Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "partialSummaryTrapTRU"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TRU(ODU) Summary status has changed "
+
+
+      case"202":      ### partialSummaryTrapINTFC1
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $partialSummaryItemINTFC1 = $8                   ### INTFC1 Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "partialSummaryTrapINTFC1"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INTFC1 Summary status has changed "
+
+
+      case"203":      ### partialSummaryTrapCTRL
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $partialSummaryItemCTRL = $8                     ### CTRL Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "partialSummaryTrapCTRL"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CTRL Summary status has changed "
+
+
+      case"204":      ### partialSummaryTrapAux
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $partialSummaryItemAux = $8                      ### AUX Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "partialSummaryTrapAux"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "AUX IO Summary status has changed "
+
+
+      case"205":      ### partialSummaryTrapLpm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $partialSummaryItemLpm = $8                      ### LPM(Link Performance Monitor) Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "partialSummaryTrapLpm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "Link Pmon Summary status has changed "
+
+
+      case"207":      ### partialSummaryTrapMODEM
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $partialSummaryItemMODEM = $8                    ### MODEM Summary  (SeverityValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "partialSummaryTrapMODEM"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "Modem Summary status has changed "
+
+
+      case"301":      ### alarmTrapPnCPVTxPowerAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTxPowerAlarm = $8                 ### TX POWER  (NormalAlarmValue)
+            $alarmItemPnCPVTxPowerAlarmValue = lookup($alarmItemPnCPVTxPowerAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTxPowerAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX POWER status has changed "
+
+
+      case"302":      ### alarmTrapPnCPVTxInputAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTxInputAlarm = $8                 ### TX INPUT  (NormalAlarmValue)
+            $alarmItemPnCPVTxInputAlarmValue = lookup($alarmItemPnCPVTxInputAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTxInputAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX INPUT status has changed "
+
+
+      case"303":      ### alarmTrapPnCPVRxLevelAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVRxLevelAlarm = $8                 ### RX LEVEL  (NormalAlarmValue)
+            $alarmItemPnCPVRxLevelAlarmValue = lookup($alarmItemPnCPVRxLevelAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVRxLevelAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "RX LEVEL status has changed "
+
+
+      case"304":      ### alarmTrapPnCPVApcAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVApcAlarm = $8                     ### APC  (NormalAlarmValue)
+            $alarmItemPnCPVApcAlarmValue = lookup($alarmItemPnCPVApcAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVApcAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "APC status has changed "
+
+
+      case"305":      ### alarmTrapPnCPVTRUCPUAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTRUCPUAlarm = $8                  ### ODU CPU  (NormalAlarmValue)
+            $alarmItemPnCPVTRUCPUAlarmValue = lookup($alarmItemPnCPVTRUCPUAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTRUCPUAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ODU CPU/CABLE OPEN status has changed "
+
+
+      case"306":      ### alarmTrapPnCPVModemAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVModemAlarm = $8                   ### MODEM MODULE  (NormalAlarmValue)
+            $alarmItemPnCPVModemAlarmValue = lookup($alarmItemPnCPVModemAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVModemAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MODEM MODULE status has changed "
+
+
+      case"307":      ### alarmTrapPnCPVModemUneq
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVModemUneq = $8                    ### MODEM UNEQUIPPED  (NormalAlarmValue)
+            $alarmItemPnCPVModemUneqValue = lookup($alarmItemPnCPVModemUneq, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVModemUneq"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MODEM UNEQUIPPED status has changed "
+
+
+      case"308":      ### alarmTrapPnCPVHighBERAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVHighBERAlarm = $8                 ### HIGH BER  (NormalAlarmValue)
+            $alarmItemPnCPVHighBERAlarmValue = lookup($alarmItemPnCPVHighBERAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVHighBERAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "HIGH BER status has changed "
+
+
+      case"309":      ### alarmTrapPnCPVLowBERAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVLowBERAlarm = $8                  ### LOW BER  (NormalAlarmValue)
+            $alarmItemPnCPVLowBERAlarmValue = lookup($alarmItemPnCPVLowBERAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVLowBERAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LOW BER status has changed "
+
+
+      case"310":      ### alarmTrapPnCPVModAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVModAlarm = $8                     ### MOD  (NormalAlarmValue)
+            $alarmItemPnCPVModAlarmValue = lookup($alarmItemPnCPVModAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVModAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MOD status has changed "
+
+
+      case"311":      ### alarmTrapPnCPVDemAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVDemAlarm = $8                     ### DEM  (NormalAlarmValue)
+            $alarmItemPnCPVDemAlarmValue = lookup($alarmItemPnCPVDemAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVDemAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "DEM status has changed "
+
+
+      case"312":      ### alarmTrapPnCPVXIfLevelAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVXIfLevelAlarm = $8                ### MODEM TYPE MISMATCH  (NormalAlarmValue)
+            $alarmItemPnCPVXIfLevelAlarmValue = lookup($alarmItemPnCPVXIfLevelAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVXIfLevelAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MODEM TYPE MISMATCH status has changed "
+
+
+      case"314":      ### alarmTrapPnCPVPSAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVPSAlarm = $8                      ### POWER SUPPLY  (NormalAlarmValue)
+            $alarmItemPnCPVPSAlarmValue = lookup($alarmItemPnCPVPSAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVPSAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "POWER SUPPLY status has changed "
+
+
+      case"315":      ### alarmTrapPnCPVIfCableShort
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVIfCableShort = $8                 ### IF CABLE SHORT  (NormalAlarmValue)
+            $alarmItemPnCPVIfCableShortValue = lookup($alarmItemPnCPVIfCableShort, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVIfCableShort"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "IF CABLE SHORT status has changed "
+
+
+      case"316":      ### alarmTrapPnCPVLof
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVLof = $8                          ### LOF  (NormalAlarmValue)
+            $alarmItemPnCPVLofValue = lookup($alarmItemPnCPVLof, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVLof"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LOF status has changed "
+
+
+      case"317":      ### alarmTrapPnCPVCableEQLAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVCableEQLAlarm = $8                ### CABLE EQL  (NormalAlarmValue)
+            $alarmItemPnCPVCableEQLAlarmValue = lookup($alarmItemPnCPVCableEQLAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVCableEQLAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CABLE EQL status has changed "
+
+
+      case"319":      ### alarmTrapPnCPVIntfcMAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVIntfcMAlarm = $8                  ### INTFC MODULE  (NormalAlarmValue)
+            $alarmItemPnCPVIntfcMAlarmValue = lookup($alarmItemPnCPVIntfcMAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVIntfcMAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INTFC MODULE status has changed "
+
+
+      case"320":      ### alarmTrapPnCPVIntfcMUneq
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVIntfcMUneq = $8                   ### INTFC UNEQUIPPED  (NormalAlarmValue)
+            $alarmItemPnCPVIntfcMUneqValue = lookup($alarmItemPnCPVIntfcMUneq, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVIntfcMUneq"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INTFC UNEQUIPPED status has changed "
+
+
+      case"321":      ### alarmTrapPnCPVInputLos
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVInputLos = $8                     ### INPUT LOS CHxx  (OCTET STRING (SIZE (6)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVInputLos"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INPUT LOS CHxx(xx : 1-16) status has changed "
+
+
+      case"325":      ### alarmTrapPnCPVUsageError
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVUsageError = $8                   ### USAGE ERROR CHxx  (OCTET STRING (SIZE (6)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVUsageError"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "USAGE ERROR CHxx(xx : 1-16) status has changed "
+
+
+      case"326":      ### alarmTrapPnCPVLink
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVLink = $8                         ### LAN LINK PORTx  (NormalAlarmValue)
+            $alarmItemPnCPVLinkValue = lookup($alarmItemPnCPVLink, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVLink"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LAN LINK PORTx(x : 1-2) status has changed "
+
+
+      case"342":      ### alarmTrapPnCPVCTRLAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVCTRLAlarm = $8                    ### CTRL MODULE  (NormalAlarmValue)
+            $alarmItemPnCPVCTRLAlarmValue = lookup($alarmItemPnCPVCTRLAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVCTRLAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CTRL/CTRL MODULE status has changed "
+
+
+      case"346":      ### alarmTrapPnCPVTcn15minTotalOFS
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minTotalOFS = $8             ### TCN-OFS-15min TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn15minTotalOFSValue = lookup($alarmItemPnCPVTcn15minTotalOFS, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minTotalOFS"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-OFS-15min TOTAL status has changed "
+
+
+      case"347":      ### alarmTrapPnCPVTcn15minTotalUAS
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minTotalUAS = $8             ### TCN-UAS-15min TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn15minTotalUASValue = lookup($alarmItemPnCPVTcn15minTotalUAS, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minTotalUAS"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-UAS-15min TOTAL status has changed "
+
+
+      case"348":      ### alarmTrapPnCPVTcn15minTotalES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minTotalES = $8              ### TCN-ES-15min TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn15minTotalESValue = lookup($alarmItemPnCPVTcn15minTotalES, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minTotalES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-ES-15min TOTAL status has changed "
+
+
+      case"349":      ### alarmTrapPnCPVTcn15minTotalSES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minTotalSES = $8             ### TCN-SES-15min TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn15minTotalSESValue = lookup($alarmItemPnCPVTcn15minTotalSES, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minTotalSES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-SES-15min TOTAL status has changed "
+
+
+      case"350":      ### alarmTrapPnCPVTcn15minTotalBBE
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minTotalBBE = $8             ### TCN-BBE-15min TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn15minTotalBBEValue = lookup($alarmItemPnCPVTcn15minTotalBBE, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minTotalBBE"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-BBE-15min TOTAL status has changed "
+
+
+      case"351":      ### alarmTrapPnCPVTcn15minTotalSEP
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minTotalSEP = $8             ### TCN-SEP-15min TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn15minTotalSEPValue = lookup($alarmItemPnCPVTcn15minTotalSEP, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minTotalSEP"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-SEP-15min TOTAL status has changed "
+
+
+      case"353":      ### alarmTrapPnCPVTcn15minCHUAS
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minCHUAS = $8                ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minCHUAS"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"354":      ### alarmTrapPnCPVTcn15minCHES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minCHES = $8                 ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minCHES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"355":      ### alarmTrapPnCPVTcn15minCHSES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minCHSES = $8                ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minCHSES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"356":      ### alarmTrapPnCPVTcn15minCHBBE
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minCHBBE = $8                ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minCHBBE"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"357":      ### alarmTrapPnCPVTcn15minCHSEP
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn15minCHSEP = $8                ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn15minCHSEP"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"358":      ### alarmTrapPnCPVTcn1dayTotalOFS
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayTotalOFS = $8              ### TCN-OFS-1day TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn1dayTotalOFSValue = lookup($alarmItemPnCPVTcn1dayTotalOFS, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayTotalOFS"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-OFS-1day TOTAL status has changed "
+
+
+      case"359":      ### alarmTrapPnCPVTcn1dayTotalUAS
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayTotalUAS = $8              ### TCN-UAS-1day TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn1dayTotalUASValue = lookup($alarmItemPnCPVTcn1dayTotalUAS, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayTotalUAS"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-UAS-1day TOTAL status has changed "
+
+
+      case"360":      ### alarmTrapPnCPVTcn1dayTotalES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayTotalES = $8               ### TCN-ES-1day TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn1dayTotalESValue = lookup($alarmItemPnCPVTcn1dayTotalES, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayTotalES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-ES-1day TOTAL status has changed "
+
+
+      case"361":      ### alarmTrapPnCPVTcn1dayTotalSES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayTotalSES = $8              ### TCN-SES-1day TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn1dayTotalSESValue = lookup($alarmItemPnCPVTcn1dayTotalSES, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayTotalSES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-SES-1day TOTAL status has changed "
+
+
+      case"362":      ### alarmTrapPnCPVTcn1dayTotalBBE
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayTotalBBE = $8              ### TCN-BBE-1day TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn1dayTotalBBEValue = lookup($alarmItemPnCPVTcn1dayTotalBBE, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayTotalBBE"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-BBE-1day TOTAL status has changed "
+
+
+      case"363":      ### alarmTrapPnCPVTcn1dayTotalSEP
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayTotalSEP = $8              ### TCN-SEP-1day TOTAL  (NormalAlarmValue)
+            $alarmItemPnCPVTcn1dayTotalSEPValue = lookup($alarmItemPnCPVTcn1dayTotalSEP, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayTotalSEP"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-SEP-1day TOTAL status has changed "
+
+
+      case"365":      ### alarmTrapPnCPVTcn1dayCHUAS
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayCHUAS = $8                 ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayCHUAS"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"366":      ### alarmTrapPnCPVTcn1dayCHES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayCHES = $8                  ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayCHES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"367":      ### alarmTrapPnCPVTcn1dayCHSES
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayCHSES = $8                 ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayCHSES"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"368":      ### alarmTrapPnCPVTcn1dayCHBBE
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayCHBBE = $8                 ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayCHBBE"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"369":      ### alarmTrapPnCPVTcn1dayCHSEP
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcn1dayCHSEP = $8                 ### This item is not used.  (OCTET STRING (SIZE (1)))
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcn1dayCHSEP"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"372":      ### alarmTrapPnCPVTcnTCS15minRxLev
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcnTCS15minRxLev = $8             ### TCN-RX LEV-15min  (NormalAlarmValue)
+            $alarmItemPnCPVTcnTCS15minRxLevValue = lookup($alarmItemPnCPVTcnTCS15minRxLev, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcnTCS15minRxLev"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-RX LEV-15min status has changed "
+
+
+      case"373":      ### alarmTrapPnCPVTcnTCS1dayRxLev
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTcnTCS1dayRxLev = $8              ### TCN-RX LEV-1day  (NormalAlarmValue)
+            $alarmItemPnCPVTcnTCS1dayRxLevValue = lookup($alarmItemPnCPVTcnTCS1dayRxLev, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTcnTCS1dayRxLev"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN-RX LEV-1day status has changed "
+
+
+      case"374":      ### alarmTrapPnCPVTRULORefAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVTRULORefAlarm = $8                ### ODU TYPE MISMATCH  (NormalAlarmValue)
+            $alarmItemPnCPVTRULORefAlarmValue = lookup($alarmItemPnCPVTRULORefAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVTRULORefAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ODU TYPE MISMATCH status has changed "
+
+
+      case"384":      ### alarmTrapPnCPVAuxClusterAlarm
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVAuxClusterAlarm = $8              ### This item is not used.  (NormalAlarmValue)
+            $alarmItemPnCPVAuxClusterAlarmValue = lookup($alarmItemPnCPVAuxClusterAlarm, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVAuxClusterAlarm"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "AUX Cluster Alarm Index status has changed "
+
+
+      case"385":      ### alarmTrapPnCPVLinearizerFail
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVLinearizerFail = $8               ### LINEARIZER  (NormalAlarmValue)
+            $alarmItemPnCPVLinearizerFailValue = lookup($alarmItemPnCPVLinearizerFail, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVLinearizerFail"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LINEARIZER status has changed "
+
+
+      case"386":      ### alarmTrapPnCPVRouteID
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVRouteID = $8                      ### FRAME ID  (NormalAlarmValue)
+            $alarmItemPnCPVRouteIDValue = lookup($alarmItemPnCPVRouteID, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVRouteID"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "FRAME ID status has changed "
+
+
+      case"387":      ### alarmTrapPnCPVEarlyWarning
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVEarlyWarning = $8                 ### EARLY WARNING  (NormalAlarmValue)
+            $alarmItemPnCPVEarlyWarningValue = lookup($alarmItemPnCPVEarlyWarning, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVEarlyWarning"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "EARLY WARNING status has changed "
+
+
+      case"388":      ### alarmTrapPnCPVInputVoltage
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVInputVoltage = $8                 ### INPUT VOLTAGE  (NormalAlarmValue)
+            $alarmItemPnCPVInputVoltageValue = lookup($alarmItemPnCPVInputVoltage, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVInputVoltage"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INPUT VOLTAGE status has changed "
+
+
+      case"389":      ### alarmTrapPnCPVIntfcMTypeMismatch
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnSeverity = $4                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $5                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $6                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnTrapSource = $7                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $alarmItemPnCPVIntfcMTypeMismatch = $8           ### INTFC(1) TYPE MISMATCH  (NormalAlarmValue)
+            $alarmItemPnCPVIntfcMTypeMismatchValue = lookup($alarmItemPnCPVIntfcMTypeMismatch, NormalAlarmValue)
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "alarmTrapPnCPVIntfcMTypeMismatch"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INTFC TYPE MISMATCH status has changed "
+
+
+      case"403":      ### eventTrapPnCPVTxMuteStatus
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTxMuteStatus = $5                 ### MUTE STATUS  (OffOnValue)
+            $eventItemPnCPVTxMuteStatusValue = lookup($eventItemPnCPVTxMuteStatus, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTxMuteStatus"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MUTE STATUS status has changed "
+
+
+      case"404":      ### eventTrapPnCPVTxSWStatus
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTxSWStatus = $5                   ### TX SW STATUS  (INTEGER (0..2))
+            $eventItemPnCPVTxSWStatusValue = lookup($eventItemPnCPVTxSWStatus, eventItemPnCPVTxSWStatusTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTxSWStatus"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX SW STATUS status has changed to " + $eventItemPnCPVTxSWStatusValue
+
+
+      case"406":      ### eventTrapPnCPVRxSWStatus
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVRxSWStatus = $5                   ### RX SW STATUS  (INTEGER (0..2))
+            $eventItemPnCPVRxSWStatusValue = lookup($eventItemPnCPVRxSWStatus, eventItemPnCPVTxSWStatusTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVRxSWStatus"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "RX SW STATUS status has changed to " + $eventItemPnCPVRxSWStatusValue
+
+
+      case"408":      ### eventTrapPnCPVLinearizerFunc
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVLinearizerFunc = $5               ### LINEARIZER FUNCTION  (INTEGER (0..3))
+            $eventItemPnCPVLinearizerFuncValue = lookup($eventItemPnCPVLinearizerFunc, ControlValue )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVLinearizerFunc"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LINEARIZER FUNCTION status has changed to " + $eventItemPnCPVLinearizerFuncValue
+
+
+      case"411":      ### eventTrapPnCPVAisGeneratedCH
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVAisGeneratedCH = $5               ### AIS GENERATED CHxx  (OCTET STRING (SIZE (6)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVAisGeneratedCH"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "AIS GENERATED CHxx(xx : 1-16) status has changed "
+
+
+      case"412":      ### eventTrapPnCPVAisReceivedCH
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVAisReceivedCH = $5                ### AIS RECEIVED CHxx  (OCTET STRING (SIZE (6)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVAisReceivedCH"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "AIS RECEIVED CHxx(xx : 1-16) status has changed "
+
+
+      case"413":      ### eventTrapPnCPVLinkLossForward
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVLinkLossForward = $5              ### LINK LOSS FORWARDING PORTx  (INTEGER (0..2))
+            $eventItemPnCPVLinkLossForwardValue = lookup($eventItemPnCPVLinkLossForward, ControlValue )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVLinkLossForward"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LLF PORTx(x : 1-2) status has changed to  " + $eventItemPnCPVLinkLossForwardValue
+
+
+      case"414":      ### eventTrapPnCPVSpeedDuplex
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVSpeedDuplex = $5                  ### SPEED & DUPLEX PORTx  (INTEGER (0..8))
+            $eventItemPnCPVSpeedDuplexValue = lookup($eventItemPnCPVSpeedDuplex, STDSpeedDuplexValue )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVSpeedDuplex"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LAN MODE PORTx(x : 1-2) status has changed "
+
+
+      case"415":      ### eventTrapPnCPVInphaseWork
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVInphaseWork = $5                  ### INTFC INPHASE  (INTEGER (0..2))
+            $eventItemPnCPVInphaseWorkValue = lookup($eventItemPnCPVInphaseWork, InphaseWorkValue )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVInphaseWork"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INTFC INPHASE status has changed "
+
+
+      case"420":      ### eventTrapPnCPVCHUsage
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVCHUsage = $5                      ### CH USAGE(CHxx)  (OCTET STRING (SIZE (48)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVCHUsage"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CH USAGE(CHxx)(xx : 1-16) status has changed "
+
+
+      case"421":      ### eventTrapPnCPVCHCondition
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVCHCondition = $5                  ### CH USAGE ERROR REPORT  (OCTET STRING (SIZE (6)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVCHCondition"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CH CONDITION status has changed "
+
+
+      case"422":      ### eventTrapPnCPVCHImpedance
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVCHImpedance = $5                  ### E1 PORT IMPEDANCE  (OCTET STRING (SIZE (10)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVCHImpedance"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "E1 PORT IMPEDANCE status has changed "
+
+
+      case"427":      ### eventTrapPnCPVBERThreshold
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVBERThreshold = $5                 ### BER THRESHOLD SETTING  (OCTET STRING (SIZE (8)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVBERThreshold"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "BER THRESHOLD SETTING status has changed "
+
+
+      case"429":      ### eventTrapPnCPVSCAssign
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVSCAssign = $5                     ### SC ASSIGNMENT  (OCTET STRING (SIZE (8)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVSCAssign"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "SC ASSIGNMENT status has changed "
+
+
+      case"430":      ### eventTrapPnCPVLanPortSetting
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVLanPortSetting = $5               ### LAN PORT SETTING  (OCTET STRING (SIZE (36)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVLanPortSetting"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LAN PORT SETTING status has changed "
+
+
+      case"432":      ### eventTrapPnCPVTxPowerContValue
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTxPowerContValue = $5             ### TX POWER CTRL  (OCTET STRING (SIZE (9)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTxPowerContValue"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX POWER CTRL status has changed "
+
+
+      case"436":      ### eventTrapPnCPVSWCondTxRx
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVSWCondTxRx = $5                   ### CONDITION  (OCTET STRING (SIZE (5)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVSWCondTxRx"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CONDITION for TX/RX SW status has changed "
+
+
+      case"438":      ### eventTrapPnCPVRelayConfigData
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVRelayConfigData = $5              ### RELAY CONFIGURATION CHANGED  (OCTET STRING (SIZE (48)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVRelayConfigData"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "RELAY CONFIGURATION status has changed "
+
+
+      case"439":      ### eventTrapPnCPVRelayClusterAssign
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVRelayClusterAssign = $5           ### CLUSTER INPUT  (OCTET STRING (SIZE (4)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVRelayClusterAssign"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CLUSTER INPUT status has changed "
+
+
+      case"440":      ### eventTrapPnCPVTCNTreshold15minTotal
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTCNTreshold15minTotal = $5        ### TCN THRESHOLD 15MIN TOTAL  (OCTET STRING (SIZE (24)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTCNTreshold15minTotal"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN THRESHOLD 15MIN TOTAL status has changed "
+
+
+      case"441":      ### eventTrapPnCPVTCNTreshold15minCH
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTCNTreshold15minCH = $5           ### This item is not used.  (OCTET STRING (SIZE (24)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTCNTreshold15minCH"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"442":      ### eventTrapPnCPVTCNTreshold1dayTotal
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTCNTreshold1dayTotal = $5         ### TCN THRESHOLD 1DAY TOTAL  (OCTET STRING (SIZE (24)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTCNTreshold1dayTotal"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TCN THRESHOLD 1DAY TOTAL status has changed "
+
+
+      case"443":      ### eventTrapPnCPVTCNTreshold1dayCH
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVTCNTreshold1dayCH = $5            ### This item is not used.  (OCTET STRING (SIZE (24)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVTCNTreshold1dayCH"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"446":      ### eventTrapPnCPVEOWIntfcType
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVEOWIntfcType = $5                 ### EOW2 EXTERNAL SETTING  (INTEGER (0..2))
+            $eventItemPnCPVEOWIntfcTypeValue = lookup($eventItemPnCPVEOWIntfcType, eventItemPnSTDEOWIntfcTypeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVEOWIntfcType"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "EOW2 EXTERNAL SETTING status has changed "
+
+
+      case"447":      ### eventTrapPnCPVAlarmCorrelation
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVAlarmCorrelation = $5             ### ALARM CORRELATION CAPABILITY  (INTEGER (0..2))
+            $eventItemPnCPVAlarmCorrelationValue = lookup($eventItemPnCPVAlarmCorrelation, OffOnValue )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVAlarmCorrelation"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ALARM CORRELATION CAPABILITY status has changed "
+
+
+      case"448":      ### eventTrapPnCPVPmonSelect
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVPmonSelect = $5                   ### PMON SELECT  (OCTET STRING (SIZE (10)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVPmonSelect"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "PMON SELECT status has changed "
+
+
+      case"449":      ### eventTrapPnCPVMaintMode
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintMode = $5                    ### MAINTENANCE  (OffOnValue)
+            $eventItemPnCPVMaintModeValue = lookup($eventItemPnCPVMaintMode, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintMode"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MAINTENANCE status has changed "
+
+
+      case"453":      ### eventTrapPnCPVMaintLoopback1CH
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintLoopback1CH = $5             ### MAIN CH LOOPBACK-1(CHxx)  (OCTET STRING (SIZE (6)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintLoopback1CH"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MAIN CH LOOPBACK-1(CHxx)(xx:01-16) status has changed "
+
+
+      case"454":      ### eventTrapPnCPVMaintLoopback2CH
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintLoopback2CH = $5             ### MAIN CH LOOPBACK-2(CHxx)  (OCTET STRING (SIZE (6)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintLoopback2CH"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MAIN CH LOOPBACK-2(CHxx)(xx:01-16) "
+
+
+      case"457":      ### eventTrapPnCPVMaintDADEAdjust
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintDADEAdjust = $5              ### This item is not used.  (INTEGER (0..3))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintDADEAdjust"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"458":      ### eventTrapPnCPVMaintDADEAdjustEn
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintDADEAdjustEn = $5            ### This item is not used.  (INTEGER (0..2))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintDADEAdjustEn"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"459":      ### eventTrapPnCPVMaintLanDeviceReset
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintLanDeviceReset = $5          ### This item is not used.  (INTEGER (0..7))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintLanDeviceReset"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"462":      ### eventTrapPnCPVMaintATPCManualControl
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintATPCManualControl = $5       ### ATPC MANUAL CONTROL  (OffOnValue)
+            $eventItemPnCPVMaintATPCManualControlValue = lookup($eventItemPnCPVMaintATPCManualControl, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintATPCManualControl"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ATPC MANUAL CONTROL status has changed "
+
+
+      case"463":      ### eventTrapPnCPVMaintATPCManualContPower
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintATPCManualContPower = $5     ### ATPC MANUAL POWER[dB]"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintATPCManualContPower"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ATPC MANUAL POWER[dB] status has changed "
+
+
+      case"464":      ### eventTrapPnCPVMaintTxMuteControl
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintTxMuteControl = $5           ### TX MUTE CONTROL  (OffOnValue)
+            $eventItemPnCPVMaintTxMuteControlValue = lookup($eventItemPnCPVMaintTxMuteControl, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintTxMuteControl"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX MUTE CONTROL status has changed "
+
+
+      case"465":      ### eventTrapPnCPVMaintTxMuteContReleaseTime
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintTxMuteContReleaseTime = $5   ### TX MUTE OFF TIMER[sec]"  (INTEGER)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintTxMuteContReleaseTime"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX MUTE OFF TIMER[sec] status has changed "
+
+
+      case"466":      ### eventTrapPnCPVMaintCW
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintCW = $5                      ### CW CONTROL  (OffOnValue)
+            $eventItemPnCPVMaintCWValue = lookup($eventItemPnCPVMaintCW, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintCW"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "CW CONTROL status has changed "
+
+
+      case"469":      ### eventTrapPnCPVMaintForcedLinearizerCont
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintForcedLinearizerCont = $5    ### LINEARIZER CONTROL  (INTEGER (0..2))
+            $eventItemPnCPVMaintForcedLinearizerContValue = lookup($eventItemPnCPVMaintForcedLinearizerCont, eventItemPnSTDMaintForcedLinearizerContTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintForcedLinearizerCont"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LINEARIZER CONTROL status has changed "
+
+
+      case"471":      ### eventTrapPnCPVMaintRFShiftFreqSet
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintRFShiftFreqSet = $5          ### This item is not used.  (DisplayString (SIZE (4)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintRFShiftFreqSet"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "This item is not used. This trap is sent "
+
+
+      case"472":      ### eventTrapPnCPVMaintAntennaAlignMode
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintAntennaAlignMode = $5        ### ANTENNA ALIGNMENT MODE  (OffOnValue)
+            $eventItemPnCPVMaintAntennaAlignModeValue = lookup($eventItemPnCPVMaintAntennaAlignMode, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintAntennaAlignMode"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ANTENNA ALIGNMENT MODE status has changed "
+
+
+      case"473":      ### eventTrapPnCPVinvUpdateMainWorkModule
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVinvUpdateMainWorkModule = $5      ### Main Work Module  (INTEGER (0..12))
+            $eventItemPnCPVinvUpdateMainWorkModuleValue = lookup($eventItemPnCPVinvUpdateMainWorkModule, eventItemPnSTDinvUpdateMainWorkModuleTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVinvUpdateMainWorkModule"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INTFC(1) PKG CHANGED status has changed "
+
+
+      case"475":      ### eventTrapPnCPVinvUpdateSummary
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVinvUpdateSummary = $5             ### Update Summary  (OCTET STRING (SIZE (2)))
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVinvUpdateSummary"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "INVENTORY UPDATE INFO SUMMARY status has changed "
+
+
+      case"476":      ### eventTrapPnCPVLanCollision
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVLanCollision = $5                 ### LAN COLLISION PORTx  (INTEGER (0..2))
+            $eventItemPnCPVLanCollisionValue = lookup($eventItemPnCPVLanCollision, eventItemPnSTDLanCollisionTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVLanCollision"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "LAN COLLISION PORTx(x : 1-2) status has changed "
+
+
+      case"480":      ### eventTrapPnCPVAtpcPowerModeStatus
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVAtpcPowerModeStatus = $5          ### ATPC POWER MODE  (INTEGER (0..2))
+            $eventItemPnCPVAtpcPowerModeStatusValue = lookup($eventItemPnCPVAtpcPowerModeStatus, eventItemPnSTDAtpcPowerModeStatusTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVAtpcPowerModeStatus"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ATPC POWER MODE status has changed "
+
+
+      case"481":      ### eventTrapPnCPVAuxOutput
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVAuxOutput = $5                    ### ITEM NAME(OUTPUT-x)  (INTEGER (0..2))
+            $eventItemPnCPVAuxOutputValue = lookup($eventItemPnCPVAuxOutput, eventItemPnSTDAuxOutputTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVAuxOutput"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ITEM NAME(OUTPUT-x)(x : 1-4) status has changed "
+
+
+      case"482":      ### eventTrapPnCPVMMCMount
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMMCMount = $5                     ### MMC MOUNT  (OffOnValue)
+            $eventItemPnCPVMMCMountValue = lookup($eventItemPnCPVMMCMount, OffOnValue)
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMMCMount"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "MMC MOUNT status has changed "
+
+
+      case"485":      ### eventTrapPnCPVMaintTxSWMode
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintTxSWMode = $5                ### TX SW MODE  (INTEGER (0..2))
+            $eventItemPnCPVMaintTxSWModeValue = lookup($eventItemPnCPVMaintTxSWMode, eventItemPnSTDMaintTxSWModeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintTxSWMode"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "TX SW MODE status has changed "
+
+
+      case"486":      ### eventTrapPnCPVMaintRxSWMode
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $eventItemPnCPVMaintRxSWMode = $5                ### RX SW MODE  (INTEGER (0..2))
+            $eventItemPnCPVMaintRxSWModeValue = lookup($eventItemPnCPVMaintRxSWMode, eventItemPnSTDMaintTxSWModeTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "eventTrapPnCPVMaintRxSWMode"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "RX SW MODE status has changed "
+
+
+      case"501":      ### statusTrapPnCPVAuxInput
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pnTrapSource = $4                               ### TRAP Source"  (OBJECT IDENTIFIER)
+            $pnSeverity = $5                                 ### Severity (CCITT Rec. X.733)  (SeverityValue)
+            $pnAlarmType = $6                                ### Alaem Type (CCITT Rec. X.733)  (AlarmTypeValue)
+            $pnAlarmTypeValue = lookup($pnAlarmType, AlarmTypeValue)
+            $pnProbableCause = $7                            ### Probable Cause (CCITT Rec. X.733)  (ProbableCauseValue)
+            $pnProbableCauseValue = lookup($pnProbableCause, ProbableCauseValue)
+            $pnStatusTypeAux = $8                            ### Aux Status Type  (INTEGER (0..3))
+            $pnStatusTypeAuxValue = lookup($pnStatusTypeAux, pnStatusTypeAuxTable )  ## Check Table Exists
+            $statusItemPnCPVAuxInput = $9                    ### ITEM NAME(INPUT-x)  (INTEGER (0..2))
+            $statusItemPnCPVAuxInputValue = lookup($statusItemPnCPVAuxInput, statusItemPnSTDAuxInputTable )  ## Check Table Exists
+
+            [$OS_Severity, $OS_Type, $OS_ExpireTime] = lookup($pnSeverity, SeverityValue)
+
+            @AlertGroup = "statusTrapPnCPVAuxInput"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "ITEM NAME(INPUT-x)(x : 1-6) status has changed "
+
+
+      case"601":      ### systemTrapPnCPVGetResult
+            $pnTrapSequenceNumber = $1                       ### Trap Sequence number(0..4294967295)"  (Counter)
+            $pnTrapDate = $2                                 ### Trap Generate Date  (DisplayString (SIZE(10)))
+            $pnTrapTime = $3                                 ### Trap Generate Time  (DisplayString(SIZE(8)))
+            $pngmiRequestID = $4                             ### Request ID"  (INTEGER (1..9999))
+            $pngmiTargetPasolink = $5                        ### Target Pasolink IpAddress"  (IpAddress)
+            $pngmiDataStatus = $6                            ### Data Status  (INTEGER (0..3))
+            $pngmiDataStatusValue = lookup($pngmiDataStatus, pngmiDataStatusTable )  ## Check Table Exists
+
+            $OS_Severity = 2
+            $OS_Type = 1
+            $OS_ExpireTime = 36000
+
+            @AlertGroup = "systemTrapPnCPVGetResult"
+            @AlertKey =  $pnTrapSource 
+            @Summary = "No Description for this Trap in MiB"
+
+
+			
+					  
+					  
+					  
+			default:
+
+					$OS_Severity = 1
+					$OS_Type = 1
+					@Summary  =  "NEC PASOLINK-CPV - Unknown Specific Trap " + $specific-trap
+					@AlertGroup = "NEC PASOLINK-CPV"
+					@AlertKey = $specific-trap
+					details($*)
+		}
+		@Severity = $OS_Severity
+		@Type = $OS_Type
+		@Grade = $specific-trap
+        @Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Manager + $OS_Type
+		$OS_X733ProbableCause = $pnProbableCause
+		$OS_X733EventType = $pnAlarmType
+		@EventType = $pnAlarmTypeValue
+		@Network = 2
+		update(@Summary)
+		details($*)

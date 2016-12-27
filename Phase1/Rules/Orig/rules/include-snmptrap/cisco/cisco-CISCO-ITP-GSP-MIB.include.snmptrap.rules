@@ -1,0 +1,501 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ITP-GSP-MIB.include.snmptrap.rules 1.0
+#    2006/04/20 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ITP-GSP-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.336": ### Cisco ITP Gateway Signalling Point - Notifications from CISCO-ITP-GSP-MIB (20030716)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ITP-GSP-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-ITP Gateway Signalling Point"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoGspLinksetStateChange
+
+            ##########
+            # $1 = cgspEventSequenceNumber 
+            # $2 = cgspCLLICode 
+            # $3 = cgspLinksetDisplayName 
+            # $4 = cgspLinksetSourceDisplayPC 
+            # $5 = cgspLinksetAdjacentDisplayPC 
+            # $6 = cgspLinksetState 
+            ##########
+
+            $cgspEventSequenceNumber = $1            
+            $cgspCLLICode = $2            
+            $cgspLinksetDisplayName = $3            
+            $cgspLinksetSourceDisplayPC = $4            
+            $cgspLinksetAdjacentDisplayPC = $5            
+            $cgspLinksetState = lookup($6, cgspLinksetState) + " ( " + $6 + " )"
+
+            $cgspInstNetwork_cgspLinksetName_Raw = extract($OID3, "\.3\.6\.1\.4\.1\.9\.9\.336\.1\.5\.1\.1\.15\.(.*)$")
+            $OctetString = $cgspInstNetwork_cgspLinksetName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cgspInstNetwork_cgspLinksetName = $String
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ITP-GSP-MIB-ciscoGspLinksetStateChange"
+
+            @AlertGroup = "GSP Linkset Status"
+            @AlertKey = "cgspLinksetTableEntry." + $cgspInstNetwork_cgspLinksetName_Raw
+            switch($6)
+            {
+                case "1": ### available
+                    $SEV_KEY = $OS_EventId + "_available"
+                    @Summary = "Gateway Signalling Point Linkset Available"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0               
+                case "2": ### shutdown
+                    $SEV_KEY = $OS_EventId + "_shutdown"
+                    @Summary = "Gateway Signalling Point Linkset Administratively Shutdown"   
+        
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### unavailable
+                    $SEV_KEY = $OS_EventId + "_unavailable"
+                    @Summary = "Gateway Signalling Point Linkset Unavailable"
+                    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0               
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Gateway Signalling Point Linkset Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( cgspInstNetwork_cgspLinksetName: " + $cgspInstNetwork_cgspLinksetName + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+	      details($cgspEventSequenceNumber,$cgspCLLICode,$cgspLinksetDisplayName,$cgspLinksetSourceDisplayPC,$cgspLinksetAdjacentDisplayPC,$cgspLinksetState,$cgspInstNetwork_cgspLinksetName)
+
+        case "2": ### ciscoGspLinkStateChange
+
+            ##########
+            # $1 = cgspEventSequenceNumber 
+            # $2 = cgspCLLICode 
+            # $3 = cgspLinksetSourceDisplayPC 
+            # $4 = cgspLinksetAdjacentDisplayPC 
+            # $5 = cgspLinkDisplayName 
+            # $6 = cgspLinkState 
+            # $7 = cgspLinkReason 
+            # $8 = cgspLinkTestResult 
+            ##########
+
+            $cgspEventSequenceNumber = $1            
+            $cgspCLLICode = $2            
+            $cgspLinksetSourceDisplayPC = $3
+            $cgspLinksetAdjacentDisplayPC = $4
+            $cgspLinkDisplayName = $5
+            $cgspLinkState = lookup($6, cgspLinkState) + " ( " + $6 + " )"
+            $cgspLinkReason = lookup($7, cgspLinkReason)
+            $cgspLinkTestResult = lookup($8, CgspLinkTestResults) + " ( " + $8 + " )"
+
+            $cgspInstNetwork_cgspLinksetName_Raw = extract($OID5, "\.3\.6\.1\.4\.1\.9\.9\.336\.1\.6\.1\.1\.54\.(.*)\.[0-9]+$")
+            $OctetString = $cgspInstNetwork_cgspLinksetName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cgspInstNetwork_cgspLinksetName = $String
+            
+            $cgspLinkSlc = extract($OID6, "\.([0-9]+)$") 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ITP-GSP-MIB-ciscoGspLinkStateChange"
+
+            @AlertGroup = "GSP Link Status"
+            @AlertKey = "cgspLinkTableEntry." + $cgspInstNetwork_cgspLinksetName_Raw + "." + $cgspLinkSlc
+            switch($6)
+            {
+                case "1": ### available
+                    $SEV_KEY = $OS_EventId + "_available"
+                    @Summary = "GSP Link Available"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### failed
+                    $SEV_KEY = $OS_EventId + "_failed"
+                    @Summary = "GSP Link Failed, " + $cgspLinkReason
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### shutdown
+                    $SEV_KEY = $OS_EventId + "_shutdown"
+                    @Summary = "GSP Link Administratively Shutdown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "4": ###  unavailable
+                    $SEV_KEY = $OS_EventId + "_unavailable"
+                    @Summary = "GSP Link Unavailable"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "GSP Link Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            switch($7)
+            {
+                case "0": ### unknown
+                    $SEV_KEY = $SEV_KEY + "_unknown"
+                case "1": ### changeOverInProgress
+                    $SEV_KEY = $SEV_KEY + "_changeOverInProgress"
+                case "2": ### mgmtDisconnectRequest
+                    $SEV_KEY = $SEV_KEY + "_mgmtDisconnectRequest"
+                case "3": ### linkAlignmentLost
+                    $SEV_KEY = $SEV_KEY + "_linkAlignmentLost"
+                case "4": ### connectionLost
+                    $SEV_KEY = $SEV_KEY + "_connectionLost"
+                case "5": ### localDisconnect
+                    $SEV_KEY = $SEV_KEY + "_localDisconnect"
+                case "6": ### remoteDisconnect
+                    $SEV_KEY = $SEV_KEY + "_remoteDisconnect"
+                case "7": ### suermFailure
+                    $SEV_KEY = $SEV_KEY + "_suermFailure"
+                case "8": ### t1Timeout
+                    $SEV_KEY = $SEV_KEY + "_t1Timeout"
+                case "9": ### t2Timeout
+                    $SEV_KEY = $SEV_KEY + "_t2Timeout"
+                case "10": ### t3Timeout
+                    $SEV_KEY = $SEV_KEY + "_t3Timeout"
+                case "11": ### t6Timeout
+                    $SEV_KEY = $SEV_KEY + "_t6Timeout"
+                case "12": ### t7Timeout
+                    $SEV_KEY = $SEV_KEY + "_t7Timeout"
+                case "13": ### provingFailure
+                    $SEV_KEY = $SEV_KEY + "_provingFailure"
+                case "14": ### protocolErrorBsn
+                    $SEV_KEY = $SEV_KEY + "_protocolErrorBsn"
+                case "15": ### protocolErrorFib
+                    $SEV_KEY = $SEV_KEY + "_protocolErrorFib"
+                case "16": ### protocolErrorSin
+                    $SEV_KEY = $SEV_KEY + "_protocolErrorSin"
+                case "17": ### protocolErrorLssu
+                    $SEV_KEY = $SEV_KEY + "_protocolErrorLssu"
+                case "18": ### peerNotReady
+                    $SEV_KEY = $SEV_KEY + "_peerNotReady"
+                case "19": ### communicationLost 
+                    $SEV_KEY = $SEV_KEY + "_communicationLost"
+                case "20": ### noListenPosted
+                    $SEV_KEY = $SEV_KEY + "_noListenPosted"
+                case "21": ### bufferNotAvailable
+                    $SEV_KEY = $SEV_KEY + "_bufferNotAvailable"
+                case "22": ### cardRemoved
+                    $SEV_KEY = $SEV_KEY + "_cardRemoved"
+                case "23": ### cardInserted
+                    $SEV_KEY = $SEV_KEY + "_cardInserted"
+                case "24": ### falseLinkCongestion
+                    $SEV_KEY = $SEV_KEY + "_falseLinkCongestion"
+                case "25": ### configDownload
+                    $SEV_KEY = $SEV_KEY + "_configDownload"
+                case "26": ### localInhibit
+                    $SEV_KEY = $SEV_KEY + "_localInhibit"
+                case "27": ### localUninhibit
+                    $SEV_KEY = $SEV_KEY + "_localUninhibit"
+                case "28": ### remoteInhibit
+                    $SEV_KEY = $SEV_KEY + "_remoteInhibit"
+                case "29": ### remoteUninhibit
+                    $SEV_KEY = $SEV_KEY + "_remoteUninhibit"
+                case "30": ### localBlocked 
+                    $SEV_KEY = $SEV_KEY + "_localBlocked"
+                case "31": ### localUnBlocked
+                    $SEV_KEY = $SEV_KEY + "_localUnBlocked"
+                case "32": ### remoteBlocked
+                    $SEV_KEY = $SEV_KEY + "_remoteBlocked"
+                case "33": ### remoteUnblocked
+                    $SEV_KEY = $SEV_KEY + "_remoteUnblocked"
+                default: ### unknown
+                    $SEV_KEY = $SEV_KEY + "_unknown"
+            }               
+            @Summary = @Summary + "  ( cgspInstNetwork_cgspLinksetName: " + $cgspInstNetwork_cgspLinksetName + ", cgspLinkSlc: " + $cgspLinkSlc + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6 + " " + $7
+
+            $cgspLinkReason = $cgspLinkReason + " ( " + $7 + " )"
+            details($cgspEventSequenceNumber,$cgspCLLICode,$cgspLinksetSourceDisplayPC,$cgspLinksetAdjacentDisplayPC,$cgspLinkDisplayName,$cgspLinkState,$cgspLinkReason,$cgspLinkTestResult,$cgspInstNetwork_cgspLinksetName,$cgspLinkSlc)
+
+        case "3": ### ciscoGspCongestionChange
+
+            ##########
+            # $1 = cgspEventSequenceNumber 
+            # $2 = cgspCLLICode 
+            # $3 = cgspLinksetSourceDisplayPC 
+            # $4 = cgspLinksetAdjacentDisplayPC 
+            # $5 = cgspLinkDisplayName 
+            # $6 = cgspLinkCongestionState 
+            ##########
+
+            $cgspEventSequenceNumber = $1            
+            $cgspCLLICode = $2            
+            $cgspLinksetSourceDisplayPC = $3 
+            $cgspLinksetAdjacentDisplayPC = $4            
+            $cgspLinkDisplayName = $5            
+            $cgspLinkCongestionState = lookup($6, cgspLinkCongestionState) + " ( " + $6 + " )"
+
+            $cgspInstNetwork_cgspLinksetName_Raw = extract($OID5, "\.3\.6\.1\.4\.1\.9\.9\.336\.1\.6\.1\.1\.54\.(.*)\.[0-9]+$")
+            $OctetString = $cgspInstNetwork_cgspLinksetName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cgspInstNetwork_cgspLinksetName = $String
+            
+            $cgspLinkSlc = extract($OID6, "\.([0-9]+)$") 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ITP-GSP-MIB-ciscoGspCongestionChange"
+
+            @AlertGroup = "GSP Link Congestion Status"
+            @AlertKey = "cgspLinkTableEntry." + $cgspInstNetwork_cgspLinksetName_Raw + "." + $cgspLinkSlc
+            switch($6)
+            {
+                case "0": ### low
+                    $SEV_KEY = $OS_EventId + "_low"
+                    @Summary = "GSP Link Congestion Low"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0                    
+                case "1": ### moderate
+                    $SEV_KEY = $OS_EventId + "_moderate"
+                    @Summary = "GSP Link Congestion Moderate"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0                    
+                case "2": ### high
+                    $SEV_KEY = $OS_EventId + "_high"
+                    @Summary = "GSP Link Congestion High"
+                    
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### highest
+                    $SEV_KEY = $OS_EventId + "_highest"
+                    @Summary = "GSP Link Congestion Highest"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "GSP Link Congestion Status Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0         
+            }
+            @Summary = @Summary + "  ( cgspInstNetwork_cgspLinksetName: " + $cgspInstNetwork_cgspLinksetName + ", cgspLinkSlc: " + $cgspLinkSlc + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+            details($cgspEventSequenceNumber,$cgspCLLICode,$cgspLinksetSourceDisplayPC,$cgspLinksetAdjacentDisplayPC,$cgspLinkDisplayName,$cgspLinkCongestionState,$cgspInstNetwork_cgspLinksetName,$cgspLinkSlc)
+
+        case "4": ### ciscoGspLinkRcvdUtilChange
+
+            ##########
+            # $1 = cgspEventSequenceNumber 
+            # $2 = cgspCLLICode 
+            # $3 = cgspLinksetSourceDisplayPC 
+            # $4 = cgspLinksetAdjacentDisplayPC 
+            # $5 = cgspLinkDisplayName 
+            # $6 = cgspLinkUtilStateRcvd 
+            # $7 = cgspLinkUtilizationRcvd 
+            ##########
+
+            $cgspEventSequenceNumber = $1            
+            $cgspCLLICode = $2            
+            $cgspLinksetSourceDisplayPC = $3 
+            $cgspLinksetAdjacentDisplayPC = $4            
+            $cgspLinkDisplayName = $5            
+            $cgspLinkUtilStateRcvd = lookup($6, CgspLinkUtilizationState) + " ( " + $6 + " )"
+            $cgspLinkUtilizationRcvd = $7
+
+            $cgspInstNetwork_cgspLinksetName_Raw = extract($OID5, "\.3\.6\.1\.4\.1\.9\.9\.336\.1\.6\.1\.1\.54\.(.*)\.[0-9]+$")
+            $OctetString = $cgspInstNetwork_cgspLinksetName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cgspInstNetwork_cgspLinksetName = $String
+            
+            $cgspLinkSlc = extract($OID6, "\.([0-9]+)$") 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ITP-GSP-MIB-ciscoGspLinkRcvdUtilChange"
+
+            @AlertGroup = "GSP Link Inbound Utilization Status"
+            @AlertKey = "cgspLinkTableEntry." + $cgspInstNetwork_cgspLinksetName_Raw + "." + $cgspLinkSlc
+            switch($6)
+            {
+                case "0": ### unMonitored
+                    $SEV_KEY = $OS_EventId + "_unMonitored"
+                    @Summary = "GSP Link Utilization for Inbound Traffic Not Monitored"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "1": ### underThreshold
+                    $SEV_KEY = $OS_EventId + "_underThreshold"
+                    @Summary = "GSP Link Utilization, " + $7 + ", for Inbound Traffic Below Threshold"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### overThreshold
+                    $SEV_KEY = $OS_EventId + "_overThreshold"
+                    @Summary = "GSP Link Utilization, " + $7 + ", for Inbound Traffic Above Threshold"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "GSP Link Utilization Status for Inbound Traffic Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0                    
+            }
+            @Summary = @Summary + "  ( cgspInstNetwork_cgspLinksetName: " + $cgspInstNetwork_cgspLinksetName + ", cgspLinkSlc: " + $cgspLinkSlc + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+            details($cgspEventSequenceNumber,$cgspCLLICode,$cgspLinksetSourceDisplayPC,$cgspLinksetAdjacentDisplayPC,$cgspLinkDisplayName,$cgspLinkUtilStateRcvd,$cgspLinkUtilizationRcvd,$cgspInstNetwork_cgspLinksetName,$cgspLinkSlc)
+       
+
+        case "5": ### ciscoGspLinkSentUtilChange
+
+            ##########
+            # $1 = cgspEventSequenceNumber 
+            # $2 = cgspCLLICode 
+            # $3 = cgspLinksetSourceDisplayPC 
+            # $4 = cgspLinksetAdjacentDisplayPC 
+            # $5 = cgspLinkDisplayName 
+            # $6 = cgspLinkUtilStateSent 
+            # $7 = cgspLinkUtilizationSent 
+            ##########
+  
+            $cgspEventSequenceNumber = $1            
+            $cgspCLLICode = $2            
+            $cgspLinksetSourceDisplayPC = $3 
+            $cgspLinksetAdjacentDisplayPC = $4            
+            $cgspLinkDisplayName = $5            
+            $cgspLinkUtilStateSent = lookup($6, CgspLinkUtilizationState) + " ( " + $6 + " )"
+            $cgspLinkUtilizationSent = $7
+
+            $cgspInstNetwork_cgspLinksetName_Raw = extract($OID5, "\.3\.6\.1\.4\.1\.9\.9\.336\.1\.6\.1\.1\.54\.(.*)\.[0-9]+$")
+            $OctetString = $cgspInstNetwork_cgspLinksetName_Raw
+            include "$NC_RULES_HOME/include-snmptrap/decodeOctetString.include.snmptrap.rules"
+            $cgspInstNetwork_cgspLinksetName = $String
+            
+            $cgspLinkSlc = extract($OID6, "\.([0-9]+)$") 
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ITP-GSP-MIB-ciscoGspLinkSentUtilChange"
+
+            @AlertGroup = "GSP Link Outbound Utilization Status"
+            @AlertKey = "cgspLinkTableEntry." + $cgspInstNetwork_cgspLinksetName_Raw + "." + $cgspLinkSlc
+            switch($6)
+            {
+                case "0": ### unMonitored
+                    $SEV_KEY = $OS_EventId + "_unMonitored"
+                    @Summary = "GSP Link Utilization for Outbound Traffic Not Monitored"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                case "1": ### underThreshold
+                    $SEV_KEY = $OS_EventId + "_underThreshold"
+                    @Summary = "GSP Link Utilization, " + $7 + ", for Outbound Traffic Below Threshold"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### overThreshold
+                    $SEV_KEY = $OS_EventId + "_overThreshold"
+                    @Summary = "GSP Link Utilization, " + $7 + ", for Outbound Traffic Above Threshold"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default: ### unknown
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "GSP Link Utilization Status for Outbound Traffic Unknown"
+                    
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0                    
+            }
+            @Summary = @Summary + "  ( cgspInstNetwork_cgspLinksetName: " + $cgspInstNetwork_cgspLinksetName + ", cgspLinkSlc: " + $cgspLinkSlc + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+            details($cgspEventSequenceNumber,$cgspCLLICode,$cgspLinksetSourceDisplayPC,$cgspLinksetAdjacentDisplayPC,$cgspLinkDisplayName,$cgspLinkUtilStateSent,$cgspLinkUtilizationSent,$cgspInstNetwork_cgspLinksetName,$cgspLinkSlc)
+
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ITP-GSP-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ITP-GSP-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ITP-GSP-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ITP-GSP-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ITP-GSP-MIB.include.snmptrap.rules >>>>>")

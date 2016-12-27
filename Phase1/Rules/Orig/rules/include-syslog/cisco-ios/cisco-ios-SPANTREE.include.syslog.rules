@@ -1,0 +1,50 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SPANTREE.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SPANTREE": ### Spanning Tree
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SPANTREE.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "RX_PORTFAST":
+        
+            ##########
+            # A BPDU that has spanning-tree portfast enabled was
+            # received on the specified interface. Since the Spanning
+            # Tree BPDU Guard is also enabled, the interface is
+            # administratively shutdown.
+            #
+            # %SPANTREE-2-RX_PORTFAST : Received BPDU on PortFast
+            # enabled port. Disabling [chars].
+            ##########
+    
+            @AlertKey = "Port: " + extract($Message, "Disabling (.*)")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SPANTREE.include.syslog.rules >>>>>")

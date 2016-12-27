@@ -1,0 +1,319 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-IPC.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "IPC": ### Interprocess communication
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-IPC.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CANT_SEND":
+    
+            ##########
+            # An error has occurred in the IPC slave discovery
+            # mechanism. This error might result in a malfunction
+            # in the operation of the IPC.
+            #
+            # %IPC-2-CANT_SEND: Cannot send IPC message: [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "CONSISTENCY":
+    
+            ##########
+            # An internal inconsistency was found in some IPC data
+            # structures.
+            #
+            # %IPC-4-CONSISTENCY: Message failed consistency check:
+            # [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "DELETED":
+    
+            ##########
+            # An internal inconsistency was found in some IPC data
+            # structures.
+            #
+            # %IPC-3-DELETED: Attempt to delete an IPC message
+            # ([hex]) a second time
+            ##########
+    
+            @AlertKey = extract($Message, "message \((.*)\) a")
+    
+        case "GET_PAK_MSG":
+    
+            ##########
+            # System is out of memory buffers of the required size.
+            #
+            # %IPC-4-GET_PAK_MSG: Failed for message size=[dec]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "GIANT":
+    
+            ##########
+            # A user has requested a message that is too large for
+            # the IPC system.
+            #
+            # %IPC-3-GIANT: Request for giant IPC packet denied.
+            # Request size = [dec]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "INVALID":
+    
+            ##########
+            # An IPC message that has an invalid Seat, Port, or
+            # Callback was received.
+            #
+            # %IPC-5-INVALID: [chars] [chars]=[hex]
+            ##########
+    
+            @AlertKey = "[BETA] " + @Summary
+    
+        case "INVALSIZE":
+    
+            ##########
+            # An IPC message with an invalid size has been
+            # received.
+            #
+            # %IPC-2-INVALSIZE: IPC message received with invalid
+            # size(size/type - [dec]/[dec])
+            ##########
+    
+            @AlertKey = ""
+    
+        case "LOCK":
+    
+            ##########
+            # An internal inconsistency was found in some IPC data structures.
+            #
+            # %IPC-2-LOCK: Lock done a deleted element
+            ##########
+    
+            @AlertKey = ""
+
+        case "LOWBUFF":
+    
+            ##########
+            # The main IPC message header cache has fallen below
+            # the application reserve count.
+            #
+            # %IPC-3-LOWBUFF: The main IPC message header cache
+            # below application reserve count ([dec]).
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NO_ACK_HANDLER":
+    
+            ##########
+            # A preview function appended data to an acknowledgment
+            # at the sender, but there is no corresponding
+            # acknowledgment handler at the receiver.
+            #
+            # %IPC-2-NO_ACK_HANDLER: No handler for ACK with data.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOBUFF":
+    
+            ##########
+            # The specified IPC message header cache has emptied.
+            #
+            # %IPC-3-NOBUFF: The [chars] IPC message header cache
+            # has emptied
+            ##########
+    
+            @AlertKey = extract($Message, "The (.*) IPC")
+    
+        case "NODELFUNC":
+    
+            ##########
+            # The IPC application cannot be initialized because its
+            # initialization function does not appear in the IPC
+            # initialization function list.
+            #
+            # %IPC-5-NODELFUNC: Delayed init function not available
+            ##########
+    
+            @AlertKey = ""
+
+        case "NODISPATCH":
+    
+            ##########
+            # The IPC user has failed to provide any means of
+            # handling the received message.
+            #
+            # %IPC-2-NODISPATCH: Message for [dec].[dec] has no
+            # receive queue or dispatch routine
+            ##########
+    
+            @AlertKey = extract($Message, "for (.*) has")
+    
+        case "NOMEM":
+    
+            ##########
+            # The IPC protocol subsystem could not obtain the
+            # memory it needed.
+            #
+            # %IPC-2-NOMEM: No memory available for [chars]
+            ##########
+    
+            @AlertKey = extract($Message, " for (.*)$")
+    
+        case "NULL":
+    
+            ##########
+            # An IPC message has a null Seat, Port or Callback.
+            #
+            # %IPC-5-NULL: [chars] [chars]=[hex], seq = [hex]
+            ##########
+    
+            @AlertKey = "[BETA] " + rtrim(extract($Message, "msg (.*)"))
+    
+        case "NULLDELFUNC":
+    
+            ##########
+            # IPC cannot register the NULL function of an
+            # application in the IPC initialization function list.
+            #
+            # %IPC-5-NULLDELFUNC: Passed Null Delayed function to
+            # register
+            ##########
+    
+            @AlertKey = ""
+    
+        case "ONINT":
+    
+            ##########
+            # The IPC user attempted a prohibited call into IPC
+            # while IPC was running on the interrupt stack.
+            #
+            # %IPC-2-ONINT: Called from interrupt level: [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "OUTPUT_FAIL":
+    
+            ##########
+            # The IPC output has failed in the function for the
+            # given seat with the specified sequence numbers for
+            # sending and receiving.
+            #
+            # %IPC-5-OUTPUT_FAIL: Num [dec] Func=[hex] Seat:
+            # ID=[hex] [chars] Sent [dec] Heard [dec]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+    
+        case "PRECLOSE":
+    
+            ##########
+            # The IPC defer table has overflowed because an
+            # application tried to close an IPC port when there
+            # were messages pending in the retransmit queue.
+            #
+            # %IPC-2-PRECLOSE: IPC port pre-closure overflow :
+            # [hex] : [hex]
+            ##########
+    
+            @AlertKey = extract($Message, "overflow : (.*)$")
+    
+        case "QFULL":
+    
+            ##########
+            # The IPC queue is full.
+            #
+            # %IPC-5-QFULL: Q=[hex] [chars] [dec]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+
+        case "SEQ_ERR":
+    
+            ##########
+            # Errors have occurred in the IPC message sequence
+            # numbers.
+            #
+            # %IPC-5-SEQ_ERR: [chars] Num [dec] From [hex],[hex]
+            ##########
+    
+            @AlertKey = extract($Message, ": (.*) Num")
+    
+        case "SLAVELOG":
+    
+            ##########
+            # The Cisco IOS software, running on a VIP card,
+            # generated this message. The error message has been
+            # passed up to the RP or RSP for display. This message
+            # appears only if the user has entered the service
+            # slave-log command.
+            #
+            # %IPC-5-SLAVELOG: VIP-[chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+    
+        case "TEST":
+    
+            ##########
+            # The IPC test routines have finished running.
+            #
+            # %IPC-2-TEST: IPC test: [chars]
+            ##########
+    
+            @AlertKey = extract($Message, " test: (.*)$")
+    
+        case "UNLOCK":
+    
+            ##########
+            # An internal inconsistency was found in some IPC data
+            # structures.
+            #
+            # %IPC-2-UNLOCK: Unlock done on already unlocked
+            # element
+            ##########
+    
+            @AlertKey = ""
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-IPC.include.syslog.rules >>>>>")

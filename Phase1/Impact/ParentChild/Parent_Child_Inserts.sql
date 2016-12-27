@@ -1,0 +1,6 @@
+delete from custom.ParentChild;
+insert into custom.ParentChild (Source_Event_ID,Parent_Event_IDs,Child_Event_IDs,AlarmClass,Manager,Parent_Filters,Child_Filters,Enrichment_Source) values ('MOT_001','MOT_001,ALC_001,HUA_001','MOT_001,ALC_001,HUA_001','Last RSL Link Failure','Motorola','AEndSite,AEndSite,AEndSite','BEndSite,BEndSite,BEndSite','CMDB_SiteTopology');
+insert into custom.ParentChild (Source_Event_ID,Parent_Event_IDs,Child_Event_IDs,AlarmClass,Manager,Parent_Filters,Child_Filters,Enrichment_Source) values ('ALC_001','MOT_001,ALC_001,HUA_001','MOT_001,ALC_001,HUA_001','LOSS_OF_ALL_CHAN - All Cells Down','Alcatel','AEndSite,AEndSite,AEndSite','BEndSite,BEndSite,BEndSite','CMDB_SiteTopology');
+insert into custom.ParentChild (Source_Event_ID,Parent_Event_IDs,Child_Event_IDs,AlarmClass,Manager,Parent_Filters,Child_Filters,Enrichment_Source) values ('HUA_001','MOT_001,ALC_001,HUA_001','MOT_001,ALC_001,HUA_001','LAPD OML Fault','Huawei','AEndSite,AEndSite,AEndSite','BEndSite,BEndSite,BEndSite','CMDB_SiteTopology');
+update custom.ParentChild set Parent_Event_IDs = '' where Parent_Event_IDs <> '' and Parent_Filters = '';
+update custom.ParentChild set Child_Event_IDs = '' where Child_Event_IDs <> '' and Child_Filters = '';

@@ -1,0 +1,101 @@
+
+#############################################################################
+#
+#		 probe_load.include.rules
+#
+#		Netcool Mttrapd Rules Include File for Probe Load Management
+#		
+#
+#		V0.0	20100430	Original	Chris Janes of Innovise-ESM	
+#
+#############################################################################
+
+# This file now has 4 distinct sections.
+# 1. Probe load and count definitions. We use the default %load array, and store event counter in %EventCount array.
+# 2. Source Node load and count definitions. We use the %NodeLoads array here and the sampling functionality to detect rate and count.
+
+
+# SECTION 1. Probe Load and count section
+
+# This first section provides a value for the insertion rate to the Object Server.
+# The array needs no definition as it is an 'out of the box' array.
+if (match(%load,""))
+{
+        # The line '%load = "3.20"' Specifies a time window of 3 Seconds and 20 samples.
+        %load = "3.20"
+        log(ERROR, %Manager + "Load matched as NULL")
+}
+%load = updateload(%load)
+$ml_probe_rate= getload(%load)
+
+
+# Now we deal with the total event count since probe start time.
+# Initialise the "probe event count" array
+if (match(EventCount['Probe'],""))
+{
+	$ml_probe_count = 1
+}
+else 
+{
+	$probe_previous_count = EventCount['Probe']
+	$ml_probe_count = int($probe_previous_count) + 1
+}
+# Now update the array with the new count.
+EventCount['Probe'] = $ml_probe_count
+
+
+
+# SECTION 2. Source Node load and count section.
+# This section shows the event rate from each individual event source enabling us to throttle back when an individual
+# Node starts streaming events.
+# This array MUST be defined at the first line in the master rules file i.e. mttrapd.rules or socket.rules.
+
+#
+$ml_node = @Node
+if (match(NodeLoads[$ml_node], ""))
+{
+        # The line 'NodeLoads[$ml_node] = "3.20"' specifies a time window of 3 seconds and 30 samples.
+        NodeLoads[$ml_node] = "3.30"
+	# Expect this to be the value when we go to using count function.
+        #NodeLoads[$ml_node] = "1.30"
+}
+NodeLoads[$ml_node] = updateload(NodeLoads[$ml_node])
+# We evaluate the count of events from the source within the given time period. If it is greater
+# than 25 per second, then we start to discard events from this source.
+$ml_src_rate = getload(NodeLoads[$ml_node])
+#$ml_src_count = geteventcount(NodeLoads[$ml_node])
+
+# Here we start to filter if the current event rate from this source is high.
+if (int($ml_src_rate) >= 25)
+{
+	if (int($Discard) == 0 )
+	{
+        	# Here we check the event is not Critical or a Problem resolution
+        	if ((int(@Severity) == 5 ) || (int(@Type) == 2))
+        	{
+				$Discard = 0
+        	}
+        	else
+        	{
+        	        $Discard = 2
+	
+        	}
+	}
+}
+
+# Now we deal with the total event count since probe start time.
+# Initialise the "Source Node event count" array
+if (match(EventCount[$ml_node],""))
+{
+	$ml_src_count = 1
+}
+else 
+{
+	$SN_previous_count = EventCount[$ml_node]
+	$ml_src_count = int($SN_previous_count) + 1
+}
+# Now update the array with the new count.
+EventCount[$ml_node] = $ml_src_count
+
+
+log (ERROR,"PROBESTAT Event from " + $ml_node + " Class= " + @Class + " Sev= " + @Severity + " Type= " + @Type +  " PR= " + $ml_probe_rate + " PC= " + $ml_probe_count +  " NR= " + $ml_src_rate + " NC= " + $ml_src_count)

@@ -1,0 +1,147 @@
+/*  X25 Failure TxN Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+     V 1.0    20100929    Chris Janes    Original
+
+
+    EventReader Filter:
+        EventID = 'X25FailTxN_001'
+
+*/
+
+
+log("Return ImpactFlag = 5 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer);
+
+//How Many OML's for this BSC
+
+NumOML = 2;
+
+// Is there an existing Synthetic Event
+
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "BSCName = "+ @BSCName + " and Class = 200017 And Severity > 0";
+log("SyntheticEventFilter = " + SyntheticEventFilter  );
+
+SyntheticEventOutput = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEventFilterOutput = Length(SyntheticEventOutput);
+//if so set LogTicket = 1
+log("NumSyntheticEventFilterOutput = " + NumSyntheticEventFilterOutput );
+    
+if (NumSyntheticEventFilterOutput > 0)
+{
+    // Raise Synthetic Event
+    
+    Log("Create New Event");
+    NewEvent = NewEvent(DefaultEventReader);
+    NewEvent.EventReaderName = "DefaultEventReader";
+    NewEvent.EventId = 'X25FailTxN_001';
+    NewEvent.ImpactFlag = 2;
+    NewEvent.Domain=EventContainer.Domain;
+    NewEvent.Site=EventContainer.Site;
+    NewEvent.NePriority=EventContainer.NePriority;
+    NewEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+    NewEvent.OmcEms='Impact';
+    NewEvent.Region=EventContainer.Region;
+    NewEvent.ManCity=EventContainer.ManCity;
+    NewEvent.CovCity=EventContainer.CovCity;
+    NewEvent.Agent = "Netcool Impact";
+    NewEvent.AlertGroup = 'X25 Failure TxN';
+    NewEvent.AlertKey = EventContainer.BSCName ;
+    NewEvent.EventType = EventContainer.EventType ;
+    NewEvent.Network= EventContainer.Network;
+    NewEvent.Identifier= "X25FailTxN" + @EventType  + @BSCName + @Node ;
+    NewEvent.Summary= "X25 Failure TxN Alarm Handling for " + @BSCName + " OML Down";
+    NewEvent.Severity= 4;
+    NewEvent.Type= 1;
+    NewEvent.Tally= 1;
+    NewEvent.HibernateFlag = 99;
+    NewEvent.Node= EventContainer.Node;
+    NewEvent.NodeAlias= EventContainer.NodeAlias;
+    NewEvent.SyntheticServerName = "";
+    NewEvent.SyntheticServerSerial = 0;
+    NewEvent.FirstOccurrence = NowTime ;
+    NewEvent.LastOccurrence = NowTime ;
+    NewEvent.LogTicket = 1;
+    NewEvent.Class = 200017;
+    AddDataItem('Status', NewEvent);
+    Log("New Event Created ");
+    
+}
+
+
+Action_key = 'X25FailTxN' + @ServerSerial + @ServerName;
+
+while(Num_Synthetic_Event == 0)
+{
+    //Wait % seconds
+    Hibernate(Action_key, "Sleeping", 5 );
+    RemoveHibernation(Action_key); 
+
+
+    //Does the Synthetic event exist?
+    DataType = "Status";  // this needs to be setup
+    Filter = "Class = 200017 and BSCName = '" + @BscName+ "'";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Synthetic_Event = Length(Synthetic_Event);
+}
+
+//Update Source Event
+EventContainer.SyntheticServerName = Synthetic_Event[0].ServerName;        
+EventContainer.SyntheticServerSerial = Synthetic_Event[0].ServerSerial;        
+ReturnEvent(EventContainer);
+
+
+//Update Synthetic Event's Journal
+EventTime = localtime(@FirstOccurrence , "dd/MM/yy HH:mm:ss");
+if (@Type == 2)
+{
+    TypeText = 'Resolution';
+}
+else
+{
+    TypeText = 'Problem';
+}
+JournalInsert = TypeText + " Event Raised Node: " + @Node + " EventType: " + @AlertGroup + " EventTime: " + EventTime + " Event Text: " + @Summary;        
+MobiLib.ParentJournalInsert(Synthetic_Event[0].ServerName, Synthetic_Event[0].ServerSerial, JournalInsert);
+
+
+//Find out How many OML for this BSC are Down
+
+OMLEventDataType = "OS_Status";
+OMLEventFilter = "BSCName = "+ @BSCName + " and Class <> 200017 And Severity > 0 and EventId = 'X25FailTxN_001'";
+log("OMLEventFilter = " + OMLEventFilter  );
+
+OMLEventOutput = GetByFilter(OMLEventDataType, OMLEventFilter,False);
+NumOMLEvent = Length(OMLEvent);
+log("NumOMLEvent = " + NumOMLEvent );
+log("NumOML = " + NumOML );
+
+
+// Are all OML's down for this BSC?
+if( NumOMLEvent < NumOML)
+{
+    // not all OML Down
+    DataType = "OS_Status";
+    Filter = "BSCName = "+ @BSCName + " and Class = 200017 And Severity > 0 and EventId = 'X25FailTxN_001'";
+    SummaryText = "X25 Failure TxN Alarm Handling for " + @BSCName + " OML Down";
+    UpdateExpression = "Summary = '" + SummaryText + "', Severity = 4";
+    BatchUpdate(DataType, Filter, UpdateExpression);
+    
+}
+else
+{
+    // All OML down for this BSC
+    DataType = "OS_Status";
+    Filter = "BSCName = "+ @BSCName + " and Class = 200017 And Severity > 0 and EventId = 'X25FailTxN_001'";
+    SummaryText = "X25 Failure TxN Alarm Handling for " + @BSCName + " BSC Unreachable";
+    UpdateExpression = "Summary = '" + SummaryText + "', Severity = 5";
+    BatchUpdate(DataType, Filter, UpdateExpression);
+
+    
+}

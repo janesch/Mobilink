@@ -1,0 +1,249 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-IETF-ISNS-MGMT-MIB.include.snmptrap.rules 1.0
+#    2006/04/07 Swathi Yenugu
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-IETF-ISNS-MGMT-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.10.116.1.3": ### Cisco Internet Storage Name Service - Notifications from CISCO-IETF-ISNS-MGMT-MIB (20040813)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-IETF-ISNS-MGMT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Internet Storage Name Service"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cIsnsServerStart
+
+            ##########
+            # $1 = cIsnsInstInfo
+            # $2 = cIsnsAddrTypeNotifctn
+            # $3 = cIsnsAddrNotifctn
+            # $4 = cIsnsTcpPortNotifctn
+            # $5 = cIsnsUdpPortNotifctn
+            ##########
+
+            $cIsnsInstInfo = $1
+            $cIsnsAddrTypeNotifctn = lookup($2, InetAddressType) + " ( " + $2 + " )"
+            $cIsnsAddrNotifctn = $3
+            $cIsnsTcpPortNotifctn = $4
+            $cIsnsUdpPortNotifctn = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISNS-MGMT-MIB-cIsnsServerStart"
+             
+            @AlertGroup = "iSNS Server Status"
+            @AlertKey = "iSNS: " + $3 + ", TCP: " + $4 + ", UDP: " + $5
+            @Summary = "iSNS Server Started  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cIsnsInstInfo,$cIsnsAddrTypeNotifctn,$cIsnsAddrNotifctn,$cIsnsTcpPortNotifctn,$cIsnsUdpPortNotifctn)
+
+        case "2": ### cIsnsServerShutdown
+
+            ##########
+            # $1 = cIsnsInstInfo
+            # $2 = cIsnsAddrTypeNotifctn
+            # $3 = cIsnsAddrNotifctn
+            # $4 = cIsnsTcpPortNotifctn
+            # $5 = cIsnsUdpPortNotifctn
+            ##########
+
+            $cIsnsInstInfo = $1
+            $cIsnsAddrTypeNotifctn = lookup ($2, InetAddressType) + " ( " + $2 + " )"
+            $cIsnsAddrNotifctn = $3
+            $cIsnsTcpPortNotifctn = $4
+            $cIsnsUdpPortNotifctn = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISNS-MGMT-MIB-cIsnsServerShutdown"
+             
+            @AlertGroup = "iSNS Server Status"
+            @AlertKey = "iSNS: " + $3 + ", TCP: " + $4 + ", UDP: " + $5
+            @Summary = "iSNS Server Shutdown  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cIsnsInstInfo,$cIsnsAddrTypeNotifctn,$cIsnsAddrNotifctn,$cIsnsTcpPortNotifctn,$cIsnsUdpPortNotifctn)
+
+        case "3": ### cIsnsClientStart
+
+            ##########
+            # $1 = cIsnsInstInfo
+            # $2 = cIsnsAddrTypeNotifctn
+            # $3 = cIsnsAddrNotifctn
+            # $4 = cIsnsTcpPortNotifctn
+            # $5 = cIsnsUdpPortNotifctn
+            ##########
+
+            $cIsnsInstInfo = $1
+            $cIsnsAddrTypeNotifctn = lookup ($2, InetAddressType) + " ( " + $2 + " )"
+            $cIsnsAddrNotifctn = $3
+            $cIsnsTcpPortNotifctn = $4
+            $cIsnsUdpPortNotifctn = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISNS-MGMT-MIB-cIsnsClientStart"
+             
+            @AlertGroup = "iSNS Client Status"
+            @AlertKey = "iSNS: " + $3 + ", TCP: " + $4 + ", UDP: " + $5
+            @Summary = "iSNS Client Started  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cIsnsInstInfo,$cIsnsAddrTypeNotifctn,$cIsnsAddrNotifctn,$cIsnsTcpPortNotifctn,$cIsnsUdpPortNotifctn)
+
+
+        case "4": ### cIsnsClientInitalRegistration
+
+            ##########
+            # $1 = cIsnsInstInfo
+            # $2 = cIsnsAddrTypeNotifctn
+            # $3 = cIsnsAddrNotifctn
+            # $4 = cIsnsTcpPortNotifctn
+            # $5 = cIsnsUdpPortNotifctn
+            ##########
+
+            $cIsnsInstInfo = $1
+            $cIsnsAddrTypeNotifctn = lookup ($2, InetAddressType) + " ( " + $2 + " )"
+            $cIsnsAddrNotifctn = $3
+            $cIsnsTcpPortNotifctn = $4
+            $cIsnsUdpPortNotifctn = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISNS-MGMT-MIB-cIsnsClientInitalRegistration"
+             
+            @AlertGroup = "iSNS Client Registration Status"
+            @AlertKey = "iSNS: " + $3 + ", TCP: " + $4 + ", UDP: " + $5
+            @Summary = "iSNS Client Registered with Server  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cIsnsInstInfo,$cIsnsAddrTypeNotifctn,$cIsnsAddrNotifctn,$cIsnsTcpPortNotifctn,$cIsnsUdpPortNotifctn)
+
+        case "5": ### cIsnsClientLostConnection
+
+            ##########
+            # $1 = cIsnsInstInfo
+            # $2 = cIsnsAddrTypeNotifctn
+            # $3 = cIsnsAddrNotifctn
+            # $4 = cIsnsTcpPortNotifctn
+            # $5 = cIsnsUdpPortNotifctn
+            ##########
+
+            $cIsnsInstInfo = $1
+            $cIsnsAddrTypeNotifctn = lookup ($2, InetAddressType) + " ( " + $2 + " )"
+            $cIsnsAddrNotifctn = $3
+            $cIsnsTcpPortNotifctn = $4
+            $cIsnsUdpPortNotifctn = $5
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISNS-MGMT-MIB-cIsnsClientLostConnection"
+             
+            @AlertGroup = "iSNS Client Connection Status"
+            @AlertKey = "iSNS: " + $3 + ", TCP: " + $4 + ", UDP: " + $5
+            @Summary = "iSNS Client Lost Connection with Server  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cIsnsInstInfo,$cIsnsAddrTypeNotifctn,$cIsnsAddrNotifctn,$cIsnsTcpPortNotifctn,$cIsnsUdpPortNotifctn)
+
+        case "6": ### cIsnsClientNoServerDiscovered
+
+            ##########
+            # $1 = cIsnsInstInfo
+            ##########
+
+            $cIsnsInstInfo = $1
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-IETF-ISNS-MGMT-MIB-cIsnsClientNoServerDiscovered"
+             
+            @AlertGroup = "iSNS Server Discovery Status"
+            @AlertKey = ""
+            @Summary = "iSNS Server Discovery Completed, No Sever Found" 
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cIsnsInstInfo)
+
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-IETF-ISNS-MGMT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-IETF-ISNS-MGMT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IETF-ISNS-MGMT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-IETF-ISNS-MGMT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-IETF-ISNS-MGMT-MIB.include.snmptrap.rules >>>>>")

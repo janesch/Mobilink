@@ -1,0 +1,211 @@
+/*    DPC Multi C7 Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:DPC Multi C7 Policy
+     V 1.0    20100917    Chris Janes    Original
+
+
+    EventReader Filter:
+        EventID = 'DPC_C7_001'
+
+
+
+*/
+
+
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer); 
+ 
+// Get Link from Event
+Link = '';// Currently don't know how to do this
+
+// Get LinkSet using Link as a Key
+
+DataType = "";// Currently don't know how to do this
+Filter = "";// Currently don't know how to do this
+log("Filter = " + Filter );
+
+LinkSetOutput = GetByFilter(DataType , Filter ,False);
+NumLinkSetOutput = Length(LinkSetOutput );
+
+
+
+if(NumLinkSetOutput == 0 )
+{
+    JournalInsert = "This Link (" + Link  + ") has not been recognised as associated to any LinkSet";
+    MobiLib.JournalInsert( @ServerSerial, JournalInsert);
+
+    // And now there is no more to do exit
+    @ImpactFlag = 6; 
+    ReturnEvent(EventContainer); 
+    Exit();
+
+    // Link not recognised
+    Exit();
+}
+
+LinkSet =  LinkSetOutput[0].LinkSet;
+@AddText = LinkSet;
+ReturnEvent(EventContainer); 
+
+
+
+//Does the Synthetic event exist?
+DataType = "Status";  // this needs to be setup
+Filter = "Class = 200018 and AlertGroup = '" + LinkSet + "'";  
+log("Filter = " + Filter);
+CountOnly = False;
+Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_Synthetic_Event = Num;
+
+// If there is no Synthetic Event Create One
+if (Num_Synthetic_Event == 1)
+{
+    // Ther is an existing Synthetic Event so
+    //    Update Currrent Event 
+    @SyntheticServerName = Synthetic_Event[0].ServerName;
+    @SyntheticServerSerial = Synthetic_Event[0].ServerSerial;
+
+    // And Update the synthetic events's Journal
+    JournalInsert = "Event Raised Node: " + @Node + " EventType: " + @AlertGroup+ " Event Text: " + @Summary;
+    MobiLib.ParentJournalInsert(@SyntheticServerName, @SyntheticServerSerial, JournalInsert);
+
+    // And now there is no more to do exit
+    @ImpactFlag = 6; 
+    ReturnEvent(EventContainer); 
+    Exit();
+
+}
+
+//How Many LinkDown events exist?
+DataType = "Status";  // this needs to be setup
+Filter = "EventID = 'DPC_C7_001' and AddText = '" + LinkSet + "'";  
+log("Filter = " + Filter);
+CountOnly = False;
+LinkDown_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_LinkDown_Event = Length(LinkDown_Event);
+
+// If there Les than 2 LinkDown Events
+if (Num_Synthetic_Event < 2 )
+{
+    JournalInsert = "No Synthetic Event Raised as this is the only LinkDown in this Linkset (" + LinkSet  + ")";
+    MobiLib.JournalInsert( @ServerSerial, JournalInsert);
+
+ 
+    // And now there is no more to do exit
+    @ImpactFlag = 6; 
+    ReturnEvent(EventContainer); 
+    Exit();
+
+}
+
+
+
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+EventContainer.HibernateFlag = 1;        
+ReturnEvent(EventContainer);
+
+
+sleep_time = 600; //SleepTime is 10 minutes - from HLD
+Action_key = 'DPC_MultiC7' + @ServerSerial + @ServerName;
+Log("Action_key  = " + Action_key  );
+Hibernate(Action_key, "Sleeping", sleep_time);
+
+//Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+RemoveHibernation(Action_key); 
+
+EventContainer.HibernateFlag = 2;        
+ReturnEvent(EventContainer);
+
+
+//Recheck How Many LinkDown events exist?
+DataType = "Status";  // this needs to be setup
+Filter = "EventID = 'DPC_C7_001' and AddText = '" + LinkSet + "'";  
+log("Filter = " + Filter);
+CountOnly = False;
+LinkDown_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_LinkDown_Event = Length(LinkDown_Event);
+
+// If there Les than 2 LinkDown Events
+if (Num_Synthetic_Event < 2 )
+{
+    JournalInsert = "No Synthetic Event Raised as this is the only LinkDown in this Linkset (" + LinkSet  + ") after Hibernation";
+    MobiLib.JournalInsert( @ServerSerial, JournalInsert);
+
+ 
+    // And now there is no more to do exit
+    @ImpactFlag = 6; 
+    ReturnEvent(EventContainer); 
+    Exit();
+
+}
+
+
+// If there is no Synthetic Event and Multiple events on this LinkSet so Create a Synthetic Event
+if (Num_Synthetic_Event == 0)
+{
+    NewEvent = NewEvent(DefaultEventReader);
+    NewEvent.EventReaderName = "DefaultEventReader";
+    NewEvent.Domain=EventContainer.Domain;
+    NewEvent.Region=EventContainer.Region;
+    NewEvent.ManCity=EventContainer.ManCity;
+    NewEvent.CovCity=EventContainer.CovCity;
+    NewEvent.Agent = "Netcool Impact";
+    NewEvent.AlertGroup = EventContainer.AlertGroup;
+    NewEvent.AlertKey = 'LinkSet' ;
+    NewEvent.EventType = "Communications Alarm" ;
+    NewEvent.Identifier= "DPCMultiC720100521" +   LinkSet;
+    NewEvent.Summary= "DPC/ Multiple C7 LinksAlarm Handling for " + LinkSet;
+    NewEvent.Severity= 5;
+    NewEvent.Type= 1;
+    NewEvent.Tally= 1;
+    NewEvent.HibernateFlag = 99;
+    NewEvent.Node= EventContainer.Node;
+    NewEvent.SyntheticServerName = "";
+    NewEvent.SyntheticServerSerial = 0;
+    NewEvent.FirstOccurrence = NowTime ;
+    NewEvent.LastOccurrence = NowTime ;
+    NewEvent.LogTicket = 1;
+    NewEvent.Class = 200018;
+    AddDataItem('Status', NewEvent);
+}
+
+while(Num_Synthetic_Event == 0)
+{
+    //Wait % seconds
+    Hibernate(Action_key, "Waiting for DPC Multi C7 Synthetic Event ", 5 );
+    RemoveHibernation(Action_key); 
+
+
+    //Does the Synthetic event exist?
+    DataType = "Status";  // this needs to be setup
+    Filter = "Class = 200018 and AlertKey = '" + LinkSet + "'";  
+    log("Filter = " + Filter);
+    CountOnly = False;
+    Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Synthetic_Event = Num;
+}
+
+//Update Source Events
+DataType = Status;
+Filter = "EventID = 'DPC_C7_001' and AddText = '" + LinkSet + "'";  
+UpdateExp = "SyntheticServerName = Synthetic_Event[0].ServerName, SyntheticServerSerial = Synthetic_Event[0].ServerSerial";
+BatchUpdate(DataType, Filter, UpdateExpression);
+
+
+Count = 0;
+while (Count > Num_LinkDown_Event)
+{
+    JournalInsert = "Event Raised Link: " + Link + " LinkSet: " + LinkSet + " EventText: "  + @Summary;
+    MobiLib.JournalInsert( LinkDown[Count].ServerSerial, JournalInsert);
+    Count = Count + 1;
+}
+
+// And now there is no more to do exit
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer); 
+
+
+
+
+ 

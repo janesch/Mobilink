@@ -1,0 +1,274 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ICSUDSU-MIB.include.snmptrap.rules 2.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ICSUDSU-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.44.3": ### Cisco Integrated CSU/DSU - Notifications from CISCO-ICSUDSU-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-ICSUDSU-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Integrated CSU/DSU"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoICsuDsuT1LoopStatusNotification
+        
+            ##########
+            # $1 = ciscoICsuDsuT1LoopStatus
+            ##########
+            
+            $ciscoICsuDsuT1LoopStatus = lookup($1, ciscoICsuDsuT1LoopStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($ciscoICsuDsuT1LoopStatus,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ICSUDSU-MIB-ciscoICsuDsuT1LoopStatusNotification"
+
+            @AlertGroup = "T1 Loop Status"
+            @AlertKey = "ciscoICsuDsuT1StatusEntry." + $ifIndex
+            switch($1)
+            {
+                
+                case "0": ### ok
+                    @Summary = "T1 CSU/DSU OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "1": ### lossofSignal
+                    @Summary = "T1 CSU/DSU Loss of Signal"
+                    
+                    $SEV_KEY = $OS_EventId + "_lossofSignal"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### lossofFrame
+                    @Summary = "T1 CSU/DSU Loss of Frame"
+                    
+                    $SEV_KEY = $OS_EventId + "_lossofFrame"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3":
+                    @Summary = "T1 CSU/DSU Loss of Signal and Frame"
+                    
+                    $SEV_KEY = $OS_EventId + "_lossofSignalFrame"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### detectedRemoteAlarmIndication
+                    @Summary = "T1 CSU/DSU Remote Alarm Indication"
+                    
+                    $SEV_KEY = $OS_EventId + "_detectedRemoteAlarmIndication"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### detectedAlarmIndicationSignal
+                    @Summary = "T1 CSU/DSU Alarm Indication Signal"
+                    
+                    $SEV_KEY = $OS_EventId + "_detectedAlarmIndicationSignal"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "16": ### placedInLoopback
+                    @Summary = "T1 CSU/DSU Loopback"
+                    
+                    $SEV_KEY = $OS_EventId + "_placedInLoopback"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "T1 CSU/DSU Status Unknown, ciscoICsuDsuT1LoopStatus: " + $1
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "2": ### ciscoICsuDsuSw56kLoopStatusNotification
+            
+            ##########
+            # $1 = ciscoICsuDsuSw56kLoopStatus 
+            ##########
+            
+            $ciscoICsuDsuSw56kLoopStatus = lookup($1, ciscoICsuDsuSw56kLoopStatus) + " ( " + $1 + " )"
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+            details($ciscoICsuDsuSw56kLoopStatus,$ifIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-ICSUDSU-MIB-ciscoICsuDsuSw56kLoopStatusNotification"
+
+            @AlertGroup = "Sw56k Loop Status"
+            @AlertKey = "ciscoICsuDsuSw56kLineStatusEntry." + $ifIndex
+            switch($1)
+            {
+                case "0": ### ok
+                    @Summary= "Sw56k CSU/DSU OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                case "1": ### oosOofFromNetwork
+                    @Summary= "Sw56k CSU/DSU Receiving Out-of-Service/Out-of-Frame Code from Network"
+                    
+                    $SEV_KEY = $OS_EventId + "_oosOofFromNetwork"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### noReceiveSignal
+                    @Summary= "Sw56k CSU/DSU No Receive Signal, Sealing Current Below -45db"
+                    
+                    $SEV_KEY = $OS_EventId + "_noReceiveSignal"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### noSealingCurrent
+                    @Summary= "Sw56k CSU/DSU No Sealing Current"
+                    
+                    $SEV_KEY = $OS_EventId + "_noSealingCurrent"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### noFrameSync
+                    @Summary= "Sw56k CSU/DSU No Frame Syncronization"
+                    
+                    $SEV_KEY = $OS_EventId + "_noFrameSync"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "16": ### attemptingToRateAdap
+                    @Summary= "Sw56k CSU/DSU Attempting to Rate Adapt"
+                    
+                    $SEV_KEY = $OS_EventId + "_attemptingToRateAdap"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "32": ### rtTestFromTelco
+                    @Summary= "Sw56k CSU/DSU RT Test from Telco"
+                    
+                    $SEV_KEY = $OS_EventId + "_rtTestFromTelco"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "64": ### llTestFromTelco
+                    @Summary= "Sw56k CSU/DSU LL Test from Telco"
+                    
+                    $SEV_KEY = $OS_EventId + "_llTestFromTelco"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "128": ### rdlFromRemoteDSU
+                    @Summary= "Sw56k CSU/DSU Remote Digital Loopback from Remote DSU"
+                    
+                    $SEV_KEY = $OS_EventId + "_rdlFromRemoteDSU"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary= "Sw56k CSU/DSU Status Unknown, ciscoICsuDsuSw56kLoopStatus: " + $1
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-ICSUDSU-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-ICSUDSU-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ICSUDSU-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-ICSUDSU-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ICSUDSU-MIB.include.snmptrap.rules >>>>>")

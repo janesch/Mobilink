@@ -1,0 +1,58 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    ClearSyntheticEvent.ipl
+//
+//    Impact policy for Mobilink - This policy Clears Parent Events when all 
+//                        child events have cleared
+//    Chris Janes of Innovise ESM
+//
+//    When an event that is associated to a synthetic event is cleared this policy
+//    Counts the number of not cleared events associated with the synthetic event
+//    if the count is 0 then the synthetic event is set to clear and a message is plced
+//    in the journal to that effect. This has the action of resolving the associated TT
+//
+//    V0.0    20100524    Chris Janes Original
+//
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// We only want to process ths once so
+Log("Into ClearSyntheticEvent " + @ServerSerial);
+EventContainer.HibernateFlag = 99;
+ReturnEvent(EventContainer);
+
+EventTime = localtime(@ClearTime, "dd/MM/yy HH:mm:ss");
+JournalInsert = "Event Cleared - Node: " + @Node + " EventTime :" + EventTime  + " EventType: " + @AlertGroup+ " Event Text: " + @Summary;
+MobiLib.ParentJournalInsert(EventContainer.SyntheticServerName , EventContainer.SyntheticServerSerial  , JournalInsert);
+
+// Here we need to wait for 
+ActionKey = "BSSEnvironmentalClear" + @ServerSerial + @ServerName;
+Log("Going To Sleep "  + ActionKey + " for  5");
+Hibernate(ActionKey , wait, 5);
+Log ("Wake Up " + ActionKey );
+RemoveHibernation(ActionKey); 
+
+
+// Do child events still exist?
+DataType = "Status";        // this needs to be setup
+Filter = "SyntheticServerSerial = " + EventContainer.SyntheticServerSerial + " and SyntheticServerName = '" + EventContainer.SyntheticServerName + "' and Severity > 0";        // this needs to be setup
+CountOnly = False;
+Log (" Filter  = " + Filter  );
+Child_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_Child_Event = Num;
+Log (" Num_Child_Event = " + Num_Child_Event );
+if(Num_Child_Event == 0)
+{
+    //there are no Child Events so clear the parent
+    // First log what we are about to do 
+    JournalInsert = "Event Cleared as there are no Associated Child Events";
+    MobiLib.ParentJournalInsert(EventContainer.SyntheticServerName , EventContainer.SyntheticServerSerial  , JournalInsert);
+
+    DataType = "Status";        // this needs to be setup
+    Filter = "ServerSerial  = " + EventContainer.SyntheticServerSerial  + " and ServerName = '" + EventContainer.SyntheticServerName + "' and Severity > 0";        CountOnly = False;
+    Log (" Filter  = " + Filter  );
+    NowTime = Getdate();
+    UpdateExpression = "Severity = 0, ExpireID= 65528, ClearTime = " + NowTime ;
+    BatchUpdate(DataType, Filter, UpdateExpression );
+
+ }

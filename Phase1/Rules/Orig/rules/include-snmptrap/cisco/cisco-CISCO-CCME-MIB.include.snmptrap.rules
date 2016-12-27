@@ -1,0 +1,353 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CCME-MIB.include.snmptrap.rules 1.1
+#    2005/12/19 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.1 - Corrected value of enterprise ID.
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CCME-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.439.0": ### Cisco CallManager Express - Notifications from CISCO-CCME-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CCME-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-CallManager Express"
+    @Class = "40056"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ccmeStatusChangeNotif
+
+            ##########
+            # $1 = ccmeSysTrapSeverity
+            # $2 = ccmeEnabled
+            # $3 = ccmeSysNotificationReason
+	    ##########
+
+            $ccmeSysTrapSeverity = lookup($1, ccmeSysTrapSeverity) + " ( " + $1 + " )"
+            $ccmeEnabled = lookup($2, TruthValue) + " ( " + $2 + " )"
+            $ccmeSysNotificationReason = $3
+            details($ccmeSysTrapSeverity,$ccmeEnabled,$ccmeSysNotificationReason)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeStatusChangeNotif"
+
+            @AlertGroup = "CallManager Express Status"
+            @AlertKey = ""
+            switch($2)
+            {
+                case "1": ### true
+                    $SEV_KEY = $OS_EventId + "_true"
+                    @Summary = "CallManager Express Enabled"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0 
+                case "2": ### false
+                    $SEV_KEY = $OS_EventId + "_false"
+                    @Summary = "CallManager Express Disabled"
+
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0 
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "CallManager Express Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+        case "2": ### ccmeEphoneUnRegThresholdExceed
+
+            ##########
+            # $1 = ccmeEphoneUnRegThreshold
+            ##########
+
+            $ccmeEphoneUnRegThreshold = $1
+            details($ccmeEphoneUnRegThreshold)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeEphoneUnRegThresholdExceed"
+
+            @AlertGroup = "Ephone Registration Threshold"
+            @AlertKey = ""
+            @Summary = "Unregistered Ephones Fell Below " + $1
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+	    $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### ccmeEPhoneDeceased
+
+            ##########
+            # $1 = ccmeEphoneIpAddress
+            # $2 = ccmeEphoneRegState
+            ##########
+
+            $ccmeEphoneIpAddress = $1
+            $ccmeEphoneRegState = lookup($2, ccmeEphoneRegState) + " ( " + $2 + " )"
+            $ccmeEphoneTag = extract($OID2, "\.([0-9]+)$")
+            details($ccmeEphoneIpAddress,$ccmeEphoneRegState,$ccmeEphoneTag)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeEPhoneDeceased"
+
+            @AlertGroup = "EPhone Registration Status"
+            @AlertKey = "ccmeEphoneConfEntry." + $ccmeEphoneTag
+            @Summary = "EPhone Registration Deceased, Keep-alive Timeout  ( Ephone: " + $1 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+	    $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "4": ### ccmeEPhoneRegFailed
+
+            ##########
+            # $1 = ccmeEphoneIpAddress
+            # $2 = ccmeEphoneTrapReason
+            ##########
+
+            $ccmeEphoneIpAddress = $1
+            $ccmeEphoneTrapReason = $2
+            $ccmeEphoneTag = extract($OID2, "\.([0-9]+)$")
+            details($ccmeEphoneIpAddress,$ccmeEphoneTrapReason,$ccmeEphoneTag)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeEPhoneRegFailed"
+
+            @AlertGroup = "EPhone Registration Status"
+            @AlertKey = "ccmeEphoneConfEntry" + $ccmeEphoneTag
+            @Summary = "EPhone Registration Failed"
+            if(!match($2, ""))
+            {
+                @Summary = @Summary + ", " + $2
+            }
+            @Summary = @Summary + "  ( Ephone: " + $1 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+	    $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "5": ### ccmeEphoneLoginFailed
+
+            ##########
+            # $1 = ccmeEphoneIpAddress
+            # $2 = ccmeEphoneTrapReason
+            ##########
+
+            $ccmeEphoneIpAddress = $1
+            $ccmeEphoneTrapReason = $2
+            $ccmeEphoneTag = extract($OID2, "\.([0-9]+)$")
+            details($ccmeEphoneIpAddress,$ccmeEphoneTrapReason,$ccmeEphoneTag)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeEphoneLoginFailed"
+
+            @AlertGroup = "Ephone User Login Status"
+            @AlertKey = "ccmeEphoneConfEntry" + $ccmeEphoneTag
+            @Summary = "Ephone User Login Rejected/Failed"
+            if(!match($2, ""))
+            {
+                @Summary = @Summary + ", " + $2
+            }
+            @Summary = @Summary + "  ( Ephone: " + $1 + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+	    $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        case "6": ### ccmeNightServiceChangeNotif
+
+            ##########
+            # $1 = ccmeEphoneTrapReason
+            ##########
+
+            $ccmeEphoneTrapReason = $1
+            details($ccmeEphoneTrapReason)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeNightServiceChangeNotif"
+
+            @AlertGroup = "Night Service Status"
+            @AlertKey = ""
+            @Summary = "Night Service Status Changed"
+            if(!match($1, ""))
+            {
+                @Summary = @Summary + ", " + $1
+            }
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "7": ### ccmeLivefeedMohFailedNotif
+
+            ##########
+            # $1 = ccmeEphoneTrapReason
+            ##########
+
+            $ccmeEphoneTrapReason = $1
+            details($ccmeEphoneTrapReason)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeLivefeedMohFailedNotif"
+
+            @AlertGroup = "MoH Live Feed Status"
+            @AlertKey = ""
+            @Summary = "Music-on-Hold Live Feed Failed"
+            if(!match($1, ""))
+            {
+                @Summary = @Summary + ", " + $1
+            }
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+	    $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### ccmeMaxConferenceNotif
+
+            ##########
+            # $1 = ccmeEphoneTrapReason
+            ##########
+
+            $ccmeEphoneTrapReason = $1
+            details($ccmeEphoneTrapReason)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeMaxConferenceNotif"
+
+            @AlertGroup = "Three-Party Conference Threshold"
+            @AlertKey = ""
+            @Summary = "Maximum Supported Number of Simultaneous Three-Party Conferences Exceeded"
+            if(!match($1, ""))
+            {
+                @Summary = @Summary + ", " + $1
+            }
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+	    $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+        case "9": ### ccmeKeyEphoneRegChangeNotif
+
+            ##########
+            # $1 = ccmeEphoneIpAddress
+            # $2 = ccmeEphoneRegState
+            ##########
+
+            $ccmeEphoneIpAddress = $1
+            $ccmeEphoneRegState = lookup($2, ccmeEphoneRegState) + " ( " + $2 + " )"
+            $ccmeEphoneTag = extract($OID2, "\.([0-9]+)$")
+            details($ccmeEphoneIpAddress,$ccmeEphoneRegState,$ccmeEphoneTag)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CCME-MIB-ccmeKeyEphoneRegChangeNotif"
+
+            @AlertGroup = "EPhone Registration Status"
+            @AlertKey = "ccmeEphoneConfEntry." + $ccmeEphoneTag
+            switch($2)
+            {
+                case "1": ### registered
+                    $SEV_KEY = $OS_EventId + "_registered"
+                    @Summary = "EPhone Registered"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+		    $DEFAULT_ExpireTime = 0
+                case "2": ### unregistered
+                    $SEV_KEY = $OS_EventId + "_unregistered"
+                    @Summary = "EPhone Unregistered"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+		    $DEFAULT_ExpireTime = 0
+                case "3": ### deceased
+                    $SEV_KEY = $OS_EventId + "_deceased"
+                    @Summary = "EPhone Registration Deceased, Keep-alive Timeout"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+		    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "EPhone Registration Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+		    $DEFAULT_ExpireTime = 0
+            }
+
+            @Summary = @Summary + "  ( Ephone: " + $1 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CCME-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CCME-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CCME-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CCME-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CCME-MIB.include.snmptrap.rules >>>>>")

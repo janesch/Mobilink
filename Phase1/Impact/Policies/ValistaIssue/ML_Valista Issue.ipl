@@ -1,0 +1,62 @@
+/*    ML_Valista_Issue  Policy
+
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+     V 1.0    20100910    Chris Janes    Original
+
+
+    EventReader Filter:
+        EventID = 'Valista_001
+
+*/
+
+Log("************ ML Valista Issue  ***********");
+
+log("Return ImpactFlag = 6 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer); 
+
+
+
+// Find SleepTime
+sleep_time = 300;
+
+log (" Sleep Time :" + sleep_time);
+
+
+// for testing
+sleep_time = 60; Log("Sleeptime set for Testing to 60 seconds");
+//Wait for SleepTime
+
+log (" Hibernate for: " +  sleep_time + " seconds ");
+// Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+@HibernateFlag = 1;        
+ReturnEvent(EventContainer);
+
+Action_key = 'ValistaIssue' + @ServerSerial + @ServerName;
+Hibernate(Action_key, "Sleeping", sleep_time);
+
+//Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+RemoveHibernation(Action_key); 
+
+@HibernateFlag = 2;        
+ReturnEvent(EventContainer);
+
+// Is the event still there
+
+ExistingCellPerDataType = "OS_Status";
+ExistingCellPerFilter = "ServerSerial = "+ @ServerSerial + " and ServerName = '" + @ServerName + "' And Severity > 0";
+log("ExistingCellPerFilter = " + ExistingCellPerFilter  );
+
+ExistingCellPerOutput = GetByFilter(ExistingCellPerDataType, ExistingCellPerFilter,False);
+NumExistingCellPerOutput = Length(ExistingCellPerOutput);
+//if so set LogTicket = 1
+log("NumExistingCellPerOutput = " + NumExistingCellPerOutput );
+    
+if (NumExistingCellPerOutput > 0)
+{
+    Log("Raise Ticket");
+    @LogTicket = 1;        
+    ReturnEvent(EventContainer);
+}

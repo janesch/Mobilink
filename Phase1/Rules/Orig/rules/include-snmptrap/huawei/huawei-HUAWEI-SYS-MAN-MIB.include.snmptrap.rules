@@ -1,0 +1,146 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-HUAWEI-SYS-MAN-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  HUAWEI-SYS-MAN-MIB release V1.0
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  HUAWEI-SYS-MAN-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.4.1.2": ### Huawei Technologies - Notifications from HUAWEI-SYS-MAN-MIB 
+
+    log(DEBUG, "<<<<< Entering... huawei-HUAWEI-SYS-MAN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei NE-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### hwSysClockChangedNotification
+
+            ##########
+            # $1 = hwSysLocalClock
+            ##########
+
+            $hwSysLocalClock = $1
+            details($hwSysLocalClock)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-SYS-MAN-MIB-hwSysClockChangedNotification"
+
+            @AlertGroup = "System Clock Changed"
+            @AlertKey = "" 
+            @Summary = "System Clock Local Date and Time Manually changed to: " + $1 
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### hwSysReloadNotification
+
+            ##########
+            # $1 = hwSysReloadImage
+            # $2 = hwSysReloadCfgFile
+            # $3 = hwSysReloadReason
+            # $4 = hwSysReloadScheduleTime
+            # $5 = hwSysReloadAction
+            ##########
+
+            $hwSysReloadImage = $1
+            $hwSysReloadCfgFile = $2
+            $hwSysReloadReason = $3
+            $hwSysReloadScheduleTime = $4
+            $hwSysReloadAction = lookup($5, hwSysReloadAction) + " ( " + $5 + " )"
+	    $hwSysReloadScheduleIndex = extract($OID1, "\.([0-9+])$")
+            details($hwSysReloadImage,$hwSysReloadCfgFile,
+                    $hwSysReloadReason,$hwSysReloadScheduleTime,
+                    $hwSysReloadAction,$hwSysReloadScheduleIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-HUAWEI-SYS-MAN-MIB-hwSysReloadNotification"
+
+            @AlertGroup = "System Reload"
+            @AlertKey = "hwSysReloadScheduleEntry." + $hwSysReloadScheduleIndex
+            @Summary = "System Reload  ( Image File: " + $1 + ", Config File: " + $2
+            update(@Summary)
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-HUAWEI-SYS-MAN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-HUAWEI-SYS-MAN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-SYS-MAN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-HUAWEI-SYS-MAN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... huawei-HUAWEI-SYS-MAN-MIB.include.snmptrap.rules >>>>>")

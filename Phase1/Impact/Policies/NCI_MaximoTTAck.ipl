@@ -1,0 +1,47 @@
+//Chris Janes 19th May 2010
+// This policy provides a dummy ack to a tt request
+
+
+log("Policy Running");
+
+log("Node = " + EventContainer.Node);
+log("Serial= " + EventContainer.Serial);
+
+DataType = "MaximoTicket";
+Filter = "netcool_serial = " + EventContainer.Serial;
+CountOnly = False;
+TT = GetByFilter(DataType, Filter, CountOnly);
+NumEvents = Num;
+log("NumEvents = " + NumEvents );
+
+NowTime = getdate();
+
+if (NumEvents < 1 )
+{
+flMTS = float(EventContainer.MaximoTimeStamp);
+test =  NowTime - flMTS ;
+log ("NowTime = " + NowTime );
+log ("MaximoTimeStamp = " + EventContainer.MaximoTimeStamp);
+log ("flMTS = " + flMTS );
+log ("Test = " + test);
+	if(( float(NowTime) - float(EventContainer.MaximoTimeStamp) ) > 30)
+	{
+		EventContainer.MaximoStatus = 999;
+		returnevent(EventContainer);
+		log("Ticket Generation Failed");
+	}
+	else
+	{
+		EventContainer.MaximoStatus = 4;
+		returnevent(EventContainer);
+		log("NumEvents = 000");
+	}
+}
+else
+{
+	log("TT_Num = " + TT[0].TT_Num);
+	EventContainer.MaximoInfo = TT[0].TT_Num;
+	EventContainer.MaximoStatus = 5;
+
+	returnevent(EventContainer);
+}

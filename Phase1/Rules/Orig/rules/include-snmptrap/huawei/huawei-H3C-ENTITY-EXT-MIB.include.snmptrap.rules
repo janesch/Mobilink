@@ -1,0 +1,430 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-ENTITY-EXT-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-ENTITY-EXT-MIB release V1.6
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-ENTITY-EXT-MIB release V1.3
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.2.6.2": ### Huawei - Notifications from H3C-ENTITY-EXT-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-ENTITY-EXT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cEntityExtTemperatureThresholdNotification
+
+            ##########
+            # The h3cEntityExtTemperatureThresholdNotification indicates the
+            # temperature exceeded the threshold. In this condition, user
+            # should check the status and the environment of the entity,
+            # sometimes it happens because of the failture of air-condition.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable.
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtTemperature - The temperature for the entity.
+            # $3 = h3cEntityExtTemperatureThreshold - The threshold for the
+            #        temperature. When the temperature exceeds the threshold, a
+            #        notification will be sent.
+            # $4 = h3cEntityExtAdminStatus - The administrative state for this
+            #        object.
+            # $5 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtTemperature = $2
+            $h3cEntityExtTemperatureThreshold = $3
+            $h3cEntityExtAdminStatus = lookup($4,H3cAdminStatus) + " ( " + $4 + " )"
+            $h3cEntityExtAlarmLight = lookup($5,H3cAlarmStatus) + " ( " + $5 + " )"
+            details($h3cEntityExtPhysicalIndex,$h3cEntityExtTemperature,
+                    $h3cEntityExtTemperatureThreshold,$h3cEntityExtAdminStatus,
+                    $h3cEntityExtAlarmLight)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtTemperatureThresholdNotification"
+
+            @AlertGroup = "Temperature Threshold"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Temperature Threshold Exceeded: Threshold: " + $3 + ", Actual: " + $2 + "  ( " + @AlertKey + " )" 
+            update(@Summary)
+
+            $DEFAULT_Severity = lookup($5,H3cAlarmStatus_Severity)
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### h3cEntityExtVoltageLowThresholdNotification
+
+            ##########
+            # The h3cEntityExtVoltageLowThresholdNotification indicates the
+            # voltage is lower than the threshold. If the voltage is lower
+            # too much than the entity needs, the entity will halt.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable.
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtVoltage - The voltage for the entity.
+            # $3 = h3cEntityExtVoltageLowThreshold - The low-threshold for the
+            #        voltage. When voltage is lower than low-threshold, a
+            #        notification will be sent.
+            # $4 = h3cEntityExtAdminStatus - The administrative state for
+            #        this object.
+            # $5 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtVoltage = $2
+            $h3cEntityExtVoltageLowThreshold = $3
+            $h3cEntityExtAdminStatus = lookup($4,H3cAdminStatus) + " ( " + $4 + " )"
+            $h3cEntityExtAlarmLight = lookup($5,H3cAlarmStatus) + " ( " + $5 + " )"
+            details($h3cEntityExtPhysicalIndex,$h3cEntityExtVoltage,
+                    $h3cEntityExtVoltageLowThreshold,$h3cEntityExtAdminStatus,
+                    $h3cEntityExtAlarmLight)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtVoltageLowThresholdNotification"
+
+            @AlertGroup = "Voltage Low Threshold"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Voltage Low Threshold Exceeded, Threshold: " + $2 + ", Actual: " + $3 + "  ( " + @AlertKey + " )" 
+
+            $DEFAULT_Severity = lookup($5,H3cAlarmStatus_Severity)
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### h3cEntityExtVoltageHighThresholdNotification
+
+            ##########
+            # The h3cEntityExtVoltageHighThresholdNotification indicates
+            # the voltage is higher than the threshold. If the voltage is
+            # higher too much than the entity needs, The entity may be
+            # damaged by the high voltage.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtVoltage - The voltage for the entity.
+            # $3 = h3cEntityExtVoltageHighThreshold - The high-threshold for the
+            #        voltage. When voltage greater than high-threshold, a
+            #        notification will be sent. 
+            # $4 = h3cEntityExtAdminStatus - The administrative state for
+            #        this object.
+            # $5 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtVoltage = $2
+            $h3cEntityExtVoltageHighThreshold = $3
+            $h3cEntityExtAdminStatus = lookup($4,H3cAdminStatus) + " ( " + $4 + " )"
+            $h3cEntityExtAlarmLight = lookup($5,H3cAlarmStatus) + " ( " + $5 + " )"
+            details($h3cEntityExtPhysicalIndex,$h3cEntityExtVoltage,
+                    $h3cEntityExtVoltageHighThreshold,$h3cEntityExtAdminStatus,
+                    $h3cEntityExtAlarmLight)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtVoltageHighThresholdNotification"
+
+            @AlertGroup = "Voltage High Threshold"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Voltage High Threshold Exceeded, Threshold: " + $2 + ", Actual: " + $3 + "  ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = lookup($5,H3cAlarmStatus_Severity)
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### h3cEntityExtCpuUsageThresholdNotfication
+
+            ##########
+            # The h3cEntityExtCpuUsageThresholdNotfication indicates the
+            # entity is overloaded.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtCpuUsage - The CPU usage for this entity.
+            #        Generally, the CPU usage will caculate the overall CPU usage
+            #        on the entity, and it is not sensible with the number of CPU
+            #        on the entity. 
+            # $3 = h3cEntityExtCpuUsageThreshold - The threshold for the CPU
+            #        usage. When the CPU usage exceeds the threshold, a
+            #        notification will be sent.
+            # $4 = h3cEntityExtAdminStatus - The administrative state for
+            #        this object.
+            # $5 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtCpuUsage = $2
+            $h3cEntityExtCpuUsageThreshold = $3
+            $h3cEntityExtAdminStatus = lookup($4,H3cAdminStatus) + " ( " + $4 + " )"
+            $h3cEntityExtAlarmLight = lookup($5,H3cAlarmStatus) + " ( " + $5 + " )"
+            details($h3cEntityExtPhysicalIndex,$h3cEntityExtCpuUsage,
+                    $h3cEntityExtCpuUsageThreshold,$h3cEntityExtAdminStatus,
+                    $h3cEntityExtAlarmLight)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtCpuUsageThresholdNotfication"
+
+            @AlertGroup = "CPU Usage Threshold"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "CPU Usage Threshold Exceeded, Threshold: " + $2 + ", Actual: " + $3 + "  ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = lookup($5,H3cAlarmStatus_Severity)
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### h3cEntityExtMemUsageThresholdNotification
+
+            ##########
+            # The h3cEntityExtMemUsageThresholdNotification indicates
+            # the entity is overloaded.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtMemUsage - The memory usage for the entity.
+            #        This object indicates what percent of memory are used. 
+            # $3 = h3cEntityExtMemUsageThreshold - The threshold for the Memory
+            #        usage, When the memory usage exceeds the threshold,
+            #        a notification will be sent.
+            # $4 = h3cEntityExtMemSize - The size of memory for the entity.
+            # $5 = h3cEntityExtAdminStatus - The administrative state for
+            #        this object.
+            # $6 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtMemUsage = $2
+            $h3cEntityExtMemUsageThreshold = $3
+            $h3cEntityExtMemSize = $4
+            $h3cEntityExtAdminStatus = lookup($5,H3cAdminStatus) + " ( " + $5 + " )"
+            $h3cEntityExtAlarmLight = lookup($6,H3cAlarmStatus) + " ( " + $6 + " )"
+            details($h3cEntityExtPhysicalIndex,$h3cEntityExtMemUsage,
+                    $h3cEntityExtMemUsageThreshold,$h3cEntityExtMemSize,
+                    $h3cEntityExtAdminStatus,$h3cEntityExtAlarmLight)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtMemUsageThresholdNotification"
+
+            @AlertGroup = "Memory Usage Threshold"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Memory Usage Threshold Exceeded, Threshold: " + $2 + ", Actual: " + $3 + "  ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = lookup($6,H3cAlarmStatus_Severity)
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### h3cEntityExtOperEnabled
+
+            ##########
+            # The trap indicates the entity is operable at present.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtAdminStatus - The administrative state for
+            #        this object.
+            # $3 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtAdminStatus = lookup($2,H3cAdminStatus) 
+            $h3cEntityExtAlarmLight = lookup($3,H3cAlarmStatus) 
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtOperEnabled"
+
+            @AlertGroup = "Entity Oper Status"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Entity is Operational Enabled  ( Admin Status: " + $h3cEntityExtAdminStatus + ", Alarm Status: " + $h3cEntityExtAlarmLight + " )"
+            @Summary = @Summary + "  ( " + @AlertKey + " ) "
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $h3cEntityExtAdminStatus = $h3cEntityExtAdminStatus + " ( " + $2 + " )"
+            $h3cEntityExtAlarmLight = $h3cEntityExtAlarmLight + " ( " + $3 + " )"
+            details($h3cEntityExtPhysicalIndex,
+                    $h3cEntityExtAdminStatus,
+                    $h3cEntityExtAlarmLight)
+
+        case "7": ### h3cEntityExtOperDisabled
+
+            ##########
+            # The trap indicates the entity is not operable at present.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtAdminStatus - The administrative state for this object.
+            # $3 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtAdminStatus = lookup($2,H3cAdminStatus) 
+            $h3cEntityExtAlarmLight = lookup($3,H3cAlarmStatus) 
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtOperDisabled"
+
+            @AlertGroup = "Entity Oper Status"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Entity is Operational Disabled  ( Admin Status: " + $h3cEntityExtAdminStatus + ", Alarm Status: " + $h3cEntityExtAlarmLight + " )"
+            @Summary = @Summary + "  ( " + @AlertKey + " ) "
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $h3cEntityExtAdminStatus = $h3cEntityExtAdminStatus + " ( " + $2 + " )"
+            $h3cEntityExtAlarmLight = $h3cEntityExtAlarmLight + " ( " + $3 + " )"
+            details($h3cEntityExtPhysicalIndex,
+                    $h3cEntityExtAdminStatus,
+                    $h3cEntityExtAlarmLight)
+
+        case "8": ### h3cEntityExtCriticalTemperatureThresholdNotification
+
+            ##########
+            # The h3cEntityExtCriticalTemperatureThresholdNotification
+            # indicates the temperature exceeds the critical temperature.
+            # In this condition, user should check the status and the
+            # environment of the entity, sometimes it happens because of
+            # the failture of air-condition.
+            #
+            # $1 = h3cEntityExtPhysicalIndex - The index of h3cEntityExtStateTable
+            #        This index is identical to entPhysicalIndex in ENTITY-MIB
+            # $2 = h3cEntityExtTemperature - The temperature for the entity.
+            # $3 = h3cEntityExtCriticalTemperatureThreshold -  The threshold for
+            #        the critical Temperature. When temperature exceeds the
+            #        critical temperature, a notification will be sent. 
+            # $4 = h3cEntityExtAdminStatus - The administrative state for this object.
+            # $5 = h3cEntityExtAlarmLight - The alarm status for this entity.
+            #        It does not include the severity of alarms raised on child
+            #        components. In this condition, there will be a alarm light
+            #        on the entity, the object should have the same status with it
+            ##########
+
+            $h3cEntityExtPhysicalIndex = $1
+            $h3cEntityExtTemperature = $2
+            $h3cEntityExtCriticalTemperatureThreshold = $3
+            $h3cEntityExtAdminStatus = lookup($4,H3cAdminStatus) + " ( " + $4 + " )"
+            $h3cEntityExtAlarmLight = lookup($5,H3cAlarmStatus) + " ( " + $5 + " )"
+            details($h3cEntityExtPhysicalIndex,$h3cEntityExtTemperature,
+                    $h3cEntityExtCriticalTemperatureThreshold,
+                    $h3cEntityExtAdminStatus,$h3cEntityExtAlarmLight)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-ENTITY-EXT-MIB-h3cEntityExtCriticalTemperatureThresholdNotification"
+
+            @AlertGroup = "Temperature Critical Threshold"
+            @AlertKey = "h3cEntityExtStateEntry." + $1
+            @Summary = "Temperature Critical Threshold Exceeded, Threshold: " + $2 + ", Actual: " + $3 + "  ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = lookup($5,H3cAlarmStatus_Severity)
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-ENTITY-EXT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-ENTITY-EXT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-ENTITY-EXT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-ENTITY-EXT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-H3C-ENTITY-EXT-MIB.include.snmptrap.rules >>>>>")

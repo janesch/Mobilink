@@ -1,0 +1,51 @@
+////////////////////////////////////////////////
+//
+//	CriticalThresholdCrossed.ipl
+//
+//	Impact policy for Mobilink - Critical Threshold Crossed Alarm Handling
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100524	Chris Janes Original
+//
+////////////////////////////////////////////////
+
+
+
+//Set Default Sleeptime
+Default_SleepTime = 180;
+
+
+if(EventContainer.ImpactFlag == 0)
+{
+	Log("Going To Sleep "  + @ServerSerial);
+
+	EventContainer.ImpactFlag = 1;
+	ReturnEvent(EventContainer);
+
+	ActionKey = "CriticalThresholdCrossed" + @ServerSerial;
+	SleepTime = Default_SleepTime;
+	Hibernate(ActionKey , wait, SleepTime);
+	
+	EventContainer.ImpactFlag = 2;
+	ReturnEvent(EventContainer);
+	Log ("Wake Up " + @ServerSerial);
+
+	// Does the event still exist?
+	DataType = "Status";		// this needs to be setup
+	Filter = "ServerSerial = " + EventContainer.ServerSerial;		// this needs to be setup
+	CountOnly = False;
+	Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+	Num_Existing_Event = Num;
+	if (Num_Existing_Event == 0)
+	{
+		// Event has Cleared
+		Log("Event Has Cleared, ServerSerial = " + @ServerSerial);
+	}
+	else
+	{
+		// Enrich Event
+		EventContainer.AddText = "Signalling Percentage Doen to ";
+		EventContainer.MaximoStatus = 1;
+		ReturnEvent(EventContainer);
+	}
+}

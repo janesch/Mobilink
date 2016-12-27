@@ -1,0 +1,827 @@
+###############################################################################
+#
+#	mbalance-TEXTPASS-SMS-MIB.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for TekMedia SMS alarms
+#
+#       V0.1	20110705	Mihai Strava of Innovise
+###############################################################################
+
+
+case ".1.3.6.1.4.1.9679.1.31":  ### - sms (from TEXTPASS-SMS-MIB)
+
+	log(DEBUG, "<<<<< Entering... mbalance-TEXTPASS-SMS-MIB.include.snmptrap.rules >>>>>")
+
+	@OmcEms = "NETBOSS1"
+    	@Domain = "CORE"
+    	@Vendor = "Tekelec"
+	@Manager = "MTTrapd-SMS"
+
+	@Class = "302020"
+
+	@Grade = $specific-trap
+	@FirstOccurrence = $ReceivedTime
+	@LastOccurrence = $ReceivedTime
+	@Agent = "TEXTPASS-SMS-MIB"
+	@AlertGroup = "SMSTrap"
+
+	$OS_EventId = "NET_TEK_SMS_001"
+	
+	[$node] =  lookup($IPaddress, mbalance-TEXTPASS-node)
+	@Node = $node
+	@NodeAlias = $node
+
+	switch($specific-trap) {
+		case "11": ### - smscOperationalStateChanged
+			#######################
+			#
+			# Operational state of an SMSC has changed
+			#
+			# $1 = smscOperationalState
+			#
+			#      Operational state of the SMSC.
+			#
+			# $2 = smscName
+			#
+			#      Name for the SMSC.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$smscOperationalState = lookup($1,mbalance-TEXTPASS-SMS-MIB-smscOperationalState)
+
+			if (int($1)==0 || int($1)==1 || int($1)==2)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==3)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "smscOperationalStateChanged " + $2 + " " + $3
+			@Summary = "smscOperationalStateChanged: # Operational state of SMSC " + $2 + " has changed to: " + $smscOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "12": ### - moRtgRuleSmscOperationalStateChanged
+			#######################
+			#
+			# Operational state of an SMSC for a particular MO routing rule
+			# has changed
+			#
+			# $1 = moRtgRuleSmscOperationalState
+			#
+			#      Operational state of the SMSC for an MO routing rule.
+			#
+			# $2 = moRtgRuleName
+			#
+			#      Name of the MO routing rule.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$moRtgRuleSmscOperationalState = lookup($1,mbalance-TEXTPASS-SMS-MIB-moRtgRuleSmscOperationalState)
+
+			if (int($1)==0 || int($1)==1)
+			{
+				@Type = 1
+				@Severity = 4
+			}
+			else if (int($1)==2)
+			{
+				@Type = 2
+				@Severity = 1
+			}
+			else
+			{
+				@Type = 1
+				@Severity = 1
+				$OS_ExpireTime = 18000
+			}
+
+			@AlertKey = "moRtgRuleSmscOperationalStateChanged " + $2 + " " + $3
+			@Summary = "moRtgRuleSmscOperationalStateChanged: # Operational state of an SMSC for MO routing rule " + $2 + " has changed to: " + $moRtgRuleSmscOperationalState
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "13": ### - fcdrCreateFileError
+			#######################
+			#
+			# An error occurred during creation of an FCDR file.
+			#
+			#######################
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "fcdrCreateFileError"
+			@Summary = "fcdrCreateFileError: # An error occurred during creation of an FCDR file"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "14": ### - fcdrWriteFileError
+			#######################
+			#
+			# An error occurred during writing of an FCDR file.
+			#
+			#######################
+
+			@Type = 1
+			@Severity = 5
+			$OS_ExpireTime = 18000
+
+			@AlertKey = "fcdrWriteFileError"
+			@Summary = "fcdrWriteFileError: # An error occurred during writing of an FCDR file"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "17": ### - fwSriSmWithUnknownSccpSmscAddress
+			#######################
+			#
+			# Inbound Send-Routing-Info-For-SM operation received with an SMSC
+			# address at SCCP layer that could not be associated with any of
+			# the defined mobile network entities.
+			#
+			# $1 = fwTrapUnknownSccpSmscAddress
+			#
+			#      SMSC address at SCCP layer that could not be associated with any
+			#      of the defined mobile networks.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapUnknownSccpSmscAddress = $1
+			$deviceType = $2
+	
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapUnknownSccpSmscAddress+$deviceType
+			@Summary = "fwSriSmWithUnknownSccpSmscAddress: # Inbound Send-Routing-Info-For-SM operation received with an SMSC address at SCCP layer that could not be associated with any of the defined mobile network entities"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "18": ### - fwSriSmWithUnknownMapSmscAddress
+			#######################
+			#
+			# Inbound Send-Routing-Info-For-SM operation received with an SMSC
+			# address at MAP layer that could not be associated with any of the
+			# defined mobile network entities.
+			#
+			# $1 = fwTrapUnknownMapSmscAddress
+			#
+			#      SMSC address at MAP layer that could not be associated with any
+			#      of the defined mobile networks.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapUnknownMapSmscAddress = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 4
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapUnknownMapSmscAddress+$deviceType
+			@Summary = "fwSriSmWithUnknownMapSmscAddress: # Inbound Send-Routing-Info-For-SM operation received with an SMSC address at MAP layer that could not be associated with any of the defined mobile network entities"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "19": ### - fwSriSmWithConflictingSmscAddress
+			#######################
+			#
+			# Inbound Send-Routing-Info-For-SM operation with conflicting SMSC
+			# addresses at SCCP layer and MAP layer. These addresses conflict
+			# when they are from:
+			# - different countries (determined on the basis of the country
+			# code)
+			# - different mobile networks (determined by associating the
+			# addresses with a mobile network).
+			#
+			# $1 = fwTrapConflictingSccpSmscAddress
+			#
+			#      SMSC address at SCCP layer that conflicts with address at MAP
+			#      layer.
+			#
+			# $2 = fwTrapConflictingMapSmscAddress
+			#
+			#      SMSC address at MAP layer that conflicts with address at SCCP
+			#      layer.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapConflictingSccpSmscAddress = $1
+			$fwTrapConflictingMapSmscAddress = $2
+			$deviceType = $3
+		
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapConflictingSccpSmscAddress+$fwTrapConflictingMapSmscAddress+$deviceType
+			@Summary = "fwSriSmWithConflictingSmscAddress"
+
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+
+		case "20": ### - fwMtFwdSmWithUnknownSccpSmscAddress
+			#######################
+			#
+			# Inbound MT-Forward-SM operation received with an SMSC address at
+			# SCCP layer that could not be associated with any of the defined
+			# mobile network entities.
+			#
+			# $1 = fwTrapUnknownSccpSmscAddress
+			#
+			#      SMSC address at SCCP layer that could not be associated with any
+			#      of the defined mobile networks.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapUnknownSccpSmscAddress = $1
+			$deviceType = $2		
+			
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapUnknownSccpSmscAddress+$deviceType
+			@Summary = "fwMtFwdSmWithUnknownSccpSmscAddress: # Inbound MT-Forward-SM operation received with an SMSC address at SCCP layer that could not be associated with any of the defined mobile network entities"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "21": ### - fwMtFwdSmWithUnknownMapSmscAddress
+			#######################
+			#
+			# Inbound MT-Forward-SM operation received with an SMSC address at
+			# MAP layer that could not be associated with any of the defined
+			# mobile network entities.
+			#
+			# $1 = fwTrapUnknownMapSmscAddress
+			#
+			#      SMSC address at MAP layer that could not be associated with any
+			#      of the defined mobile networks.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapUnknownMapSmscAddress = $1
+			$deviceType = $2
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapUnknownMapSmscAddress+$deviceType
+			@Summary = "fwMtFwdSmWithUnknownMapSmscAddress: # Inbound MT-Forward-SM operation received with an SMSC address at MAP layer that could not be associated with any of the defined mobile network entities"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "22": ### - fwMtFwdSmWithConflictingSmscAddress
+			#######################
+			#
+			# Inbound MT-Forward-SM operation received with:
+			# - conflicting SMSC addresses at SCCP layer and MAP layer, or
+			# - different SMSC addresses at SCCP layer used amongst the various
+			# TCAP messages of a segmented TCAP dialogue
+			# SMSC addresses at SCCP layer and MAP layer conflict when they are
+			# from:
+			# - different countries (determined on the basis of the country
+			# code), or
+			# - different mobile networks (determined by associating the
+			# addresses with a mobile network).
+			#
+			# $1 = fwTrapConflictingSccpSmscAddress
+			#
+			#      SMSC address at SCCP layer that conflicts with address at MAP
+			#      layer.
+			#
+			# $2 = fwTrapConflictingMapSmscAddress
+			#
+			#      SMSC address at MAP layer that conflicts with address at SCCP
+			#      layer.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapConflictingSccpSmscAddress = $1
+			$fwTrapConflictingMapSmscAddress = $2
+			$deviceType = $3
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapConflictingSccpSmscAddress+$fwTrapConflictingMapSmscAddress+$deviceType
+			@Summary = "fwMtFwdSmWithConflictingSmscAddress"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "23": ### - fwMtFwdSmWithSpoofedSccpSmscAddress
+			#######################
+			#
+			# Inbound MT-Forward-SM operation received with spoofing of the
+			# SMSC address at SCCP level, i.e. using an SMSC address at SCCP
+			# level for MT-Forward-SM that conflicts with address used in
+			# relating Send- Routing-Info-For-SM operation. A conflict exist
+			# when the addresses are from:
+			# - different countries (determined on the basis of the country
+			# code), or
+			# - different mobile networks (determined by associating the
+			# addresses with a mobile network).
+			#
+			# $1 = fwTrapSccpSmscAddressInSriSm
+			#
+			#      SMSC address at SCCP layer specified in SendRoutingInfoForSm
+			#      operation that conflicts with address used in MtForwardSm
+			#      operation.
+			#
+			# $2 = fwTrapSccpSmscAddressInMtFwdSm
+			#
+			#      SMSC address at SCCP layer specified in MtForwardSm operation
+			#      that conflicts with address used in SendRoutingInfoForSm
+			#      operation.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapSccpSmscAddressInSriSm = $1
+			$fwTrapSccpSmscAddressInMtFwdSm = $2
+			$deviceType = $3
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapSccpSmscAddressInSriSm+$fwTrapSccpSmscAddressInMtFwdSm+$deviceType
+			@Summary = "fwMtFwdSmWithSpoofedSccpSmscAddress"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "24": ### - fwMtFwdSmWithSpoofedMapSmscAddress
+			#######################
+			#
+			# Inbound MT-Forward-SM operation received with spoofing of the
+			# SMSC address at MAP level, i.e. using an SMSC address at MAP
+			# level for MT-Forward-SM that conflicts with address used in
+			# relating Send- Routing-Info-For-SM operation. A conflict exist
+			# when the addresses are from:
+			# - different countries (determined on the basis of the country
+			# code), or
+			# - different mobile networks (determined by associating the
+			# addresses with a mobile network).
+			#
+			# $1 = fwTrapMapSmscAddressInSriSm
+			#
+			#      SMSC address at MAP layer specified in SendRoutingInfoForSm
+			#      operation that conflicts with address used in MtForwardSm
+			#      operation.
+			#
+			# $2 = fwTrapMapSmscAddressInMtFwdSm
+			#
+			#      SMSC address at MAP layer specified in MtForwardSm operation that
+			#      conflicts with address used in SendRoutingInfoForSm operation.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapMapSmscAddressInSriSm = $1
+			$fwTrapMapSmscAddressInMtFwdSm = $2
+			$deviceType = $3
+			
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapMapSmscAddressInSriSm+$fwTrapMapSmscAddressInMtFwdSm+$deviceType
+			@Summary = "fwMtFwdSmWithSpoofedMapSmscAddress"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "25": ### - fwMoFwdSmWithSpoofedOriginatorAddress
+			#######################
+			#
+			# Inbound MO-Forward-SM operation received with spoofing of the
+			# originator address.
+			#
+			# $1 = fwTrapOriginatorAddressInMoFwdSm
+			#
+			#      Originator address specified in MoForwardSm operation that has
+			#      been spoofed.
+			#
+			# $2 = fwTrapMscOrSgsnAddressInMoFwdSm
+			#
+			#      MSC/SGSN address specified in MoForwardSm operation that possibly
+			#      conflicts with MSC/SGSN address according to HLR.
+			#
+			# $3 = fwTrapMscOrSgsnAddressInSriSm
+			#
+			#      MSC/SGSN address that has been retrieved from HLR using a
+			#      SendRoutingInfoForSm operation and that possibly conflicts with
+			#      the MSC/SGSN address specified in MoForwardSm.
+			#
+			# $4 = fwTrapImsiInMoFwdSm
+			#
+			#      IMSI specified in MoForwardSm operation that possibly conflicts
+			#      with IMSI according to HLR.
+			#
+			# $5 = fwTrapImsiInSriSm
+			#
+			#      IMSI that has been retrieved from HLR using a
+			#      SendRoutingInfoForSm operation and that possibly conflicts with
+			#      the IMSI specified in MoForwardSm.
+			#
+			# $6 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwTrapOriginatorAddressInMoFwdSm = $1
+			$fwTrapMscOrSgsnAddressInMoFwdSm = $2
+			$fwTrapMscOrSgsnAddressInSriSm = $3
+			$fwTrapImsiInMoFwdSm = $4
+			$fwTrapImsiInSriSm = $5
+			$deviceType = $6
+
+			@Type = 1
+			@Severity = 3
+			$OS_ExpireTime = 18000
+
+			@AlertKey = $fwTrapOriginatorAddressInMoFwdSm+$fwTrapMscOrSgsnAddressInMoFwdSm+$fwTrapMscOrSgsnAddressInSriSm+$fwTrapImsiInMoFwdSm+$fwTrapImsiInSriSm+$deviceType
+			@Summary = "fwMoFwdSmWithSpoofedOriginatorAddress: # Inbound MO-Forward-SM operation received with spoofing of the originator address"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+			
+		case "26": ### - fwMoFwdSmWithSpoofingExceedThresholdAlarmTrap
+			#######################
+			#
+			# Number of inbound MO-Forward-SM operation received with spoofing
+			# exceeds the provisioned threshold 
+			# (fwPropMoFwdSmWithSpoofingThreshold) within the provisioned
+			# period (fwPropMoFwdSmWithSpoofingPeriod).
+			#
+			# $1 = fwPropMoFwdSmWithSpoofingThreshold
+			#
+			#      Threshold uppon which a trap is generated to
+			#      indicate that the number of incoming MO spoofing 
+			#      attempts exceeds the provisioned threshold. Range
+			#      is 0 to 1000000. 0 (default) means disable checking.
+			#
+			# $2 = fwPropMoFwdSmWithSpoofingPeriod
+			#
+			#      Period within which the fwPropMoFwdSmWithSpoofingThreshold
+			#      is checked. Range is 1 to 86400, default 3600 (second).
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwPropMoFwdSmWithSpoofingThreshold = $1
+			$fwPropMoFwdSmWithSpoofingPeriod = $2
+			$deviceType = $3
+	
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "fwMoFwdSmWithSpoofingExceedThresholdAlarmTrap " + $deviceType
+			@Summary = "fwMoFwdSmWithSpoofingExceedThresholdAlarmTrap # Threshold: " + $fwPropMoFwdSmWithSpoofingThreshold + " Period: " + $fwPropMoFwdSmWithSpoofingPeriod + " Device Type: " + $deviceType
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "27": ### - fwMtFwdSmWithSpoofingExceedThresholdAlarmTrap
+			#######################
+			#
+			# Number of inbound MT-Forward-SM operation received with spoofing
+			# exceeds the provisioned threshold 
+			# (fwPropMtFwdSmWithSpoofingThreshold) within the provisioned
+			# period (fwPropMtFwdSmWithSpoofingPeriod).
+			#
+			# $1 = fwPropMtFwdSmWithSpoofingThreshold
+			#
+			#      Threshold upon which a trap is generated to
+			#      indicate that the number of incoming MT spoofing 
+			#      attempts exceeds the provisioned threshold. Range
+			#      is 0 to 1000000. 0 (default) means disable checking.
+			#
+			# $2 = fwPropMtFwdSmWithSpoofingPeriod
+			#
+			#      Period within which the fwPropMtFwdSmWithSpoofingThreshold
+			#      is checked. Range is 1 to 86400, default 3600 (second).
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwPropMtFwdSmWithSpoofingThreshold = $1
+			$fwPropMtFwdSmWithSpoofingPeriod = $2
+			$deviceType = $3
+		
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "fwMtFwdSmWithSpoofingExceedThresholdAlarmTrap " + $deviceType
+			@Summary = "fwMtFwdSmWithSpoofingExceedThresholdAlarmTrap # Threshold: " + $fwPropMtFwdSmWithSpoofingThreshold + " Period: " + $fwPropMtFwdSmWithSpoofingPeriod + " Device Type: " + $deviceType
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "28": ### - fwMoFwdSmWithSpoofingExceedThresholdAlarmClearedTrap
+			#######################
+			#
+			# The number of the inbound MO-Forward-SM spoofing attempts falls
+			# below the provisioned threshold 
+			# (fwPropMoFwdSmWithSpoofingThreshold) within the provisioned
+			# period (fwPropMoFwdSmWithSpoofingPeriod).
+			#
+			# $1 = fwPropMoFwdSmWithSpoofingThreshold
+			#
+			#      Threshold uppon which a trap is generated to
+			#      indicate that the number of incoming MO spoofing 
+			#      attempts exceeds the provisioned threshold. Range
+			#      is 0 to 1000000. 0 (default) means disable checking.
+			#
+			# $2 = fwPropMoFwdSmWithSpoofingPeriod
+			#
+			#      Period within which the fwPropMoFwdSmWithSpoofingThreshold
+			#      is checked. Range is 1 to 86400, default 3600 (second).
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwPropMoFwdSmWithSpoofingThreshold = $1
+			$fwPropMoFwdSmWithSpoofingPeriod = $2
+			$deviceType = $3
+
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fwMoFwdSmWithSpoofingExceedThresholdAlarmTrap " + $deviceType
+			@Summary = "fwMoFwdSmWithSpoofingExceedThresholdAlarmClearedTrap # Threshold: " + $fwPropMoFwdSmWithSpoofingThreshold + " Period: " + $fwPropMoFwdSmWithSpoofingPeriod + " Device Type: " + $deviceType
+
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "29": ### - fwMtFwdSmWithSpoofingExceedThresholdAlarmClearedTrap
+			#######################
+			#
+			# The number of the inbound MT-Forward-SM spoofing attempts falls
+			# below the provisioned threshold 
+			# (fwPropMtFwdSmWithSpoofingThreshold) within the provisioned
+			# period (fwPropMtFwdSmWithSpoofingPeriod).
+			#
+			# $1 = fwPropMtFwdSmWithSpoofingThreshold
+			#
+			#      Threshold upon which a trap is generated to
+			#      indicate that the number of incoming MT spoofing 
+			#      attempts exceeds the provisioned threshold. Range
+			#      is 0 to 1000000. 0 (default) means disable checking.
+			#
+			# $2 = fwPropMtFwdSmWithSpoofingPeriod
+			#
+			#      Period within which the fwPropMtFwdSmWithSpoofingThreshold
+			#      is checked. Range is 1 to 86400, default 3600 (second).
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$fwPropMtFwdSmWithSpoofingThreshold = $1
+			$fwPropMtFwdSmWithSpoofingPeriod = $2
+			$deviceType = $3
+	
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "fwMtFwdSmWithSpoofingExceedThresholdAlarmTrap " + $deviceType
+			@Summary = "fwMtFwdSmWithSpoofingExceedThresholdAlarmClearedTrap # Threshold: " + $fwPropMtFwdSmWithSpoofingThreshold + " Period: " + $fwPropMtFwdSmWithSpoofingPeriod + " Device Type: " + $deviceType
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "31": ### - externalConditionAvailableTrap
+			#######################
+			#
+			# An external condition (application) has logged in and is
+			# available.
+			#
+			# $1 = externalConditionName
+			#
+			#      Name of the ExternalCondition.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$externalConditionName = $1
+			$deviceType = $2
+	
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "externalConditionEntry " + $externalConditionName + $deviceType
+			@Summary = "externalConditionAvailableTrap: # An external condition (application): " + $externalConditionName + " has logged in and is available"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "32": ### - externalConditionUnavailableTrap
+			#######################
+			#
+			# An external condition (application) has (been) logged out
+			# and is no longer availble.
+			#
+			# $1 = externalConditionName
+			#
+			#      Name of the ExternalCondition.
+			#
+			# $2 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$externalConditionName = $1
+			$deviceType = $2
+		
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "externalConditionEntry " + $externalConditionName + $deviceType
+			@Summary = "externalConditionUnavailableTrap: # An external condition (application): " + $externalConditionName + " has (been) logged out and is no longer available"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "33": ### - icacheUnavailableTrap
+			#######################
+			#
+			# AMS Icache functionality is required by your configuration,
+			# but is unavailable.
+			#
+			#######################
+			
+			@Type = 1
+			@Severity = 4
+
+			@AlertKey = "icacheUnavailableTrap"
+			@Summary = "icacheUnavailableTrap: # AMS Icache functionality is required by your configuration, but is unavailable"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "34": ### - icacheAvailabilityRestoredTrap
+			#######################
+			#
+			# AMS Icache functionality is required by your configuration,
+			# and has become available after an outage.
+			#
+			#######################
+	
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "icacheUnavailableTrap"
+			@Summary = "icacheAvailabilityRestoredTrap: # AMS Icache functionality is required by your configuration and has become available after an outage"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "41": ### - externalConditionClientAvailableTrap
+			#######################
+			#
+			# An external condition client has logged in and is available.
+			#
+			# $1 = externalConditionClientExternalConditionName
+			#
+			#      Name of the externalConditionTable entry, which the client
+			#      represents. This is a shadow copy of the externalConditionName
+			#      of the externalConditionTable entry specified by the
+			#      externalConditionClientExternalConditionIndex.
+			#
+			# $2 = externalConditionClientIpAddress
+			#
+			#      IP address of the external condition client. Since this field
+			#      must be unique per externalConditionTable entry, only a single
+			#      instance of an EC application can exist per IP address. There is
+			#      no principle limit on the number of sessions of a client,
+			#      however.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$externalConditionClientExternalConditionName = $1
+			$externalConditionClientIpAddress = $2
+			$deviceType = $3
+		
+			@Type = 2
+			@Severity = 1
+
+			@AlertKey = "externalConditionClientEntry " + $externalConditionClientExternalConditionName + " " + $externalConditionClientIpAddress + " " + $deviceType
+			@Summary = "externalConditionClientAvailableTrap: # An external condition client: " + $externalConditionClientExternalConditionName + " on " + $externalConditionClientIpAddress + " has logged in and is available"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		case "42": ### - externalConditionClientUnavailableTrap
+			#######################
+			#
+			# An external condition client has (been) logged out and is no
+			# longer availble.
+			#
+			# $1 = externalConditionClientExternalConditionName
+			#
+			#      Name of the externalConditionTable entry, which the client
+			#      represents. This is a shadow copy of the externalConditionName
+			#      of the externalConditionTable entry specified by the
+			#      externalConditionClientExternalConditionIndex.
+			#
+			# $2 = externalConditionClientIpAddress
+			#
+			#      IP address of the external condition client. Since this field
+			#      must be unique per externalConditionTable entry, only a single
+			#      instance of an EC application can exist per IP address. There is
+			#      no principle limit on the number of sessions of a client,
+			#      however.
+			#
+			# $3 = deviceType
+			#
+			#      Type of device to which this corresponds.
+			#
+			#######################
+			$externalConditionClientExternalConditionName = $1
+			$externalConditionClientIpAddress = $2
+			$deviceType = $3
+		
+			@Type = 1
+			@Severity = 3
+
+			@AlertKey = "externalConditionClientEntry " + $externalConditionClientExternalConditionName + " " + $externalConditionClientIpAddress + " " + $deviceType
+			@Summary = "externalConditionClientUnavailableTrap: # An external condition client: " + $externalConditionClientExternalConditionName + " on " + $externalConditionClientIpAddress + " has (been) logged out and is no longer availble"
+			
+			@Identifier = @Node + " " + $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @AlertKey + " " + @Agent + " " + @Type + " " + @Summary
+			details($*)
+
+		default:
+			@Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+			@Severity = 1
+			@Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+			details($*)
+	}
+
+log(DEBUG, "<<<<< Leaving... mbalance-TEXTPASS-SMS-MIB.include.snmptrap.rules >>>>>")

@@ -1,0 +1,114 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    stratacom-CISCO-VISM-MODULE-MIB.include.snmptrap.lookup 1.0
+#    2006/05/31 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-VISM-MODULE-MIB
+#
+###############################################################################
+table vismMode =
+{
+    ##########
+    # This attribute defines the connection model that the VISM card is 
+    # configured to operate with. This object can be modified by 
+    # CLI(Command Line Interface) only. The CLI 'cnfvismmode' can be used 
+    # to set this object. VISM card will be reset after modifying this 
+    # parameter for the VISM card to come up in the new mode.
+    # Each mode enables a set of features on the VISM card.
+    # The feature set for each of the above modes is :
+    # 'voipSwitching':VoIP mode. In this mode VISM interacts with the call agent 
+    #  using XGCP protocol, bearer path is VoIP. This mode is also used for VoIP 
+    #  applications that dosen't use call agent(VoIP Trunking).
+    # 'aal2Trunking': AAL2 Trunking mode. In this mode VISM does not interact 
+    #  with the call agent. Bearer Path is AAL2.
+    # 'aal1Svc'     : AAL1 SVC(Switched Virtual Circuit) mode.  In this mode 
+    #  VISM interacts with call agent using XGCP protocol over AAL5 control 
+    #  PVCs. In this mode, bearer path is VoAAL1 and the bearer connections 
+    #  are SVCs. i.e VISM dynamically sets-up and tears down bearer connections.
+    # 'switchedVoipCASBh', 'switchedVoipPRIBh', 'switchedAal2CASBh',
+    # 'switchedAal2Svc' and  superMode are ignored.
+    # 'switchedAal2Pvc': Switched and trunked AAL2 PVC with CAS xGCP backhaul, 
+    #  CCS and CAS forwarding.
+    # 'switchedAal2Svc': Switched AAL2 SVC with PRI backhaul.
+    # 'voipAndAal1Svc': VoIP and ATM Groomer.
+    # 'voipAndAal2Trunking': VoIP Trunking And AAL2 Trunking.
+    # 'unknowMode': Unknown mode, when user change vismFeatureBitMap to a 
+    #  combination of Features that are not in the above modes.  This object 
+    #  has to be synchronized with vismFeatureBitMap.  When vismFeatureBitMap is
+    #  changed this object will be implicitly set to the mode that has the 
+    #  right combination of features 
+    ##########
+    
+    {"1","VoIP Switching"}, ### voipSwitching 
+    {"2","AAL2 Trunking"}, ### aal2Trunking 
+    {"3","AAL1 SVC"}, ### aal1Svc
+    {"4","Switched VoIP CAS Bh"}, ### switchedVoipCASBh 
+    {"5","Switched VoIP PRI Bh"}, ### switchedVoipPRIBh 
+    {"6","Switched AAL2 CAS Bh"}, ### switchedAal2CASBh 
+    {"7","Switched AAL2 SVC"}, ### switchedAal2Svc 
+    {"8","Switched AAL2 PVC"}, ### switchedAal2Pvc 
+    {"9","VoIP and AAL1 SVC"}, ### voipAndAal1Svc 
+    {"10","VoIP and AAL2 Trunking"}, ### voipAndAal2Trunking 
+    {"99","Super Mode"}, ### superMode 
+    {"100","Unknown Mode"}, ### unknownMode 
+}
+default = "Unknown"
+
+table vismFeatureBitMap =
+{
+    ##########
+    # This object denotes the bit map for VISM features. It
+    # indicates the current features that are enabled. It
+    # should be consistent with vismMode. When user change
+    # vismMode, this object is implicitly set to the feature
+    # combination that indicate to that mode. The change of
+    # vismFeatureBitMap will not cause VISM to reset and the
+    # configuration will not be cleared.
+    # For each bit, value 1 means the feature is enabled, 0 means
+    # disabled.
+    # Bit 0 - AAL1 adaptation         
+    # Bit 1 - AAL2 adaptation
+    # Bit 2 - AAL5 adaptation (Bearer network type is IP).
+    # Bit 3 - Switching (with Call Agent)
+    # Bit 4 - Trunking (without Call Agent)
+    # Bit 5 - Bearer VC type is PVC.
+    # Bit 6 - Bearer VC type is SVC.
+    # Bit 7 - CAS signaling
+    # Bit 8 - PRI backhaul
+    # Bit 9 - CCS signaling
+    # Bit 10 - Domain Name
+    # For example, 0x5AC corresponds to vismMode 1
+    # (VoipSwitching).
+    # Currently this object is not settable, it can only be
+    # set thru some debug commands.
+    #########
+
+    {"1","AAL1 Adaptation"}, ### AAL1Adaptation
+    {"2","AAL2 Adaptation"}, ### AAL2Adaptation      
+    {"4","AAL5 Adaptation"}, ### AAL5Adaptation      
+    {"8","Switching"}, ### switching      
+    {"16","Trunking"}, ### trunking      
+    {"32","Bearer VC Type PVC"}, ### bearerVCTypePVC      
+    {"64","Bearer VC Type SVC"}, ### bearerVCTypeSVC
+    {"128","CAS Signaling"}, ### CASSignaling            
+    {"256","PRI Backhaul"}, ### PRIBackhaul             
+    {"512","CCS Signaling"}, ### CCSSignaling
+    {"1024","Domain Name"}, ### domainName
+}
+default = "Unknown"
+               

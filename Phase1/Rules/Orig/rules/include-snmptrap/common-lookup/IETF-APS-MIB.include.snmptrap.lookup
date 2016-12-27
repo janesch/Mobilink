@@ -1,0 +1,88 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-APS-MIB.include.snmptrap.lookup 1.0
+#    2005/09/16 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-APS-MIB
+#
+###############################################################################
+table apsChanStatusCurrent =
+{
+    ##########
+    # apsChanStatusCurrent is BITMAP which indicates the current state of the
+    # port.
+    #
+    # 0 - lockedOut: This bit, when applied to a working channel, indicates
+    #       that the channel is prevented from switching to the protection
+    #       line. When applied to the null channel, this bit indicates that no
+    #       working channel may switch to the protection line.
+    # 1 - sd: A signal degrade condition is in effect.
+    # 2 - sf: A signal failure condition is in effect.
+    # 3 - switched: The switched bit is applied to a working channel if that
+    #       channel is currently switched to the protection line.
+    # 4 - wtr: A Wait-to-Restore state is in effect.
+    ##########
+    
+    {"0","Working"},
+    {"1","Locked Out"}, ### lockedOut
+    {"2","Signal Degrade"}, ### sd
+    {"4","Signal Failure"}, ### sf
+    {"8","Switched"}, ### switched
+    {"16","Wait-to-Restore"} ### wtr
+}
+default = "Multiple Alarms"
+
+table apsStatusCurrent =
+{
+    ##########
+    # The current status of the APS group.
+    #
+    # 0 - modeMismatch: Modes other than 1+1 unidirectional monitor protection
+    #       line K2 bit 5, which indicates the architecture and K2 bits 6-8,
+    #       which indicate if the mode is unidirectional or bidirectional. A
+    #       conflict between the current local mode and the received K2 mode
+    #       information constitutes a mode mismatch.
+    # 1 - channelMismatch: This bit indicates a  mismatch between the
+    #       transmitted K1 channel and the received K2 channel has been
+    #       detected.
+    # 2 - psbf: This bit indicates a Protection Switch Byte Failure (PSBF) is
+    #       in effect. This condition occurs when either an inconsistent APS
+    #       byte or an invalid code is detected. An inconsistent APS byte
+    #       occurs when no three consecutive K1 bytes of the last 12 successive
+    #       frames are identical, starting with the last frame containing a
+    #       previously consistent byte. An invalid code occurs when the
+    #       incoming K1 byte contains an unused code or a code irrelevant for
+    #       the specific switching operation (e.g., Reverse Request while no
+    #       switching request is outstanding) in three consecutive frames. An
+    #       invalid code also occurs when the incoming K1 byte contains an
+    #       invalid channel number in three consecutive frames.
+    # 3 - feplf: Modes other than 1+1 unidirectional monitor the K1 byte for
+    #       Far-End Protection-Line failures. A Far-End Protection-Line defect
+    #       is declared based on receiving SF on the protection line.
+    # 4 - extraTraffic: This bit indicates whether extra traffic is currently
+    #       being accepted on the protection line.
+    ##########
+    
+    {"0","OK"},
+    {"1","Mode Mismatch"}, ### modeMismatch
+    {"2","Channel Mismatch"}, ### channelMismatch
+    {"4","Protection Switch Byte Failure"}, ### psbf
+    {"8","Far-End Protection-Line Failure"}, ### feplf
+    {"16","Extra Traffic"}, ### extraTraffic
+}
+default = "Multiple Alarms"

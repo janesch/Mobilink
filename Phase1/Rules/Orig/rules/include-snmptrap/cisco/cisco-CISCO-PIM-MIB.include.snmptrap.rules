@@ -1,0 +1,242 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-PIM-MIB.include.snmptrap.rules 1.0 
+#    2004/03/24 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-PIM-MIB
+#
+#          -  Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.184.2": ### Cisco Protocol Independent Multicast (PIM) - Notifications from CISCO-PIM-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-PIM-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-PIM"
+    @Class = "40057"
+ 
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ciscoPimInterfaceUp
+
+            ##########
+            # $1 = pimInterfaceStatus
+            ##########
+
+            $pimInterfaceStatus = $1
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PIM-MIB-ciscoPimInterfaceUp"
+
+            @AlertGroup = "PIM Interface Status"
+            $pimInterfaceIfIndex = extract($OID1, "\.([0-9]+)$")
+            @AlertKey = "pimInterfaceEntry." + $pimInterfaceIfIndex
+            @Summary = "PIM Interface Up  ( " + @AlertKey + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+           
+            details($pimInterfaceStatus)
+
+        case "2": ### ciscoPimInterfaceDown
+
+            ##########
+            # $1 = pimInterfaceStatus
+            ##########
+
+            $pimInterfaceStatus = $1
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PIM-MIB-ciscoPimInterfaceDown"
+
+            @AlertGroup = "PIM Interface Status"
+            $pimInterfaceIfIndex = extract($OID1, "\.([0-9]+)$")
+            @AlertKey = "pimInterfaceEntry." + $pimInterfaceIfIndex
+
+            @Summary = "PIM Interface Down  ( " + @AlertKey + " )"
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($pimInterfaceStatus)
+
+        case "3": ### ciscoPimRPMappingChange
+
+            ##########
+            # $1 = pimRPSetHoldTime
+            # $2 = cpimRPMappingChangeType 
+            ##########
+
+            $pimRPSetHoldTime = $1
+            $cpimRPMappingChangeType = lookup($2, cpimRPMappingChangeType) + " ( " + $2 + " )" 
+            $pimRPSetComponent = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+$")
+            $pimRPSetGroupAddress = extract($OID1, "\.([0-9]+)\.[0-9]+\.[0-9]+$")
+            $pimRPSetGroupMask = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $pimRPSetAddress = extract($OID1, "\.([0-9]+)$")
+ 
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PIM-MIB-ciscoPimRPMappingChange"
+  
+            @AlertGroup = "RP Mapping"
+
+            @AlertKey = "pimRPSetEntry." + $pimRPSetComponent + "." + $pimRPSetGroupAddress + "." + $pimRPSetGroupMask + "." + $pimRPSetAddress
+            @Summary = lookup($2, cpimRPMappingChangeType) + "  ( Component.GroupAddr.GroupMask.Addr = " + @AlertKey + " )"
+            switch($2)
+            {
+                case "1": ### newMapping
+                    $SEV_KEY = $OS_EventId + "_newMapping"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### deletedMapping
+                    $SEV_KEY = $OS_EventId + "_deletedMapping"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### modifiedOldMapping
+                    $SEV_KEY = $OS_EventId + "_modifiedOldMapping"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### modifiedNewMapping
+                    $SEV_KEY = $OS_EventId + "_modifiedNewMapping"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + $specific-trap + " " + $2 + " " + @Agent + " " + @Manager
+
+            details($pimRPSetHoldTime,$cpimRPMappingChangeType)           
+
+        case "4": ### ciscoPimInvalidRegister
+
+            ##########
+            # $1 = cpimLastErrorOriginType
+            # $2 = cpimLastErrorOrigin
+            # $3 = cpimLastErrorGroupType
+            # $4 = cpimLastErrorGroup
+            # $5 = cpimLastErrorRPType
+            # $6 = cpimLastErrorRP
+            # $7 = cpimInvalidRegisterMsgsRcvd
+            ##########
+
+            $cpimLastErrorOriginType = $1
+            $cpimLastErrorOrigin = $2
+            $cpimLastErrorGroupType = $3
+            $cpimLastErrorGroup = $4
+            $cpimLastErrorRPType = $5
+            $cpimLastErrorRP = $6
+            $cpimInvalidRegisterMsgsRcvd = $7
+ 
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PIM-MIB-ciscoPimInvalidRegister"
+
+            @AlertGroup = "Register Message"
+            @AlertKey = $2 + "." + $4 + "." + $6
+            @Summary = "Invalid Register Message  ( Origin = " + $2 + ", Group = " + $4 + " RP = " + $6 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cpimLastErrorOriginType,$cpimLastErrorOrigin,$cpimLastErrorGroupType,$cpimLastErrorGroup,$cpimLastErrorRPType,$cpimLastErrorRP,$cpimInvalidRegisterMsgsRcvd)
+
+        case "5": ### ciscoPimInvalidJoinPrune
+
+            ##########
+            # $1 = cpimLastErrorOriginType
+            # $2 = cpimLastErrorOrigin
+            # $3 = cpimLastErrorGroupType
+            # $4 = cpimLastErrorGroup 
+            # $5 = cpimLastErrorRPType
+            # $6 = cpimLastErrorRP
+            # $7 = cpimInvalidJoinPruneMsgsRcvd
+            ##########
+
+            $cpimLastErrorOriginType = $1 
+            $cpimLastErrorOrigin = $2
+            $cpimLastErrorGroupType = $3
+            $cpimLastErrorGroup = $4
+            $cpimLastErrorRPType = $5
+            $cpimLastErrorRP = $6
+            $cpimInvalidJoinPruneMsgsRcvd = $7
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-PIM-MIB-ciscoPimInvalidJoinPrune"
+
+            @AlertGroup = "Join/Prune"
+            @AlertKey = $2 + "." + $4 + "." + $6
+            @Summary = "Invalid Join/Prune Message  ( Origin = " + $2 + ", Group = " + $4 + " RP = " + $6 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($cpimLastErrorOriginType,$cpimLastErrorOrigin,$cpimLastErrorGroupType,$cpimLastErrorGroup,$cpimLastErrorRPType,$cpimLastErrorRP,$cpimInvalidJoinPruneMsgsRcvd)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-PIM-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-PIM-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-PIM-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-PIM-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-PIM-MIB.include.snmptrap.rules >>>>>")
+

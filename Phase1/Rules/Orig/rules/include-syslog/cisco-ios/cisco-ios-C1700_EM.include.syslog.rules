@@ -1,0 +1,49 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-C1700_EM.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "C1700_EM": ### Cisco 1700 VPN module hardware accelerator for IP security messages
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-C1700_EM.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ERROR":
+            
+            ##########
+            # An error has occurred in an application using the VPN
+            # module.
+            #
+            # %C1700_EM-1-ERROR : [chars]
+            ##########
+            
+            @AlertKey = ""
+            
+            $CLARIFIER = $Message
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-C1700_EM.include.syslog.rules >>>>>")

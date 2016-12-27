@@ -1,0 +1,48 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    decodeInteger2Ip.include.snmptrap.rules 1.1 
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+#
+# This rulesfile segment will convert a 32-bit integer, contained in the token
+# $Integer and convert it to an IPv4 Address (output as the token $IPv4addr)
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... decodeInteger2Ip.include.snmptrap.rules >>>>>")
+
+$IPv4addr = ""
+
+$Temp = (int($Integer) & 4278190080) >> 24
+$IPv4addr = $Temp + "."
+
+$Temp = (int($Integer) & 16711680) >> 16
+$IPv4addr = $IPv4addr + $Temp + "."
+
+$Temp = (int($Integer) & 65280) >> 8
+$IPv4addr = $IPv4addr + $Temp + "."
+
+$Temp = (int($Integer) & 255)
+$IPv4addr = $IPv4addr + $Temp
+
+log(DEBUG, "<<<<< Leaving... decodeInteger2Ip.include.snmptrap.rules >>>>>")

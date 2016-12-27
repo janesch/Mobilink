@@ -1,0 +1,281 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-BGP4-V2-MIB-JUNIPER.include.snmptrap.rules 6.0
+#    2008/04/08 Aveek Kumar Gupta
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  BGP4-V2-MIB-JUNIPER
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.5.1.1.1": ### Juniper BGPv4 (v2) - Notifications from BGP4-V2-MIB-JUNIPER
+
+    log(DEBUG, "<<<<< Entering... juniper-BGP4-V2-MIB-JUNIPER.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-BGPv4 (v2)"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxBgpM2Established
+
+            ##########
+            # $1 = jnxBgpM2PeerLocalAddrType
+            # $2 = jnxBgpM2PeerLocalAddr
+            # $3 = jnxBgpM2PeerRemoteAddrType
+            # $4 = jnxBgpM2PeerRemoteAddr
+            # $5 = jnxBgpM2PeerLastErrorReceived
+            # $6 = jnxBgpM2PeerState
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxBgpM2PeerLocalAddrType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $jnxBgpM2PeerLocalAddr = $2
+            $jnxBgpM2PeerRemoteAddrType = lookup($3, InetAddressType) + " ( " + $3 + " )"
+            $jnxBgpM2PeerRemoteAddr = $4
+            $jnxBgpM2PeerLastErrorReceived = $5
+            $jnxBgpM2PeerState = lookup($6, jnxBgpM2PeerState) + " ( " + $6 + " )"
+            
+            $jnxBgpM2PeerEntry_INDEX = extract($OID6, "2636\.5\.1\.1\.2\.1\.1\.1\.2\.(.*)$")
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxBgpM2PeerLocalAddrType,$jnxBgpM2PeerLocalAddr,$jnxBgpM2PeerRemoteAddrType,$jnxBgpM2PeerRemoteAddr,$jnxBgpM2PeerLastErrorReceived,$jnxBgpM2PeerState)
+            }
+            else
+            {
+                details($jnxBgpM2PeerLocalAddrType,$jnxBgpM2PeerLocalAddr,$jnxBgpM2PeerRemoteAddrType,$jnxBgpM2PeerRemoteAddr,$jnxBgpM2PeerLastErrorReceived,$jnxBgpM2PeerState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-BGP4-V2-MIB-JUNIPER-jnxBgpM2Established"
+
+            @AlertGroup = "BGP Peer Status"
+            @AlertKey = "jnxBgpM2PeerEntry." + $jnxBgpM2PeerEntry_INDEX
+            
+            switch($6)
+            {
+                case "1": ### idle
+                    @Summary = "BGP Peer Connection Idle"
+
+                    $SEV_KEY = $OS_EventId + "_idle"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### connect
+                    @Summary = "BGP Peer Connection Connected"
+
+                    $SEV_KEY = $OS_EventId + "_connect"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### active
+                    @Summary = "BGP Peer Connection Active"
+
+                    $SEV_KEY = $OS_EventId + "_active"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### opensent
+                    @Summary = "BGP Peer Connection Open Sent"
+
+                    $SEV_KEY = $OS_EventId + "_opensent"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### openconfirm
+                    @Summary = "BGP Peer Connection Open Confirmed"
+
+                    $SEV_KEY = $OS_EventId + "_openconfirm"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### established
+                    @Summary = "BGP Peer Connection Established"
+
+                    $SEV_KEY = $OS_EventId + "_established"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "BGP Peer Connection Status Unknown"
+
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( BGP Peer: " + $4 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+        case "2": ### jnxBgpM2BackwardTransition
+
+            ##########
+            # $1 = jnxBgpM2PeerLocalAddrType
+            # $2 = jnxBgpM2PeerLocalAddr
+            # $3 = jnxBgpM2PeerRemoteAddrType
+            # $4 = jnxBgpM2PeerRemoteAddr
+            # $5 = jnxBgpM2PeerLastErrorReceived
+            # $6 = jnxBgpM2PeerLastErrorReceivedText
+            # $7 = jnxBgpM2PeerState
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxBgpM2PeerLocalAddrType = lookup($1, InetAddressType) + " ( " + $1 + " )"
+            $jnxBgpM2PeerLocalAddr = $2
+            $jnxBgpM2PeerRemoteAddrType = lookup($3, InetAddressType) + " ( " + $3 + " )"
+            $jnxBgpM2PeerRemoteAddr = $4
+            $jnxBgpM2PeerLastErrorReceived = $5
+            $jnxBgpM2PeerLastErrorReceivedText = $6
+            $jnxBgpM2PeerState = lookup($7, jnxBgpM2PeerState) + " ( " + $7 + " )"
+            
+            $jnxBgpM2PeerEntry_INDEX = extract($OID7, "2636\.5\.1\.1\.2\.1\.1\.1\.2\.(.*)$")
+            
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxBgpM2PeerLocalAddrType,$jnxBgpM2PeerLocalAddr,$jnxBgpM2PeerRemoteAddrType,$jnxBgpM2PeerRemoteAddr,$jnxBgpM2PeerLastErrorReceived,$jnxBgpM2PeerLastErrorReceivedText,$jnxBgpM2PeerState)
+            }
+            else
+            {
+                details($jnxBgpM2PeerLocalAddrType,$jnxBgpM2PeerLocalAddr,$jnxBgpM2PeerRemoteAddrType,$jnxBgpM2PeerRemoteAddr,$jnxBgpM2PeerLastErrorReceived,$jnxBgpM2PeerLastErrorReceivedText,$jnxBgpM2PeerState)
+            }
+
+            $OS_EventId = "SNMPTRAP-juniper-BGP4-V2-MIB-JUNIPER-jnxBgpM2BackwardTransition"
+
+            @AlertGroup = "BGP Peer Status"
+            @AlertKey = "jnxBgpM2PeerEntry." + $jnxBgpM2PeerEntry_INDEX
+            
+            switch($7)
+            {
+                case "1": ### idle
+                    @Summary = "BGP Peer Connection Idle"
+
+                    $SEV_KEY = $OS_EventId + "_idle"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+
+                case "2": ### connect
+                    @Summary = "BGP Peer Connection Connected"
+
+                    $SEV_KEY = $OS_EventId + "_connect"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "3": ### active
+                    @Summary = "BGP Peer Connection Active"
+
+                    $SEV_KEY = $OS_EventId + "_active"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "4": ### opensent
+                    @Summary = "BGP Peer Connection Open Sent"
+
+                    $SEV_KEY = $OS_EventId + "_opensent"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "5": ### openconfirm
+                    @Summary = "BGP Peer Connection Open Confirmed"
+
+                    $SEV_KEY = $OS_EventId + "_openconfirm"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+
+                case "6": ### established
+                    @Summary = "BGP Peer Connection Established"
+
+                    $SEV_KEY = $OS_EventId + "_established"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+
+                default:
+                    @Summary = "BGP Peer Connection Status Unknown"
+
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( BGP Peer: " + $4 + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $7
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-BGP4-V2-MIB-JUNIPER_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-BGP4-V2-MIB-JUNIPER_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-BGP4-V2-MIB-JUNIPER.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-BGP4-V2-MIB-JUNIPER.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-BGP4-V2-MIB-JUNIPER.include.snmptrap.rules >>>>>")

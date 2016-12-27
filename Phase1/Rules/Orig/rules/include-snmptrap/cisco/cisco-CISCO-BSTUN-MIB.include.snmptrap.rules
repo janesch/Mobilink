@@ -1,0 +1,390 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-BSTUN-MIB.include.snmptrap.rules 2.1
+#    2005/03/03 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-BSTUN-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.35.2": ### Cisco Blocked Serial Tunnel - BSTUN Notifications from CISCO-BSTUN-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-BSTUN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Blocked Serial Tunnel"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### bstunPeerStateChangeNotification
+            
+            ##########
+            # $1 = bstunRoutePeerState 
+            ##########
+            
+            $bstunRoutePeerState = lookup($1, bstunRoutePeerState) + " ( " + $1 + " )"
+            $bstunRouteGroupIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $bstunRouteStationAddress = extract($OID1, "\.([0-9]+)$")
+            details($bstunRoutePeerState,$bstunRouteGroupIndex,$bstunRouteStationAddress)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-BSTUN-MIB-bstunPeerStateChangeNotification"
+
+            @AlertGroup = "BSTUN Route Peer Status"
+            @AlertKey = "bstunRouteEntry." + $bstunRouteGroupIndex + "." + $bstunRouteStationAddress
+            switch($1)
+            {
+                case "1": ### dead
+                    @Summary = "Blocked Serial Tunnel Route Peer Dead" 
+                    
+                    $SEV_KEY = $OS_EventId + "_dead"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### closed
+                    @Summary = "Blocked Serial Tunnel Route Peer Closed"
+                    
+                    $SEV_KEY = $OS_EventId + "_closed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### opening
+                    @Summary = "Blocked Serial Tunnel Route Peer Opening"
+                    
+                    $SEV_KEY = $OS_EventId + "_opening"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### openWait
+                    @Summary = "Blocked Serial Tunnel Route Peer Open, Waiting"
+                    
+                    $SEV_KEY = $OS_EventId + "_openWait"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### connected
+                    @Summary = "Blocked Serial Tunnel Route Peer Connected"
+                    
+                    $SEV_KEY = $OS_EventId + "_connected"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### direct
+                    @Summary = "Blocked Serial Tunnel Route Peer Direct"
+                    
+                    $SEV_KEY = $OS_EventId + "_direct"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Blocked Serial Tunnel Route Peer Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+        
+        case "2": ### bstunPeerStateChangeNotification2
+
+            ##########
+            # $1 = bstunRoutePeerState
+            # $2 = bstunRouteType 
+            # $3 = bstunRouteRxPackets
+            # $4 = bstunRouteTxPackets 
+            ##########
+
+            $bstunRoutePeerState = lookup($1, bstunRoutePeerState) + " ( " + $1 + " )"
+            $bstunRouteType = lookup($2, bstunRouteType)
+            $bstunRouteRxPackets = $3
+            $bstunRouteTxPackets = $4
+            $bstunRouteGroupIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $bstunRouteStationAddress = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-BSTUN-MIB-bstunPeerStateChangeNotification2"
+
+            @AlertGroup = "BSTUN Route Peer Status"
+            @AlertKey = "bstunRouteEntry." + $bstunRouteGroupIndex + "." + $bstunRouteStationAddress
+            switch($1)
+            {
+                case "1": ### dead
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Dead" 
+                    
+                    $SEV_KEY = $OS_EventId + "_dead"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### closed
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Closed"
+                    
+                    $SEV_KEY = $OS_EventId + "_closed"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### opening
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Opening"
+                    
+                    $SEV_KEY = $OS_EventId + "_opening"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### openWait
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Open, Waiting"
+                    
+                    $SEV_KEY = $OS_EventId + "_openWait"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### connected
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Connected"
+                    
+                    $SEV_KEY = $OS_EventId + "_connected"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### direct
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Direct"
+                    
+                    $SEV_KEY = $OS_EventId + "_direct"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Blocked Serial Tunnel " + $bstunRouteType + " Route Peer Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+            
+            $bstunRouteType = $bstunRouteType + " ( " + $2 + " )"
+            details($bstunRoutePeerState,$bstunRouteType,$bstunRouteRxPackets,$bstunRouteTxPackets,$bstunRouteGroupIndex,$bstunRouteStationAddress)
+
+        case "3": ### bstunCUStatusChangeNotification
+
+            ##########
+            # $1 = bstunRouteIP 
+            # $2 = bstunRouteBIPForeignPort 
+            # $3 = bstunRouteBIPLocalPort
+            # $4 = bstunRouteBIPDeviceStatus
+            ##########
+
+            $bstunRouteIP = $1
+            $bstunRouteBIPForeignPort = $2
+            $bstunRouteBIPLocalPort = $3
+            $bstunRouteBIPDeviceStatus = $4
+            $bstunRouteGroupIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $bstunRouteStationAddress = extract($OID1, "\.([0-9]+)$")
+            details($bstunRouteIP,$bstunRouteBIPForeignPort,$bstunRouteBIPLocalPort,$bstunRouteBIPDeviceStatus)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-BSTUN-MIB-bstunCUStatusChangeNotification"
+
+            @AlertGroup = "BSTUN BIP Bi-Sync Device Status"
+            @AlertKey = "bstunRouteEntry." + $bstunRouteGroupIndex + "." + $bstunRouteStationAddress
+            switch($4)
+            {
+                case "0": ### ok
+                    @Summary = "BSTUN BIP Bi-Sync Device OK"
+                    
+                    $SEV_KEY = $OS_EventId + "_ok"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "1": ### operationcheck
+                    @Summary = "BSTUN BIP Bi-Sync Device Operation Check Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_operationcheck"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### reservedBit1
+                    @Summary = "BSTUN BIP Bi-Sync Device Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_reservedBit1"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### datacheck
+                    @Summary = "BSTUN BIP Bi-Sync Device Data Check Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_datacheck"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### equipmentcheck
+                    @Summary = "BSTUN BIP Bi-Sync Device Equipment Check Error"
+                    
+                    $SEV_KEY = $OS_EventId + "_equipmentcheck"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "16": ### interventionrequired
+                    @Summary = "BSTUN BIP Bi-Sync Device Intervention Required"
+                    
+                    $SEV_KEY = $OS_EventId + "_interventionrequired"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "32": ### commandreject
+                    @Summary = "BSTUN BIP Bi-Sync Device Command Rejected"
+                    
+                    $SEV_KEY = $OS_EventId + "_commandreject"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "64": ### deviceinactive
+                    @Summary = "BSTUN BIP Bi-Sync Device Inactive"
+                    
+                    $SEV_KEY = $OS_EventId + "_deviceinactive"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "128": ### deviceactive
+                    @Summary = "BSTUN BIP Bi-Sync Device Active"
+                    
+                    $SEV_KEY = $OS_EventId + "_deviceactive"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "256": ### reservedBit8
+                    @Summary = "BSTUN BIP Bi-Sync Device Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_reservedBit8"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "512": ### deviceend
+                    @Summary = "BSTUN BIP Bi-Sync Device Not Busy"
+                    
+                    $SEV_KEY = $OS_EventId + "_deviceend"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "1024": ### unitspecify
+                    @Summary = "BSTUN BIP Bi-Sync Device Unit Specify"
+                    
+                    $SEV_KEY = $OS_EventId + "_unitspecify"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2048": ### devicebusy
+                    @Summary = "BSTUN BIP Bi-Sync Device Busy"
+                    
+                    $SEV_KEY = $OS_EventId + "_devicebusy"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "BSTUN BIP Bi-Sync Device Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( Peer: " + $1 + ", Foreign Port: " + $2 + ", Local Port: " + $3 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $4
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)        
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-BSTUN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-BSTUN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-BSTUN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-BSTUN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-BSTUN-MIB.include.snmptrap.rules >>>>>")

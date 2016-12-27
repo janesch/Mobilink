@@ -1,0 +1,80 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-IPCOIR.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "IPCOIR":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-IPCOIR.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CARD_LOADING":
+            
+            ##########
+            # %IPCOIR-5-CARD_LOADING: Loading card [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Cc]ard ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "IPCOIR-Card Loading Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+        
+        case "LOADER_ENTER_BOOT":
+            
+            ##########
+            # %IPCOIR-5-LOADER_ENTER_BOOT: Linecard entering boot image,
+            # download will restart, slot [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "IPCOIR-Card Loading Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        case "LOADER_IPC_FAIL":
+            
+            ##########
+            # %IPCOIR-3-LOADER_IPC_FAIL: IPC failed, slot [dec]
+            ##########
+            
+            $MOI_Local = rtrim(extract($Message, "[Ss]lot ([0-9]+)"))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "IPCOIR-Card Loading Status"
+            @AlertKey = "Slot: " + $MOI_Local
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-IPCOIR.include.syslog.rules >>>>>")

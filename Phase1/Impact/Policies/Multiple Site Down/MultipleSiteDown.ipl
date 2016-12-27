@@ -1,0 +1,114 @@
+/* ***************************************************************************
+*
+*  MultipleSiteDown.ipl
+*
+*  Innovise ESM Impact policy  Multiple Site Down Correlation
+*  Chris Janes of Innovise ESM
+*
+*  V0.0    20100809        Chris Janes*
+*************************************************************************** */
+
+/* *************************************************
+*
+* Here we set up static data to be used in the Policy
+*
+************************************************* */
+
+/* *************************************************
+*
+*  Parent / Child Indicator Field Values - Note these are the same as for Parentchild Policies
+*
+*      0 - Event not involved in Parent/Child Relationship
+*      1 - Potential Child Event
+*      2 - Potential Parent Event
+*      3 - Potential Child and Parent Event
+*      4 - Established Child Event
+*      5 - Established Parent Event
+*      6 - Child Event but no Parent Found
+*      7 - Parent Event but no Child Found
+*      8 - Relationship not found in table
+************************************************* */
+/* *************************************************
+*
+* Datatypes required for this Policy
+*
+*   Status - alerts.status
+*    NetworkTopology
+*
+*
+************************************************* */
+
+/* *************************************************
+*
+* Here the code starts for real
+*
+************************************************* */
+Log("MultipleSiteDown: Starting...");
+
+// Enrich with Network Info
+
+DataType = "SITETOPOLOGY";  // this needs to be setup
+Filter = "AEndSite'" + @Node+ "'";  // this needs to be setup
+CountOnly = False;
+PossLinks= GetByFilter(DataType, Filter, CountOnly);
+NumPossLinks= Num;
+
+if(int(NumPossLinks) == 0)
+{
+    @ParentChild = 8; // Relationship not found
+    ReturnEvent(EventContainer);
+    Exit();
+}
+else
+{
+    @ParentChild = 3; // Possible Child and Parent 
+   ReturnEvent(EventContainer);
+}
+    
+
+// for each link
+Count = 0;
+
+while ( Count < NumPossLinks)
+{
+    
+
+
+    // Check for Parents - Parents are defind as on this link with a Lower Seq Number (ie closer to the core)
+    DataType = "STATUS";  // this needs to be setup
+    Filter = "LinkNumber = " + PossLink[Count].LinkNumber + " and LinkSeqNumber < " + PossLink[Count].LinkSeqNumber + " and EventID like 'MSD' and ParentChild = = 5";  // this needs to be setup
+    CountOnly = False;
+    PossibleParents= GetByFilter(DataType, Filter, CountOnly);// this returns Site names of possible Parents in Parents[?].AENDSITE
+    Num_PossibleParents= Num;
+
+
+
+    if(int(Num_PossibleParents) != 0)
+    {
+        // here we only need to set the fact that this is a child event and who the parent is  
+        DataType = "Status";
+        Filter = "ServerName = '" + @ServerName  + "' and ServerSerial = " + @ServerSerial;
+        ParentList = @
+        UpdateExpression = "ParentID =  " + PossibleParents[0].Node + " , ParentChild = 4"; // Established Child Event
+        BatchUpdate(DataType, Filter, UpdateExpression );
+    }
+    else
+    {
+        // Check for Children
+        DataType = "STATUS";  // this needs to be setup
+        Filter = "LinkNumber = " + @LinkNumber+ " and LinkSeqNumber >= " + @LinkSeqNumber + " and EventID like 'MSD'";  // this needs to be setup
+        CountOnly = False;
+        Parents= GetByFilter(DataType, Filter, CountOnly);
+        Num_Children= Num;
+
+        if(int(Num_Children) != 0)
+        {
+             // update all children ParentChild=4, ParentID=@Node
+
+        }
+
+        @ParentID = @Node;
+        @ParentChild = 5;
+        ReturnEvent(EventContainer);
+    }
+}

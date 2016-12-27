@@ -1,0 +1,103 @@
+/* ***************************************************************************
+*
+*  MultipleSiteDown.ipl
+*
+*  Innovise ESM Impact policy  Multiple Site Down Correlation
+*  Chris Janes of Innovise ESM
+*
+*  V0.0    20100809        Chris Janes*
+*************************************************************************** */
+
+/* *************************************************
+*
+* Here we set up static data to be used in the Policy
+*
+************************************************* */
+
+/* *************************************************
+*
+*  Parent / Child Indicator Field Values - Note these are the same as for Parentchild Policies
+*
+*      0 - Event not involved in Parent/Child Relationship
+*      1 - Potential Child Event
+*      2 - Potential Parent Event
+*      3 - Potential Child and Parent Event
+*      4 - Established Child Event
+*      5 - Established Parent Event
+*      6 - Child Event but no Parent Found
+*      7 - Parent Event but no Child Found
+*      8 - Relationship not found in table
+************************************************* */
+/* *************************************************
+*
+* Datatypes required for this Policy
+*
+*   Status - alerts.status
+*    NetworkTopology
+*
+*
+************************************************* */
+
+/* *************************************************
+*
+* Here the code starts for real
+*
+************************************************* */
+Log("MultipleSiteDown: Starting...");
+
+// Enrich with Network Info
+
+DataType = "SITETOPOLOGY";  // this needs to be setup
+Filter = "AEndSite'" + @Node+ "'";  // this needs to be setup
+CountOnly = False;
+Enrich= GetByFilter(DataType, Filter, CountOnly);
+Num_Enrich= Num;
+
+if(int(Num_Enrich) == 0)
+{
+    @ParentChild = 8; // Relationship not found
+    ReturnEvent(EventContainer);
+    Exit();
+}
+else
+{
+   @LinkNumber = Enrich[0].LINKNUMBER;
+   @LinkSeqNumber = Enrich[0].LINKNUMBER;
+   ReturnEvent(EventContainer);
+}
+    
+// Check for Parents
+DataType = "STATUS";  // this needs to be setup
+Filter = "LinkNumber = " + @LinkNumber+ " and LinkSeqNumber < " + @LinkSeqNumber + " and Class in ( 200013, 200014)";  // this needs to be setup
+CountOnly = False;
+Parents= GetByFilter(DataType, Filter, CountOnly);
+Num_Parents= Num;
+
+if(int(Num_Parents) != 0)
+{
+     
+    DataType = "Status";
+    Filter = "Node = '" + @Node  + "'";
+    UpdateExpression = "ParentID =  " + Parents[0].Node + " , ParentChild = 4";
+    BatchUpdate(DataType, Filter, UpdateExpression );
+}
+else
+{
+    // Check for Children
+    DataType = "STATUS";  // this needs to be setup
+    Filter = "LinkNumber = " + @LinkNumber+ " and LinkSeqNumber > " + @LinkSeqNumber + " and Class in ( 200013, 200014)";  // this needs to be setup
+    CountOnly = False;
+    Parents= GetByFilter(DataType, Filter, CountOnly);
+    Num_Children= Num;
+
+    if(int(Num_Children) != 0)
+    {
+         // update all children ParentChild=4, ParentID=@Node
+        
+    }
+
+    @ParentID = @Node;
+    @ParentChild = 5;
+    ReturnEvent(EventContainer);
+}
+

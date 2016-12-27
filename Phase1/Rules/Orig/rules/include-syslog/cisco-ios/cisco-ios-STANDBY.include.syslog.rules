@@ -1,0 +1,51 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-STANDBY.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "STANDBY": ### Hot Standby Router Protocol (HSRP)
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-STANDBY.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "DUPADDR":
+        
+            ##########
+            # The router has received an HSRP message on the interface.
+            # The IP address in the HSRP message is the same as the IP
+            # address of the router. This condition may be caused by a
+            # network loop, a misconfiguration, or a malfunctioning
+            # switch.
+            #
+            # %STANDBY-3-DUPADDR : Duplicate address [IP_address] on
+            # [chars], sourced by [enet]
+            ##########
+            
+            @AlertKey = "IP Address: " + extract($Message, "address ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) on")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-STANDBY.include.syslog.rules >>>>>")

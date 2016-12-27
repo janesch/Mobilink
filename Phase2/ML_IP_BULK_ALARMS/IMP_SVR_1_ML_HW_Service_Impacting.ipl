@@ -1,0 +1,176 @@
+/*    *****************************************************************************
+    *
+    *    ML_HW_Service_Impacting Polciy
+    *
+    *    Description: Raise a single Synthetic Event for all "STC Out of Service" network event 
+    *	            (EventId = NET_CORE_SI_001) forrom same Z_Node and add all Node into its 
+    *                Information field  and add  network events details in its journal. 
+    *                A trouble ticket will generated if the SE is not cleared in 5min.(TTHibernate = 300).
+    *
+    *    Author:    Alex Silva of Innovise ESM
+    *    Date:    30-06-2011
+    *
+    *    V 1.0    18/07/2011        Alex Silva: First release
+    *    V 1.1      28/07/2011        Alex Silva: Information with unique values
+    *
+    *  
+    *****************************************************************************
+    *****************************************************************************
+    *
+    *    Datatypes: OS_Status - alerts.status
+    *
+    *   
+    *
+    *
+    *    EventReader Filter:
+    *        (ImpactFlag = 4 And Severity > 2 And Type = 1 And MaintFlag in (1,2) And EventId = 'NET_CORE_SI_001')
+    *        OR (ImpactFlag in (5,6) And Severity = 0 And Type = 1 And EventId = 'NET_CORE_SI_001')
+    *
+    ***************************************************************************** */
+    
+    Log("Current Serial = " + @Serial + " : " + @Node + "###########################################");
+    Log("Current Serial = " + @Serial + " : " + @Node + "************* ML_HW_Service_Impacting BEGIN ******************");
+    Log("Current Serial = " + @Serial + " : " + @Node + "############################################");
+    
+    if(@Severity == 0)
+    {
+        @ImpactFlag = 99;
+        ReturnEvent(EventContainer);
+        
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For Other Net Event From Same SE");
+        HwNetDataType = "OS_Status";
+        HwNetFilter = "SyntheticServerSerial = " + @SyntheticServerSerial + " And Severity > 2 ";
+        HwNetOutput = GetByFilter(HwNetDataType, HwNetFilter, False);
+        NumHwNetOutput = Length(HwNetOutput);
+        Log("Current Serial = " + @Serial + " : HW_Service 1 IBMDEBUG : no. of rows : " + NumHwNetOutput);
+        
+        if(NumHwNetOutput == 0)
+        {
+            
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Clear Huawei SE Event Serial = " + @SyntheticServerSerial);
+            HwSEDataType = "OS_Status";        
+            HwSEUpdateFilter = "ServerSerial = " + @SyntheticServerSerial  + " And Severity > 0 And LastOccurrence <= "+@ClearTime+"";     
+            HwSEUpdateExpression = "Severity = 0, ExpireID= 65690, ClearTime = " + @ClearTime;
+            BatchUpdate(HwSEDataType, HwSEUpdateFilter, HwSEUpdateExpression);
+            
+        }
+        else
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Other Net Event Still Active In OS, Just Add Journal Into SE");
+        }
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Journal Entry");
+        MobiLib.AddGenericJournal(@SyntheticServerSerial,@Summary,@ServerSerial,@ClearTime,@NodeAlias,2);
+        @ImpactFlag = 100;
+        ReturnEvent(EventContainer);
+    }
+    else
+    {
+    
+        @ImpactFlag = 5;
+        ReturnEvent(EventContainer);
+    
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Look For Existing SE With Node = @Z_Node and EventId= 'SYN_CORE_SI_001'and Severity = 5");
+        HwSISEDataType = "OS_Status";
+        HwSISEInOSFilter = "Node = '"+@Z_Node+"' And Class = 204120 And Severity = 5 And EventId = 'SYN_CORE_SI_001' ";
+        HwSISEInOSOutput = GetByFilter(HwSISEDataType, HwSISEInOSFilter,False);
+        NumHwSISEInOSOutput = Length(HwSISEInOSOutput);
+        Log("Current Serial = " + @Serial + " : HW_Service 2 IBMDEBUG : no. of rows : " + NumHwSISEInOSOutput);
+    
+        if(NumHwSISEInOSOutput > 0)
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": SE Found Store its Server Serial");
+            se_si_server_serial = HwSISEInOSOutput[0].ServerSerial;
+            @SyntheticServerSerial =  HwSISEInOSOutput[0].ServerSerial;
+            @SyntheticServerName = HwSISEInOSOutput[0].ServerName;
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Adding @NodeAlias into Information Field And Convert It to Unique Values");
+            se_si_informantion = HwSISEInOSOutput[0].Information + "," + @NodeAlias;
+            
+            node_alias_array = split(se_si_informantion, ",");
+            node_alias_array = distinct(node_alias_array);
+            num_nodes = Length(node_alias_array);
+            node_array_counter = 0;
+            while (num_nodes > node_array_counter)
+            {
+                if(node_array_counter == 0)
+                {
+                    node_list = node_alias_array[node_array_counter];
+                }
+                else
+                {
+                    node_list = node_list + "," + node_alias_array[node_array_counter];
+                }
+                node_array_counter = node_array_counter + 1;
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Building the Information NodeAlias list = " + node_list);
+            }
+            HwSISEInOSOutput[0].Information = node_list;
+            
+        }
+        else
+        {
+            Log("Current Serial = " + @Serial + " : " + @Node + ": SE NOT FOUND, RAISE SE");
+        
+            HwServImp = NewObject();
+            HwServImp.Node = @Z_Node;
+            HwServImp.NodeAlias = @Z_Node;
+            HwServImp.Z_Node = @Z_Node;
+            HwServImp.Summary = "STC Out of Service";
+            HwServImp.AlertGroup = "Huawei Service Impacting";
+            HwServImp.TTHibernate = 300;
+            HwServImp.Severity = 5;
+            HwServImp.Type = 1;
+            HwServImp.Agent = "Netcool Impact";
+            HwServImp.Manager = "Netcool Impact";
+            HwServImp.FirstOccurrence = @LastOccurrence;
+            HwServImp.LastOccurrence = @LastOccurrence;
+            HwServImp.EventId = "SYN_CORE_SI_001";
+            HwServImp.Identifier = HwServImp.Node + HwServImp.Summary + HwServImp.Type + HwServImp.EventId + @LastOccurrence;
+            HwServImp.Class = 204120;
+            HwServImp.Domain = @Domain;
+            HwServImp.Region = @Region;
+            HwServImp.ManCity = @ManCity;
+            HwServImp.ImpactFlag = 6;
+            HwServImp.MaintFlag = @MaintFlag;
+            HwServImp.OutsourceContractor = @OutsourceContractor;
+            HwServImp.BusImportance = @BusImportance;
+            HwServImp.Vendor = @Vendor;
+            HwServImp.OmcEms = @OmcEms;
+            HwServImp.Information = @NodeAlias;
+            HwServImp.AdvCorrServerSerial = @ServerSerial;
+            HwServImp.OwnerUID = 65534;
+            AddDataItem('OS_Status', HwServImp);
+    
+            Log("Current Serial = " + @Serial + " : " + @Node + ": New Huawei Service Impacting SE Created ");
+        
+            Log("Current Serial = " + @Serial + " : " + @Node + ": Looking For Service Impacting SE Just Created");
+            HwSIDataType = "OS_Status";
+            HwSIFilter = "Node = '"+@Z_Node+"' And Class = 204120 And Severity = 5 And EventId = 'SYN_CORE_SI_001' ";
+            HwSIOutput = GetByFilter(HwSIDataType,HwSIFilter,False);
+            NumHwSIOutput = Length(HwSIOutput);
+            Log("Current Serial = " + @Serial + " : HW_Service 3 IBMDEBUG : no. of rows : " + NumHwSIOutput);
+        
+            if(NumHwSIOutput == 0)
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + "*********########## HW SI SE NOT IN OBJECT SERVER YET ########**********");
+            }
+            else
+            {
+                Log("Current Serial = " + @Serial + " : " + @Node + ": Store SE’s ServerSerial");
+                se_si_server_serial = HwSIOutput[0].ServerSerial;
+                @SyntheticServerSerial = HwSIOutput[0].ServerSerial;
+                @SyntheticServerName = HwSIOutput[0].ServerName;
+                
+            }
+    
+        }
+    
+        Log("Current Serial = " + @Serial + " : " + @Node + ": Adding Current Event Details Into SE's Journal");
+    
+        MobiLib.AddGenericJournal(se_si_server_serial, @Summary,@ServerSerial,@LastOccurrence,@NodeAlias,@Type);
+    
+        @ImpactFlag = 6;
+        ReturnEvent(EventContainer);
+    }
+    
+    Log("Current Serial = " + @Serial + " : " + @Node + "######################################");
+    Log("Current Serial = " + @Serial + " : " + @Node + "*********** ML_HW_Service_Impacting END ***********");
+    Log("Current Serial = " + @Serial + " : " + @Node + "######################################");    

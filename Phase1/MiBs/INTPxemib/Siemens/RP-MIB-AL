@@ -1,0 +1,445 @@
+--
+
+--
+-- This MIB defines Tecnomen alarm/event messages as traps
+--
+-- Engineer: Juha Holstila & Jukka Rissanen
+--
+-- Date    : Tue Apr 21 15:35:03 1998
+--
+-- $Header:   
+-- /usr/develop/archive/nemo.source/omp/snmp/mibs/tecnomen_alarm.mib,v1.3 
+-- 26 Aug 1998 13:34:42   jukka  $
+--
+
+-- TECNOMEN_ALARM_MIB_V1 DEFINITIONS ::= BEGIN
+RP-MIB-AL DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-IDENTITY,
+        OBJECT-TYPE, NOTIFICATION-TYPE       FROM SNMPv2-SMI
+
+        TEXTUAL-CONVENTION, DisplayString    FROM SNMPv2-TC
+
+        enterprises                          FROM RFC1155-SMI
+
+        inModules                            FROM INC-MIB-C
+
+        -- commented because of TeMIP restrictions :
+        -- tiAlarmSourceName,
+        -- tiAlarmSymbNEname,
+        -- tiAlarmNotificationID,
+        -- tiAlarmTransferID                    FROM INC-MIB-AL
+        ;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        --
+        -- Module Identity :
+        --
+        inRpMibAL  MODULE-IDENTITY
+                 LAST-UPDATED "9908091400Z"
+                 ORGANIZATION "Siemens AG"
+                 CONTACT-INFO
+                         "        TMN/IN-Team
+                                  K.Schmidtke
+                          Postal: Siemens AG
+                                  Information and Communication Mobile
+                                  Otto-Hahn-Ring 6
+                                  D-81739 Muenchen
+                                  Germany
+                          E-mail: Klaus.Schmidtke@icn.siemens.de"
+        
+                DESCRIPTION "This MIB module describes the managed 
+                             objecttypes of the Siemens IN RP NEs."
+
+                REVISION    "9908091400Z"
+                DESCRIPTION "Adapted to TeMIP restrictions."
+
+                REVISION    "9907271400Z"
+                DESCRIPTION "Adapted NOTIFICATION-TYPE's to 
+		             TeMIP SNMP MIB Translator;
+			     replaced rpNotificationIdentifier with
+			     rpNotificationID "
+
+                REVISION    "9906231400Z"
+                DESCRIPTION "Enhanced TeMIP customizing"
+
+                REVISION    "9904201400Z"
+                DESCRIPTION "enhanced NOTIFICATION-TYPE's comments"
+               
+                REVISION    "9903251200Z"
+                DESCRIPTION "added customizing for TeMIP"
+               
+        ::= { inModules 10 } 
+
+-- nullOID       OBJECT IDENTIFIER ::= { ccitt 0 }
+-- internet      OBJECT IDENTIFIER ::= { iso(1) org(3) dod(6) 1 }
+-- private       OBJECT IDENTIFIER ::= { internet 4 }
+-- enterprises   OBJECT IDENTIFIER ::= { private 1 }
+
+tecnomen         OBJECT IDENTIFIER ::= { enterprises 2451 }
+rpFault          OBJECT IDENTIFIER ::= { tecnomen 1 }
+rpConfiguration  OBJECT IDENTIFIER ::= { tecnomen 2 }
+rpAccounting     OBJECT IDENTIFIER ::= { tecnomen 3 }
+rpPerformance    OBJECT IDENTIFIER ::= { tecnomen 4 }
+rpSecurity       OBJECT IDENTIFIER ::= { tecnomen 5 }
+
+rpTraps OBJECT IDENTIFIER ::= { tecnomen 0 }
+
+-- DisplayString ::= OCTET STRING
+
+--
+-- Fault management, Alarm report template
+--
+
+rpVersion1       OBJECT IDENTIFIER ::= { rpFault 1}
+rpAlarmReport    OBJECT IDENTIFIER ::= { rpVersion1 1}
+
+
+rpManagedObjectClass        OBJECT-TYPE
+        SYNTAX        DisplayString ( SIZE (0..5))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION        
+           "Managed object Class contains the class of the 
+            object emitting the alarm."
+        ::= { rpAlarmReport 1 }
+
+-- rpManagedObjectInstance        OBJECT-TYPE
+--         SYNTAX        rpManagedObjectInstanceEntry
+--         MAX-ACCESS accessible-for-notify
+--         STATUS current
+--         DESCRIPTION        
+--            "Managed object instance contains the instance of the 
+--             object emitting the alarm."
+--         ::= { rpAlarmReport 2 }
+
+
+-- rpManagedObjectInstanceEntry        ::= SEQUENCE {
+--         rpManagedObjectInstance1        INTEGER,
+--         rpManagedObjectInstance2        INTEGER,
+--         rpManagedObjectInstance3        INTEGER,
+--         rpManagedObjectInstance4        INTEGER
+-- }
+
+-- rpManagedObjectInstance1        OBJECT-TYPE
+--         SYNTAX     INTEGER
+--         MAX-ACCESS accessible-for-notify
+--         STATUS     current
+--         DESCRIPTION        
+--            "Managed object instance 1 contains the instance 
+--             of the object emitting the alarm."
+--         ::= { rpManagedObjectInstance 1 }
+-- 
+-- rpManagedObjectInstance2        OBJECT-TYPE
+--         SYNTAX     INTEGER
+--         MAX-ACCESS accessible-for-notify
+--         STATUS     current
+--         DESCRIPTION        
+--            "Managed object instance 2 contains the instance of 
+--             the object emitting the alarm."
+--         ::= { rpManagedObjectInstance 2 }
+-- 
+-- rpManagedObjectInstance3        OBJECT-TYPE
+--         SYNTAX     INTEGER
+--         MAX-ACCESS accessible-for-notify
+--         STATUS     current
+--         DESCRIPTION        
+--            "Managed object instance 3 contains the instance of 
+--             the object emitting the alarm."
+--         ::= { rpManagedObjectInstance 3 }
+-- 
+-- rpManagedObjectInstance4        OBJECT-TYPE
+--         SYNTAX     INTEGER
+--         MAX-ACCESS accessible-for-notify
+--         STATUS     current
+--         DESCRIPTION        
+--            "Managed object instance 4 contains the instance of 
+--             the object emitting the alarm."
+--         ::= { rpManagedObjectInstance 4 }
+-- 
+
+rpModuleNumber                OBJECT-TYPE
+        SYNTAX     INTEGER(0..2147483647) 
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "Module number. The alarm code is unique within one 
+            module (also called component in OMC)."
+        ::= { rpAlarmReport 3 }
+
+rpAlarmCode                OBJECT-TYPE
+        SYNTAX     INTEGER(0..2147483647) 
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        "Alarm code (unique inside one module)."
+        ::= { rpAlarmReport 4 }
+
+rpSubscriberNumber                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..20))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "Subscriber number. Available only in MMS alarms."
+        ::= { rpAlarmReport 5 }
+
+rpEventTimeOn                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..64))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "This is the time that the alarm was emitted. "
+        ::= { rpAlarmReport 6 }
+
+rpEventTimeOff                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..64))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "This is the time that the alarm was last set to off state. "
+        ::= { rpAlarmReport 7 }
+
+rpEventStatus                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..5))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "Status of alarm report. Possible values are:
+                        ON         (alarm on)
+                        OFF         (alarm off)
+                        EVENT        (event)
+                        ACK        (alarm acknowledged)
+                        INV        (alarm set under investigation)"
+        ::= { rpAlarmReport 8 }
+
+rpModificationTime        OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..64))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "This is the time that the alarm was last modified. "
+        ::= { rpAlarmReport 9 }
+
+rpModifier                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..64))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "This describes the last rpModifier of the alarm. "
+        ::= { rpAlarmReport 10 }
+
+rpEventType                OBJECT-TYPE
+        SYNTAX INTEGER {
+                         processing(1),
+                         communications(2),
+                         qualityOfService(3),
+                         environmental(4),
+                         equipment(5)
+                       }
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "This parameter categorizes the alarm. 
+            There are five basic categories: 
+                        1) Processing
+                        2) Communications
+                        3) Quality of service
+                        4) Environmental
+                        5) Equipment"
+        ::= { rpAlarmReport 11 }
+
+rpProbableCause                OBJECT-TYPE
+        SYNTAX     INTEGER(0..2147483647) 
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "rpProbableCause defines further qualification as to 
+            the probable cause of the alarm. "
+        ::= { rpAlarmReport 12 }        
+
+rpPerceivedSeverity        OBJECT-TYPE
+        SYNTAX INTEGER {
+                         indeterminate(0),
+                         criticalUrgent(1),
+                         major(2),
+                         minor(3),
+                         warningNotice(4)
+                       }
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "rpPerceivedSeverity defines the severity of the alarm. 
+            Possible values are:
+                        0)indeterminate
+                        1)critical/urgent
+                        2)major
+                        3)minor
+                        4)warning/notice"
+        ::= { rpAlarmReport 13 }        
+
+rpNotificationID        OBJECT-TYPE
+        SYNTAX     INTEGER(0..2147483647) 
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+          "rpNotificationID provides, if present , 
+           an identifier for the notification.
+           Notification identifiers must be chosen to be unique 
+           across all notifications of a particular managed object 
+           throughout the time that the correlation is significant."
+        ::= { rpAlarmReport 14 }        
+
+rpProposedRepairAction        OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..200))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "Proposed repair action, if present, provides a 
+            suggested repair action for the alarm. " 
+        ::= { rpAlarmReport 15 }        
+
+rpAdditionalText                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..255))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "Additional text, if present, allows a free form 
+            text description to be reported. "
+        ::= { rpAlarmReport 16 }        
+
+rpInsertionTime                OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..64))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "This is the time that the alarm inserted 
+            to the OMC database"
+        ::= { rpAlarmReport 17 }
+
+rpAlarmCause        OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..200))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        
+           "Possible cause of the alarm as a textual string." 
+        ::= { rpAlarmReport 20 }        
+
+rpAlarmText        OBJECT-TYPE
+        SYNTAX     DisplayString ( SIZE (0..100))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION        "The alarm text." 
+        ::= { rpAlarmReport 21 }        
+
+-- PortNumber    ::= INTEGER(0..65535)
+-- 
+-- rpSenderAddress        OBJECT-TYPE
+--         SYNTAX     rpSenderAddressEntry
+--         MAX-ACCESS accessible-for-notify
+--         STATUS current
+--         DESCRIPTION        
+--            "Senders address. Used when acknowledging the trap."
+--         ::= { rpAlarmReport 18 }
+-- 
+-- rpSenderAddressEntry ::= SEQUENCE {
+--         senderIdAddress                IpAddress,
+--         senderPortNumber        PortNumber
+-- }
+-- 
+-- rpSenderIpAddress                OBJECT-TYPE
+--         SYNTAX        IpAddress
+--         MAX-ACCESS accessible-for-notify
+--         STATUS current
+--         DESCRIPTION        
+--            "Senders IP address. Used when acknowledging the trap."
+--         ::= { rpSenderAddress 1 }
+-- 
+-- rpSenderPortNumber        OBJECT-TYPE
+--         SYNTAX        PortNumber
+--         MAX-ACCESS accessible-for-notify
+--         STATUS current
+--         DESCRIPTION        
+--            "Senders port number. Used when acknowledging the trap."
+--         ::= { rpSenderAddress 2 }
+
+rpMessageNumber                OBJECT-TYPE
+        SYNTAX     INTEGER(0..2147483647) 
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION        "Number of this trap message."
+        ::= { rpAlarmReport 19 }
+
+--
+-- notification types defined for the Siemens INCommander
+--
+-- Objects appended to all variables binding lists by the INCommander
+-- at the SNMP interface INCommander <-> Operation System ( INMI2 ):
+--  tiAlarmSourceName
+--  tiAlarmSymbNEname
+--  tiAlarmNotificationID
+--  tiAlarmTransferID
+
+        rpAlarmOnTrap NOTIFICATION-TYPE
+                OBJECTS  {
+                        -- Present at INMI1 and INMI2 :
+                        rpNotificationID,
+                        rpModuleNumber,
+                        rpAlarmCode,
+                        rpSubscriberNumber,
+                        rpEventTimeOn,
+                        rpEventType,
+                        rpProbableCause,
+                        rpPerceivedSeverity,
+                        rpProposedRepairAction,
+                        rpAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for alarm on report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-VARIABLE: rpPerceivedSeverity
+                    NOTIFICATIONID-VARIABLE: rpNotificationID
+                    ADDITIONAL-TEXT-VARIABLES: { rpAlarmText }
+                   "
+        ::= { rpTraps 7 }
+
+        rpAlarmOffTrap NOTIFICATION-TYPE
+                OBJECTS  { 
+                        -- Present at INMI1 and INMI2 :
+                        rpNotificationID,
+                        rpModuleNumber,
+                        rpAlarmCode,
+                        rpSubscriberNumber,
+                        rpEventTimeOn,
+                        rpEventType,
+                        rpProbableCause,
+                        rpPerceivedSeverity,
+                        rpAlarmText -- ,
+
+                        -- Present at INMI2 only (commented because of TeMIP):
+                        -- tiAlarmSourceName,
+                        -- tiAlarmSymbNEname,
+                        -- tiAlarmNotificationID,
+                        -- tiAlarmTransferID
+                }
+                STATUS current
+                DESCRIPTION 
+                   "A format for alarm off (cancel) report for 
+                    the Siemens INCommander.
+
+                    SEVERITY-DEFAULT: Clear
+                    NOTIFICATIONID-VARIABLE: rpNotificationID
+                    ADDITIONAL-TEXT-VARIABLES: { rpAlarmText }
+                   "
+        ::= { rpTraps 8 }
+
+
+END -- Tecnomen alarm MIB version 1
+

@@ -1,0 +1,628 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-AAAA.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "AAAA": ### TACACS+ Authentication, Authorization, and Accounting security
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-AAAA.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "AAAFORKFAIL":
+    
+            ##########
+            # The AAA process could not be created.
+            #
+            # %AAAA-3-AAAFORKFAIL : Failed to start AAA process. AAA
+            # requests may not be processed.   
+            ##########
+    
+            @AlertKey = ""
+    
+        case "ACCTFORKFAIL":
+    
+            ##########
+            # The accounting process could not be created.
+            #
+            # %AAAA-3-ACCTFORKFAIL : Failed to start accounting
+            # process. Accounting records may not be sent.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "ACCTSTART": 
+    
+            ##########
+            # This message is an AAA accounting start message.
+            #
+            # %AAAA-6-ACCTSTART: [chars]
+            ##########
+        
+            @AlertKey = ""
+            @Severity = 1
+            @Type = 2
+    
+        case "ACCTSTOP": 
+    
+            ##########
+            # This message is an AAA accounting stop message.
+            #
+            # %AAAA-6-ACCTSTOP: [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "ACCTWATCH": 
+    
+            ##########
+            # This message is an AAA accounting watchdog/update
+            # message.
+            #
+            # %AAAA-6-ACCTWATCH: [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "ADMINMSG": 
+    
+            ##########
+            # This administrative message was passed to the NAS
+            # from the AAA server.
+            #
+            # %AAAA-6-ADMINMSG: [chars] [chars]: [chars]
+            ##########
+    
+            @AlertKey = ""
+ 
+        case "BADARG": 
+    
+            ##########
+            # NVGEN was attempted on a nonexistent AAA command.
+            #
+            # %AAAA-3-BADARG: % AAA: bad argument ([hex])
+            ##########
+    
+            @AlertKey = "Argument: " + extract($Message, "argument \((.*)\)")
+    
+        case "BADAUTHENSTR":
+    
+            ##########
+            # During AAA authentication operations, the internal
+            # database of authentication information for a user was
+            # found to be corrupt, and that information used for
+            # authenticating a particular user has been lost. This
+            # indicates an internal software error.
+            #
+            # %AAAA-3-BADAUTHENSTR : Bad authentication data: [chars]
+            ##########
+    
+            @AlertKey = "Data: " + extract($Message, "authentication data: (.*)")
+    
+        case "BADCOMM": 
+    
+            ##########
+            # An internal error has occurred.
+            #
+            # %AAAA-3-BADCOMM: Trying config command but should not
+            # be.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "BADLIST": 
+    
+            ##########
+            # One of the AAA methods does not seem to have a list
+            # associated with it.
+            #
+            # %AAAA-3-BADLIST: % AAA: bad [chars] list [chars]
+            ##########
+    
+            @AlertKey = "Method: " + extract($Message, "bad (.*) list")
+    
+        case "BADMETHNAME": 
+    
+            ##########
+            # A method list name should not be the same as a method
+            # name.
+            #
+            # %AAAA-4-BADMETHNAME: Bad [chars] method-list name
+            # "[chars]" (this is only a warning)
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "name \'(.*)\' ")
+    
+        case "BADREG": 
+    
+            ##########
+            # An internal error has occurred.
+            #
+            # %AAAA-3-BADREG: Illegal registry call.
+            ##########
+    
+            @AlertKey = ""
+
+        case "BADSGNAME": 
+    
+            ##########
+            # Either the given server-group name does not exist or
+            # the given type does not match the defined server
+            # group.
+            #
+            # %AAAA-4-BADSGNAME: Bad server-group name [chars]
+            # (type [chars]).
+            ##########
+    
+            @AlertKey = "Server Group: " + extract($Message, "name (.*) \(")
+    
+        case "BADSTATE": 
+    
+            ##########
+            # A AAA method list is neither named nor supplied by
+            # default.
+            #
+            # %AAAA-3-BADSTATE: % AAA: Bad state for [chars] list
+            # name ([dec])
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "list name \(([0-9]+)\)")
+    
+        case "BADSTR":
+    
+            ##########
+            # During AAA accounting operations, the internal
+            # database of accounting information for a user was
+            # found to be corrupt. An internal software error has
+            # occurred, and the accounting information for this
+            # user session has been lost.
+            #
+            # %AAAA-3-BADSTR: Bad accounting data: [chars]
+            ##########
+               
+            @AlertKey = ""
+    
+        case "DLRFORKFAIL": 
+    
+            ##########
+            # A possible memory loss has occurred.
+            #
+            # %AAAA-3-DLRFORKFAIL: Failed to fork process for
+            # [chars].
+            ##########
+    
+            @AlertKey = "Process: " + extract($Message, "process for (.*)\.")
+    
+        case "DNISGPUNDEF": 
+    
+            ##########
+            # The DNIS group was used without being defined.
+            #
+            # %AAAA-4-DNISGPUNDEF: Warning: DNIS group [chars] is
+            # not defined.
+            ##########
+    
+            @AlertKey = "DNIS Group: " + extract($Message, "DNIS group (.*) is")
+    
+        case "DROPACCTFULLQ":
+    
+            ##########
+            # An accounting record has been dropped because too many
+            # accounting packets were enqueued.
+            #
+            # %AAAA-3-DROPACCTFULLQ : Accounting record dropped due to
+            # a full aaa accounting queue: [chars]-[chars] [chars]
+            # [chars] 
+            ##########
+    
+            @AlertKey = extract($Message, "accounting queue: (.*)")
+    
+        case "DROPACCTLOWMEM": 
+    
+            ##########
+            # An accounting record has been dropped because of low
+            # memory.
+            #
+            # %AAAA-3-DROPACCTLOWMEM: accounting record dropped due
+            # to low memory: [chars]-[chars] [chars] [chars]
+            ##########
+    
+            @AlertKey = extract($Message, "low memory: (.*)")
+    
+        case "DROPACCTSNDFAIL": 
+    
+            ##########
+            # An attempt to send an accounting record to a server
+            # has failed.
+            #
+            # %AAAA-3-DROPACCTSNDFAIL: accounting record dropped,
+            # send to server failed: [chars]-[chars] [chars]
+            # [chars]
+            ##########
+    
+            @AlertKey = "Record: " + extract($Message, "server failed: (.*)")
+    
+        case "ILLEGALNAME": 
+    
+            ##########
+            # A method list name should not be the same as a method
+            # name.
+            #
+            # %AAAA-3-ILLEGALNAME: Illegal [chars] [chars] name
+            # "[chars]" rejected
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "name (.*) rejected")
+    
+        case "ILLSGNAME":
+    
+            ##########
+            # The given server-group name is a name that could
+            # conflict with internally chosen lists.
+            #
+            # %AAAA-3-ILLSGNAME: Illegal server-group name [chars]
+            # (type [chars]).
+            ##########
+    
+            @AlertKey = "Server Group: " + extract($Message, "name (.*) \(type")
+    
+        case "INTERNAL_ERROR":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-INTERNAL_ERROR: [chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "INVALIDLIST":
+    
+            ##########
+            # One of the AAA methods lists has inconsistent
+            # settings.
+            #
+            # %AAAA-3-INVALIDLIST: % AAA: invalid [chars] list
+            # [dec].
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, " list ([0-9]+)")
+    
+        case "INVSTATE":
+    
+            ##########
+            # One of the two mentioned data structures is not set
+            # but is needed. An internal software error has
+            # occurred.
+            #
+            # %AAAA-3-INVSTATE: [chars] AUTHOR/[chars]: Internal
+            # state is invalid: astruct [hex] ustruct [hex]
+            ##########
+    
+            @AlertKey = extract($Message, ": (.*): Internal")
+    
+        case "LISTCREATE": 
+    
+            ##########
+            # One of the method lists to be created at startup was
+            # not created. This may cause a reload.
+            #
+            # %AAAA-3-LISTCREATE: The list [dec] for [chars] is
+            # NULL. This should never be.
+            ##########
+    
+            @AlertKey = "Method List: " + extract($Message, "list (.*) is")
+    
+        case "LOSTTIMER": 
+    
+            ##########
+            # The periodic timer associated with the specified user
+            # has been lost.
+            #
+            # %AAAA-3-LOSTTIMER: Lost periodic accounting timer for
+            # user [chars]. Restarting timer...
+            ##########
+    
+            @AlertKey = "User: " + extract($Message, "user (.*)\. Restarting")
+    
+        case "MKTIMERFAIL": 
+    
+            ##########
+            # The system failed to allocate memory for a periodic
+            # accounting timer.
+            #
+            # %AAAA-3-MKTIMERFAIL: Failed to create periodic
+            # accounting timer for user [chars]. This user may not
+            # generate periodic accounting records.
+            ##########
+    
+            @AlertKey = "User: " + extract($Message, "user (.*)\. This")
+   
+        case "MKTIMERINVALID":
+    
+            ##########
+            # The request to create a periodic accounting timer was
+            # invalid because the timer already existed.
+            #
+            # %AAAA-3-MKTIMERINVALID : Invalid request to create
+            # periodic accounting timer for user [chars]. Timer already
+            # exists.
+            ##########
+    
+            @AlertKey = "User: " + extract($Message, "user (.*)\. Timer")
+    
+        case "NOADMINPROC": 
+    
+            ##########
+            # An administrative process has been enabled but could
+            # not run.
+            #
+            # %AAAA-3-NOADMINPROC: [chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+    
+        case "NOFREELISTS": 
+    
+            ##########
+            # You have reached the maximum number of possible
+            # authentication lists for this method.
+            #
+            # %AAAA-3-NOFREELISTS: % AAA: No free [chars] lists for
+            # "[chars]"
+            ##########
+    
+            @AlertKey = "Method: " + extract($Message, "for \'(.*)\'")
+    
+        case "NOLIST": 
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-NOLIST: [chars]: no method list-name.
+            ##########
+    
+            @AlertKey = extract($Message, "(.*): no method")
+    
+        case "NOREG": 
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-NOREG: [chars] method [dec] has no registry!
+            ##########
+    
+            @AlertKey = "Method: " + extract($Message, "(.*) has no")
+    
+        case "NOSERV": 
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-NOSERV: No name for servergroup in method
+            # [chars]
+            ##########
+    
+            @AlertKey = "Method: " + extract($Message, "in method (.*)")
+
+        case "NOSERVER": 
+    
+            ##########
+            # The specified server is not on the master list and
+            # should be defined, or unexpected results may occur.
+            #
+            # %AAAA-4-NOSERVER: Warning: Server [IP_address] is not
+            # defined.
+            ##########
+    
+            @AlertKey = "Server: " + extract($Message, "Server ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+    
+        case "NOSG": 
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-NOSG: No server-group passed through parser.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NULPORT":
+    
+            ##########
+            # An internal software error has occurred. AAA could not
+            # determine a valid port string based on the client-provided
+            # information.
+            #
+            # %AAAA-3-NULPORT : Could not establish port information
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NULUSR":
+    
+            ##########
+            # An internal software error has occurred. During
+            # shutdown of a line or interface, the system tried
+            # to send accounting information via AAA, but could
+            # not find the user to which the accounting
+            # information belonged. The error was probably caused
+            # by the system trying to do accounting twice for the
+            # same event. This error message can occur without
+            # any loss of accounting information.
+            #
+            # %AAAA-3-NULUSR: accounting for null user
+            ##########
+     
+            @AlertKey = ""
+    
+        case "OVERWRITE": 
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-OVERWRITE: Overwrote internal buffer space
+            # [chars]
+            ##########
+    
+            @AlertKey = "Buffer: " + extract($Message, "buffer space (.*)")
+    
+        case "PERIODICFORKFAIL": 
+    
+            ##########
+            # An attempt to create the periodic accounting process
+            # has failed.
+            #
+            # %AAAA-3-PERIODICFORKFAIL: Failed to start periodic
+            # accounting process. Periodic accounting records may
+            # not be sent.
+            ##########
+    
+            @AlertKey = ""
+         
+        case "PERNOTIMER": 
+    
+            ##########
+            # An attempt was made to free a timer, and the method
+            # is PERIODIC, but no timer seems to exist.
+            #
+            # %AAAA-3-PERNOTIMER: AAA/ACCT/TIMER: Periodic update
+            # but no timer.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "RELOGIN": 
+    
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %AAAA-3-RELOGIN: sanity check in re-login [chars] to
+            # [chars]
+            ##########
+    
+            @AlertKey = extract($Message, "re-login (.*)")
+    
+        case "SERVERMSG": 
+    
+            ##########
+            # This error message was passed to the NAS from the AAA
+            # server.
+            #
+            # %AAAA-6-SERVERMSG: [chars] [chars]: [chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+    
+        case "SERVNOTACPLUS":
+    
+            ##########
+            # The protocol used by the server group does not support
+            # the configured AAA action.
+            #
+            # %AAAA-4-SERVNOTACPLUS : The server-group "[chars]" is not
+            # a tacacs+ server group. Please define "[chars]" as a
+            # tacacs+ server group.
+            ##########
+    
+            @AlertKey = "Server Group: " + extract($Message, "server-group (.*) is not")
+    
+        case "SERVUNDEF": 
+    
+            ##########
+            # A given server group was listed in a method list
+            # without first being defined.
+            #
+            # %AAAA-4-SERVUNDEF: The server-group "[chars]" is not
+            # defined. Please define it.
+            ##########
+    
+            @AlertKey = "Server Group: " + extract($Message, "group (.*) is")
+    
+        case "SGDUPFREE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-SGDUPFREE : Duplicate free of server group [hex]
+            ##########
+    
+            @AlertKey = "Server Group: " + extract($Message, " server group (.*)")
+    
+        case "STRCREATE": 
+    
+            ##########
+            # An internal buffer used to assemble a string was
+            # exceeded, possibly corrupting other memory.
+            #
+            # %AAAA-3-STRCREATE: str_create overwrote its internal
+            # buffer.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "SUBTYPE": 
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %AAAA-3-SUBTYPE: Bad Subtype [dec] for "[chars]"
+            # ([dec])
+            ##########
+    
+            @AlertKey = extract($Message, " for (.*)$")
+
+        case "TIMERNOPER": 
+    
+            ##########
+            # An attempt to free a timer was unsuccessful. The
+            # update method was not PERIODIC, and therefore no
+            # timer will exist.
+            #
+            # %AAAA-3-TIMERNOPER: AAA/ACCT/TIMER: No periodic
+            # update but timer set.
+            ##########
+    
+            @AlertKey = ""
+    
+        case "UNSUPWAITSTART":
+    
+            ##########
+            # The "wait-start" form of accounting is not supported and
+            # will be mapped to "start-stop".
+            #
+            # %AAAA-4-UNSUPWAITSTART : % AAA: Unsupported option
+            # wait-start mapped to start-stop.
+            ##########
+    
+            @AlertKey = ""
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-AAAA.include.syslog.rules >>>>>")

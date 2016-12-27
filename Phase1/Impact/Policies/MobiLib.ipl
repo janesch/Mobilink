@@ -1,0 +1,162 @@
+//////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MobiLib.ipl
+//
+//	Impact policy for Mobilink - Function Library
+//	Chris Janes of Innovise ESM
+//
+//	V0.0	20100525	Chris Janes Original
+//
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+	Function IsItDayTime Returns value representing if it is DayTime(1) or NightTime(0)
+		StartTime String of format 'HH:MM' representing the time that Day Starts
+		StopTime  String of format 'HH:MM' representing the time that Day Ends
+		DayTime return value DayTime(1) or NightTime(0)
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function IsItDaytime(StartTime, StopTime, DayTime)
+{
+	Seconds = getdate();
+	strDate = localtime(Seconds);
+	Hours = RExtract( strDate, "^[0-9]*-[0-9]*-[0-9]* ([0-9]*):.*");
+	Minutes= RExtract( strDate, "^[0-9]*-[0-9]*-[0-9]* [0-9]*:([0-9]*):.*");
+	NowTime= (float(Hours) * 60) + float(Minutes);
+
+	StrStartTime = "10:00";
+	Hours = RExtract( StartTime , "^([0-9]*):.*");
+	Minutes= RExtract( StartTime , "^[0-9]*:([0-9]*).*");
+	StartTime= (float(Hours) * 60) + float(Minutes);
+
+	Hours = RExtract( StopTime , "^([0-9]*):.*");
+	Minutes= RExtract( StopTime , "^[0-9]*:([0-9]*).*");
+	StopTime= (float(Hours) * 60) + float(Minutes);
+
+	if(StartTime < StopTime)
+	{
+		if((NowTime > StartTime) && ( NowTime < StopTime))
+		{
+//			Log("Its Daytime");
+			DayTime = 1;
+		}
+		else
+		{
+//			Log("Its NightTime");
+			DayTime = 0;
+		}
+	}
+	else
+	{
+		if((NowTime < StartTime) && ( NowTime > StopTime))
+		{
+			Log("Its NightTime (R)");
+			DayTime = 0;
+		}
+		else
+	{
+			Log("Its Daytime (R)");
+			DayTime = 1;
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+	Function RaiseMaxTT This raises a TT within Maximo
+		
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function RaiseMaxTT ( Serial)
+{
+	Filter = "Serial = " + Serial;
+	Event = GetByFilter("Status", Filter, False);
+	Event[0].LogTicket  = 1;
+	ReturnEvent(Event);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+	Function JournalInsert
+		JournalSerial = the serial number of the Event whos journal is to be updated
+		JournalText = the Text to be inserted into the Journal
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function JournalInsert(JournalSerial, JournalText)
+{
+//	Log("Into Function ParentJournal Insert" + JournalText);
+
+	// Build the new entry for the journal
+	NewJournal = newObject();
+	NewJournal.Chrono = getdate();
+	NewJournal.Serial = JournalSerial;
+
+	//Find the OwnerGID of user 'Impact' - if there isn't one use nobody!
+	User = GetByFilter("Master.Names", "Name like 'Impact'", False);
+	NumUser = Num;
+	if (NumUser == 0)
+	{
+		NewJournal.UID = 65534;
+	}
+	else
+	{
+	NewJournal.UID = User[0].UID;
+	}
+
+	//Create the KeyField
+	KeyField = JournalSerial + ":" + NewJournal.UID + ":" + getdate();	
+	NewJournal.KeyField = KeyField;
+	NewJournal.Text1 = JournalText;
+	
+	// Write the entry to the Journal table
+	AddDataItem('Journal', NewJournal);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
+	Function ParentJournalInsert
+		ParentName = the ServerName of the parent Event
+		ParentSerial = the serial number of the parent whos journal is to be updated
+		JournalText = the Text to be inserted into the Parents Journal Journal
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+function ParentJournalInsert(ParentName, ParentSerial, JournalText)
+{
+//	Log("Into Function ParentJournal Insert" + JournalText);
+	
+	// Find the serial number of the Parent in this Objectserver
+	Filter = "ServerName = '" + ParentName + "' and ServerSerial = " + ParentSerial;
+	Parent = GetByFilter("Status", Filter, False);
+
+	// Build the new entry for the journal
+	NewJournal = newObject();
+	NewJournal.Chrono = getdate();
+	NewJournal.Serial = Parent[0].Serial;
+
+	//Find the OwnerGID of user 'Impact' - if there isn't one use nobody!
+	User = GetByFilter("Master.Names", "Name like 'Impact'", False);
+	NumUser = Num;
+	if (NumUser == 0)
+	{
+		NewJournal.UID = 65534;
+	}
+	else
+	{
+		NewJournal.UID = User[0].UID;
+	}
+	
+	//Create the KeyField
+	KeyField = JournalSerial + ":" + NewJournal.UID + ":" + getdate();
+	NewJournal.KeyField = KeyField;
+	NewJournal.Text1 = JournalText;
+	// Write the entry to the Journal table
+	AddDataItem('Journal', NewJournal);
+}

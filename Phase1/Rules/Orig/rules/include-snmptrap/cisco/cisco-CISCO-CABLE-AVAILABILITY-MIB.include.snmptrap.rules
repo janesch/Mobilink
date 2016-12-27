@@ -1,0 +1,390 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-CABLE-AVAILABILITY-MIB.include.snmptrap.rules 1.0
+#    2006/04/04 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-CABLE-AVAILABILITY-MIB
+#
+###############################################################################
+case ".1.3.6.1.4.1.9.9.242.2": ###  Cisco Hot Standby Connection to Connection Protocol (HCCP) Features - Notifications from CISCO-CABLE-AVAILABILITY-MIB (20030220)
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-CABLE-AVAILABILITY-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-HCCP Features"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### ccaHCCPOnNotification
+
+            ##########
+            # $1 = ccaHCCPGroupIfStatus 
+            # $2 = ccaHCCPGroupIfLastSwitchReason 
+            # $3 = ccaHCCPMemberState 
+            ##########
+
+            $ccaHCCPGroupIfStatus = lookup($1, ccaHCCPGroupIfStatus)
+            $ccaHCCPGroupIfLastSwitchReason = lookup($2, ccaHCCPGroupIfLastSwitchReason)
+            $ccaHCCPMemberState = lookup($3, ccaHCCPMemberState) + " ( " + $3 + " )"
+
+            $ccaHCCPGroupID = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CABLE-AVAILABILITY-MIB-ccaHCCPOnNotification"
+
+            @AlertGroup = "HCCP " + $ccaHCCPGroupIfStatus + " Status"
+            @AlertKey = "ccaHCCPGroupIfEntry." + $ccaHCCPGroupID + "." + $ifIndex
+            switch($1)
+            {
+                case "1": ### unknown    
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_unknown_active"
+                            @Summary = "HCCP Unknown Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_unknown_standby"
+                            @Summary = "HCCP Unknown Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_unknown_nonFunctional"
+                            @Summary = "HCCP Unknown Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "HCCP Unknown Member Status Unknown"
+                            
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+                case "2": ### protect
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_protect_active"
+                            @Summary = "HCCP Protect Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_protect_standby"
+                            @Summary = "HCCP Protect Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_protect_nonFunctional"
+                            @Summary = "HCCP Protect Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_protect_unknown"
+                            @Summary = "HCCP Protect Member Status Unknown"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### working    
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_working_active"
+                            @Summary = "HCCP Working Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_working_standby"
+                            @Summary = "HCCP Working Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_working_nonFunctional"
+                            @Summary = "HCCP Working Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_working_unknown"
+                            @Summary = "HCCP Working Member Status Unknown"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                default: ### unknown    
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_unknown_active"
+                            @Summary = "HCCP Unknown Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_unknown_standby"
+                            @Summary = "HCCP Unknown Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_unknown_nonFunctional"
+                            @Summary = "HCCP Unknown Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "HCCP Unknown Member Status Unknown"
+                            
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+            }
+            @Summary = @Summary + ", " + $ccaHCCPGroupIfLastSwitchReason + "  ( HCCP Group ID: " + $ccaHCCPGroupID + ", ifIndex: " + $ifIndex + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $3 + " " + $2
+
+            $ccaHCCPGroupIfStatus = $ccaHCCPGroupIfStatus + " ( " + $1 + " )"
+            $ccaHCCPGroupIfLastSwitchReason = $ccaHCCPGroupIfLastSwitchReason + " ( " + $2 + " )"
+            details($ccaHCCPGroupIfStatus,$ccaHCCPGroupIfLastSwitchReason,$ccaHCCPMemberState,$ccaHCCPGroupID,$ifIndex)
+
+        case "2": ### ccaHCCPOffNotification
+
+            ##########
+            # $1 = ccaHCCPGroupIfStatus 
+            # $2 = ccaHCCPGroupIfLastSwitchReason 
+            # $3 = ccaHCCPMemberState 
+            ##########
+
+            $ccaHCCPGroupIfStatus = lookup($1, ccaHCCPGroupIfStatus)
+            $ccaHCCPGroupIfLastSwitchReason = lookup($2, ccaHCCPGroupIfLastSwitchReason)
+            $ccaHCCPMemberState = lookup($3, ccaHCCPMemberState) + " ( " + $3 + " )"
+
+            $ccaHCCPGroupID = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $ifIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-CABLE-AVAILABILITY-MIB-ccaHCCPOffNotification"
+
+            @AlertGroup = "HCCP " + $ccaHCCPGroupIfStatus + " Status"
+            @AlertKey = "ccaHCCPGroupIfEntry." + $ccaHCCPGroupID + "." + $ifIndex
+            switch($1)
+            {
+                case "1": ### unknown    
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_unknown_active"
+                            @Summary = "HCCP Unknown Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_unknown_standby"
+                            @Summary = "HCCP Unknown Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_unknown_nonFunctional"
+                            @Summary = "HCCP Unknown Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "HCCP Unknown Member Status Unknown"
+                            
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+                case "2": ### protect
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_protect_active"
+                            @Summary = "HCCP Protect Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_protect_standby"
+                            @Summary = "HCCP Protect Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_protect_nonFunctional"
+                            @Summary = "HCCP Protect Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_protect_unknown"
+                            @Summary = "HCCP Protect Member Status Unknown"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                    }
+                case "3": ### working    
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_working_active"
+                            @Summary = "HCCP Working Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_working_standby"
+                            @Summary = "HCCP Working Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_working_nonFunctional"
+                            @Summary = "HCCP Working Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_working_unknown"
+                            @Summary = "HCCP Working Member Status Unknown"
+                            
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+                default: ### unknown    
+                    switch($3)
+                    {
+                        case "1": ### active
+                            $SEV_KEY = $OS_EventId + "_unknown_active"
+                            @Summary = "HCCP Unknown Member Forwarding Traffic"
+                    
+                            $DEFAULT_Severity = 1 
+                            $DEFAULT_Type = 2
+                            $DEFAULT_ExpireTime = 0
+                        case "2": ### standby 
+                            $SEV_KEY = $OS_EventId + "_unknown_standby"
+                            @Summary = "HCCP Unknown Member Blocking Traffic"
+                    
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        case "3": ### nonFunctional 
+                            $SEV_KEY = $OS_EventId + "_unknown_nonFunctional"
+                            @Summary = "HCCP Unknown Member Disabled"
+                    
+                            $DEFAULT_Severity = 3 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                        default: ### unknown 
+                            $SEV_KEY = $OS_EventId + "_unknown_unknown"
+                            @Summary = "HCCP Unknown Member Status Unknown"
+                            
+                            $DEFAULT_Severity = 2 
+                            $DEFAULT_Type = 1
+                            $DEFAULT_ExpireTime = 0
+                   }
+            }
+            @Summary = @Summary + ", " + $ccaHCCPGroupIfLastSwitchReason + "  ( HCCP Group ID: " + $ccaHCCPGroupID + ", ifIndex: " + $ifIndex + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $3 + " " + $2
+
+            $ccaHCCPGroupIfStatus = $ccaHCCPGroupIfStatus + " ( " + $1 + " )"
+            $ccaHCCPGroupIfLastSwitchReason = $ccaHCCPGroupIfLastSwitchReason + " ( " + $2 + " )"
+            details($ccaHCCPGroupIfStatus,$ccaHCCPGroupIfLastSwitchReason,$ccaHCCPMemberState,$ccaHCCPGroupID,$ifIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-CABLE-AVAILABILITY-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-CABLE-AVAILABILITY-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CABLE-AVAILABILITY-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-CABLE-AVAILABILITY-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-CABLE-AVAILABILITY-MIB.include.snmptrap.rules >>>>>")

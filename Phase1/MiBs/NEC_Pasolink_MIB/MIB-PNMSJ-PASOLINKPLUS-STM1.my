@@ -1,0 +1,6763 @@
+--Version 16
+
+MIB-PNMSJ-PASOLINKPLUS-STM1 DEFINITIONS ::= BEGIN
+
+-----------------------------------------------
+-- INPORTS Definitions
+-----------------------------------------------
+
+	IMPORTS
+		IpAddress,Counter,TimeTicks,enterprises
+			FROM RFC1155-SMI
+		OBJECT-TYPE
+			FROM RFC-1212
+		DisplayString
+			FROM RFC1213-MIB
+		pnms
+			FROM NEC-SMI;
+
+-----------------------------------------------
+-- Begin User MIB Object Definitions
+-----------------------------------------------
+
+	PpStm1SeverityValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Severity (CCITT Rec. X.733)
+					  invalid(0),
+					  clear(1),
+					  minor(2),
+					  major(3),
+					  critical(4)"
+		SYNTAX		INTEGER (0..4)
+
+	PpStm1AlarmTypeValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Alaem Type (CCITT Rec. X.733)
+					  invalid(0),
+					  communicationAlarm(1),
+					  qualityOfServiceAlarm(2),
+					  processingErrorAlarm(3),
+					  equipmentAlarm(4),
+					  environmentalAlarm(5),
+					  integrityViolationAlarm(6),
+					  operationalViolationAlarm(7),
+					  physicalViolationAlarm(8),
+					  securityViolationAlarm(9),
+					  timeDomainViolationAlarm(10)"
+		SYNTAX		INTEGER (0..10)
+
+	PpStm1ProbableCauseValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Probable Cause (CCITT Rec. X.733)
+					  invalid(0),
+					  aIS(1),
+					  callSetUpFailure(2),
+					  degradedSignal(3),
+					  farEndReceiverFailure(4),
+					  framingError(5),
+					  lossOfFrame(6),
+					  lossOfPointer(7),
+					  lossOfSignal(8),
+					  payloadTypeMismatch(9),
+					  transmissionError(10),
+					  remoteAlarmInterface(11),
+					  excessiveBER(12),
+					  pathTraceMismatch(13),
+					  backplaneFailure(51),
+					  dataSetProblem(52),
+					  equipmentIdentifierDuplication(53),
+					  externalIFDeviceProblem(54),
+					  lineCardProblem(55),
+					  multiplexerProblem(56),
+					  nEIdentifierDuplication(57),
+					  powerProblem(58),
+					  processorProblem(59),
+					  protectionPathFailure(60),
+					  receiverFailure(61),
+					  replaceableUnitMissing(62),
+					  replaceableUnitTypeMismatch(63),
+					  synchronizationSourceMismatch(64),
+					  terminalProblem(65),
+					  timingProblem(66),
+					  transmitterFailure(67),
+					  trunkCardProblem(68),
+					  replaceableUnitProblem(69),
+					  airCompressorFailure(101),
+					  airConditioningFailure(102),
+					  airDryerFailure(103),
+					  batteryDischarging(104),
+					  batteryFailure(105),
+					  commercialPowerFailure(106),
+					  coolingFanFailure(107),
+					  engineFailure(108),
+					  fireDetectorFailure(109),
+					  fuseFailure(110),
+					  generatorFailure(111),
+					  lowBatteryThreshold(112),
+					  pumpFailure(113),
+					  rectifierFailure(114),
+					  rectifierHighVoltage(115),
+					  rectifierLowFVoltage(116),
+					  ventilationsSystemFailure(117),
+					  enclosureDoorOpen(118),
+					  explosiveGas(119),
+					  fire(120),
+					  flood(121),
+					  highHumidity(122),
+					  highTemperature(123),
+					  highWind(124),
+					  iceBuildUp(125),
+					  intrusionDetection(126),
+					  lowFuel(127),
+					  lowHumidity(128),
+					  lowCablePressure(129),
+					  lowTemperature(130),
+					  lowWater(131),
+					  smoke(132),
+					  toxicGas(133),
+					  storageCapacityProblem(151),
+					  memoryMismatch(152),
+					  corruptData(153),
+					  outOfCPUCycles(154),
+					  sfwrEnvironmentProblem(155),
+					  sfwrDownloadFailure(156),
+					  communicationsProtocolError(157),
+					  congestion(158),
+					  heatingOrVentilationOrCoolingSystemProblem(159),
+					  lANError(160),
+					  performanceDegraded(161),
+					  temperatureUnacceptable(162),
+					  thresholdCrossed(163),
+					  underlyingResourceUnavailable(164),
+					  equipmentMalfunction(165),
+					  configurationOrCustomizationError(166),
+					  duplicateInformation(501),
+					  informationMissing(502),
+					  informationModificationDetected(503),
+					  informationOutOfSequence(504),
+					  unexpectedInformation(505),
+					  denialOfService(506),
+					  outOfService(507),
+					  proceduralError(508),
+					  cableTamper(509),
+					  securityIntrusionDetection(510),
+					  authenticationFailure(511),
+					  breachOfConfidentiality(512),
+					  unauthorisedAccessAttempt(513),
+					  delayedInformation(514),
+					  keyExpired(515),
+					  outOfHoursActivity(516),
+					  otherReasons(517),
+					  bossHardwareFailure(518),
+					  bossSystemSoftwareFailure(519),
+					  bossApplicationSoftwareFailure(520),
+					  bossDatabaseFailure(521),
+					  bossNetworkFailure(522)"
+		SYNTAX		INTEGER (0..522)
+
+	PpStm1NormalAlarmValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Normal/Alarm Type
+					  invalid(0),
+					  normal(1),
+					  alarm(2)"
+		SYNTAX		INTEGER (0..2)
+
+	PpStm1OffOnValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Off/On Type
+					invalid(0),
+					 off(1),
+					 on(2)"
+		SYNTAX		INTEGER (0..2)
+
+	PpStm1NormalSendValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Normal/Send Type
+					  invalid(0),
+					  normal(1),
+					  send(2)"
+		SYNTAX		INTEGER (0..2)
+
+	PpStm1NormalRcvdValue	::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Normal/Rcvd Type
+					  invalid(0),
+					  normal(1),
+					  rcvd(2)"
+		SYNTAX		INTEGER (0..2)
+
+
+-----------------------------------------------
+-- enterprises Group Definitions
+-----------------------------------------------
+	
+	pasolinkPlusSTM1 OBJECT IDENTIFIER
+		::= { pnms 105 }
+
+        pasolinkPlusStm1System OBJECT IDENTIFIER
+		::= { pasolinkPlusSTM1 1 }
+
+	pasolinkPlusStm1Information OBJECT IDENTIFIER
+		::= { pasolinkPlusSTM1 2 }
+		
+-----------------------------------------------
+-- system2 Group Definitions
+-----------------------------------------------
+
+	ppStm1System OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1System 1 }
+
+	ppStm1Configuration OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1System 2 }
+
+	ppStm1Sys2Trap OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1System 3 }
+
+-----------------------------------------------
+-- pasolinkPlusSTM-1 Group Definitions
+-----------------------------------------------
+
+	ppStm1SummaryInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 1 }
+
+	ppStm1TrapInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 2 }
+
+	ppStm1AlarmStatusInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 3 }
+
+	ppStm1EquipmentConfigInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 4 }
+
+	ppStm1ProvisioningInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 5 }
+
+	ppStm1InventoryInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 6 }
+
+	ppStm1MeteringInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 7 }
+
+	ppStm1PmonInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 8 }
+
+	ppStm1AuxIOInfo OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 9 }
+
+        ppStm1GetMeasurementData OBJECT IDENTIFIER
+		::= { pasolinkPlusStm1Information 10 }
+
+
+-----------------------------------------------
+-- ppSystem Group Definitions
+-----------------------------------------------
+
+	ppStm1SysSystemInfo OBJECT IDENTIFIER
+		::= { ppStm1System 1 }
+
+	ppStm1SystemEquipmentConfigTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1SystemEquipmentConfigEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Equipment Config"
+		::= { ppStm1SysSystemInfo 1 }
+
+	ppStm1SystemEquipmentConfigEntry OBJECT-TYPE
+		SYNTAX		PpStm1SystemEquipmentConfigEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Equipment Config Entry"
+		INDEX		{
+					ppStm1SysPasoIndex
+					}
+		::= { ppStm1SystemEquipmentConfigTable 1 }
+
+	PpStm1SystemEquipmentConfigEntry ::= SEQUENCE {
+		ppStm1SysPasoIndex		IpAddress,
+		ppStm1SysEquipmentConfig        INTEGER
+	}
+
+	ppStm1SysPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1SystemEquipmentConfigEntry 1 }
+
+	ppStm1SysEquipmentConfig OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Equipment Config
+	                            0: INVALID
+					1:1+0
+					2:1+1
+					3:1+1 HS
+					4:1+1 TP
+					5:1+0->1+1"
+		::= { ppStm1SystemEquipmentConfigEntry 2 }
+
+
+-----------------------------------------------
+-- ppConfiguration Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 AUX Config Input Table
+-----------------------------------------------
+
+	ppStm1CfgAux OBJECT IDENTIFIER
+		::= { ppStm1Configuration 1 }
+
+	ppStm1CfgAuxInTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1CfgAuxInEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Optical coupler setting table"
+		::= { ppStm1CfgAux 1 }
+
+	ppStm1CfgAuxInEntry OBJECT-TYPE
+		SYNTAX		PpStm1CfgAuxInEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Optical coupler setting table entry"
+		INDEX		{
+						ppStm1CfgAuxInPasoIndex,
+						ppStm1CfgAuxInIndex
+					}
+		::= { ppStm1CfgAuxInTable 1 }
+
+	PpStm1CfgAuxInEntry ::= SEQUENCE {
+					  ppStm1CfgAuxInPasoIndex      IpAddress,
+					  ppStm1CfgAuxInIndex          INTEGER,
+					  ppStm1CfgAuxInItemName       DisplayString,
+					  ppStm1CfgAuxInItemType       INTEGER,
+					  ppStm1CfgAuxInOpenState      DisplayString,
+					  ppStm1CfgAuxInCloseState     DisplayString,
+					  ppStm1CfgAuxInSeverity       PpStm1SeverityValue,
+					  ppStm1CfgAuxInAlarmType      PpStm1AlarmTypeValue,
+					  ppStm1CfgAuxInProbableCause  PpStm1ProbableCauseValue
+					}
+					
+	ppStm1CfgAuxInPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1CfgAuxInEntry 1 }
+
+	ppStm1CfgAuxInIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..6)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input index"
+		::= { ppStm1CfgAuxInEntry 2 }
+
+	ppStm1CfgAuxInItemName OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Name
+		                 TRAP=configTrapPpSys2AuxInItemName"
+		::= { ppStm1CfgAuxInEntry 3 }
+
+	ppStm1CfgAuxInItemType OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Type
+                             INVALID(0),
+			         ALARM WHEN EVENT OFF-OPEN(1),
+			         ALARM WHEN EVENT ON-CLOSE(2),
+			         STATUS(3)
+			         TRAP=configTrapPpSys2AuxInItemType"
+		::= { ppStm1CfgAuxInEntry 4 }
+
+	ppStm1CfgAuxInOpenState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input OpenState
+		                 TRAP=configTrapPpSys2AuxInOpenState"
+		::= { ppStm1CfgAuxInEntry 5 }
+
+	ppStm1CfgAuxInCloseState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input CloseState
+			         TRAP=configTrapPpSys2AuxInCloseState"
+		::= { ppStm1CfgAuxInEntry 6 }
+
+	ppStm1CfgAuxInSeverity OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Severity type
+				 invalid(0), clear(1), minor(2), major(3), critical(4)
+			         TRAP=configTrapPpSys2AuxInSeverity"
+		::= { ppStm1CfgAuxInEntry 7 }
+
+	ppStm1CfgAuxInAlarmType OBJECT-TYPE
+		SYNTAX		PpStm1AlarmTypeValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input AlarmType
+				Refer to AlarmTypeValue of TEXTUAL-CONVENTION
+				TRAP=configTrapPpSys2AuxInAlarmType"
+		::= { ppStm1CfgAuxInEntry 8 }
+
+	ppStm1CfgAuxInProbableCause OBJECT-TYPE
+		SYNTAX		PpStm1ProbableCauseValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input ProbableCause
+				Refer to ProbableCauseValue of TEXTUAL-CONVENTION
+				TRAP=configTrapPpSys2AuxInProbableCause"
+		::= { ppStm1CfgAuxInEntry 9 }
+
+
+-----------------------------------------------
+-- STM-1 AUX Config Output Table
+-----------------------------------------------
+
+	ppStm1CfgAuxOutTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1CfgAuxOutEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Out setting table"
+		::= { ppStm1CfgAux 2 }
+
+	ppStm1CfgAuxOutEntry OBJECT-TYPE
+		SYNTAX		PpStm1CfgAuxOutEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Out setting table entry"
+		INDEX		{
+						ppStm1CfgAuxOutPasoIndex,
+						ppStm1CfgAuxOutIndex
+					}
+		::= { ppStm1CfgAuxOutTable 1 }
+
+	PpStm1CfgAuxOutEntry ::= SEQUENCE {
+					  ppStm1CfgAuxOutPasoIndex   IpAddress,
+					  ppStm1CfgAuxOutIndex       INTEGER,
+					  ppStm1CfgAuxOutItemName    DisplayString,
+					  ppStm1CfgAuxOutOpenState   DisplayString,
+					  ppStm1CfgAuxOutCloseState  DisplayString
+					}
+
+	ppStm1CfgAuxOutPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress 
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1CfgAuxOutEntry 1 }
+
+	ppStm1CfgAuxOutIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output index"
+		::= { ppStm1CfgAuxOutEntry 2 }
+
+	ppStm1CfgAuxOutItemName OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output Item name
+		                 TRAP=configTrapPpSys2AuxOutItemName"
+		::= { ppStm1CfgAuxOutEntry 3 }
+
+	ppStm1CfgAuxOutOpenState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output OpenState
+				TRAP=configTrapPpSys2AuxOutOpenState"
+		::= { ppStm1CfgAuxOutEntry 4 }
+
+	ppStm1CfgAuxOutCloseState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output CloseState
+		                TRAP=configTrapPpSys2AuxOutCloseState"
+		::= { ppStm1CfgAuxOutEntry 5 }
+
+-----------------------------------------------
+-- ppSys2Trap Group Definitions
+-----------------------------------------------
+
+	ppStm1Sys2TrapCommon OBJECT IDENTIFIER
+		::= { ppStm1Sys2Trap 1 }
+
+	ppStm1Sys2TrapGenericVars OBJECT IDENTIFIER
+		::= { ppStm1Sys2TrapCommon 1 }
+
+	sys2ppStm1TrapSequenceNumber OBJECT-TYPE
+		SYNTAX		Counter
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Sequence Number(0..4294967295)"
+		::= { ppStm1Sys2TrapGenericVars 1 }
+
+	sys2ppStm1TrapDate OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TrapDate (YYYY/MM/DD)"
+		::= { ppStm1Sys2TrapGenericVars 2 }
+
+	sys2ppStm1TrapTime OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TrapTime (HH:MM:SS)"
+		::= { ppStm1Sys2TrapGenericVars 3 }
+
+	sys2ppStm1TrapSource OBJECT-TYPE
+		SYNTAX		OBJECT IDENTIFIER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TrapSource"
+		::= { ppStm1Sys2TrapGenericVars 4 }
+
+	ppStm1Sys2TrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1Sys2Trap 2 }
+
+	ppStm1Sys2ConfigTrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1Sys2TrapItemVar 1 }
+
+	configItemPpStm1Sys2AuxInItemName OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Name"
+		::= { ppStm1Sys2ConfigTrapItemVar 1 }
+
+	configItemPpStm1Sys2AuxInItemType OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Type
+				  INVALID(0),
+				  ALARM WHEN EVENT OFF-OPEN(1),
+				  ALARM WHEN EVENT ON-CLOSE(2),
+				  STATUS(3)"
+		::= { ppStm1Sys2ConfigTrapItemVar 2 }
+
+	configItemPpStm1Sys2AuxInOpenState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input OpenState"
+		::= { ppStm1Sys2ConfigTrapItemVar 3 }
+
+	configItemPpStm1Sys2AuxInCloseState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input CloseState"
+		::= { ppStm1Sys2ConfigTrapItemVar 4 }
+
+	configItemPpStm1Sys2AuxInSeverity OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Severity
+				invalid(0), clear(1), minor(2), major(3), critical(4)"
+		::= { ppStm1Sys2ConfigTrapItemVar 5 }
+
+	configItemPpStm1Sys2AuxInAlarmType OBJECT-TYPE
+		SYNTAX		PpStm1AlarmTypeValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input AlarmType
+				Refer to AlarmTypeValue of TEXTUAL-CONVENTION"
+		::= { ppStm1Sys2ConfigTrapItemVar 6 }
+
+	configItemPpStm1Sys2AuxInProbableCause OBJECT-TYPE
+		SYNTAX		PpStm1ProbableCauseValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input ProbableCause
+				Refer to ProbableCauseValue of TEXTUAL-CONVENTION"
+		::= { ppStm1Sys2ConfigTrapItemVar 7 }
+
+	configItemPpStm1Sys2AuxOutItemName OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Out Item Name"
+		::= { ppStm1Sys2ConfigTrapItemVar 8 }
+
+	configItemPpStm1Sys2AuxOutOpenState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output OpenState"
+		::= { ppStm1Sys2ConfigTrapItemVar 9 }
+
+	configItemPpStm1Sys2AuxOutCloseState OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Outout CloseState"
+		::= { ppStm1Sys2ConfigTrapItemVar 10 }
+
+
+-----------------------------------------------
+-- STM-1 Config Trap definitions
+-----------------------------------------------
+
+	configTrapPpStm1Sys2AuxInItemName	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInItemName
+					}
+		::= 400
+
+	configTrapPpStm1Sys2AuxInItemType	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInItemType
+					}
+		::= 401
+
+	configTrapPpStm1Sys2AuxInOpenState	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInOpenState
+					}
+		::= 402
+
+	configTrapPpStm1Sys2AuxInCloseState	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInCloseState
+					}
+		::= 403
+
+	configTrapPpStm1Sys2AuxInSeverity	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInSeverity
+					}
+		::= 404
+
+	configTrapPpStm1Sys2AuxInAlarmType	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInAlarmType
+					}
+		::= 405
+
+	configTrapPpStm1Sys2AuxInProbableCause	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxInProbableCause
+					}
+		::= 406
+
+	configTrapPpStm1Sys2AuxOutItemName	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxOutItemName
+					}
+		::= 407
+
+	configTrapPpStm1Sys2AuxOutOpenState	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxOutOpenState
+					}
+		::= 408
+
+	configTrapPpStm1Sys2AuxOutCloseState	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  sys2ppStm1TrapSequenceNumber,
+					  sys2ppStm1TrapDate,
+					  sys2ppStm1TrapTime,
+					  sys2ppStm1TrapSource,
+					  configItemPpStm1Sys2AuxOutCloseState
+					}
+		::= 409
+
+
+-----------------------------------------------
+-- ppStm1SummaryInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 Summary Status Table
+-----------------------------------------------
+
+	ppStm1SummaryItem OBJECT IDENTIFIER
+		::= { ppStm1SummaryInfo 1 }
+		
+	ppStm1SummaryItemTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1SummaryItemEntry
+		ACCESS		not-accessible
+		STATUS		optional
+		DESCRIPTION	"Summary Item information table"
+		::= { ppStm1SummaryItem 1 }
+
+	ppStm1SummaryItemEntry OBJECT-TYPE
+		SYNTAX		PpStm1SummaryItemEntry
+		ACCESS		not-accessible
+		STATUS		optional
+		DESCRIPTION	"Summary Item information table entry"
+		INDEX		{
+					ppStm1SummaryItemPasoIndex	
+					}
+		::= { ppStm1SummaryItemTable 1 }
+
+	PpStm1SummaryItemEntry ::= SEQUENCE {
+					  ppStm1SummaryItemPasoIndex 	 IpAddress,
+					  ppStm1PmcSummary               PpStm1SeverityValue,
+					  ppStm1AuxSummary    		 PpStm1SeverityValue,
+					  ppStm1LpmSummary   		 PpStm1SeverityValue
+					 }					 
+					        
+	ppStm1SummaryItemPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1SummaryItemEntry 1 }
+
+	ppStm1PmcSummary OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PMC Summary
+				  invalid(0),
+				  clear(1),
+				  minor(2),
+				  major(3),
+				  critical(4)
+		                TRAP=partialSummaryTrapPmc"
+		::= { ppStm1SummaryItemEntry 2 }
+
+	ppStm1AuxSummary OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX Summary
+				 invalid(0),
+				  clear(1),
+				  minor(2),
+				  major(3),
+				  critical(4)
+		                TRAP=partialSummaryTrapAux"
+		::= { ppStm1SummaryItemEntry 3 }
+
+	ppStm1LpmSummary OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LPM Summary
+				  invalid(0),
+				  clear(1),
+				  minor(2),
+				  major(3),
+				  critical(4)
+		                TRAP=partialSummaryTrapLpm"
+		::= { ppStm1SummaryItemEntry 4 }
+
+	ppStm1SummaryTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1SummaryEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 Summary Table"
+		::= { ppStm1SummaryInfo 2 }
+
+	ppStm1SummaryEntry OBJECT-TYPE
+		SYNTAX		PpStm1SummaryEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 Summary Table entry"
+		INDEX		{
+						ppStm1SummaryPasoIndex,
+						ppStm1SummaryIndex
+					}
+		::= { ppStm1SummaryTable 1 }
+
+	PpStm1SummaryEntry ::= SEQUENCE {
+					  ppStm1SummaryPasoIndex	IpAddress,
+					  ppStm1SummaryIndex  		INTEGER,
+					  ppStm1OduSummary    		PpStm1SeverityValue,
+					  ppStm1IduSummary    		PpStm1SeverityValue
+					}
+
+	ppStm1SummaryPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1SummaryEntry 1 }
+
+	ppStm1SummaryIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 Summary index
+				 No.1(1), No.2(2)"
+		::= { ppStm1SummaryEntry 2 }
+
+	ppStm1OduSummary OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Summary
+				  invalid(0),
+				  clear(1),
+				  minor(2),
+				  major(3),
+				  critical(4)
+		                TRAP=partialSummaryTrapOdu"
+		::= { ppStm1SummaryEntry 3 }
+
+	ppStm1IduSummary OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU Summary
+				 invalid(0),
+				 clear(1),
+				 minor(2),
+				 major(3),
+				 critical(4)
+		                TRAP=partialSummaryTrapIdu"
+		::= { ppStm1SummaryEntry 4 }
+
+
+-----------------------------------------------
+-- ppStm1TrapInfo Group Definitions
+-----------------------------------------------
+
+	ppStm1TrapCommon OBJECT IDENTIFIER
+		::= { ppStm1TrapInfo 1 }
+
+	ppStm1TrapGenericVars OBJECT IDENTIFIER
+		::= { ppStm1TrapCommon 1 }
+
+	ppStm1TrapSequenceNumber OBJECT-TYPE
+		SYNTAX		Counter
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Sequence Number(0..4294967295)"
+		::= { ppStm1TrapGenericVars 1 }
+
+	ppStm1TrapDate OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Date ( YYYY/MM/DD )"
+		::= { ppStm1TrapGenericVars 2 }
+
+	ppStm1TrapTime OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Time ( HH:MM:SS )"
+		::= { ppStm1TrapGenericVars 3 }
+
+	ppStm1TrapSource OBJECT-TYPE
+		SYNTAX		OBJECT IDENTIFIER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Trap Source"
+		::= { ppStm1TrapGenericVars 4 }
+
+	ppStm1TrapX733Vars OBJECT IDENTIFIER
+		::= { ppStm1TrapCommon 2 }
+
+	ppStm1Severity OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Severity (CCITT Rec. X.733)
+				invalid(0), clear(1), minor(2), major(3), critical(4)"
+		::= { ppStm1TrapX733Vars 1 }
+
+	ppStm1AlarmType OBJECT-TYPE
+		SYNTAX		PpStm1AlarmTypeValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Alarm Type (CCITT Rec. X.733)
+				Refer to AlarmTypeValue of TEXTUAL-CONVENTION"
+		::= { ppStm1TrapX733Vars 2 }
+
+	ppStm1ProbableCause OBJECT-TYPE
+		SYNTAX		PpStm1ProbableCauseValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Probable Cause (CCITT Rec. X.733)
+				Refer to ProbableCauseValue of TEXTUAL-CONVENTION"
+		::= { ppStm1TrapX733Vars 3 }
+
+	ppStm1TrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1TrapInfo 2 }
+
+	ppStm1PartialSummaryTrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1TrapItemVar 1 }
+
+	ppStm1PartialSummaryItemOdu OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 ODU Summary
+				 invalid(0),
+				 clear(1),
+				 minor(2),
+				 major(3),
+				 critical(4)"
+		::= { ppStm1PartialSummaryTrapItemVar 1 }
+
+	ppStm1PartialSummaryItemIdu OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 IDU Summary
+				 invalid(0),
+				 clear(1),
+				 minor(2),
+				 major(3),
+				 critical(4)"
+		::= { ppStm1PartialSummaryTrapItemVar 2 }
+
+	ppStm1PartialSummaryItemPmc OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 PMC Summary
+				 invalid(0),
+				 clear(1),
+				 minor(2),
+				 major(3),
+				 critical(4)"
+		::= { ppStm1PartialSummaryTrapItemVar 3 }
+
+	ppStm1PartialSummaryItemAux OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 AUX Summary
+				 invalid(0),
+				 clear(1),
+				 minor(2),
+				 major(3),
+				 critical(4)"
+		::= { ppStm1PartialSummaryTrapItemVar 4 }
+
+	ppStm1PartialSummaryItemLpm OBJECT-TYPE
+		SYNTAX		PpStm1SeverityValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 LPM Summary
+				 invalid(0),
+				 clear(1),
+				 minor(2),
+				 major(3),
+				 critical(4)"
+		::= { ppStm1PartialSummaryTrapItemVar 5 }
+
+	ppStm1AlarmTrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1TrapItemVar 2 }
+
+	alarmItemPPStm1OduIfInput OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU IF INPUT
+		                 INVALID(0),NORMAL(1),ALARM(2)
+		                 severity=major
+				 alarmType=equipmentAlarm
+				 probableCause=transmitterFailure"
+		::= { ppStm1AlarmTrapItemVar 1 }
+
+	alarmItemPPStm1OduTxPower OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU TX POWER
+		                INVALID(0),NORMAL(1),ALARM(2)
+		                severity=major
+				alarmType=equipmentAlarm
+				probableCause=transmitterFailure"
+		::= { ppStm1AlarmTrapItemVar 2 }
+
+	alarmItemPPStm1OduRxLev OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU RX LEVEL
+		                INVALID(0),NORMAL(1),ALARM(2)
+			        severity=major
+				alarmType=communicationAlarm
+				probableCause=receiverFailure"
+		::= { ppStm1AlarmTrapItemVar 3 }
+
+	alarmItemPPStm1OduApc OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU APC
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 4 }
+
+	alarmItemPPStm1OduCbl OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU CBL
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 5 }
+
+	alarmItemPPStm1IduMainIFAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU MAIN IF ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 6 }
+
+	alarmItemPPStm1IduSubIFAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU SUB IF ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 7 }
+
+	alarmItemPPStm1IduModAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU MOD ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 8 }
+
+	alarmItemPPStm1IduEBerMux OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU EBER MUX
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 9 }
+
+	alarmItemPPStm1IduSdMux OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU SD MUX
+		                INVALID(0),NORMAL(1),ALARM(2)
+			        severity=minor
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 10 }
+
+	alarmItemPPStm1IduDemAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU DEM ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 11 }
+
+	alarmItemPPStm1IduLofDmr OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU LOF DMR
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=lossOfFrame"
+		::= { ppStm1AlarmTrapItemVar 12 }
+
+	alarmItemPPStm1IduEBerDmr OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU E-BER DMR
+		                INVALID(0),NORMAL(1),ALARM(2)
+			        severity=major
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 13 }
+
+	alarmItemPPStm1IduSdDmr OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU SD DMR
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=minor
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 14 }
+
+	alarmItemPPStm1IduMainIfLos OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU MAIN IF LOS
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=lossOfSignal"
+		::= { ppStm1AlarmTrapItemVar 15 }
+
+	alarmItemPPStm1IduLofMux OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU LOF MUX
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=lossOfFrame"
+		::= { ppStm1AlarmTrapItemVar 16 }
+
+	alarmItemPPStm1IduSubIfLos OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU SUB IF LOS
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=lossOfSignal"
+		::= { ppStm1AlarmTrapItemVar 17 }
+
+	alarmItemPPStm1IduMdCpuAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU MD CPU ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 18 }
+
+	alarmItemPPStm1IduHiBerAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU HI BER ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 19 }
+
+	alarmItemPPStm1IduModemAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU MODEM ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 20 }
+
+	alarmItemPPStm1IduPsAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU PS ALM
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=powerProblem"
+		::= { ppStm1AlarmTrapItemVar 21 }
+
+	alarmItemPPStm1TcnDaily OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TCN DAILY
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=minor
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 22 }
+
+	alarmItemPPStm1TcnWeekly OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TCN WEEKLY
+		                INVALID(0),NORMAL(1),ALARM(2)
+				severity=minor
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 23 }
+
+	alarmItemPPStm1Calendar OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CALENDAR ALARM
+				INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 24 }
+		
+	alarmItemPPStm1IduAtpcXCtrl OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU ATPC XCTRL
+				INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1AlarmTrapItemVar 25 }
+		
+	alarmItemPPStm1IduXIfLevel OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU XIF LEVEL
+				INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=receiverFailure"
+		::= { ppStm1AlarmTrapItemVar 26 }
+
+	alarmItemPPStm1IduLanLink OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU LAN LINK
+				INVALID(0),NORMAL(1),ALARM(2)	
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=lANError"
+		::= { ppStm1AlarmTrapItemVar 27 }
+
+	alarmItemPPStm1IduLowBerAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU LOW BER ALM
+				INVALID(0),NORMAL(1),ALARM(2)
+				severity=minor
+				alarmType=qualityOfServiceAlarm
+				probableCause=thresholdCrossed"
+		::= { ppStm1AlarmTrapItemVar 29 }
+
+	alarmItemPPStm1IduAccessCodeAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IDU LOW BER ALM
+				INVALID(0),NORMAL(1),ALARM(2)
+				severity=major
+				alarmType=communicationAlarm
+				probableCause=communicationsProtocolError"
+		::= { ppStm1AlarmTrapItemVar 30 }
+
+	ppStm1EventTrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1TrapItemVar 3 }
+	
+	eventItemPPStm1AisSend OBJECT-TYPE
+		SYNTAX		PpStm1NormalSendValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS Send
+				INVALID(0),NORMAL(1),SEND(2)"
+		::= { ppStm1EventTrapItemVar 1 }
+
+	eventItemPPStm1AisRcvd OBJECT-TYPE
+		SYNTAX		PpStm1NormalRcvdValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AIS Rcvd
+				INVALID(0),NORMAL(1),RCVD(2)"
+		::= { ppStm1EventTrapItemVar 2 }
+
+	eventItemPPStm1AddAttvalue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATT value"
+		::= { ppStm1EventTrapItemVar 3 }
+
+	eventItemPPStm1AtpcMaximum OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Maximum"
+		::= { ppStm1EventTrapItemVar 4 }
+
+	eventItemPPStm1AtpcMinimum OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Minimum"
+		::= { ppStm1EventTrapItemVar 5 }
+
+	eventItemPPStm1AtpcRxThresholdLevel OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC RX Threshold Level"
+		::= { ppStm1EventTrapItemVar 6 }
+
+	eventItemPPStm1AtpcHystValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Hyst value"
+		::= { ppStm1EventTrapItemVar 7 }
+
+	eventItemPPStm1OduAlarmMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Alarm mode
+		                0:INVALID,
+				1:MUTE,
+				2:MAX,
+				3:MIN,
+				4:HOLD"
+		::= { ppStm1EventTrapItemVar 8 }
+
+	eventItemPPStm1MtpcCtrlvalue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MTPC Control value"
+		::= { ppStm1EventTrapItemVar 9 }
+
+	eventItemPPStm1BerThreshold OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ber Threshold"
+		::= { ppStm1EventTrapItemVar 10 }
+
+	eventItemPPStm1TcnDailyOccur OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold  value (15-min., Alarm Occur )"
+		::= { ppStm1EventTrapItemVar 11 }
+
+	eventItemPPStm1TcnDailyRecover OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold  value (15-min., Alarm Recover)"
+		::= { ppStm1EventTrapItemVar 12 }
+
+	eventItemPPStm1TcnWeeklyOccur OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold  value (1-day, Alarm Occur)"
+		::= { ppStm1EventTrapItemVar 13 }
+
+	eventItemPPStm1TcnWeeklyRecover OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Performance Monitor Threshold  value (1-day, Alarm Recover)"
+		::= { ppStm1EventTrapItemVar 14 }
+
+	eventItemPPStm1EquipmentMaint OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Equipment Maint
+			        invalid(0),
+				off(1),
+				on(2)"
+		::= { ppStm1EventTrapItemVar 15 }
+
+	eventItemPPStm1MainIFAls OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Main IF Als
+			        0:INVALID,
+				1:ENABLE,
+				2:DISABLE"
+		::= { ppStm1EventTrapItemVar 16 }
+
+	eventItemPPStm1MainIFAlsDelayTime OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Main Als Delay Time
+		                0:INVALID,
+				1:60sec,
+				2:180sec,
+				3:300sec"
+		::= { ppStm1EventTrapItemVar 17 }
+
+	eventItemPPStm1OhAssignAssignment OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign
+		                0:INVALID,
+				1:EASY,
+				2:CUSTOMIZE"
+		::= { ppStm1EventTrapItemVar 18 }
+
+	eventItemPPStm1OhAssignVf1Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign VF1 Setting
+			        0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX(not used),
+				10:DCCR-DMR(not used)"
+		::= { ppStm1EventTrapItemVar 19 }
+
+	eventItemPPStm1OhAssignVf2Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign VF2 Setting
+		                0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX(not used),
+				10:DCCR-DMR(not used)"
+		::= { ppStm1EventTrapItemVar 20 }
+
+	eventItemPPStm1OhAssignV111Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign V111 Seting
+		                0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX,
+				10:DCCR-DMR"
+		::= { ppStm1EventTrapItemVar 21 }
+
+	eventItemPPStm1OhAssignV111DirectionSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign V111 Direction Setting
+		                0:INVALID,
+				1:CO-DIRECTIONAL,
+				2:CONTRA-DIRECTIONAL"
+		::= { ppStm1EventTrapItemVar 22 }
+
+	eventItemPPStm1OhAssignV112Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign V112 Setting
+		                0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX,
+				10:DCCR-DMR"
+		::= { ppStm1EventTrapItemVar 23 }
+
+	eventItemPPStm1OhAssignV112DirectionSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assogn V112 Direction Setting
+		                0:INVALID,
+				1:CO-DIRECTIONAL,
+				2:CONTRA-DIRECTIONAL"
+		::= { ppStm1EventTrapItemVar 24 }
+
+	eventItemPPStm1OhAssignLanCardSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"OH Assign LAN Card Setting
+		                0:NOT USED,
+				1:E1-MUX(not used),
+				2:F1-MUX(not used),
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX(not used),
+				10:DCCR-DMR"
+		::= { ppStm1EventTrapItemVar 25 }
+
+	eventItemPPStm1SubIFSubBasebandIF OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Sub IF SubBandIF
+				0:INVALID,
+				1:WS INTFC,
+				2:LAN CARD,
+				3:NOT USED,
+				4:WAYSIDE/CLUSTER ALARM,
+				5:CLUSTER ALARM"
+		::= { ppStm1EventTrapItemVar 26 }
+
+	eventItemPPStm1SubWsIntfcType OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Sub WS Intfc Type
+		                0:INVALID,
+				1:2MB BAL,
+				2:2MB UNBAL,
+				3:1.5MB(AMI),
+				4:1.5MB(B8ZS)"
+		::= { ppStm1EventTrapItemVar 27 }
+
+	eventItemPPStm1SubWsIntfcLineLength OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Sub WS Intfc Line Length
+				  0:INVALID,
+				  1:0-40m(0-133ft),
+				  2:40-81m(133-266ft),
+				  3:81-121m(266-399ft),
+				  4:121-162m(399-533ft),
+				  5:162-199m(533-655ft)"
+		::= { ppStm1EventTrapItemVar 28 }
+
+	eventItemPPStm1Relay OBJECT-TYPE
+		SYNTAX		OCTET STRING (SIZE (8))
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Relay"
+		::= { ppStm1EventTrapItemVar 29 }
+
+	eventItemPPStm1TxMute OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX MUTE
+		                invalid(0),
+				 off(1),
+				 on(2)"
+		::= { ppStm1EventTrapItemVar 30 }
+
+	eventItemPPStm1AtpcManual OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Manual
+		                 invalid(0),
+				 off(1),
+				 on(2)"
+		::= { ppStm1EventTrapItemVar 31 }
+
+	eventItemPPStm1AtpcManualValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC Manual value
+		                -30dB < this value < +5dB"
+		::= { ppStm1EventTrapItemVar 32 }
+
+	eventItemPPStm1SelectedRx OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Selected RX
+		                INVALID(0),No.1(1),No.2(2)"
+		::= { ppStm1EventTrapItemVar 33 }
+
+	eventItemPPStm1RxSwitchMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Rx Switch Mode
+		                INVALID(0),AUTO(1),MANUAL(2)"
+		::= { ppStm1EventTrapItemVar 34 }
+
+	eventItemPPStm1TxSwitchMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Tx Switch Mode
+		                 INVAILD(0),AUTO(1),MANUAL(2)"
+		::= { ppStm1EventTrapItemVar 35 }
+
+	eventItemPPStm1Cw OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Carrier Wave
+		                 invalid(0),
+				 off(1),
+				 on(2)"
+		::= { ppStm1EventTrapItemVar 36 }
+
+	eventItemPPStm1ManualRestart OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Manual Restart
+		                invalid(0),
+				off(1),
+				on(2)"
+		::= { ppStm1EventTrapItemVar 37 }
+
+	eventItemPPStm1IfLBAns OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IF LB Ans
+			        invalid(0),
+				off(1),
+				on(2)"
+		::= { ppStm1EventTrapItemVar 38 }
+
+	eventItemPPStm1LB1 OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LB1
+		                 invalid(0),
+				 off(1),
+				 on(2)"
+		::= { ppStm1EventTrapItemVar 39 }
+
+	eventItemPPStm1LB2 OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LB2
+		                invalid(0),
+				off(1),
+				on(2)"
+		::= { ppStm1EventTrapItemVar 40 }
+
+	eventItemPPStm1TxFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Frequency[MHz]"
+		::= { ppStm1EventTrapItemVar 41 }
+
+	eventItemPPStm1RxFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Frequency[MHz]"
+		::= { ppStm1EventTrapItemVar 42 }
+
+	eventItemPPStm1FS OBJECT-TYPE
+		SYNTAX		INTEGER (0..6)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"FS
+		                INVALID(0),
+		                2.39894MHz(1),
+		                4.79788MHz(2),
+		                9.59575MHz(3),
+		                11.*****MHz(4),
+		                24.236883MHz(5),
+		                41.51808MHz(6)"
+		::= { ppStm1EventTrapItemVar 43 }
+
+	eventItemPPStm1AuxOutput OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"AUX Output
+		                 INVALID(0), EVENT OFF-OPEN (1), EVENT ON-CLOSE (2)"
+		::= { ppStm1EventTrapItemVar 44 }
+
+	eventItemPPStm1XpicForcedReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"XPIC FORCED RESET
+				INVALID(0),AUTO(1),RESET(2)"
+		::= { ppStm1EventTrapItemVar 45 }
+
+	eventItemPPStm1IduXpicReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"XPIC RESET
+				INVALID(0),NORMAL(1),RESET(2)
+				TRAP=eventTrapPPStm1IduXpicReset"
+		::= { ppStm1EventTrapItemVar 46 }
+
+	eventItemPPStm1IduStm1OutputControl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"STM-1 OUTPUT CONTROL
+				INVALID(0),NORMAL(1),UNDER EXECUTION(2)
+				TRAP=eventTrapPPStm1IduStm1OutputControl"
+		::= { ppStm1EventTrapItemVar 47 }
+
+	eventItemPPStm1MainIFMsAisGeneration OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MS-AIS GENERATION
+				INVALID(0), ENABLE(1), DISABLE(2)
+				TRAP=eventTrapPPStm1MainIFMsAisGeneration"
+		::= { ppStm1EventTrapItemVar 48 }
+
+	eventItemPPStm1MainIFTxPriority OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX PRIORITY
+				INVALID(0)
+				PRIORITY NO.1(1)
+				NON-PRIORITY(2)
+				TRAP=eventTrapPPStm1MainIFTxPriority"
+		::= { ppStm1EventTrapItemVar 49 }
+
+	eventItemPPStm1MainIFRxPriority OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX PRIORITY
+				INVALID(0)
+				PRIORITY NO.1(1)
+				NON-PRIORITY(2)
+				TRAP=eventTrapPPStm1MainIFRxPriority"
+		::= { ppStm1EventTrapItemVar 50 }
+
+	eventItemPPStm1IduLanMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN MODE
+				INVALID(0),10BASE-T(1), 100BASE-TX(2)	
+				TRAP=eventTrapPPStm1IduLanMode"
+		::= { ppStm1EventTrapItemVar 51 }
+
+	eventItemPPStm1IduLanDuplex OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN DUPLEX
+				INVALID(0)
+				HALF DUPLEX(1)
+				FULL DUPLEX(2)
+				TRAP=eventTrapPPStm1IduLanDuplex"
+		::= { ppStm1EventTrapItemVar 52 }
+
+	eventItemPPStm1IduLanLinkDownCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN LINK DOWNCTRL
+				INVALID(0)
+				NORMAL(1)
+				UNDER EXECUTION(2)
+				TRAP=eventTrapPPStm1IduLanLinkDownCtrl"
+		::= { ppStm1EventTrapItemVar 53 }
+
+	eventItemPPStm1LanPortSetting OBJECT-TYPE
+		SYNTAX		INTEGER (1..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN PORT SETTING
+				AUTO NEGOTIATION(1)
+				10BASE-T/HALF DUPLEX(2)
+				10BASE-T/FULL DUPLEX(3)
+				100BASE-TX/HALF DUPLEX(4)
+				100BASE-TX/FULL DUPLEX(5)
+				TRAP=eventTrapPPStm1LanPortSetting"
+		::= { ppStm1EventTrapItemVar 54 }
+
+	eventItemPPStm1LanPortUsage OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PORT USAGE
+				FLAG=TRAP|EVLOG|BITCNT(8)
+				LOGITEM='PORT USAGE'
+				PORT1=75MB/PORT2=75MB(1)
+				PORT1=100MB/PORT2=50MB(2)
+				BEST EFFORT(3)
+				PORT1=100MB/PORT2=NOT USED(4)
+				TRAP=eventTrapPPStm1LanPortUsage"
+		::= { ppStm1EventTrapItemVar 55 }
+
+	eventItemPPStm1LanLinkDown OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN LINKDOWN
+				LOGITEM='FAR END LINK DOWN'
+				ENABLE(1)
+				DISABLE(2)
+				TRAP=eventTrapPPStm1LanLinkDown"
+		::= { ppStm1EventTrapItemVar 56 }
+
+	eventItemPPStm1LanClockSourceSetting OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CLOCK SOURCE SETTING
+				INTERNAL CLOCK(1)
+				DMR -> INTERNAL CLOCK(2)
+				TRAP=eventTrapPPStm1LanClockSourceSetting"
+		::= { ppStm1EventTrapItemVar 57 }
+
+	eventItemPPStm1IduLanCollision OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN COLLISION
+				INVALID(0)
+				NORMAL(1)
+				COLLISION(2)
+				TRAP=eventTrapPPStm1IduLanCollision"
+		::= { ppStm1EventTrapItemVar 58 }
+
+	eventItemPpStm1LinearizerControl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LINEARIZER CONTROL
+				INVALID(0)
+				AUTO(1)
+				RESET(2)
+				TRAP=eventTrapPpStm1LinearizerControl"
+		::= { ppStm1EventTrapItemVar 59 }
+
+	eventItemPpStm1LinearizerStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LINEARIZER
+				INVALID(0)
+				NON OPERATION(1)
+				OPERATION(2)
+				TRAP=eventTrapPpStm1LinearizerStatus"
+		::= { ppStm1EventTrapItemVar 60 }
+
+	eventItemPPStm1LanCollisionReportSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"COLLISION REPORT SETTING
+				INVALID(0)
+				REPORT(1)
+				NOT REPORT(2)
+				TRAP=eventTrapPPStm1LanCollisionReportSetting"
+		::= { ppStm1EventTrapItemVar 61 }
+
+	eventItemPPStm1LanFlowControlSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"FLOW CONTROL SETTING
+				INVALID(0)
+				ON(1)
+				OFF(2)
+				TRAP=eventTrapPPStm1LanFlowControlSetting"
+		::= { ppStm1EventTrapItemVar 62 }
+
+	eventItemPPStm1AccessCodeSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ACCESS CODE SETTING
+				INVALID(0)
+				ENABLE(1)
+				DISABLE(2)
+				TRAP=eventTrapPPStm1AccessCodeSetting"
+		::= { ppStm1EventTrapItemVar 63 }
+
+	eventItemPPStm1LanDeviceReset OBJECT-TYPE
+		SYNTAX		INTEGER (1..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN DEVICE RESET
+				MAIN INTFC PORT1(1)
+				MAIN INTFC PORT2(2)
+				SUB INTFC(3)
+				TRAP=eventTrapPPStm1LanDeviceReset"
+		::= { ppStm1EventTrapItemVar 64 }
+                                    
+	eventItemPPStm1SelectedTx OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Selected TX
+			    INVALID(0),No.1(1), No.(2)
+				TRAP=eventTrapPPStm1SelectedTx"
+		::= { ppStm1EventTrapItemVar 65 }
+
+	ppStm1StatusTrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1TrapItemVar 4 }
+
+	statusItemPPStm1AuxInput OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input
+		                INVALID(0),EVENT OFF-OPEN(1),EVENT ON-CLOSE(2)
+		                severity=major
+				alarmType=equipmentAlarm
+				probableCause=equipmentMalfunction"
+		::= { ppStm1StatusTrapItemVar 1 }
+		
+	statusItemPPStm1TypeAux OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Type
+                             INVALID(0),
+			         ALARM WHEN EVENT OFF-OPEN(1),
+			         ALARM WHEN EVENT ON-CLOSE(2),
+			         STATUS(3)"
+		::= { ppStm1StatusTrapItemVar 2 }
+
+	ppStm1SystemTrapItemVar OBJECT IDENTIFIER
+		::= { ppStm1TrapItemVar 5 }
+
+	systemItemPPStm1LocalUpdate OBJECT-TYPE
+		SYNTAX		INTEGER (0..1)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LocalUpdate
+		                 invalid(0),
+				 valid(1)"
+		::= { ppStm1SystemTrapItemVar 2 }
+
+        systemItemPPStm1GetMeteringRequestID OBJECT-TYPE
+			SYNTAX		INTEGER
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Request ID"
+    	::= { ppStm1SystemTrapItemVar  3 }
+
+	systemItemPPStm1GetMeteringTargetIpAddress OBJECT-TYPE
+			SYNTAX		IpAddress
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Pasolink NE IpAddress"
+    	::= { ppStm1SystemTrapItemVar  4 }
+	
+	systemItemPPStm1GetMeteringResult OBJECT-TYPE
+			SYNTAX		INTEGER (0..3)
+			ACCESS		read-only
+			STATUS		mandatory
+			DESCRIPTION	"Request Result
+				        invalid(0),
+					ready(1),
+	                 		wait(2),
+                    			fail(3)"
+    	::= { ppStm1SystemTrapItemVar  5 }
+
+-----------------------------------------------
+-- STM-1 Partial Summary Trap definitions
+-----------------------------------------------
+
+	ppStm1PartialSummaryTrapOdu	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  ppStm1PartialSummaryItemOdu
+					}
+		::= 10
+
+	ppStm1PartialSummaryTrapIdu	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  ppStm1PartialSummaryItemIdu
+					}
+		::= 11
+
+	ppStm1PartialSummaryTrapPmc	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  ppStm1PartialSummaryItemPmc
+					}
+		::= 12
+
+	ppStm1PartialSummaryTrapAux	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  ppStm1PartialSummaryItemAux
+					}
+		::= 13
+
+	ppStm1PartialSummaryTrapLpm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  ppStm1PartialSummaryItemLpm
+					}
+		::= 14
+
+-----------------------------------------------
+-- STM-1 alarm Trap definitions
+-----------------------------------------------
+
+	alarmTrapPPStm1OduIfInput	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1OduIfInput
+					}
+		::= 101
+
+	alarmTrapPPStm1OduTxPower	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1OduTxPower
+					}
+		::= 102
+
+	alarmTrapPPStm1OduRxLev	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1OduRxLev
+					}
+		::= 103
+
+	alarmTrapPPStm1OduApc	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1OduApc
+					}
+		::= 104
+
+	alarmTrapPPStm1OduCbl	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1OduCbl
+					}
+		::= 105
+
+	alarmTrapPPStm1IduMainIFAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduMainIFAlm
+					}
+		::= 106
+
+	alarmTrapPPStm1IduSubIFAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduSubIFAlm
+					}
+		::= 107
+
+	alarmTrapPPStm1IduModAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduModAlm
+					}
+		::= 108
+
+	alarmTrapPPStm1IduEBerMux	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduEBerMux
+					}
+		::= 109
+
+	alarmTrapPPStm1IduSdMux	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduSdMux
+					}
+		::= 110
+		
+	alarmTrapPPStm1IduDemAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduDemAlm
+					}
+		::= 111
+
+	alarmTrapPPStm1IduLofDmr	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduLofDmr
+					}
+		::= 112
+
+	alarmTrapPPStm1IduEBerDmr	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduEBerDmr
+					}
+		::= 113
+
+	alarmTrapPPStm1IduSdDmr	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduSdDmr
+					}
+		::= 114
+
+	alarmTrapPPStm1IduMainIfLos	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduMainIfLos
+					}
+		::= 115
+
+	alarmTrapPPStm1IduLofMux	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduLofMux
+					}
+		::= 116
+
+	alarmTrapPPStm1IduSubIfLos	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduSubIfLos
+					}
+		::= 117
+
+	alarmTrapPPStm1IduMdCpuAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduMdCpuAlm
+					}
+		::= 118
+
+	alarmTrapPPStm1IduHiBerAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduHiBerAlm
+					}
+		::= 119
+
+	alarmTrapPPStm1IduModemAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduModemAlm
+					}
+		::= 120
+
+	alarmTrapPPStm1IduPsAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduPsAlm
+					}
+		::= 121
+
+	alarmTrapPPStm1TcnDaily	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1TcnDaily
+					}
+		::= 122
+
+	alarmTrapPPStm1TcnWeekly	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1TcnWeekly
+					}
+		::= 123
+
+	alarmTrapPPStm1Calendar	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1Calendar
+					}
+		::= 124
+
+	alarmTrapPPStm1IduAtpcXCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduAtpcXCtrl
+					}
+		::= 125
+		
+	alarmTrapPPStm1IduXIfLevel	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduXIfLevel
+					}
+		::= 126
+		
+	alarmTrapPPStm1IduLanLink	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduLanLink
+					}
+		::= 127
+
+	alarmTrapPPStm1IduLowBerAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduLowBerAlm
+					}
+		::= 128
+
+	alarmTrapPPStm1IduAccessCodeAlm	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  ppStm1TrapSource,
+					  alarmItemPPStm1IduAccessCodeAlm
+					}
+		::= 129
+
+
+-----------------------------------------------
+-- STM-1 event Trap definitions
+-----------------------------------------------
+
+	eventTrapPPStm1AisSend	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AisSend
+					}
+		::= 201
+
+	eventTrapPPStm1AisRcvd	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AisRcvd
+					}
+		::= 202
+
+	eventTrapPPStm1MainIFAls	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1MainIFAls
+					}
+		::= 203
+
+	eventTrapPPStm1AddAttvalue	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AddAttvalue
+					}
+		::= 204
+
+	eventTrapPPStm1AtpcMaximum	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AtpcMaximum
+					}
+		::= 205
+
+	eventTrapPPStm1AtpcMinimum	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AtpcMinimum
+					}
+		::= 206
+
+	eventTrapPPStm1AtpcRxThresholdLevel	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AtpcRxThresholdLevel
+					}
+		::= 207
+
+	eventTrapPPStm1AtpcHystValue	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AtpcHystValue
+					}
+		::= 208
+
+	eventTrapPPStm1OduAlarmMode	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OduAlarmMode
+					}
+		::= 209
+
+	eventTrapPPStm1MtpcCtrlvalue	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1MtpcCtrlvalue
+					}
+		::= 210
+
+	eventTrapPPStm1BerThreshold	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1BerThreshold
+					}
+		::= 211
+
+	eventTrapPPStm1TcnDailyOccur	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TcnDailyOccur
+					}
+		::= 212
+
+	eventTrapPPStm1TcnDailyRecover	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TcnDailyRecover
+					}
+		::= 213
+
+	eventTrapPPStm1TcnWeeklyOccur	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TcnWeeklyOccur
+					}
+		::= 214
+
+	eventTrapPPStm1TcnWeeklyRecover	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TcnWeeklyRecover
+					}
+		::= 215
+
+	eventTrapPPStm1EquipmentMaint	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1EquipmentMaint
+					}
+		::= 216
+
+	eventTrapPPStm1OhAssignAssignment	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignAssignment
+					}
+		::= 217
+
+	eventTrapPPStm1OhAssignVf1Setting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignVf1Setting
+					}
+		::= 218
+
+	eventTrapPPStm1OhAssignVf2Setting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignVf2Setting
+					}
+		::= 219
+
+	eventTrapPPStm1OhAssignV111Setting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignV111Setting
+					}
+		::= 220
+
+	eventTrapPPStm1OhAssignV111DirectionSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignV111DirectionSetting
+					}
+		::= 221
+
+	eventTrapPPStm1OhAssignV112Setting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignV112Setting
+					}
+		::= 222
+
+	eventTrapPPStm1OhAssignV112DirectionSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignV112DirectionSetting
+					}
+		::= 223
+
+	eventTrapPPStm1OhAssignLanCardSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1OhAssignLanCardSetting
+					}
+		::= 224
+
+	eventTrapPPStm1SubIFSubBasebandIF	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1SubIFSubBasebandIF
+					}
+		::= 225
+
+	eventTrapPPStm1SubWsIntfcType	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1SubWsIntfcType
+					}
+		::= 226
+
+	eventTrapPPStm1SubWsIntfcLineLength	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1SubWsIntfcLineLength
+					}
+		::= 227
+
+	eventTrapPPStm1Relay	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1Relay
+					}
+		::= 228
+
+	eventTrapPPStm1TxMute	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TxMute
+					}
+		::= 229
+
+	eventTrapPPStm1AtpcManual	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AtpcManual
+					}
+		::= 230
+
+	eventTrapPPStm1AtpcManualValue	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AtpcManualValue
+					}
+		::= 231
+
+	eventTrapPPStm1MainIFAlsDelayTime	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1MainIFAlsDelayTime
+					}
+		::= 232
+
+	eventTrapPPStm1SelectedRx	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1SelectedRx
+					}
+		::= 233
+
+	eventTrapPPStm1RxSwitchMode	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1RxSwitchMode
+					}
+		::= 234
+
+	eventTrapPPStm1TxSwitchMode	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TxSwitchMode
+					}
+		::= 235
+
+	eventTrapPPStm1Cw	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1Cw
+					}
+		::= 236
+
+	eventTrapPPStm1ManualRestart	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1ManualRestart
+					}
+		::= 237
+
+	eventTrapPPStm1IfLBAns	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IfLBAns
+					}
+		::= 238
+
+	eventTrapPPStm1LB1	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LB1
+					}
+		::= 239
+
+	eventTrapPPStm1LB2	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LB2
+					}
+		::= 240
+
+	eventTrapPPStm1TxFreq	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1TxFreq
+					}
+		::= 241
+
+	eventTrapPPStm1RxFreq	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1RxFreq
+					}
+		::= 242
+
+	eventTrapPPStm1FS	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1FS
+					}
+		::= 243
+
+	eventTrapPPStm1AuxOutput	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AuxOutput
+					}
+		::= 244
+
+	eventTrapPPStm1XpicForcedReset	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1XpicForcedReset
+					}
+		::= 245
+
+	eventTrapPPStm1IduXpicReset	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IduXpicReset
+					}
+		::= 246
+
+	eventTrapPPStm1IduStm1OutputControl	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IduStm1OutputControl
+					}
+		::= 247
+
+	eventTrapPPStm1MainIFMsAisGeneration	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1MainIFMsAisGeneration
+					}
+		::= 248
+
+	eventTrapPPStm1MainIFTxPriority	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1MainIFTxPriority
+					}
+		::= 249
+
+	eventTrapPPStm1MainIFRxPriority	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1MainIFRxPriority
+					}
+		::= 250
+
+	eventTrapPPStm1IduLanMode	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IduLanMode
+					}
+		::= 251
+
+	eventTrapPPStm1IduLanDuplex	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IduLanDuplex
+					}
+		::= 252
+
+	eventTrapPPStm1IduLanLinkDownCtrl	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IduLanLinkDownCtrl
+					}
+		::= 253
+
+	eventTrapPPStm1LanPortSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanPortSetting
+					}
+		::= 254
+
+	eventTrapPPStm1LanPortUsage	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanPortUsage
+					}
+		::= 255
+
+	eventTrapPPStm1LanLinkDown	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanLinkDown
+					}
+		::= 256
+
+	eventTrapPPStm1LanClockSourceSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanClockSourceSetting
+					}
+		::= 257
+
+	eventTrapPPStm1IduLanCollision	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1IduLanCollision
+					}
+		::= 258
+
+	eventTrapPpStm1LinearizerControl	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPpStm1LinearizerControl
+					}
+		::= 259
+
+	eventTrapPpStm1LinearizerStatus	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPpStm1LinearizerStatus
+					}
+		::= 260
+
+	eventTrapPPStm1LanCollisionReportSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanCollisionReportSetting
+					}
+		::= 261
+
+	eventTrapPPStm1LanFlowControlSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanFlowControlSetting
+					}
+		::= 262
+
+	eventTrapPPStm1AccessCodeSetting	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1AccessCodeSetting
+					}
+		::= 263
+
+	eventTrapPPStm1LanDeviceReset	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1LanDeviceReset
+					}
+		::= 264
+
+	eventTrapPPStm1SelectedTx	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  eventItemPPStm1SelectedTx
+					}               
+		::= 265
+
+-----------------------------------------------
+-- STM-1 status Trap definitions
+-----------------------------------------------
+
+	statusTrapPPStm1AuxInput	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  ppStm1Severity,
+					  ppStm1AlarmType,
+					  ppStm1ProbableCause,
+					  statusItemPPStm1TypeAux,
+					  statusItemPPStm1AuxInput
+					}
+		::= 500
+
+-----------------------------------------------
+-- STM-1 system Trap definitions
+-----------------------------------------------
+
+	systemTrapPPStm1LocalUpdate	TRAP-TYPE
+		ENTERPRISE	pasolinkPlusSTM1
+		VARIABLES	{
+					  ppStm1TrapSequenceNumber,
+					  ppStm1TrapDate,
+					  ppStm1TrapTime,
+					  ppStm1TrapSource,
+					  systemItemPPStm1LocalUpdate
+					}
+		::= 601
+		
+	systemTrapPPStm1GetResult TRAP-TYPE
+		ENTERPRISE  pasolinkPlusSTM1    
+		VARIABLES {
+       			ppStm1TrapSequenceNumber,
+       			ppStm1TrapDate,
+       			ppStm1TrapTime,
+		        systemItemPPStm1GetMeteringRequestID,
+       			systemItemPPStm1GetMeteringTargetIpAddress,     
+       			systemItemPPStm1GetMeteringResult
+       		}
+		DESCRIPTION	"The result of Request"
+	        ::= 602
+
+
+
+-----------------------------------------------
+-- ppStm1AlarmStatusInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 All Status Table
+-----------------------------------------------
+
+	ppStm1asAllValue OBJECT IDENTIFIER
+		::= { ppStm1AlarmStatusInfo 1 }
+
+	ppStm1GetAllStatusTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1GetAllStatusEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 GetAllStatus Table"
+		::= { ppStm1asAllValue 1 }
+
+	ppStm1GetAllStatusEntry OBJECT-TYPE
+		SYNTAX		PpStm1GetAllStatusEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Stm1 GetAllStatus Table entry"
+		INDEX		{
+						ppStm1GetAllStatusPasoIndex
+					}
+		::= { ppStm1GetAllStatusTable 1 }
+
+	PpStm1GetAllStatusEntry ::= SEQUENCE {
+					  ppStm1GetAllStatusPasoIndex	IpAddress,
+					  ppStm1GetAllStatus  		INTEGER
+					}
+
+	ppStm1GetAllStatusPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1GetAllStatusEntry 1 }
+
+	ppStm1GetAllStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..1)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LOCAL UPDATE
+				INVALID(0),VALID(1)
+				TRAP=systemTrapPPStm1LocalUpdate"
+		::= { ppStm1GetAllStatusEntry 2 }
+
+
+-----------------------------------------------
+-- STM-1 Control Status Common Table
+-----------------------------------------------
+
+	ppStm1asControlStatus OBJECT IDENTIFIER
+		::= { ppStm1AlarmStatusInfo 2 }
+
+	ppStm1csCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1csCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Control Status Common Table"
+		::= { ppStm1asControlStatus 1 }
+
+	ppStm1csCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1csCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Control Status Common Table entry"
+		INDEX		{
+						ppStm1csCmnPasoIndex
+					}
+		::= { ppStm1csCmnTable 1 }
+
+	PpStm1csCmnEntry ::= SEQUENCE {
+					  ppStm1csCmnPasoIndex           IpAddress,
+					  ppStm1csManualRestart          INTEGER,
+					  ppStm1csAlsRestart             INTEGER,
+					  ppStm1csRxSwitchCtrl           INTEGER,
+					  ppStm1csRxSwitchMode           INTEGER,
+					  ppStm1csSelectedRx             INTEGER,
+					  ppStm1csTxSwitchCtrl           INTEGER,
+					  ppStm1csTxSwitchMode           INTEGER,
+					  ppStm1csLB1                    INTEGER,
+					  ppStm1csLB2                    INTEGER,
+					  ppStm1csSelectedTx 			 INTEGER,
+					  ppStm1csLanDeviceReset	     INTEGER	
+					}
+
+	ppStm1csCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1csCmnEntry 1 }
+
+	ppStm1csManualRestart OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MANUAL RESTART
+				invalid(0),
+				off(1),
+				on(2)
+				TRAP=eventTrapPPStm1ManualRestart"
+		::= { ppStm1csCmnEntry 2 }
+
+	ppStm1csAlsRestart OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) ALS Restart
+				0:INVALID--can not write,
+				1-15:( Not used ),
+				16:2sec,
+				17:90sec"
+		::= { ppStm1csCmnEntry 3 }
+
+	ppStm1csRxSwitchCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) RX SWITCH
+				INVAILD(0)--can not write,
+				AUTO(1),No.1(2),No.2(3)"
+		::= { ppStm1csCmnEntry 4 }
+
+	ppStm1csRxSwitchMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX SWITCH MODE
+				INVALID(0),AUTO(1),MANUAL(2)
+				TRAP=eventTrapPPStm1RxSwitchMode"
+		::= { ppStm1csCmnEntry 5 }
+
+	ppStm1csSelectedRx OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SELECTED RX
+				INVALID(0),No.1(1),No.2(2)
+				TRAP=eventTrapPPStm1SelectedRx"
+		::= { ppStm1csCmnEntry 6 }
+
+	ppStm1csTxSwitchCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) TX SWITCH
+				INVALID(0)--can not write,
+				AUTO(1),No.1(2),No.2(3)"
+		::= { ppStm1csCmnEntry 7 }
+
+	ppStm1csTxSwitchMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX SWITCH MODE
+				INVAILD(0),AUTO(1),MANUAL(2)
+				TRAP=eventTrapPPStm1TxSwitchMode"
+		::= { ppStm1csCmnEntry 8 }
+
+	ppStm1csLB1 OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MAIN SIGNAL LOOPBACK-1
+				invalid(0)--can not write,
+				off(1),
+				on(2)
+				TRAP=eventTrapPPStm1LB1"
+		::= { ppStm1csCmnEntry 9 }
+
+	ppStm1csLB2 OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MAIN SIGNAL LOOPBACK-2
+				invalid(0)--can not write,
+				off(1),
+				on(2)
+				TRAP=eventTrapPPStm1LB2"
+		::= { ppStm1csCmnEntry 10 }
+
+	ppStm1csSelectedTx OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SELECTED TX 
+				INVALID(0),
+				No.1(1),
+				No.2(2)
+				TRAP=eventTrapPPStm1SelectedTx"
+		::= { ppStm1csCmnEntry 11 }
+
+	ppStm1csLanDeviceReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) LAN DEVICE RESET
+				INVALID(0),
+				MAIN INTFC PORT1(1),
+				MAIN INTFC PORT2(2),
+				SUB INTFC(3)
+				If ppStm1eciMainIntfc is not 10/100Base-T(31),
+				MAIN INTFC PORT1(1) and MAIN INTFC PORT2(2)
+				is unavailable.
+				If ppStm1pdiLanPortUsage is
+				PORT1=100MB/PORT2=NOT USED(4), MAIN INTFC PORT2(2)
+				is unavailable.
+				If ppStm1pdiSubIFSubBasebandIF is not
+				LAN CARD(2), SUB INTFC(3) is unavailable.
+				TRAP=eventTrapPPStm1LanDeviceReset"
+		::= { ppStm1csCmnEntry 12 }
+
+-----------------------------------------------
+-- STM-1 Control Status Indv Table
+-----------------------------------------------
+
+	ppStm1csIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1csIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table"
+		::= { ppStm1asControlStatus 2 }
+
+	ppStm1csIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1csIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table entry"
+		INDEX		{
+						ppStm1csIndvPasoIndex,
+						ppStm1csIndvIndex
+					}
+		::= { ppStm1csIndvTable 1 }
+
+	PpStm1csIndvEntry ::= SEQUENCE {
+					  ppStm1csIndvPasoIndex      IpAddress,
+					  ppStm1csIndvIndex          INTEGER,
+					  ppStm1csAtpcStatus         INTEGER,
+					  ppStm1csAtpcValue          INTEGER,
+					  ppStm1csCw                 INTEGER,
+					  ppStm1csTxMute             INTEGER,
+					  ppStm1csTxMuteControlTime  INTEGER,
+					  ppStm1csIfLB               INTEGER,
+					  ppStm1csXpicForcedReset    INTEGER,
+					  ppStm1csLinearizerControl  INTEGER,
+					  ppStm1csLinearizerStatus   INTEGER
+					}
+					
+	ppStm1csIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1csIndvEntry 1 }
+
+	ppStm1csIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table index
+				No1(1),
+				No2(2)"
+		::= { ppStm1csIndvEntry 2 }
+
+	ppStm1csAtpcStatus OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC MANUAL
+				invalid(0)
+			        off(1)
+				on(2)
+				It is invalid,if ppStm1eciXpic is 2:SLAVE.
+				TRAP=eventTrapPPStm1AtpcManual"
+		::= { ppStm1csIndvEntry 3 }
+
+	ppStm1csAtpcValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC MANUAL CONT POWER[dB]
+		                -30dB < this value < +5dB
+				TRAP=eventTrapPPStm1AtpcManualValue"
+		::= { ppStm1csIndvEntry 4 }
+
+	ppStm1csCw OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CW
+				invalid(0),
+			        off(1),
+				on(2)
+				TRAP=eventTrapPPStm1Cw"
+		::= { ppStm1csIndvEntry 5 }
+
+	ppStm1csTxMute OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX MUTE
+				invalid(0),
+				off(1),
+				on(2)
+				TRAP=eventTrapPPStm1TxMute"
+		::= { ppStm1csIndvEntry 6 }
+
+	ppStm1csTxMuteControlTime OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) TX MUTE Control Time"
+		::= { ppStm1csIndvEntry 7 }
+
+	ppStm1csIfLB OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"IF LOOPBACK
+				invalid(0)--can not write,
+				off(1),
+				on(2)
+				TRAP=eventTrapPPStm1IfLBAns"
+		::= { ppStm1csIndvEntry 8 }
+
+	ppStm1csXpicForcedReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"XPIC FORCED RESET
+				INVALID(0),
+				AUTO(1),
+				RESET(2),
+				It is available,if ppStm1eciXpic is 1:MASTER or 2:SLAVE.
+				It is invalid,if ppStm1eciXpic is 0:INVALID or 3:NOT USED.
+				TRAP=eventTrapPPStm1XpicForcedReset"
+		::= { ppStm1csIndvEntry 9 }
+
+	ppStm1csLinearizerControl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LINEARIZER CONTROL
+				INVALID(0),
+				AUTO(1),
+				RESET(2),
+				If ppStm1iviSupportabilityValue.1(ppStm1iviSupportabilityIndex=linearizer-1)
+				is UNSUPPORTABLE(1), AUTO(1) is unavailble to
+				ppStm1csLinearizer.1(ppStm1csIndvEntry=no_1).
+				If ppStm1iviSupportabilityValue.1(ppStm1iviSupportabilityIndex=linearizer-1)
+				is SUPPORTABLE(2) and ppStm1esMaint=ON(1),
+				ppStm1csLinearizer.1(ppStm1csIndvEntry=no_1)
+				selection is available.
+				If ppStm1iviSupportabilityValue.2(ppStm1iviSupportabilityIndex=linearizer-2)
+				is UNSUPPORTABLE(1), AUTO(1) is unavailble to
+				ppStm1csLinearizer.2(ppStm1csIndvEntry=no_2).
+				If ppStm1iviSupportabilityValue.2(ppStm1iviSupportabilityEntry=linearizer-2)
+				is SUPPORTABLE(2) and ppStm1esMaint=ON(1),
+				ppStm1csLinearizer.2(ppStm1csIndvEntry=no_2)
+				selection is available.
+				TRAP=eventTrapPpStm1LinearizerControl"
+		::= { ppStm1csIndvEntry 10 }
+
+	ppStm1csLinearizerStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LINEARIZER
+				INVALID(0),
+				NON OPERATION(1),
+				OPERATION(2),
+				If ppStm1iviSupportabilityValue.1(ppStm1iviSupportabilityEntry=linearizer-1)
+				is UNSUPPORTABLE(1) or ppStm1csLinearizerControl.1(ppStm1csIndvEntry=no_1)
+				is RESET(2), OPERATION(2) is unavailable to
+				ppStm1csLinearizerStatus.1(ppStm1csIndvEntry=no_1).
+				If ppStm1iviSupportabilityValue.2(ppStm1iviSupportabilityEntry=linearizer-2)
+				is UNSUPPORTABLE(1) or ppStm1csLinearizerControl.2(ppStm1csIndvEntry=no_2)
+				is RESET(2), OPERATION(2) is unavailable to
+				ppStm1csLinearizerStatus.2(ppStm1csIndvEntry=no_2).
+				TRAP=eventTrapPpStm1LinearizerStatus"
+		::= { ppStm1csIndvEntry 11 }
+
+
+-----------------------------------------------
+-- STM-1 Equipment Status Common Table
+-----------------------------------------------
+
+	ppStm1asEquipmentStatus OBJECT IDENTIFIER
+		::= { ppStm1AlarmStatusInfo 3 }
+
+	ppStm1esCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1esCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Common Table"
+		::= { ppStm1asEquipmentStatus 1 }
+
+	ppStm1esCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1esCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Common Table entry"
+		INDEX		{
+						ppStm1esCmnPasoIndex
+					}
+		::= { ppStm1esCmnTable 1 }
+
+	PpStm1esCmnEntry ::= SEQUENCE {
+					  ppStm1esCmnPasoIndex      IpAddress,
+					  ppStm1esMaint             INTEGER
+					}
+					
+	ppStm1esCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1esCmnEntry 1 }
+
+	ppStm1esMaint OBJECT-TYPE
+		SYNTAX		PpStm1OffOnValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MAINT
+				invalid(0)--can not write,
+				off(1),
+				on(2)
+				TRAP=eventTrapPPStm1EquipmentMaint"
+		::= { ppStm1esCmnEntry 2 }
+
+
+-----------------------------------------------
+-- STM-1 ODU Status Indv Table
+-----------------------------------------------
+
+	ppStm1asOduStatus OBJECT IDENTIFIER
+		::= { ppStm1AlarmStatusInfo 4 }
+
+	ppStm1osIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1osIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table"
+		::= { ppStm1asOduStatus 1 }
+
+	ppStm1osIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1osIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table entry"
+		INDEX		{
+						ppStm1osIndvPasoIndex,
+						ppStm1osIndvIndex
+					}
+		::= { ppStm1osIndvTable 1 }
+
+	PpStm1osIndvEntry ::= SEQUENCE {
+					  ppStm1osIndvPasoIndex IpAddress,
+					  ppStm1osIndvIndex     INTEGER,
+					  ppStm1osTxPwrAlm      INTEGER,
+					  ppStm1osTxIfInLevAlm  INTEGER,
+					  ppStm1osRxLevAlm      INTEGER,
+					  ppStm1osApcAlm        INTEGER,
+					  ppStm1osCblAlm        INTEGER
+					}
+
+	ppStm1osIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1osIndvEntry 1 }
+
+	ppStm1osIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table index
+				No1(1)
+				No2(2)"
+		::= { ppStm1osIndvEntry 2 }
+
+	ppStm1osTxPwrAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX POWER
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1OduTxPower"
+		::= { ppStm1osIndvEntry 3 }
+
+	ppStm1osTxIfInLevAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX INPUT
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1OduIfInput"
+		::= { ppStm1osIndvEntry 4 }
+
+	ppStm1osRxLevAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX LEVEL
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1OduRxLev"
+		::= { ppStm1osIndvEntry 5 }
+
+	ppStm1osApcAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"APC
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1OduApc"
+		::= { ppStm1osIndvEntry 6 }
+
+	ppStm1osCblAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CABLE
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1OduCbl"
+		::= { ppStm1osIndvEntry 7 }
+
+-----------------------------------------------
+-- STM-1 IDU Status Common Table
+-----------------------------------------------
+
+	ppStm1asIduStatus OBJECT IDENTIFIER
+		::= { ppStm1AlarmStatusInfo 5 }
+
+	ppStm1isCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1isCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Idu Status Com Table"
+		::= { ppStm1asIduStatus 1 }
+
+	ppStm1isCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1isCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Idu Status Com Table entry"
+		INDEX		{
+						ppStm1isCmnPasoIndex
+					}
+		::= { ppStm1isCmnTable 1 }
+
+	PpStm1isCmnEntry ::= SEQUENCE {
+					  ppStm1isCmnPasoIndex          IpAddress,
+					  ppStm1isEBerDmr               INTEGER,
+					  ppStm1isEBerMux               INTEGER,
+					  ppStm1isSdDmr                 INTEGER,
+					  ppStm1isSdMux                 INTEGER,
+					  ppStm1isMainIFLos             INTEGER,
+					  ppStm1isLofMux                INTEGER,
+					  ppStm1isSubIFLos              INTEGER,
+					  ppStm1isMainIFAlm             INTEGER,
+					  ppStm1isSubIFAlm              INTEGER,
+					  ppStm1isCalendarAlm           INTEGER,
+					  ppStm1isAisSend               INTEGER,
+					  ppStm1isAisRcvd               INTEGER,
+					  ppStm1isLofDmr                INTEGER,
+					  ppStm1isAtpcXCtrl             INTEGER,
+					  ppStm1isStm1OutputControl     INTEGER,
+					  ppStm1isAccessCodeAlm			INTEGER
+					}
+
+	ppStm1isCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1isCmnEntry 1 }
+
+	ppStm1isEBerDmr OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"E-BER DMR
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduEBerDmr"
+		::= { ppStm1isCmnEntry 2 }
+
+	ppStm1isEBerMux OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"E-BER MUX
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduEBerMux"
+		::= { ppStm1isCmnEntry 3 }
+
+	ppStm1isSdDmr OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SD DMR
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduSdDmr"
+		::= { ppStm1isCmnEntry 4 }
+
+	ppStm1isSdMux OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SD MUX
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduSdMux"
+		::= { ppStm1isCmnEntry 5 }
+
+	ppStm1isMainIFLos OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MAIN INTFC LOS
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduMainIfLos"
+		::= { ppStm1isCmnEntry 6 }
+
+	ppStm1isLofMux OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LOF(MUX)
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduLofMux"
+		::= { ppStm1isCmnEntry 7 }
+
+	ppStm1isSubIFLos OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SUB INTFC LOS
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduSubIfLos"
+		::= { ppStm1isCmnEntry 8 }
+
+	ppStm1isMainIFAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MAIN INTFC
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduMainIFAlm"
+		::= { ppStm1isCmnEntry 9 }
+
+	ppStm1isSubIFAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SUB INTFC
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduSubIFAlm"
+		::= { ppStm1isCmnEntry 10 }
+
+	ppStm1isCalendarAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CALENDAR ARM
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1Calendar"
+		::= { ppStm1isCmnEntry 11 }
+
+	ppStm1isAisSend OBJECT-TYPE
+		SYNTAX		PpStm1NormalSendValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SUB INTFC AIS SEND
+				INVALID(0),NORMAL(1),SEND(2)
+				TRAP=eventTrapPPStm1AisSend"
+		::= { ppStm1isCmnEntry 12 }
+
+	ppStm1isAisRcvd OBJECT-TYPE
+		SYNTAX		PpStm1NormalRcvdValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SUB INTFC AIS RCVD
+				INVALID(0),NORMAL(1),RCVD(2)
+				TRAP=eventTrapPPStm1AisRcvd"
+		::= { ppStm1isCmnEntry 13 }
+
+	ppStm1isLofDmr OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LOF(DMR)
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduLofDmr"
+		::= { ppStm1isCmnEntry 14 }
+
+	ppStm1isAtpcXCtrl OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC X CTRL
+				It is available,if ppStm1eciXpic is 1:MASTER or 2:SLAVE.
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduAtpcXCtrl"
+		::= { ppStm1isCmnEntry 15 }
+
+	ppStm1isStm1OutputControl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"STM-1 OUTPUT CONTROL
+				INVALID(0)
+				NORMAL(1)
+				UNDER EXECUTION(Shutdown)(2)
+				TRAP=eventTrapPPStm1IduStm1OutputControl"
+		::= { ppStm1isCmnEntry 16 }
+
+	ppStm1isAccessCodeAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ACCESS CODE ALM
+				INVALID(0),NORMAL(1),ALARM(2)
+				If ppStm1iviSupportabilityValue.3(ppStm1iviSupportabilityIndex=access-code)
+				is UNSUPPORTABLE(1), NORMAL(1) and ALARM(2) are unavailble.
+				
+				TRAP=alarmTrapPPStm1IduAccessCodeAlm"
+		::= { ppStm1isCmnEntry 17 }
+
+-----------------------------------------------
+-- STM-1 IDU Status Indv Table
+-----------------------------------------------
+
+	ppStm1isIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1isIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"IDU Status Indv Table"
+		::= { ppStm1asIduStatus 2 }
+
+	ppStm1isIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1isIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"IDU Status Indv Entry"
+		INDEX		{
+		                                ppStm1isIndvPasoIndex,
+						ppStm1isIndvIndex
+					}
+		::= { ppStm1isIndvTable 1 }
+
+	PpStm1isIndvEntry ::= SEQUENCE {
+	                                  ppStm1isIndvPasoIndex  IpAddress,
+					  ppStm1isIndvIndex      INTEGER,
+					  ppStm1isModAlm         INTEGER,
+					  ppStm1isMdCpuAlm       INTEGER,
+					  ppStm1isDemAlm         INTEGER,
+					  ppStm1isHiBerAlm       INTEGER,
+					  ppStm1isPsAlm          INTEGER,
+					  ppStm1isModemAlm       INTEGER,
+					  ppStm1isXIfLevel       INTEGER,
+					  ppStm1isXpicReset      INTEGER,
+					  ppStm1isLowBerAlm      INTEGER
+					}
+
+	ppStm1isIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1isIndvEntry 1 }
+
+	ppStm1isIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv index
+				No1(1),
+				No2(2)"
+		::= { ppStm1isIndvEntry 2 }
+
+	ppStm1isModAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MODULATOR FAILURE
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduModAlm"
+		::= { ppStm1isIndvEntry 3 }
+
+	ppStm1isMdCpuAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MDCPU ALARM
+				INVALID(0),NORMAL(1),ALARM(2)
+				MDCPU ALARM(No.2) is valid,if ppStm1eciXpic is 1:INVALID(Not support XPIC).
+				TRAP=alarmTrapPPStm1IduMdCpuAlm"
+		::= { ppStm1isIndvEntry 4 }
+
+	ppStm1isDemAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"DEMODULATOR FAILURE
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduDemAlm"
+		::= { ppStm1isIndvEntry 5 }
+
+	ppStm1isHiBerAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"HIGH BER(RADIO)
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduHiBerAlm"
+		::= { ppStm1isIndvEntry 6 }
+
+	ppStm1isPsAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"POWER SUPPLY
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduPsAlm"
+		::= { ppStm1isIndvEntry 7 }
+
+	ppStm1isModemAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MODEM
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduModemAlm"
+		::= { ppStm1isIndvEntry 8 }
+
+	ppStm1isXIfLevel OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"X IF LEVEL
+				It is available,if ppStm1eciXpic is 1:MASTER or 2:SLAVE.
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduXIfLevel"
+		::= { ppStm1isIndvEntry 9 }
+
+	ppStm1isXpicReset OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"XPIC RESET
+				INVALID(0),NORMAL(1),RESET(2)
+				It is available,if ppStm1eciXpic is 1:MASTER or 2:SLAVE.
+				It is invalid,If ppStm1eciXpic is 0:INVALID or 3:NOT USED.
+				LOGSTATUS=RESET(2)
+				TRAP=eventTrapPPStm1IduXpicReset"
+		::= { ppStm1isIndvEntry 10 }
+
+	ppStm1isLowBerAlm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LOWBER ALM
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1IduLowBerAlm"
+		::= { ppStm1isIndvEntry 11 }
+
+---------------------------------------------------
+--  STM-1 IDU Status LanTable
+---------------------------------------------------
+
+	ppStm1isLanTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1isLanEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"LAN Table"
+		::= { ppStm1asIduStatus 3 }
+
+	ppStm1isLanEntry OBJECT-TYPE
+		SYNTAX		PpStm1isLanEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"LAN Table entry"
+		INDEX		{
+	                                  ppStm1isLanPasoIndex,
+					  ppStm1isLanIndex
+					}
+		::= { ppStm1isLanTable 1 }
+
+	PpStm1isLanEntry ::= SEQUENCE {
+	                                  ppStm1isLanPasoIndex     IpAddress,
+					  ppStm1isLanIndex         INTEGER,
+					  ppStm1isLanLink          INTEGER,
+					  ppStm1isLanCollision     INTEGER,
+					  ppStm1isLanMode          INTEGER,
+					  ppStm1isLanDuplex        INTEGER,
+					  ppStm1isLanLinkDownCtrl  INTEGER
+					}
+					
+	ppStm1isLanPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1isLanEntry 1 }
+
+	ppStm1isLanIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN index
+				Port1(1),
+				Port2(2)"
+		::= { ppStm1isLanEntry 2 }
+
+	ppStm1isLanLink OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN LINK
+				INVALID(0)
+				LINK(1)
+				ALARM(2)
+				TRAP=alarmTrapPPStm1IduLanLink"
+		::= { ppStm1isLanEntry 3 }
+
+	ppStm1isLanCollision OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN COLLISION
+				INVALID(0)
+				NORMAL(1)
+				COLLISION(2)
+				TRAP=eventTrapPPStm1IduLanCollision"
+		::= { ppStm1isLanEntry 4 }
+
+	ppStm1isLanMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN MODE
+				INVALID(0)
+				10BASE-T(1)
+				100BASE-TX(2)
+				TRAP=eventTrapPPStm1IduLanMode"
+		::= { ppStm1isLanEntry 5 }
+
+	ppStm1isLanDuplex OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN DUPLEX
+				INVALID(0)
+				HALF DUPLEX(1)
+				FULL DUPLEX(2)
+				TRAP=eventTrapPPStm1IduLanDuplex"
+		::= { ppStm1isLanEntry 6 }
+
+	ppStm1isLanLinkDownCtrl OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN LINK DOWN CONTROL
+				INVALID(0)
+				NORMAL(1)
+				UNDER EXECUTION(2)
+				TRAP=eventTrapPPStm1IduLanLinkDownCtrl"
+		::= { ppStm1isLanEntry 7 }
+
+-----------------------------------------------
+-- ppStm1EquipmentConfigInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 Common All Table
+-----------------------------------------------
+
+	ppStm1eciAllValue OBJECT IDENTIFIER
+		::= { ppStm1EquipmentConfigInfo 1 }
+		
+	ppStm1eciCmnAllValueTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1eciCmnAllValueEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Common All Table"
+		::= { ppStm1eciAllValue 1 }
+
+	ppStm1eciCmnAllValueEntry OBJECT-TYPE
+		SYNTAX		PpStm1eciCmnAllValueEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Common All Table entry"
+		INDEX		{
+					ppStm1eciCmnAllValuePasoIndex
+					}
+		::= { ppStm1eciCmnAllValueTable 1 }
+
+	PpStm1eciCmnAllValueEntry ::= SEQUENCE {
+					  ppStm1eciCmnAllValuePasoIndex    IpAddress,
+					  ppStm1eciCmnAllValue             OCTET STRING
+					}
+
+        ppStm1eciCmnAllValuePasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1eciCmnAllValueEntry 1 }
+
+	ppStm1eciCmnAllValue OBJECT-TYPE
+		SYNTAX		OCTET STRING (SIZE (10))
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) EQUIPMENT CONFIG DATA
+				UPDATE(>0)"
+		::= { ppStm1eciCmnAllValueEntry 2 }
+
+-----------------------------------------------
+-- STM-1 Indv All Table
+-----------------------------------------------
+
+	ppStm1eciIndvAllTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1eciIndvAllEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv All Table"
+		::= { ppStm1eciAllValue 2 }
+
+	ppStm1eciIndvAllEntry OBJECT-TYPE
+		SYNTAX		PpStm1eciIndvAllEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table entry"
+		INDEX		{
+		                                ppStm1eciIndvAllPasoIndex,
+						ppStm1eciIndvAllIndex
+					}
+		::= { ppStm1eciIndvAllTable 1 }
+
+	PpStm1eciIndvAllEntry ::= SEQUENCE {
+	                                  ppStm1eciIndvAllPasoIndex  IpAddress,
+					  ppStm1eciIndvAllIndex      INTEGER,
+					  ppStm1eciIndvAllValue      OCTET STRING
+					}
+
+        ppStm1eciIndvAllPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1eciIndvAllEntry 1 }
+
+	ppStm1eciIndvAllIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv All index
+		                 INVALID(0),
+		                 No1(1),
+				 No2(2)"
+		::= { ppStm1eciIndvAllEntry 2 }
+
+	ppStm1eciIndvAllValue OBJECT-TYPE
+		SYNTAX		OCTET STRING (SIZE (20))
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) Indv All value"
+		::= { ppStm1eciIndvAllEntry 3 }
+
+-----------------------------------------------
+-- STM-1 Indv Table
+-----------------------------------------------
+
+	ppStm1eciIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1eciIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table"
+		::= { ppStm1EquipmentConfigInfo 2 }
+
+	ppStm1eciIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1eciIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table entry"
+		INDEX		{
+		                                ppStm1eciIndvPasoIndex,
+						ppStm1eciIndvIndex
+					}
+		::= { ppStm1eciIndvTable 1 }
+
+	PpStm1eciIndvEntry ::= SEQUENCE {
+	                                  ppStm1eciIndvPasoIndex  IpAddress,
+					  ppStm1eciIndvIndex      INTEGER,
+					  ppStm1eciTxFreq         DisplayString,
+					  ppStm1eciRxFreq         DisplayString,
+					  ppStm1eciFreqStep       INTEGER,
+					  ppStm1eciFrameId        INTEGER
+					}
+					
+	ppStm1eciIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1eciIndvEntry 1 }
+
+	ppStm1eciIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table index
+				No1(1),
+				No2(2)"
+		::= { ppStm1eciIndvEntry 2 }
+
+	ppStm1eciTxFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Frequency[MHz]"
+		::= { ppStm1eciIndvEntry 3 }
+
+	ppStm1eciRxFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Frequency[MHz]"
+		::= { ppStm1eciIndvEntry 4 }
+
+	ppStm1eciFreqStep OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) Frequency Step"
+		::= { ppStm1eciIndvEntry 5 }
+
+	ppStm1eciFrameId OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Frame ID
+		                 0:INVALID
+		                 1:ID1,
+		                 2:ID2,
+		                 3:ID3,
+		                 4:ID4,
+		                 5:ID5,
+		                 6:ID6,
+		                 7:ID7,
+		                 8:ID8
+		                 (1)-(4) are available,if ppStm1eciXpic is 1:MASTER or 3:NOT USED.
+		                 (5)-(8) are available,if ppStm1eciXpic is 2:SLAVE."
+		::= { ppStm1eciIndvEntry 6 }
+
+
+-----------------------------------------------
+-- STM-1 Equipment Config Table
+-----------------------------------------------
+
+        ppStm1eciCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1eciCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"EquipmentConfig Common Table"
+		::= { ppStm1EquipmentConfigInfo 3 }
+
+	ppStm1eciCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1eciCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"EquipmentConfig Common Table entry"
+		INDEX		{
+		                                ppStm1eciCmnPasoIndex
+					}
+		::= { ppStm1eciCmnTable 1 }
+
+	PpStm1eciCmnEntry ::= SEQUENCE {
+	                                  ppStm1eciCmnPasoIndex              IpAddress,
+					  ppStm1eciSystem                    INTEGER,
+					  ppStm1eciConfig                    INTEGER,
+					  ppStm1eciTxPwrCtrl                 INTEGER,
+					  ppStm1eciSohTermination            INTEGER,
+					  ppStm1eciMainIntfc                 INTEGER,
+					  ppStm1eciPhysicalIntfc             INTEGER,
+					  ppStm1eciCording                   INTEGER,
+					  ppStm1eciXpic                      INTEGER,
+					  ppStm1eciAdjacentChannel           INTEGER,
+					  ppStm1eciTxSwitchType              INTEGER
+					}
+					
+	ppStm1eciCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1eciCmnEntry 1 }
+
+	ppStm1eciSystem OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"System
+		                0:INVALID
+				1:STM-1, 
+				2:STM-0, 
+				3:subSTM,
+				4:PDH"
+		::= { ppStm1eciCmnEntry 2 }
+
+	ppStm1eciConfig OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Config
+		                0:INVALID
+		                1:1+0,
+		                10:Expandable 1+0->1+1,
+		                11:HS(1+1),
+		                12:TWIN PATH (1+1)"
+		::= { ppStm1eciCmnEntry 3 }
+
+	ppStm1eciTxPwrCtrl OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Pwr Control
+		                INVALID(0),MTPC(1),ATPC(2)"
+		::= { ppStm1eciCmnEntry 4 }
+
+	ppStm1eciSohTermination OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SOH Termination
+		                INVALID(0),
+		                RST(1),
+		                SPI(2)"
+		::= { ppStm1eciCmnEntry 5 }
+
+	ppStm1eciMainIntfc OBJECT-TYPE
+		SYNTAX		INTEGER (1..31)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Main Intfc
+		                1:STM-1(Electrical),
+		                2:STM-1(Optical),
+                                3:STM-1(Optical:Single Fiber),
+                                31:10/100base-T"
+		::= { ppStm1eciCmnEntry 6 }
+
+	ppStm1eciPhysicalIntfc OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) Physical Intfc
+		                 0:INVALID
+		                 1:Balance,
+		                 2:Unbalance"
+		::= { ppStm1eciCmnEntry 7 }
+
+	ppStm1eciCording OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) Cording
+		                0:INVALID,
+		                1:B8ZS,
+		                2:AMI"
+		::= { ppStm1eciCmnEntry 8 }
+
+	ppStm1eciXpic OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Xpic
+				1:MASTER
+				2:SLAVE
+				3:NOT USED
+				0:INVALID( Not support XPIC )"
+		::= { ppStm1eciCmnEntry 9 }
+
+	ppStm1eciAdjacentChannel OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Adjacent Channel
+				 1:ACAP
+				 2:ACCP
+				 0:INVALID
+				 It is available,if ppStm1eciXpic is 1:MASTER or 2:SLAVE."
+		::= { ppStm1eciCmnEntry 10 }
+
+	ppStm1eciTxSwitchType OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Tx Switch Type
+					1:RF SW
+					2:MUTE
+					0:INVALID
+					When Equipment is not 1+1(HS),  INVALID"
+		::= { ppStm1eciCmnEntry 11 }
+
+
+-----------------------------------------------
+-- ppStm1ProvisioningInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 BER Info Table
+-----------------------------------------------
+
+	ppStm1pdiBerTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiBerEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"BER Table"
+		::= { ppStm1ProvisioningInfo 1 }
+
+	ppStm1pdiBerEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiBerEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"BER table entry"
+		INDEX		{
+		                                ppStm1pdiBerPasoIndex,
+						ppStm1pdiBerIndex
+					}
+		::= { ppStm1pdiBerTable 1 }
+
+	PpStm1pdiBerEntry ::= SEQUENCE {
+	                                  ppStm1pdiBerPasoIndex      IpAddress,
+					  ppStm1pdiBerIndex          INTEGER,
+					  ppStm1pdiBerThreshold      INTEGER
+					}
+
+        ppStm1pdiBerPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiBerEntry 1 }
+
+	ppStm1pdiBerIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  high-ber(1),
+					  low-ber(2),
+					  e-ber-radio(3),
+					  sd-radio(4),
+					  e-ber-mux(5),
+					  sd-mux(6)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER index"
+		::= { ppStm1pdiBerEntry 2 }
+
+	ppStm1pdiBerThreshold OBJECT-TYPE
+		SYNTAX		INTEGER(0..16)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ber Threshold
+				  0:INVALID,
+				  1:3E-4,
+				  2:3E-5
+				  3:3E-6
+				  4:3E-7
+				  5:3E-8
+				  6:3E-9
+				  7:3E-10
+				  8:3E-11
+				  9:3E-12
+				  10:1E-3
+				  11:1E-4
+				  12:1E-5
+				  13:1E-6
+				  14:1E-7
+				  15:1E-8
+				  16:1E-9
+				TRAP=eventTrapPPStm1BerThreshold"
+		::= { ppStm1pdiBerEntry 3 }
+
+-----------------------------------------------
+-- STM-1 TCN Table
+-----------------------------------------------
+
+	ppStm1pdiTcnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiTcnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"TCN Table"
+		::= { ppStm1ProvisioningInfo 2 }
+
+	ppStm1pdiTcnEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiTcnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"TCN Table entry"
+		INDEX		{
+		                                ppStm1pdiTcnPasoIndex,
+						ppStm1pdiTcnItemIndex,
+						ppStm1pdiTcnItemName
+					}
+		::= { ppStm1pdiTcnTable 1 }
+
+	PpStm1pdiTcnEntry ::= SEQUENCE {
+	                                  ppStm1pdiTcnPasoIndex      IpAddress,
+					  ppStm1pdiTcnItemIndex      INTEGER,
+					  ppStm1pdiTcnItemName       INTEGER,
+					  ppStm1pdiTcnDailyOccur     INTEGER,
+					  ppStm1pdiTcnDailyRecover   INTEGER,
+					  ppStm1pdiTcnWeeklyOccur    INTEGER,
+					  ppStm1pdiTcnWeeklyRecover  INTEGER
+					}
+
+        ppStm1pdiTcnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiTcnEntry 1 }
+
+	ppStm1pdiTcnItemIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  mux(1),
+					  dmr(2)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TCN index"
+		::= { ppStm1pdiTcnEntry 2 }
+
+	ppStm1pdiTcnItemName OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  tcnOFS(1),
+					  tcnES(2),
+					  tcnSES(3),
+					  tcnUAS(4),
+					  tcnBBE(5)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TCN Item Name"
+		::= { ppStm1pdiTcnEntry 3 }
+
+	ppStm1pdiTcnDailyOccur OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"THRESHOLD(15min)OCCUR
+				TRAP=eventTrapPPStm1TcnDailyOccur"
+		::= { ppStm1pdiTcnEntry 4 }
+
+	ppStm1pdiTcnDailyRecover OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"THRESHOLD(15min)RECOVER
+				TRAP=eventTrapPPStm1TcnDailyRecover"
+		::= { ppStm1pdiTcnEntry 5 }
+
+	ppStm1pdiTcnWeeklyOccur OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"THRESHOLD(1day)OCCUR
+				TRAP=eventTrapPPStm1TcnWeeklyOccur"
+		::= { ppStm1pdiTcnEntry 6 }
+
+	ppStm1pdiTcnWeeklyRecover OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"THRESHOLD(1day)RECOVER
+				TRAP=eventTrapPPStm1TcnWeeklyRecover"
+		::= { ppStm1pdiTcnEntry 7 }
+
+-----------------------------------------------
+-- STM-1 TX Power Ctrl Indv Table
+-----------------------------------------------
+
+	ppStm1pdiTxPwrCtrl OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 3 }
+
+	ppStm1pdiTxPwrCtrlIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiTxPwrCtrlIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"TX PWR CTRL Indv Table"
+		::= { ppStm1pdiTxPwrCtrl 1 }
+
+	ppStm1pdiTxPwrCtrlIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiTxPwrCtrlIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"TX PWR CTRL Indv Table entry"
+		INDEX		{
+		                                ppStm1pdiTxPwrCtrlIndvPasoIndex,
+						ppStm1pdiTxPwrCtrlIndvIndex
+					}
+		::= { ppStm1pdiTxPwrCtrlIndvTable 1 }
+
+	PpStm1pdiTxPwrCtrlIndvEntry ::= SEQUENCE {
+	                                  ppStm1pdiTxPwrCtrlIndvPasoIndex     IpAddress,
+					  ppStm1pdiTxPwrCtrlIndvIndex         INTEGER,
+					  ppStm1pdiTxPwrCtrlAtpcMaxValue      INTEGER,
+					  ppStm1pdiTxPwrCtrlAtpcMinValue      INTEGER,
+					  ppStm1pdiTxPwrCtrlAtpcHystValue     INTEGER,
+					  ppStm1pdiTxPwrCtrlMtpcCtrlvalue     INTEGER,
+					  ppStm1pdiTxPwrCtrlRxThresholdValue  INTEGER,
+					  ppStm1pdiTxPwrCtrlAddAttvalue       INTEGER
+					}
+
+        ppStm1pdiTxPwrCtrlIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 1 }
+
+	ppStm1pdiTxPwrCtrlIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX PWR CTRL Indv index
+				No1(1),
+				No2(2)"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 2 }
+
+	ppStm1pdiTxPwrCtrlAtpcMaxValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC MAXIMUM [dB]
+		                ppStm1iviOduProvAtpcMax > this value > ppStm1iviOduProvAtpcMin
+				TRAP=eventTrapPPStm1AtpcMaximum"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 3 }
+
+	ppStm1pdiTxPwrCtrlAtpcMinValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ATPC MINIMUM [dB]
+		                ppStm1iviOduProvAtpcMax > this value > ppStm1iviOduProvAtpcMin
+				TRAP=eventTrapPPStm1AtpcMinimum"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 4 }
+
+	ppStm1pdiTxPwrCtrlAtpcHystValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) HYSTERESIS [dB]
+		                ppStm1iviOduProvHysteresisMax > this value > ppStm1iviOduProvHysteresisMin
+				TRAP=eventTrapPPStm1AtpcHystValue"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 5 }
+
+	ppStm1pdiTxPwrCtrlMtpcCtrlvalue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MTPC TX POWER[dB]
+		                ppStm1iviOduProvMtpcMax > this value > ppStm1iviOduProvMtpcMin
+				TRAP=eventTrapPPStm1MtpcCtrlvalue"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 6 }
+
+	ppStm1pdiTxPwrCtrlRxThresholdValue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX THRESHOLD LEVEL [dBm]
+		                ppStm1iviOduProvRxThresholdMax > this value > ppStm1iviOduProvRxThresholdMin
+				TRAP=eventTrapPPStm1AtpcRxThresholdLevel"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 7 }
+
+	ppStm1pdiTxPwrCtrlAddAttvalue OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ADDITIONAL ATT[dB]
+		                ppStm1iviOduProvAdditionalAttMax > this value > ppStm1iviOduProvAdditionalAttMin
+				TRAP=eventTrapPPStm1AddAttvalue"
+		::= { ppStm1pdiTxPwrCtrlIndvEntry 8 }
+
+-----------------------------------------------
+-- STM-1 TX Power Ctrl Common Table
+-----------------------------------------------
+
+        ppStm1pdiTxPwrCtrlCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiTxPwrCtrlCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"TX PWR CTRL Cmn Table"
+		::= { ppStm1pdiTxPwrCtrl 2 }
+
+	ppStm1pdiTxPwrCtrlCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiTxPwrCtrlCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"TX PWR CTRL Cmn Table entry"
+		INDEX		{
+		                                ppStm1pdiTxPwrCtrlCmnPasoIndex
+					}
+		::= { ppStm1pdiTxPwrCtrlCmnTable 1 }
+
+	PpStm1pdiTxPwrCtrlCmnEntry ::= SEQUENCE {
+	                                  ppStm1pdiTxPwrCtrlCmnPasoIndex     IpAddress,
+					  ppStm1pdiTxPwrCtrlOduAlarmMode     INTEGER
+					}
+
+        ppStm1pdiTxPwrCtrlCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiTxPwrCtrlCmnEntry 1 }
+
+	ppStm1pdiTxPwrCtrlOduAlarmMode OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU ALM MODE
+		                0:INVALID--can not write,
+				1:( Not used )--can not write,
+				2:MAX,
+				3:MIN,
+				4:HOLD
+				TRAP=eventTrapPPStm1OduAlarmMode"
+		::= { ppStm1pdiTxPwrCtrlCmnEntry 2 }
+
+
+-----------------------------------------------
+-- STM-1 MainIF Table
+-----------------------------------------------
+
+	ppStm1pdiMainIF OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 4 }
+
+        ppStm1pdiMainIFTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiMainIFEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Main IF Table"
+		::= { ppStm1pdiMainIF 1 }
+
+	ppStm1pdiMainIFEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiMainIFEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Main IF Table entry"
+		INDEX		{
+		                                ppStm1pdiMainIFPasoIndex
+					}
+		::= { ppStm1pdiMainIFTable 1 }
+
+	PpStm1pdiMainIFEntry ::= SEQUENCE {
+	                                  ppStm1pdiMainIFPasoIndex       IpAddress,
+					  ppStm1pdiMainIFAls             INTEGER,
+					  ppStm1pdiMainIFAlsDelayTime    INTEGER,
+					  ppStm1pdiMainIFMsAisGeneration INTEGER,
+					  ppStm1pdiMainIFTxPriority      INTEGER,
+					  ppStm1pdiMainIFRxPriority      INTEGER
+					}
+
+        ppStm1pdiMainIFPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiMainIFEntry 1 }
+
+	ppStm1pdiMainIFAls OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ALS
+				0:INVALID,
+				1:ENABLE,
+				2:DISABLE,
+				TRAP=eventTrapPPStm1MainIFAls"
+		::= { ppStm1pdiMainIFEntry 2 }
+
+	ppStm1pdiMainIFAlsDelayTime OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ALS DELAY TIME
+		                0:INVALID--can not write,
+				1:60sec,
+				2:180sec,
+				3:300sec
+				TRAP=eventTrapPPStm1MainIFAlsDelayTime"
+		::= { ppStm1pdiMainIFEntry 3 }
+
+	ppStm1pdiMainIFMsAisGeneration OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"MS-AIS GENERATION
+				1:ENABLE
+				2:DISABLE
+				0:INVALID
+				TRAP=eventTrapPPStm1MainIFMsAisGeneration"
+		::= { ppStm1pdiMainIFEntry 4 }
+
+	ppStm1pdiMainIFTxPriority OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX PRIORITY
+				0:INVALID
+				1:PRIORITY NO.1
+				2:NON-PRIORITY
+				When Equipment is not 1+1(HS),  INVALID
+				TRAP=eventTrapPPStm1MainIFTxPriority"
+		::= { ppStm1pdiMainIFEntry 5 }
+
+	ppStm1pdiMainIFRxPriority OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX PRIORITY
+					1:PRIORITY NO.1
+					2:NON-PRIORITY
+					0:INVALID
+					When Equipment is not 1+1(HS),  INVALID
+					FLAG=TRAP|EVLOG|BITCNT(8)
+					LOGITEM='RX PRIORITY'
+					LOGSTATUS='PRIORITY NO.1(1), NON-PRIORITY(2)'
+					LOGFLAG='LII_I_INVALID_HIDE'
+					TRAP=eventTrapPPStm1MainIFRxPriority"
+		::= { ppStm1pdiMainIFEntry 6 }
+
+
+-----------------------------------------------
+-- STM-1 OH Assign Table
+-----------------------------------------------
+
+	ppStm1pdiOhAssign OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 5 }
+
+        ppStm1pdiOhAssignTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiOhAssignEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"OhAssign Table"
+		::= { ppStm1pdiOhAssign 1 }
+
+	ppStm1pdiOhAssignEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiOhAssignEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Oh Assign Table entry"
+		INDEX		{
+		                                ppStm1pdiOhAssignPasoIndex
+					}
+		::= { ppStm1pdiOhAssignTable 1 }
+
+	PpStm1pdiOhAssignEntry ::= SEQUENCE {
+	                                  ppStm1pdiOhAssignPasoIndex             IpAddress,
+					  ppStm1pdiOhAssignAssignment            INTEGER,
+					  ppStm1pdiOhAssignVf1Setting            INTEGER,
+                                          ppStm1pdiOhAssignVf2Setting            INTEGER,
+                                          ppStm1pdiOhAssignV111Setting           INTEGER,
+                                          ppStm1pdiOhAssignV111DirectionSetting  INTEGER,
+                                          ppStm1pdiOhAssignV112Setting           INTEGER,
+                                          ppStm1pdiOhAssignV112DirectionSetting  INTEGER,
+                                          ppStm1pdiOhAssignLanCardSetting        INTEGER               
+                                         
+                                          }
+
+        ppStm1pdiOhAssignPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiOhAssignEntry 1 }
+
+	ppStm1pdiOhAssignAssignment OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ASSIGNMENT
+				0:INVALID--can not write,
+				1:EASY,
+				2:CUSTOMIZE
+				TRAP=eventTrapPPStm1OhAssignAssignment"
+		::= { ppStm1pdiOhAssignEntry 2 }
+
+	ppStm1pdiOhAssignVf1Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"VF-1 SETTING
+				0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX (not used),
+				10:DCCR-DMR (not used)
+				TRAP=eventTrapPPStm1OhAssignVf1Setting"
+		::= { ppStm1pdiOhAssignEntry 3 }
+
+	ppStm1pdiOhAssignVf2Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"VF-2 SETTING
+		                0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX (not used),
+				10:DCCR-DMR (not used)
+				TRAP=eventTrapPPStm1OhAssignVf2Setting"
+		::= { ppStm1pdiOhAssignEntry 4 }
+
+	ppStm1pdiOhAssignV111Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"V11-1 SETTING
+		                0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX,
+				10:DCCR-DMR
+				TRAP=eventTrapPPStm1OhAssignV111Setting"
+		::= { ppStm1pdiOhAssignEntry 5 }
+
+	ppStm1pdiOhAssignV111DirectionSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"V11-1 DIRECTION SETTING
+		                0:INVALID--can not write,
+				1:CO-DIRECTIONAL,
+				2:CONTRA-DIRECTIONAL
+				TRAP=eventTrapPPStm1OhAssignV111DirectionSetting"
+		::= { ppStm1pdiOhAssignEntry 6 }
+
+	ppStm1pdiOhAssignV112Setting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"V11-2 SETTING
+		                0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX,
+				10:DCCR-DMR
+				TRAP=eventTrapPPStm1OhAssignV112Setting"
+		::= { ppStm1pdiOhAssignEntry 7 }
+
+	ppStm1pdiOhAssignV112DirectionSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"V11-2 DIRECTION SETTING
+		                0:INVALID--can not write,
+				1:CO-DIRECTIONAL,
+				2:CONTRA-DIRECTIONAL
+				TRAP=eventTrapPPStm1OhAssignV112DirectionSetting"
+		::= { ppStm1pdiOhAssignEntry 8 }
+
+	ppStm1pdiOhAssignLanCardSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..10)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN CARD
+				0:NOT USED,
+				1:E1-MUX,
+				2:F1-MUX,
+				3:E1-DMR,
+				4:F1-DMR,
+				5:DSC1,
+				6:DSC2,
+				7:DSC3,
+				8:DSC4,
+				9:DCCR-MUX (not used),
+				10:DCCR-DMR (not used)
+				It is invalid, if ppStm1pdiSubIFSubBasebandIF is not LAN CARD(2) or ppStm1iviOduFreqModulationType is not 128QAM(7).
+				TRAP=eventTrapPPStm1OhAssignLanCardSetting"
+		::= { ppStm1pdiOhAssignEntry 9 }
+		
+
+-----------------------------------------------
+-- STM-1 Ext Alarm Table
+-----------------------------------------------
+
+	ppStm1pdiExtAlarm OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 6 }
+
+	ppStm1pdiExtAlarmTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiExtAlarmEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Ext Alarm Table"
+		::= { ppStm1pdiExtAlarm 1 }
+
+	ppStm1pdiExtAlarmEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiExtAlarmEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Ext Alarm entry"
+		INDEX		{
+		                                ppStm1pdiExtAlarmPasoIndex,
+						ppStm1pdiExtAlarmIndex
+					}
+		::= { ppStm1pdiExtAlarmTable 1 }
+
+	PpStm1pdiExtAlarmEntry ::= SEQUENCE {
+	                                  ppStm1pdiExtAlarmPasoIndex  IpAddress,
+					  ppStm1pdiExtAlarmIndex      INTEGER,
+					  ppStm1pdiExtAlarmRelay      OCTET STRING
+					}
+
+        ppStm1pdiExtAlarmPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiExtAlarmEntry 1 }
+
+	ppStm1pdiExtAlarmIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  relay1(1),
+					  relay2(2),
+					  relay3(3),
+					  relay4(4),
+					  relay5(5),
+					  relay6(6),
+					  relay7(7),
+					  relay8(8),
+					  relay9(9),
+					  relay10(10),
+					  relay11(11)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Ext Alarm Index"
+		::= { ppStm1pdiExtAlarmEntry 2 }
+
+	ppStm1pdiExtAlarmRelay OBJECT-TYPE
+		SYNTAX		OCTET STRING (SIZE (8))
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RELAY OUTPUT MODE
+				UPDATED
+				TRAP=eventTrapPPStm1Relay"
+		::= { ppStm1pdiExtAlarmEntry 3 }
+
+-----------------------------------------------
+-- STM-1 Sub IF Table
+-----------------------------------------------
+
+	ppStm1pdiSubIF OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 7 }
+
+        ppStm1pdiSubIFTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiSubIFEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"SubIF Table"
+		::= { ppStm1pdiSubIF 1 }
+
+	ppStm1pdiSubIFEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiSubIFEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"SubIF table entry"
+		INDEX		{
+		                                ppStm1pdiSubIFPasoIndex
+					}
+		::= { ppStm1pdiSubIFTable 1 }
+
+	PpStm1pdiSubIFEntry ::= SEQUENCE {
+	                                  ppStm1pdiSubIFPasoIndex        IpAddress,
+					  ppStm1pdiSubIFSubBasebandIF    INTEGER,
+					  ppStm1pdiSubWsIntfcType        INTEGER,
+					  ppStm1pdiSubWsIntfcLineLength  INTEGER
+					}
+
+        ppStm1pdiSubIFPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiSubIFEntry 1 }
+
+	ppStm1pdiSubIFSubBasebandIF OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"SUB INTFC
+				0:INVALID,
+				1:WS INTFC,
+				2:LAN CARD,
+				3:NOT USED,
+				4:WAYSIDE/CLUSTER ALARM,
+				5:CLUSTER ALARM
+				TRAP=eventTrapPPStm1SubIFSubBasebandIF"
+		::= { ppStm1pdiSubIFEntry 2 }
+
+	ppStm1pdiSubWsIntfcType OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS INTFC
+		                0:INVALID,
+				1:2MB BAL,
+				2:2MB UNBAL,
+				3:1.5MB(AMI),
+				4:1.5MB(B8ZS)
+				TRAP=eventTrapPPStm1SubWsIntfcType"
+		::= { ppStm1pdiSubIFEntry 3 }
+
+	ppStm1pdiSubWsIntfcLineLength OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"WS LINE LENGTH
+		                0:INVALID,
+				1:0-40m(0-133ft),
+				2:40-81m(133-266ft),
+				3:81-121m(266-399ft),
+				4:121-162m(399-533ft),
+				5:162-199m(533-655ft)
+				TRAP=eventTrapPPStm1SubWsIntfcLineLength"
+		::= { ppStm1pdiSubIFEntry 4 }
+
+-----------------------------------------------
+-- STM-1 LAN IF Table
+-----------------------------------------------
+
+	ppStm1pdiLan OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 8 }
+
+	ppStm1pdiLanTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiLanEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"LAN Table"
+		::= { ppStm1pdiLan 1 }
+
+	ppStm1pdiLanEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiLanEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"LAN table entry"
+		INDEX		{
+						ppStm1pdiLanPasoIndex,
+						ppStm1pdiLanIndex
+					}
+		::= { ppStm1pdiLanTable 1 }
+
+	PpStm1pdiLanEntry ::= SEQUENCE {
+					  ppStm1pdiLanPasoIndex    IpAddress,
+					  ppStm1pdiLanIndex        INTEGER,
+					  ppStm1pdiLanPortSetting  INTEGER,
+					  ppStm1pdiLanCollisionReportSetting  INTEGER,
+					  ppStm1pdiLanFlowControlSetting      INTEGER
+					}
+
+	ppStm1pdiLanPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiLanEntry 1 }
+
+	ppStm1pdiLanIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN INDEX
+				port1(1)
+				port2(2)"
+		::= { ppStm1pdiLanEntry 2 }
+
+	ppStm1pdiLanPortSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..9)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"LAN PORT SETTING
+				1:AUTO NEGOTIATION(AUTO MDI/MDIX)
+				2:10BASE-T/HALF DUPLEX(MDI)
+				3:10BASE-T/FULL DUPLEX(MDI)
+				4:100BASE-TX/HALF DUPLEX(MDI)
+				5:100BASE-TX/FULL DUPLEX(MDI)
+				6:10BASE-T/HALF DUPLEX(MDIX)
+				7:10BASE-T/FULL DUPLEX(MDIX)
+				8:100BASE-TX/HALF DUPLEX(MDIX)
+				9:100BASE-TX/FULL DUPLEX(MDIX)
+				0:INVALID
+				TRAP=eventTrapPPStm1LanPortSetting"
+		::= { ppStm1pdiLanEntry 3 }
+
+	ppStm1pdiLanCollisionReportSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"COLLISION REPORT SETTING
+				1:REPORT
+				2:NOT REPORT
+				0:INVALID
+				TRAP=eventTrapPPStm1LanCollisionReportSetting"
+		::= { ppStm1pdiLanEntry 4 }
+
+	ppStm1pdiLanFlowControlSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"FLOW CONTROL SETTING
+				1:ON
+				2:OFF
+				0:INVALID
+				TRAP=eventTrapPPStm1LanFlowControlSetting"
+		::= { ppStm1pdiLanEntry 5 }
+
+	ppStm1pdiLanCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiLanCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"LAN Common Table"
+		::= { ppStm1pdiLan 2 }
+
+	ppStm1pdiLanCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiLanCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"LAN Common Table entry"
+		INDEX		{
+						ppStm1pdiLanCmnPasoIndex
+					}
+		::= { ppStm1pdiLanCmnTable 1 }
+
+	PpStm1pdiLanCmnEntry ::= SEQUENCE {
+					  ppStm1pdiLanCmnPasoIndex        IpAddress,
+					  ppStm1pdiLanPortUsage           INTEGER,
+					  ppStm1pdiLanLinkDown            INTEGER,
+					  ppStm1pdiLanClockSourceSetting  INTEGER
+					}
+
+	ppStm1pdiLanCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiLanCmnEntry 1 }
+
+	ppStm1pdiLanPortUsage OBJECT-TYPE
+		SYNTAX		INTEGER (0..4)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"PORT USAGE
+				INVALID(0)
+				PORT1=75MB/PORT2=75MB(1)
+				PORT1=100MB/PORT2=50MB(2)
+				BEST EFFORT(3)
+				PORT1=100MB/PORT2=NOT USED(4)"
+		::= { ppStm1pdiLanCmnEntry 2 }
+
+	ppStm1pdiLanLinkDown OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"FAR END LINK DOWN
+				INVALID(0)
+				ENABLE(1)
+				DISABLE(2)"
+		::= { ppStm1pdiLanCmnEntry 3 }
+
+	ppStm1pdiLanClockSourceSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"CLOCK SOURCE SETTING
+				INVALID(0)
+				INTERNAL CLOCK(1)
+				DMR -> INTERNAL CLOCK(2)"
+		::= { ppStm1pdiLanCmnEntry 4 }
+
+-----------------------------------------------
+-- STM-1 ACCESS CODE IF Table
+-----------------------------------------------
+
+	ppStm1pdiAccessCode OBJECT IDENTIFIER
+		::= { ppStm1ProvisioningInfo 9 }
+
+	ppStm1pdiAccessCodeTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pdiAccessCodeEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Access Code Table"
+		::= { ppStm1pdiAccessCode 1 }
+
+	ppStm1pdiAccessCodeEntry OBJECT-TYPE
+		SYNTAX		PpStm1pdiAccessCodeEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Access Code table entry"
+		INDEX		{
+						ppStm1pdiAccessCodePasoIndex
+					}
+		::= { ppStm1pdiAccessCodeTable 1 }
+
+	PpStm1pdiAccessCodeEntry ::= SEQUENCE {
+					  ppStm1pdiAccessCodePasoIndex    IpAddress,
+					  ppStm1pdiAccessCodeSetting      INTEGER
+					}
+
+	ppStm1pdiAccessCodePasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pdiAccessCodeEntry 1 }
+
+	ppStm1pdiAccessCodeSetting OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Access Code Setting
+				INVALID(0),
+				ENABLE(1),
+				DISABLE(2)
+
+				If ppStm1iviSupportabilityValue.3(ppStm1csIndvEntry=access-code)
+				is UNSUPPORTABLE(1), ppStm1pdiAccessCodeSetting
+				is unavailable.
+				If ppStm1eciMainIntfc is 10/100BASE-T(31),
+				ppStm1pdiAccessCodeSetting is unavailable.
+				TRAP=eventTrapPPStm1AccessCodeSetting"
+		::= { ppStm1pdiAccessCodeEntry 2 }
+
+
+-----------------------------------------------
+-- ppStm1InventoryInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 Inventory Info Table
+-----------------------------------------------
+
+	ppStm1iviCmnTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1iviCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Common Table"
+		::= { ppStm1InventoryInfo 1 }
+
+	ppStm1iviCmnEntry OBJECT-TYPE
+		SYNTAX		PpStm1iviCmnEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Common entry"
+		INDEX		{
+						ppStm1iviCmnPasoIndex,
+						ppStm1iviCmnName
+					}
+		::= { ppStm1iviCmnTable 1 }
+
+	PpStm1iviCmnEntry ::= SEQUENCE {
+	                                  ppStm1iviCmnPasoIndex   IpAddress,
+					  ppStm1iviCmnName        INTEGER,
+					  ppStm1iviCmnCodeNo      DisplayString,
+					  ppStm1iviCmnSerialNo    DisplayString,
+					  ppStm1iviCmnDate        DisplayString,
+					  ppStm1iviCmnHwVersion     DisplayString,
+					  ppStm1iviCmnSwVersion     DisplayString
+					}
+
+        ppStm1iviCmnPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1iviCmnEntry 1 }
+
+	ppStm1iviCmnName OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  main-interface(1),
+					  sub-interface(2),
+					  ctrl(3)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Module Name"
+		::= { ppStm1iviCmnEntry 2 }
+
+	ppStm1iviCmnCodeNo OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Code No of module"
+		::= { ppStm1iviCmnEntry 3 }
+
+	ppStm1iviCmnSerialNo OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Serial No of module"
+		::= { ppStm1iviCmnEntry 4 }
+
+	ppStm1iviCmnDate OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"The date of manufacture of module(YY/MM/DD)"
+		::= { ppStm1iviCmnEntry 5 }
+
+	ppStm1iviCmnHwVersion OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Hardware Version of module"
+		::= { ppStm1iviCmnEntry 6 }
+
+	ppStm1iviCmnSwVersion OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Software Version of module"
+		::= { ppStm1iviCmnEntry 7 }
+
+-----------------------------------------------
+-- STM-1 Inventory Info Table
+-----------------------------------------------
+
+	ppStm1iviIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1iviIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table"
+		::= { ppStm1InventoryInfo 2 }
+
+	ppStm1iviIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1iviIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv entry"
+		INDEX		{
+						ppStm1iviIndvPasoIndex,
+						ppStm1iviIndvIndex,
+						ppStm1iviIndvName
+					}
+		::= { ppStm1iviIndvTable 1 }
+
+	PpStm1iviIndvEntry ::= SEQUENCE {
+	                                  ppStm1iviIndvPasoIndex   IpAddress,
+					  ppStm1iviIndvIndex       INTEGER,
+					  ppStm1iviIndvName        INTEGER,
+					  ppStm1iviIndvCodeNo      DisplayString,
+					  ppStm1iviIndvSerialNo    DisplayString,
+					  ppStm1iviIndvDate        DisplayString,
+					  ppStm1iviIndvHwVersion     DisplayString,
+					  ppStm1iviIndvSwVersion     DisplayString
+					}
+
+         ppStm1iviIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1iviIndvEntry 1 }
+
+	ppStm1iviIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv index
+				No1(1),
+				No2(2)"
+		::= { ppStm1iviIndvEntry 2 }
+
+	ppStm1iviIndvName OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  odu(1),
+					  modem(2)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Name"
+		::= { ppStm1iviIndvEntry 3 }
+
+	ppStm1iviIndvCodeNo OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Code No"
+		::= { ppStm1iviIndvEntry 4 }
+
+	ppStm1iviIndvSerialNo OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Serial No"
+		::= { ppStm1iviIndvEntry 5 }
+
+	ppStm1iviIndvDate OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv Date (YY/MM/DD)"
+		::= { ppStm1iviIndvEntry 6 }
+
+	ppStm1iviIndvHwVersion OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv HW Version"
+		::= { ppStm1iviIndvEntry 7 }
+
+	ppStm1iviIndvSwVersion OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv SW Version
+				MDCPU SW Version(No.2) is valid,if ppStm1eciXpic is 1:INVALID(Not support"
+		::= { ppStm1iviIndvEntry 8 }
+
+-----------------------------------------------
+-- STM-1 ODU Frequency Info Table
+-----------------------------------------------
+
+	ppStm1iviOduFreqInfo OBJECT IDENTIFIER
+		::= { ppStm1InventoryInfo 3 }
+
+	ppStm1iviOduFreqIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1iviOduFreqIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Indv Table"
+		::= { ppStm1iviOduFreqInfo 1 }
+
+	ppStm1iviOduFreqIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1iviOduFreqIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Indv entry"
+		INDEX		{
+		                                ppStm1iviOduFreqIndvPasoIndex,
+						ppStm1iviOduFreqIndvIndex
+					}
+		::= { ppStm1iviOduFreqIndvTable 1 }
+
+	PpStm1iviOduFreqIndvEntry ::= SEQUENCE {
+	                                  ppStm1iviOduFreqIndvPasoIndex   IpAddress,
+					  ppStm1iviOduFreqIndvIndex       INTEGER,
+					  ppStm1iviOduFreqTxStartFreq     DisplayString,
+					  ppStm1iviOduFreqTxEndFreq       DisplayString,
+					  ppStm1iviOduFreqFreqWidth       DisplayString,
+					  ppStm1iviOduFreqShiftFreq       DisplayString,
+					  ppStm1iviOduFreqUpperLower      INTEGER,
+					  ppStm1iviOduFreqSpectrumInvert  INTEGER,
+					  ppStm1iviOduFreqModemType       INTEGER,
+					  ppStm1iviOduFreqModulationType  INTEGER
+					}
+					
+	ppStm1iviOduFreqIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1iviOduFreqIndvEntry 1 }
+		
+	ppStm1iviOduFreqIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Indv index
+				No1(1),
+				No2(2)"
+		::= { ppStm1iviOduFreqIndvEntry 2 }
+
+	ppStm1iviOduFreqTxStartFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency TX Start Frequency[MHz]"
+		::= { ppStm1iviOduFreqIndvEntry 3 }
+
+	ppStm1iviOduFreqTxEndFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency TX End Frequency[MHz]"
+		::= { ppStm1iviOduFreqIndvEntry 4 }
+
+	ppStm1iviOduFreqFreqWidth OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Width[MHz]"
+		::= { ppStm1iviOduFreqIndvEntry 5 }
+
+	ppStm1iviOduFreqShiftFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Shift Frequency[MHz]"
+		::= { ppStm1iviOduFreqIndvEntry 6 }
+
+	ppStm1iviOduFreqUpperLower OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Upper Lower
+		                 0:INVALID,1:Lower,2:Upper"
+		::= { ppStm1iviOduFreqIndvEntry 7 }
+
+	ppStm1iviOduFreqSpectrumInvert OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Spectrum Invert
+		                INVALID(0),NORMAL(1),INVERT(2)"
+		::= { ppStm1iviOduFreqIndvEntry 8 }
+
+	ppStm1iviOduFreqModemType OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Modem Type
+		                 INVALID(0),FIXED_ASSIGN(1),VARIABLE_FREE(2)"
+		::= { ppStm1iviOduFreqIndvEntry 9 }
+
+	ppStm1iviOduFreqModulationType OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Frequency Modulation Type
+		                 0:INVALID
+		                 2:4PSK
+		                 4:16QAM
+		                 5:32QAM
+		                 7:128QAM"
+		::= { ppStm1iviOduFreqIndvEntry 10 }
+
+-----------------------------------------------
+-- STM-1 Frequency Setting Info Table
+-----------------------------------------------
+
+	ppStm1iviFreqSettingInfo OBJECT IDENTIFIER
+		::= { ppStm1InventoryInfo 4 }
+
+	ppStm1iviFreqSettingIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1iviFreqSettingIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Frequency Setting Indv Table"
+		::= { ppStm1iviFreqSettingInfo 1 }
+
+	ppStm1iviFreqSettingIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1iviFreqSettingIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Frequency Setting Indv entry"
+		INDEX		{
+		                                ppStm1iviFreqSettingIndvPasoIndex,
+						ppStm1iviFreqSettingIndvIndex
+					}
+		::= { ppStm1iviFreqSettingIndvTable 1 }
+
+	PpStm1iviFreqSettingIndvEntry ::= SEQUENCE {
+	                                  ppStm1iviFreqSettingIndvPasoIndex  IpAddress,
+					  ppStm1iviFreqSettingIndvIndex      INTEGER,
+					  ppStm1iviFreqSettingTxFreq         DisplayString,
+					  ppStm1iviFreqSettingRxFreq         DisplayString,
+					  ppStm1iviFreqSettingFS             INTEGER
+					}
+
+        ppStm1iviFreqSettingIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1iviFreqSettingIndvEntry 1 }
+
+	ppStm1iviFreqSettingIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Frequency Setting Indv Table index
+				No1(1),
+				No2(2)"
+		::= { ppStm1iviFreqSettingIndvEntry 2 }
+
+	ppStm1iviFreqSettingTxFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX FREQUENCY [MHz]
+		                FORMAT XXXXX.XXX
+				TRAP=eventTrapPPStm1TxFreq"
+		::= { ppStm1iviFreqSettingIndvEntry 3 }
+
+	ppStm1iviFreqSettingRxFreq OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX FREQUENCY [MHz]
+		                FORMAT XXXXX.XXX
+				TRAP=eventTrapPPStm1RxFreq"
+		::= { ppStm1iviFreqSettingIndvEntry 4 }
+
+	ppStm1iviFreqSettingFS OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) FS
+				  INVALID(0)--can not write,
+				  2.39894MHz(1),
+				  4.79788MHz(2),
+				  9.59575MHz(3),
+				  11.*****MHz(4),
+				  24.236883MHz(5),
+				  41.51808MHz(6)
+				TRAP=eventTrapPPStm1FS"
+		::= { ppStm1iviFreqSettingIndvEntry 5 }
+
+-----------------------------------------------
+-- STM-1 ODU Prov Info Table
+-----------------------------------------------
+
+	ppStm1iviOduProvInfo OBJECT IDENTIFIER
+		::= { ppStm1InventoryInfo 5 }
+		
+	ppStm1iviOduProvInfoTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1iviOduProvInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov Table"
+		::= { ppStm1iviOduProvInfo 1 }
+
+	ppStm1iviOduProvInfoEntry OBJECT-TYPE
+		SYNTAX		PpStm1iviOduProvInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov entry"
+		INDEX		{
+		                                ppStm1iviOduProvPasoIndex
+					}
+		::= { ppStm1iviOduProvInfoTable 1 }
+
+	PpStm1iviOduProvInfoEntry ::= SEQUENCE {
+	                                  ppStm1iviOduProvPasoIndex            IpAddress,
+					  ppStm1iviOduProvAtpcMax              INTEGER,
+					  ppStm1iviOduProvAtpcMin              INTEGER,
+					  ppStm1iviOduProvMtpcMax              INTEGER,
+					  ppStm1iviOduProvMtpcMin              INTEGER,
+					  ppStm1iviOduProvRxThresholdMax       INTEGER,
+					  ppStm1iviOduProvRxThresholdMin       INTEGER,
+					  ppStm1iviOduProvAdditionalAttMax     INTEGER,
+					  ppStm1iviOduProvAdditionalAttMin     INTEGER,
+					  ppStm1iviOduProvHysteresisPermission INTEGER,
+					  ppStm1iviOduProvHysteresisMax        INTEGER,
+					  ppStm1iviOduProvHysteresisMin        INTEGER
+					}
+
+        ppStm1iviOduProvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1iviOduProvInfoEntry 1 }
+		
+	ppStm1iviOduProvAtpcMax OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov ATPC MAX[dB]"
+		::= { ppStm1iviOduProvInfoEntry 2 }
+
+	ppStm1iviOduProvAtpcMin OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov ATPC MIN[dB]"
+		::= { ppStm1iviOduProvInfoEntry 3 }
+
+	ppStm1iviOduProvMtpcMax OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov MTPC MAX[dB]"
+		::= { ppStm1iviOduProvInfoEntry 4 }
+
+	ppStm1iviOduProvMtpcMin OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov MTPC MIN[dB]"
+		::= { ppStm1iviOduProvInfoEntry 5 }
+
+	ppStm1iviOduProvRxThresholdMax OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov RX Threshold MAX[dBm]"
+		::= { ppStm1iviOduProvInfoEntry 6 }
+
+	ppStm1iviOduProvRxThresholdMin OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov RX Threshold MIN[dBm]"
+		::= { ppStm1iviOduProvInfoEntry 7 }
+
+	ppStm1iviOduProvAdditionalAttMax OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov Additional ATT MAX[dB]"
+		::= { ppStm1iviOduProvInfoEntry 8 }
+
+	ppStm1iviOduProvAdditionalAttMin OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Prov Additional ATT MIN[dB]"
+		::= { ppStm1iviOduProvInfoEntry 9 }
+
+	ppStm1iviOduProvHysteresisPermission OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) ODU Prov Hysteresis Permission
+		                00h: Not Permission,
+		                FFh: Permission"
+		::= { ppStm1iviOduProvInfoEntry 10 }
+
+	ppStm1iviOduProvHysteresisMax OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) ODU Prov Hysteresis MAX[dB]"
+		::= { ppStm1iviOduProvInfoEntry 11 }
+
+	ppStm1iviOduProvHysteresisMin OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"(Not used) ODU Prov Hysteresis MIN[dB]"
+		::= { ppStm1iviOduProvInfoEntry 12 }
+
+
+-----------------------------------------------
+-- STM-1 Supportability Info Table
+-----------------------------------------------
+
+	ppStm1iviSupportabilityInfo OBJECT IDENTIFIER
+		::= { ppStm1InventoryInfo 6 }
+		
+	ppStm1iviSupportabilityInfoTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1iviSupportabilityInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Supportability Table"
+		::= { ppStm1iviSupportabilityInfo 1 }
+
+	ppStm1iviSupportabilityInfoEntry OBJECT-TYPE
+		SYNTAX		PpStm1iviSupportabilityInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Supportability entry"
+		INDEX		{
+		                                ppStm1iviSupportabilityPasoIndex,
+						ppStm1iviSupportabilityIndex
+					}
+		::= { ppStm1iviSupportabilityInfoTable 1 }
+
+	PpStm1iviSupportabilityInfoEntry ::= SEQUENCE {
+	                               ppStm1iviSupportabilityPasoIndex            IpAddress,
+	                               ppStm1iviSupportabilityIndex                INTEGER,
+	                               ppStm1iviSupportabilityValue 	           INTEGER
+					}
+
+        ppStm1iviSupportabilityPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1iviSupportabilityInfoEntry 1 }
+
+	ppStm1iviSupportabilityIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Supportability index
+				linearizer-1(1),
+				linearizer-2(2),
+				access-code(3),
+				ws(4),
+				dccr(5)"
+		::= { ppStm1iviSupportabilityInfoEntry  2 }
+
+	ppStm1iviSupportabilityValue OBJECT-TYPE
+		SYNTAX		INTEGER(0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Supportability Value
+		              INVALID(0),
+		              UNSUPPORTABLE(1),
+			       SUPPORTABLE(2)
+				If Linearizer of No.1 function is available,
+				ppStm1iviSupportabilityValue.1(ppStm1iviSupportabilityIndex=linearizer-1)
+				is SUPPORTABLE(2).
+				If Linearizer of No.2 function is available,
+				ppStm1iviSupportabilityValue.2(ppStm1iviSupportabilityIndex=linearizer-2)
+				is SUPPORTABLE(2).
+				If Access Code function is available,
+				ppStm1iviSupportabilityValue.3(ppStm1iviSupportabilityIndex=access-code)
+				is SUPPORTABLE(2).
+				ppStm1iviSupportabilityValue.4(ppStm1iviSupportabilityIndex=ws)
+				is only for NEC use.
+				ppStm1iviSupportabilityValue.5(ppStm1iviSupportabilityIndex=ws)
+				is only for NEC use."
+		::= { ppStm1iviSupportabilityInfoEntry 3 }
+
+
+-----------------------------------------------
+-- ppStm1MeteringInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 Metering Data Indv Table
+-----------------------------------------------
+
+	ppStm1mdiIndvTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1mdiIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table"
+		::= { ppStm1MeteringInfo 1 }
+
+	ppStm1mdiIndvEntry OBJECT-TYPE
+		SYNTAX		PpStm1mdiIndvEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Indv Table entry"
+		INDEX		{
+						ppStm1mdiIndvPasoIndex,
+						ppStm1mdiIndvIndex
+					}
+		::= { ppStm1mdiIndvTable 1 }
+
+	PpStm1mdiIndvEntry ::= SEQUENCE {
+					  ppStm1mdiIndvPasoIndex  IpAddress,
+					  ppStm1mdiIndvIndex      INTEGER,
+					  ppStm1mdiTxPower        DisplayString,
+					  ppStm1mdiRxLevel        DisplayString,
+					  ppStm1mdiOduPs          DisplayString
+					}
+
+        ppStm1mdiIndvPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1mdiIndvEntry 1 }
+
+	ppStm1mdiIndvIndex OBJECT-TYPE
+		SYNTAX		INTEGER (1..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Indv index
+				No1(1),
+				No2(2)"
+		::= { ppStm1mdiIndvEntry 2 }
+
+	ppStm1mdiTxPower OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"TX Power[dBm]"
+		::= { ppStm1mdiIndvEntry 3 }
+
+	ppStm1mdiRxLevel OBJECT-TYPE
+		SYNTAX	        DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"RX Level[dBm]"
+		::= { ppStm1mdiIndvEntry 4 }
+
+	ppStm1mdiOduPs OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"ODU Power Supply Voltage[V]"
+		::= { ppStm1mdiIndvEntry 5 }
+
+-----------------------------------------------
+-- STM-1 BER Table
+-----------------------------------------------
+
+	ppStm1mdiBerTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1mdiBerEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"BER Table"
+		::= { ppStm1MeteringInfo 2 }
+
+	ppStm1mdiBerEntry OBJECT-TYPE
+		SYNTAX		PpStm1mdiBerEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"BER Table entry"
+		INDEX		{
+						ppStm1mdiBerPasoIndex
+					}
+		::= { ppStm1mdiBerTable 1 }
+
+	PpStm1mdiBerEntry ::= SEQUENCE {
+					  ppStm1mdiBerPasoIndex  IpAddress,
+					  ppStm1mdiBer           DisplayString
+					}
+
+        ppStm1mdiBerPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1mdiBerEntry 1 }
+
+	ppStm1mdiBer OBJECT-TYPE
+		SYNTAX		DisplayString
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"BER"
+		::= { ppStm1mdiBerEntry 2 }
+
+-----------------------------------------------
+-- ppStm1PmonInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 Performance Monitor Daily Info Table
+-----------------------------------------------
+
+	ppStm1pmDailyData OBJECT IDENTIFIER
+		::= { ppStm1PmonInfo 1 }
+
+	ppStm1pmDailyInfoTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pmDailyInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Daily Info Table"
+		::= { ppStm1pmDailyData 1 }
+
+	ppStm1pmDailyInfoEntry OBJECT-TYPE
+		SYNTAX		PpStm1pmDailyInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Daily Info entry"
+		INDEX		{
+		                                ppStm1pmDailyInfoPasoIndex,
+						ppStm1pmDailyInfoIndex
+					}
+		::= { ppStm1pmDailyInfoTable 1 }
+
+	PpStm1pmDailyInfoEntry ::= SEQUENCE {
+	                                  ppStm1pmDailyInfoPasoIndex  IpAddress,
+					  ppStm1pmDailyInfoIndex      INTEGER,
+					  ppStm1pmDailyStatus         INTEGER
+					}
+
+        ppStm1pmDailyInfoPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pmDailyInfoEntry 1 }
+
+	ppStm1pmDailyInfoIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  mux(1),
+					  dmr(2)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Daily Info index"
+		::= { ppStm1pmDailyInfoEntry 2 }
+
+	ppStm1pmDailyStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Daily Status
+					 invalid(0),
+					 not_obtain(1),
+					 valid_not_maint(2),
+					 valid_maint(3),
+					 invalid_not_maint(4),
+					 invalid_maint(5)"
+		::= { ppStm1pmDailyInfoEntry 3 }
+
+-----------------------------------------------
+-- STM-1 Performance Monitor Daily Data Table
+-----------------------------------------------
+
+	ppStm1pmDailyDataTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pmDailyDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Daily Data Table"
+		::= { ppStm1pmDailyData 2 }
+
+	ppStm1pmDailyDataEntry OBJECT-TYPE
+		SYNTAX		PpStm1pmDailyDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Daily Data entry"
+		INDEX		{
+		                                ppStm1pmDailyItemPasoIndex,
+						ppStm1pmDailyItemIndex,
+						ppStm1pmDailyItemName
+					}
+		::= { ppStm1pmDailyDataTable 1 }
+
+	PpStm1pmDailyDataEntry ::= SEQUENCE {
+	                                  ppStm1pmDailyItemPasoIndex    IpAddress,
+					  ppStm1pmDailyItemIndex        INTEGER,
+					  ppStm1pmDailyItemName         INTEGER,
+					  ppStm1pmDailyCurrentData      INTEGER,
+					  ppStm1pmDailyCurrentAlarm     INTEGER,
+					  ppStm1pmDailyHistoricalAlarm  INTEGER
+					}
+
+        ppStm1pmDailyItemPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pmDailyDataEntry 1 }
+
+	ppStm1pmDailyItemIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  mux(1),
+					  dmr(2)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Daily Item index"
+		::= { ppStm1pmDailyDataEntry 2 }
+
+	ppStm1pmDailyItemName OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  pmonOFS(1),
+					  pmonES(2),
+					  pmonSES(3),
+					  pmonUAS(4),
+					  pmonBBE(5)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Daily Item Name"
+		::= { ppStm1pmDailyDataEntry 3 }
+
+	ppStm1pmDailyCurrentData OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Daily Current Data"
+		::= { ppStm1pmDailyDataEntry 4 }
+
+	ppStm1pmDailyCurrentAlarm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"THRESHOLD(15min)
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1TcnDaily"
+		::= { ppStm1pmDailyDataEntry 5 }
+
+	ppStm1pmDailyHistoricalAlarm OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Daily histerical alarm
+					1Bit per day is used for the alarm status as follows.
+					  0 Bit: (Not used)
+					  1 Bit: 1st older Daily data (Usually yesterday)
+					  N Bit: Nth older Daily data (Usually N days before)
+					Meaning of status
+					  0 : No alarm
+					  1 : Alarm
+					Max 7days data are kept, lower 8 bits are used.
+					'0' is set in 9th bit and higher."
+		::= { ppStm1pmDailyDataEntry 6 }
+
+-----------------------------------------------
+-- STM-1 Performance Monitor Weekly Info Table
+-----------------------------------------------
+
+	ppStm1pmWeeklyData OBJECT IDENTIFIER
+		::= { ppStm1PmonInfo 2 }
+
+	ppStm1pmWeeklyInfoTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pmWeeklyInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Info Table"
+		::= { ppStm1pmWeeklyData 1 }
+
+	ppStm1pmWeeklyInfoEntry OBJECT-TYPE
+		SYNTAX		PpStm1pmWeeklyInfoEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Info Table entry"
+		INDEX		{
+		                                ppStm1pmWeeklyInfoPasoIndex,
+						ppStm1pmWeeklyInfoIndex
+					}
+		::= { ppStm1pmWeeklyInfoTable 1 }
+
+	PpStm1pmWeeklyInfoEntry ::= SEQUENCE {
+	                                  ppStm1pmWeeklyInfoPasoIndex  IpAddress,
+					  ppStm1pmWeeklyInfoIndex      INTEGER,
+					  ppStm1pmWeeklyStatus         INTEGER
+					}
+
+        ppStm1pmWeeklyInfoPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pmWeeklyInfoEntry 1 }
+
+	ppStm1pmWeeklyInfoIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  mux(1),
+					  dmr(2)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Info index"
+		::= { ppStm1pmWeeklyInfoEntry 2 }
+
+	ppStm1pmWeeklyStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..5)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Status
+					 invalid(0),
+					 not_obtain(1),
+					 valid_not_maint(2),
+					 valid_maint(3),
+					 invalid_not_maint(4),
+					 invalid_maint(5)"
+		::= { ppStm1pmWeeklyInfoEntry 3 }
+
+-----------------------------------------------
+-- STM-1 Performance Monitor Weekly Data Table
+-----------------------------------------------
+
+	ppStm1pmWeeklyDataTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1pmWeeklyDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Data Table"
+		::= { ppStm1pmWeeklyData 2 }
+
+	ppStm1pmWeeklyDataEntry OBJECT-TYPE
+		SYNTAX		PpStm1pmWeeklyDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Data entry"
+		INDEX		{
+		                                ppStm1pmWeeklyItemPasoIndex,
+						ppStm1pmWeeklyItemIndex,
+						ppStm1pmWeeklyItemName
+					}
+		::= { ppStm1pmWeeklyDataTable 1 }
+
+	PpStm1pmWeeklyDataEntry ::= SEQUENCE {
+	                                  ppStm1pmWeeklyItemPasoIndex    IpAddress,
+					  ppStm1pmWeeklyItemIndex        INTEGER,
+					  ppStm1pmWeeklyItemName         INTEGER,
+					  ppStm1pmWeeklyCurrentData      INTEGER,
+					  ppStm1pmWeeklyCurrentAlarm     INTEGER,
+					  ppStm1pmWeeklyHistoricalAlarm  INTEGER
+					}
+					
+	ppStm1pmWeeklyItemPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1pmWeeklyDataEntry 1 }
+
+	ppStm1pmWeeklyItemIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  mux(1),
+					  dmr(2)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Item index"
+		::= { ppStm1pmWeeklyDataEntry 2 }
+
+	ppStm1pmWeeklyItemName OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  pmonOFS(1),
+					  pmonES(2),
+					  pmonSES(3),
+					  pmonUAS(4),
+					  pmonBBE(5)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Item Name"
+		::= { ppStm1pmWeeklyDataEntry 3 }
+
+	ppStm1pmWeeklyCurrentData OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Weekly Current Data"
+		::= { ppStm1pmWeeklyDataEntry 4 }
+
+	ppStm1pmWeeklyCurrentAlarm OBJECT-TYPE
+		SYNTAX		PpStm1NormalAlarmValue
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"THRESHOLD(1day)
+				INVALID(0),NORMAL(1),ALARM(2)
+				TRAP=alarmTrapPPStm1TcnWeekly"
+		::= { ppStm1pmWeeklyDataEntry 5 }
+
+	ppStm1pmWeeklyHistoricalAlarm OBJECT-TYPE
+		SYNTAX		INTEGER
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Weekly historical alarm
+					1Bit per day is used for alarm status as follows.
+					  0 Bit: (Not used)
+					  1 Bit: 1st older Weekly data (Usually yesterday)
+					  N Bit: Nth older Weekly data (Usually N days before)
+					Meaning of status
+					  0 : No alarm
+					  1 : Alarm
+					Max 7days data are kept, lower 8bits are used.
+					'0' is set in 9th bit and higher."
+		::= { ppStm1pmWeeklyDataEntry 6 }
+
+
+-----------------------------------------------
+-- ppStm1AuxIOInfo Group Definitions
+-----------------------------------------------
+
+-----------------------------------------------
+-- STM-1 AUX InPut Table
+-----------------------------------------------
+
+	ppStm1AuxInputItemTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1AuxInputItemEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Table"
+		::= { ppStm1AuxIOInfo 1 }
+
+	ppStm1AuxInputItemEntry OBJECT-TYPE
+		SYNTAX		PpStm1AuxInputItemEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item Table entry"
+		INDEX		{
+		                                ppStm1AuxInputItemPasoIndex,
+						ppStm1AuxInputItemIndex
+					}
+		::= { ppStm1AuxInputItemTable 1 }
+
+	PpStm1AuxInputItemEntry ::= SEQUENCE {
+	                                  ppStm1AuxInputItemPasoIndex  IpAddress,
+					  ppStm1AuxInputItemIndex      INTEGER,
+					  ppStm1AuxInputItemValue      INTEGER
+					}
+
+        ppStm1AuxInputItemPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1AuxInputItemEntry 1 }
+
+	ppStm1AuxInputItemIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  hk-in1(1),
+					  hk-in2(2),
+					  hk-in3(3),
+					  hk-in4(4),
+					  hk-in5(5),
+					  hk-in6(6)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item index"
+		::= { ppStm1AuxInputItemEntry 2 }
+
+	ppStm1AuxInputItemValue OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Input Item value
+		                 INVALID(0)--can not write,
+		                 EVENT OFF-OPEN(1),
+		                 EVENT ON-CLOSE(2)
+				TRAP=statusTrapPPStm1AuxInput"
+		::= { ppStm1AuxInputItemEntry 3 }
+
+
+-----------------------------------------------
+-- STM-1 AUX OutPut Table
+-----------------------------------------------
+
+	ppStm1AuxOutputItemTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1AuxOutputItemEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output Item table"
+		::= { ppStm1AuxIOInfo 2 }
+
+	ppStm1AuxOutputItemEntry OBJECT-TYPE
+		SYNTAX		PpStm1AuxOutputItemEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output Item entry"
+		INDEX		{
+		                                ppStm1AuxOutputItemPasoIndex,
+						ppStm1AuxOutputItemIndex
+					}
+		::= { ppStm1AuxOutputItemTable 1 }
+
+	PpStm1AuxOutputItemEntry ::= SEQUENCE {
+	                                  ppStm1AuxOutputItemPasoIndex  IpAddress,
+					  ppStm1AuxOutputItemIndex      INTEGER,
+					  ppStm1AuxOutputItemValue      INTEGER
+					}
+
+        ppStm1AuxOutputItemPasoIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Pasolink IP Address index"
+		::= { ppStm1AuxOutputItemEntry 1 }
+
+	ppStm1AuxOutputItemIndex OBJECT-TYPE
+		SYNTAX		INTEGER {
+					  hk-out1(1),
+					  hk-out2(2),
+					  hk-out3(3),
+					  hk-out4(4)
+					}
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output Item index"
+		::= { ppStm1AuxOutputItemEntry 2 }
+
+	ppStm1AuxOutputItemValue OBJECT-TYPE
+		SYNTAX		INTEGER (0..2)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Aux Output Item value
+		                 INVALID(0)--can not write,
+		                 EVENT OFF-OPEN(1),
+		                 EVENT ON-CLOSE(2)
+				TRAP=eventTrapPPStm1AuxOutput"
+		::= { ppStm1AuxOutputItemEntry 3 }
+
+        ppStm1GetMeteringInfoData OBJECT IDENTIFIER
+ 		::= { ppStm1GetMeasurementData 1 }
+
+       	ppStm1GetMeteringInfoDataTable OBJECT-TYPE
+		SYNTAX		SEQUENCE OF PpStm1GetMeteringInfoDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Measurement Data"
+		::= { ppStm1GetMeteringInfoData 1 }
+	
+	ppStm1GetMeteringInfoDataEntry OBJECT-TYPE
+		SYNTAX		PpStm1GetMeteringInfoDataEntry
+		ACCESS		not-accessible
+		STATUS		mandatory
+		DESCRIPTION	"Measurement Entry"
+		INDEX { ppStm1gmiManagerIndex }
+		::= { ppStm1GetMeteringInfoDataTable 1 }
+
+	PpStm1GetMeteringInfoDataEntry ::= SEQUENCE {
+		ppStm1gmiManagerIndex		IpAddress,
+		ppStm1gmiRequestID		INTEGER,
+		ppStm1gmiTargetPasolink		IpAddress,
+		ppStm1gmiDataStatus		INTEGER	
+	}
+
+	ppStm1gmiManagerIndex OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"higher-level Manager IpAddress"
+		::= { ppStm1GetMeteringInfoDataEntry 1 }
+
+	ppStm1gmiRequestID OBJECT-TYPE
+		SYNTAX		INTEGER (1..9999)
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Request ID"
+		::= { ppStm1GetMeteringInfoDataEntry 2 }
+		
+	ppStm1gmiTargetPasolink OBJECT-TYPE
+		SYNTAX		IpAddress
+		ACCESS		read-write
+		STATUS		mandatory
+		DESCRIPTION	"Target Pasolink IpAddress"
+		::= { ppStm1GetMeteringInfoDataEntry 3 }
+	
+	ppStm1gmiDataStatus OBJECT-TYPE
+		SYNTAX		INTEGER (0..3)
+		ACCESS		read-only
+		STATUS		mandatory
+		DESCRIPTION	"Data Status
+		                invalid(0),
+				ready(1),
+				wait(2),
+                    		fail(3)"
+		::= { ppStm1GetMeteringInfoDataEntry 4 }
+
+-----------------------------------------------
+-- End User MIB Object Definitions
+-----------------------------------------------
+END

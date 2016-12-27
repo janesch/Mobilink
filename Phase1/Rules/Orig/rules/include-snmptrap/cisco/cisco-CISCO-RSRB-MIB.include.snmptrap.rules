@@ -1,0 +1,190 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-RSRB-MIB.include.snmptrap.rules 2.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-RSRB-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.29"|".1.3.6.1.4.1.9.9.29.2": ### Cisco remote source-route bridging (RSRB) - Notifications from CISCO-RSRB-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-RSRB-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Remote Source-Route Bridging"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### rsrbPeerStateChangeNotification
+
+            ##########
+            # $1 = rsrbRemotePeerState
+            ##########
+
+            $rsrbRemotePeerState = $1
+            $rsrbVirtRingIndex = extract($OID1, "\.([0-9]+)\.[0-9]+$")
+            $rsrbRemotePeerIndex = extract($OID1, "\.([0-9]+)$")
+            details($rsrbRemotePeerState,$rsrbVirtRingIndex,$rsrbRemotePeerIndex)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-RSRB-MIB-rsrbPeerStateChangeNotification"
+            
+            @AlertGroup = "RSRB Peer Status"
+            @AlertKey = "rsrbRemotePeerEntry." + $rsrbVirtRingIndex + "." + $rsrbRemotePeerIndex
+            switch($1)
+            {
+                case "1": ### dead
+                    @Summary = "RSRB Remote Peer Dead"
+                    
+                    $SEV_KEY = $OS_EventId + "_dead"
+                    $DEFAULT_Severity = 4
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### closed
+                    @Summary = "RSRB Remote Peer Connection Closed"
+                    
+                    $SEV_KEY = $OS_EventId + "_closed"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### opening
+                    @Summary = "RSRB Remote Peer Connection Opening"
+                    
+                    $SEV_KEY = $OS_EventId + "_opening"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### openWaitXport
+                    @Summary = "RSRB Remote Peer Connection Open, Waiting Transport"
+                    
+                    $SEV_KEY = $OS_EventId + "_openWaitXport"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### waitRemoteRsp
+                    @Summary = "RSRB Remote Peer Connection Waiting for Remote Response"
+                    
+                    $SEV_KEY = $OS_EventId + "_waitRemoteRsp"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### remoteResponded
+                    @Summary = "RSRB Remote Peer Responded"
+                    
+                    $SEV_KEY = $OS_EventId + "_remoteResponded"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### remoteOpened
+                    @Summary = "RSRB Remote Peer Opened"
+                    
+                    $SEV_KEY = $OS_EventId + "_remoteOpened"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### draining
+                    @Summary = "RSRB Remote Peer Connection Draining"
+                    
+                    $SEV_KEY = $OS_EventId + "_draining"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "9": ### connected
+                    @Summary = "RSRB Remote Peer Connected"
+                    
+                    $SEV_KEY = $OS_EventId + "_connected"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "RSRB Remote Peer Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+        
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-RSRB-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-RSRB-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-RSRB-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-RSRB-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-RSRB-MIB.include.snmptrap.rules >>>>>")

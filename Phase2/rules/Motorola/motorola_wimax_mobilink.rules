@@ -1,0 +1,135 @@
+####################################################################################################
+# Alex Silva (JUN-2011) Mobilink specific rules for Motorola Wimax Traps
+####################################################################################################
+	@Class = 204200
+	@Manager = @OmcEms
+	@Agent = @Manager + "@" + hostname()
+
+	if(match(@Information, ""))
+	{
+		@Information = $1 + ":::" + $2 + ":::" + $3 + ":::" + $4 + ":::" + $5 + ":::" + $6 + ":::" + $7 + ":::" + $8 + ":::" + $9 + ":::" + $10 + ":::" + $11 + ":::" + $12 + ":::" + $13 + ":::" + $14 + ":::" + $15 + ":::" + $16 + ":::" + $17 + ":::" + $18 + ":::" + $19 + ":::" + $20 + ":::" + $21 + ":::" + $22 + ":::" + $23 + ":::" + $24 + ":::" + $25 + ":::" + $26
+	}
+
+	switch(@Summary)
+	{
+		case "clMib2StateChangeEvent":
+			if(regmatch($clMib2NewAdminState, "down") Or regmatch($clMib2NewOperState, "down"))
+			{
+				@AlertGroup = @Summary
+				@Summary = "State Change Event"
+				@AlertKey = $cmpManagedObjectClass
+				@Severity = 4
+				@Type = 1
+			}
+			else if (regmatch($clMib2NewAdminState, "up") Or regmatch($clMib2NewOperState, "up"))
+			{
+                                @AlertGroup = @Summary
+                                @Summary = "State Change Event"
+                                @AlertKey = $cmpManagedObjectClass
+                                @Severity = 1
+                                @Type = 0
+                        }
+		
+		case "cmpSecurityAlarm":
+			@AlertGroup = @Summary
+			@Summary = "Security Alarm : " + $cmpSecurityAlarmCause
+			@Severity = 2
+			@ExpireTime = 600
+			
+		default:
+	}
+
+	if(exists($IPaddress))
+	{
+		@Node = $IPaddress
+		@NodeAlias = lookup($IPaddress,motorola_node)
+	}
+
+	if(exists($7))
+	{
+		if(regmatch($7, "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"))
+		{
+			$ne_ip_address = $7
+			@Node = $ne_ip_address
+			@NodeAlias = lookup($ne_ip_address,motorola_node)
+		}
+	}
+	if(exists($cmpPerceivedSeverity))
+	{
+		$alarm_severity = $cmpPerceivedSeverity
+	}
+	else if (exists($cmpSecurityAlarmSeverity))
+	{
+		$alarm_severity = $cmpSecurityAlarmSeverity
+	}
+	else if (exists($emsEventSeverity))
+	{
+		$alarm_severity = $emsEventSeverity
+	}
+
+	if(exists($alarm_severity))
+	{
+		switch($alarm_severity)
+		{
+			case "CRITICAL" | "1":
+				@Severity = 5
+				@Type = 1			
+				@ExpireTime = 0
+
+			case "MAJOR" | "2":
+				@Severity = 4
+				@Type = 1			
+				@ExpireTime = 0
+
+			case "MINOR" | "3":
+				@Severity = 3
+				@Type = 1			
+				@ExpireTime = 0
+
+			case "WARNING" | "4" | "NORMAL":
+				@Severity = 2
+				@Type = 0			
+
+
+			case "INDETERMINATE" | "5" | "CLEAR" | "CLEARED" | "6" | "NORMAL":
+				@Severity = 1
+				@Type = 2
+				@ExpireTime = 0
+
+			default:
+				@Summary = @Summary + " :: Unknown Severity = " + $alarm_severity
+		}
+	}
+
+
+	if(exists($cmpAdditionalText))
+	{
+		@AddText = $cmpAdditionalText
+	}
+
+	if(exists($cmpProbableCause) and exists($cmpSpecificProblems))
+	{
+		$main_lookup_key = $cmpProbableCause + $cmpSpecificProblems
+		[$summary,$alertGroup,$eventType] = lookup($main_lookup_key, main_lookup)
+		if(!match($alertGroup, "Unknown"))
+		{
+			@Summary = $summary
+			@AlertGroup = $alertGroup
+			@EventType = $eventType
+		}
+	}
+
+########################################
+## Events discarded
+
+	switch(@Summary)
+	{
+		case "State Change Event" | "cmpAlarmRecord" | "cmpAvailabilityEvent" | "cmpUserDefinedEvent":
+			discard
+
+		default:
+	}
+
+
+	@Identifier = @Node + @AlertKey + @AlertGroup + @Type + @Severity + @Class
+details($*)

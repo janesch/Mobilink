@@ -1,0 +1,64 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-DS1-MIB.include.snmptrap.lookup 1.1
+#    2002/12/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IETF-DS1-MIB
+#
+###############################################################################
+table dsx1LineStatus =
+{
+    ##########
+    # This variable indicates the Line Status of the interface. It contains
+    # loopback, failure, received 'alarm' and transmitted 'alarms information.
+    #
+    # The dsx1LineStatus is a bit map represented as a sum, therefore, it can
+    # represent multiple failures (alarms) and a LoopbackState simultaneously.
+    #
+    # dsx1NoAlarm must be set if and only if no other flag is set.
+    #                
+    # If the dsx1loopbackState bit is set, the loopback in effect can be
+    # determined from the dsx1loopbackConfig object.
+    #
+    ##########
+         
+    {"1","No Alarm Present"}, ### dsx1NoAlarm - No alarm present
+    {"2","Far-End Loss of Frame"}, ### dsx1RcvFarEndLOF - Far end LOF (a.k.a., Yellow Alarm)
+    {"4","Loss of Frame"}, ### dsx1XmtFarEndLOF - Near end sending LOF Indication
+    {"8","Far-End Alarm Indication Signal"}, ### dsx1RcvAIS - Far end sending AIS
+    {"16","Sending Alarm Indication Signal"}, ### dsx1XmtAIS - Near end sending AIS
+    {"32","Loss of Frame"}, ### dsx1LossOfFrame - Near end LOF (a.k.a., Red Alarm)
+    {"34","Loss of Frame: Far-End LOF"},
+    {"40","Loss of Frame: Far-End AIS"},
+    {"42","Loss of Frame: Far-End AIS and LOF"},
+    {"64","Loss of Signal"}, ### dsx1LossOfSignal - Near end Loss Of Signal
+    {"96","Loss of Frame and Signal"},
+    {"98","Loss of Frame and Signal: Far-End LOF"},
+    {"128","Loopback"}, ### dsx1LoopbackState - Near end is looped
+    {"256","Alarm Indication Signal (E1 TS16)"}, ### dsx1T16AIS - E1 TS16 AIS
+    {"512","Far-End TS16 Loss of Multiframe"}, ### dsx1RcvFarEndLOMF - Far End Sending TS16 LOMF
+    {"1024","TS16 Loss of Multiframe"}, ### dsx1XmtFarEndLOMF - Near End Sending TS16 LOMF
+    {"2048","Test Code Detected"}, ### dsx1RcvTestCode - Near End detects a test code
+    {"4096","Unknown"}, ### dsx1OtherFailure - any line status not defined here
+    {"8192","Unavailable Signal State"}, ### dsx1UnavailSigState - Near End in Unavailable Signal State
+    {"16384","Carrier Equipment Out of Service"}, ### dsx1NetEquipOOS - Carrier Equipment Out of Service
+    {"32768","DS2 Payload Alarm Indication Signal"}, ### dsx1RcvPayloadAIS - DS2 Payload AIS
+    {"65536","DS2 Performance Threshold Exceeded"} ### dsx1Ds2PerfThreshold - DS2 Performance Threshold Exceeded
+}
+default = "Multiple Alarms"
+

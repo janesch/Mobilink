@@ -1,0 +1,147 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-STACK-MIB.adv.include.snmptrap.rules 1.1
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-STACK-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-STACK-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### lerAlarmOn
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "lerAlarmOn"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "fddimibPORTEntry." + $1 + "." + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "2": ### lerAlarmOff
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "lerAlarmOff"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "fddimibPORTEntry." + $1 + "." + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### moduleUp
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 100036
+        $OS_X733SpecificProb = "moduleUp"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "moduleEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "4": ### moduleDown
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 100036
+        $OS_X733SpecificProb = "moduleDown"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "moduleEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "5": ### chassisAlarmOn
+    
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "chassisAlarmOn"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "moduleEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "6": ### chassisAlarmOff
+    
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "chassisAlarmOff"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "moduleEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "7": ### ipPermitDeniedTrap
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 100091
+        $OS_X733SpecificProb = "ipPermitDeniedTrap"
+        $OS_OsiLayer = 4
+        
+        $OS_LocalPriObj = "ipPermitDeniedListEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "9": ### sysConfigChangeTrap
+    
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3011
+        $OS_X733SpecificProb = "sysConfigChangeTrap"
+        $OS_OsiLayer = 0
+        
+    case "10": ### tokenRingSoftErrExceededTrap
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "tokenRingSoftErrExceededTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "ringStationEntry." + extract($OID1, "3\.6\.1\.2\.1\.16\.10\.2\.1\.2\.(.*)$")
+        $OS_LocalRootObj = "ifEntry." + $2
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-STACK-MIB.adv.include.snmptrap.rules >>>>>")

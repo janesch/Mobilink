@@ -1,0 +1,88 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-ETHERNET.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "ETHERNET": ### Ethernet for the C1000 series
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-ETHERNET.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "NOMEMORY":
+        
+            ##########
+            # Insufficient memory exists to allocate the necessary memory
+            # pools.
+            #
+            # %ETHERNET-1-NOMEMORY: Unit [dec], no memory for [chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "Unit ([0-9]+),? no")
+            
+            @AlertKey = "Unit: " + $MOI_Local
+        
+        case "TXERR":
+            
+            ##########
+            # A fatal transmit error has occurred on the Ethernet line, causing
+            # the line to be restarted. This condition may be caused by a bad
+            # configuration of the media type or a hardware problem with the
+            # cable, the transceiver, the other end of the cable, or the
+            # interface of the router itself. Extremely high traffic load can
+            # occasionally cause the router to generate this message.
+            #
+            # %ETHERNET-1-TXERR: [chars]: Fatal transmit error. Restarting...
+            ##########
+            
+            $MOI_Local = extract($Message, "(.*):? Fatal ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+                   
+        case "UNSUPINTFC":
+        
+            ##########
+            # The specific Ethernet interface is not supported by the operating
+            # system that is currently running.
+            #
+            # %ETHERNET-4-UNSUPINTFC: Interface Ethernet[dec] not supported by
+            # [chars] image
+            ##########
+            
+            $MOI_Local = extract($Message, "Interface (.*) not")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-ETHERNET.include.syslog.rules >>>>>")

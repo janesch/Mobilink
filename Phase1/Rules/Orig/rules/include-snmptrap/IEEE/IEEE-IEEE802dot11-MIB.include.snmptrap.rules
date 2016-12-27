@@ -1,0 +1,193 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IEEE-IEEE802dot11-MIB.include.snmptrap.rules 2.1
+#    2005/03/06 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  IEEE802dot11-MIB
+#
+###############################################################################
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Minor improvements to readability of events.
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.1 - Assigned Class# 40090 - IEEE (Institute of Electrical and Electronics
+#       Engineers)
+#
+# 1.0 - Initial Release.  Complies with the Netcool Rules File Standards
+#       (MUSE-STD-RF-01, May 2002)
+#
+###############################################################################
+
+case ".1.2.840.10036.1.6": ### IEEE 802.11 - Notifications from IEEE802dot11-MIB
+
+    log(DEBUG, "<<<<< Entering... IEEE-IEEE802dot11-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "IEEE-802.11"
+    @Class = "40090"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch ($specific-trap)
+    {
+        case "1": ### dot11Disassociate
+
+            ##########
+            # $1 = ifIndex
+            # $2 = dot11DisassociateReason
+            # $3 = dot11DisassociateStation 
+            ##########
+
+            $ifIndex = $1
+            $dot11DisassociateReason = $2
+            if(exists($3_hex))
+            {
+                $dot11DisassociateStation = $3_hex
+            }
+            else
+            {
+                $dot11DisassociateStation = $3
+            }
+            details($ifIndex,$dot11DisassociateReason,$dot11DisassociateStation)
+
+            $OS_EventId = "SNMPTRAP-IEEE-IEEE802dot11-MIB-dot11Disassociate"
+            
+            @AlertGroup = "802.11 Disassociation"
+            @AlertKey = "ifEntry." + $1 + ", Station MAC: " + $dot11DisassociateStation
+            @Summary = "STA Sent Disassociation Frame  ( to Station MAC: " + $dot11DisassociateStation + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+            
+            update(@Summary)
+
+        case "2": ### dot11Deauthenticate
+
+            ##########
+            # $1 = ifIndex
+            # $2 = dot11DeauthenticateReason
+            # $3 = dot11DeauthenticateStation 
+            ##########
+
+            $ifIndex = $1
+            $dot11DeauthenticateReason = $2
+            if(exists($3_hex))
+            {
+                $dot11DeauthenticateStation = $3_hex
+            }
+            else
+            {
+                $dot11DeauthenticateStation = $3
+            }
+            details($ifIndex,$dot11DeauthenticateReason,$dot11DeauthenticateStation)
+
+            $OS_EventId = "SNMPTRAP-IEEE-IEEE802dot11-MIB-dot11Deauthenticate"
+            
+            @AlertGroup = "802.11 Deauthentication"
+            @AlertKey = "ifEntry." + $1 + ", Station MAC: " + $dot11DeauthenticateStation
+            @Summary = "STA Sent Deauthentication Frame  ( to Station MAC: " + $dot11DeauthenticateStation + " )"
+            
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+            
+            update(@Summary)
+
+        case "3": ### dot11AuthenticateFail
+
+            ##########
+            # $1 = ifIndex
+            # $2 = dot11AuthenticateFailStatus
+            # $3 = dot11AuthenticateFailStation
+            ##########
+
+            $ifIndex = $1
+            $dot11AuthenticateFailStatus = $2
+            if(exists($3_hex))
+            {
+                $dot11AuthenticateFailStation = $3_hex
+            }
+            else
+            {
+                $dot11AuthenticateFailStation = $3
+            }
+            details($ifIndex,$dot11AuthenticateFailStatus,$dot11AuthenticateFailStation)
+
+            $OS_EventId = "SNMPTRAP-IEEE-IEEE802dot11-MIB-dot11AuthenticateFail"
+            
+            @AlertGroup = "802.11 Authentication Failure"
+            @AlertKey = "ifEntry." + $1 + ", Station MAC: " + $dot11AuthenticateFailStation
+            @Summary = "STA Sent Authentication Failure Frame  ( to Station MAC: " + $dot11AuthenticateFailStation + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $2
+            
+            update(@Summary)
+
+        default:
+        
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, IEEE-IEEE802dot11-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, IEEE-IEEE802dot11-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/IEEE/IEEE-IEEE802dot11-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/IEEE/IEEE-IEEE802dot11-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... IEEE-IEEE802dot11-MIB.include.snmptrap.rules >>>>>")

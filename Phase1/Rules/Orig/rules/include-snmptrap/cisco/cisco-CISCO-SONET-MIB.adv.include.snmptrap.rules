@@ -1,0 +1,146 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-SONET-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-SONET-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-SONET-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ciscoSonetSectionStatusChange
+
+        $OS_X733EventType = 1
+        switch($1)
+        {
+            case "1": ### sonetSectionNoDefect
+                $OS_X733ProbableCause = 1011
+            case "2": ### sonetSectionLOS
+                $OS_X733ProbableCause = 1001
+            case "4": ### sonetSectionLOF
+                $OS_X733ProbableCause = 1002
+            case "6": ### Loss of Signal and Frame
+                $OS_X733ProbableCause = 1009
+            default:
+                $OS_X733ProbableCause = 1011
+        }
+        $OS_X733SpecificProb = "ciscoSonetSectionStatusChange"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "sonetSectionCurrentEntry." + $ifIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### ciscoSonetLineStatusChange
+
+        $OS_X733EventType = 1
+        switch($1)
+        {
+            case "1": ### sonetLineNoDefect
+                $OS_X733ProbableCause = 1011
+            case "2": ### sonetLineAIS
+                $OS_X733ProbableCause = 100002
+            case "4": ### sonetLineRDI
+                $OS_X733ProbableCause = 1011
+            case "6": ### AIS and RDI
+                $OS_X733ProbableCause = 1011
+            default:
+                $OS_X733ProbableCause = 1011
+        }
+        $OS_X733SpecificProb = "ciscoSonetLineStatusChange"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "sonetLineCurrentEntry." + $ifIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### ciscoSonetPathStatusChange
+
+        $OS_X733EventType = 1
+        switch($1)
+        {
+            case "1": ### sonetPathNoDefect
+                $OS_X733ProbableCause = 1011
+            case "2": ### sonetPathSTSLOP
+                $OS_X733ProbableCause = 100008
+            case "4": ### sonetPathSTSAIS
+                $OS_X733ProbableCause = 100002
+            case "8": ### sonetPathSTSRDI
+                $OS_X733ProbableCause = 1011
+            case "16": ### sonetPathUnequipped
+                $OS_X733ProbableCause = 1011
+            case "32": ### sonetPathSignalLabelMismatch
+                $OS_X733ProbableCause = 100016
+            default:
+                $OS_X733ProbableCause = 1011
+        }
+        $OS_X733SpecificProb = "ciscoSonetPathStatusChange"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "sonetPathCurrentEntry." + $ifIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "4": ### ciscoSonetVTStatusChange
+
+        $OS_X733EventType = 1
+        switch($1)
+        {
+            case "1": ### sonetVTNoDefect
+                $OS_X733ProbableCause = 1011
+            case "2": ### sonetVTLOP
+                $OS_X733ProbableCause = 100008
+            case "4": ### sonetVTPathAIS
+                $OS_X733ProbableCause = 1011
+            case "8": ### 100002
+                $OS_X733ProbableCause = 1011
+            case "16": ### sonetVTPathRFI
+                $OS_X733ProbableCause = 1011
+            case "32": ### sonetVTUnequipped
+                $OS_X733ProbableCause = 1011
+            case "64": ### sonetVTSignalLabelMismatch
+                $OS_X733ProbableCause = 100016
+            default:
+                $OS_X733ProbableCause = 1011
+        }
+        $OS_X733SpecificProb = "ciscoSonetPathStatusChange"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "sonetVTCurrentEntry." + $ifIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-SONET-MIB.adv.include.snmptrap.rules >>>>>")

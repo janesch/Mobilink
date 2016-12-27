@@ -1,0 +1,176 @@
+/*------------------------------------------------------------------------------------------------------- 
+ Policy Name: ML_BNSI_NodeDown
+
+ Author: Chris Janes, Innovise 
+
+ Description: This policy processes the Ericsson BNSI QoS alarms.
+ This policy is based on ML_IN_NodeDown authored by Nitesh Patel
+ 
+ The policy will check for the existence of Synthetic event 
+ and updates the current network event as a child event for the synthetic event.
+ If a synthetic event is not available, then a new one will be generated.
+ Further details of the policies design can be found in BNSI-NodeDown alarms LLD.dox
+
+ Reviewed By: 
+ 
+ V 0.0  20111117    Chris Janes     Original
+
+------------------------------------------------------------------------------------------------------- 
+ Event Reader filter - 
+ 
+------------------------------------------------------------------------------------------------------- */
+Log("**** Start ML_IN_NodeDown *****");
+
+// Set Policy local variables
+isClear = false;
+paramType = 1;
+paramLastOcc=@LastOccurrence;
+if(@Severity==0)
+{
+    paramLastOcc=@ClearTime;
+    paramType = 2;
+    isClear = true;
+}
+
+pat="'";
+sub="";
+paramSummary=Replace(@Summary,pat,sub,10);
+paramSerial=@Serial;
+
+// if this is a clear event
+if(isClear)
+{
+    // Set to be in processed by ML_ClearSyntheticEvent
+    @ImpactFlag = 99;
+    ReturnEvent(EventContainer);
+
+    paramNodeAlias=@Z_Node;
+
+    Log("Current event is clear: " + @Serial);
+
+    NWDB = "OS_Status";
+    //Check only for Problem event having LogTicket>0
+    NWFilter = "Z_Node='"+@Z_Node+"' and EventId='NET_IN_NODE_001' and Type=1 and Severity>0 and LogTicket>0 and Serial <> " + @Serial;
+    Log("SE NWFilter :"+NWFilter );
+    NWFilterOutput = GetByFilter(NWDB,NWFilter,false);
+    NumNWFilterOutput = Length(NWFilterOutput);
+    log("IBMDEBUG: INNodeDown1 # number of rows: " + NumNWFilterOutput);
+    if(NumNWFilterOutput>0)
+    {
+          NWFilterOutputSerial = NWFilterOutput[0].ServerSerial;
+          MobiLib.AddGenericJournal(NWFilterOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+    }
+    // Set to be complete processing by ML_ClearSyntheticEvent
+    @ImpactFlag = 100;
+    ReturnEvent(EventContainer);
+}
+else
+{
+    Log("This is problem event: " + @Serial);
+    Log("Set ImpactFlag to 5 as start of processing.");
+    @ImpactFlag = 5;
+    ReturnEvent(EventContainer);
+    //TODO - Change to 5 minutes
+    sleep_time=300;
+    summary=@Summary;
+    Name=@Node;
+    Delimiters = "/";
+    fullname=Split(Name, Delimiters);
+    INName=fullname[0];
+    Delimiters1 = ":";
+    if(summary like 'resourceMonitoring: Netmon error')
+    {
+        MyString = Split(summary, Delimiters1);
+        Delimiters2 = "'";
+        MyString2 = Split(MyString[2], Delimiters2);
+        Delimiters3 = "-";
+        MyString3 = Split(MyString2[1], Delimiters3);
+        fullname = MyString3[0];
+        end=length(fullname);
+        NodeName = Substring(MyString3[0], end-1, end);
+    }
+    elseif(summary like 'is DOWN, moving to')
+    {
+        MyString = Split(summary, Delimiters1);
+        Delimiters2 = " ";
+        MyString2 = Split(MyString[3], Delimiters2);
+        Delimiters3 = "_";
+        MyString3 = Split(MyString2[0], Delimiters3);
+        fullname = MyString3[1];
+        end=length(fullname);
+        NodeName = Substring(fullname, end-1, end);
+    }
+    elseif(summary like 'RtpNmShutdownNode\(\) called for node ')
+    {
+        MyString = Split(summary, Delimiters1);
+        Delimiters2 = " ";
+        MyString2 = Split(MyString[1], Delimiters2);
+        Delimiters3 = "_";
+        MyString3 = Split(MyString2[4], Delimiters3);
+        fullname = MyString3[1];
+        end=length(fullname);
+        NodeName = Substring(fullname, end-1, end);
+    }
+    curr_node=INName + "/N" + NodeName;
+    @Z_Node=curr_node;
+    ReturnEvent(EventContainer);
+
+    paramNodeAlias=curr_node;
+
+    log("in_node_name: " + curr_node);
+    log (" Hibernate for: " +  sleep_time + " seconds ");
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    EventContainer.HibernateFlag = 1;        
+    ReturnEvent(EventContainer);
+    // Action_key = 'IN_NodeDown' + @ServerSerial + @ServerName;
+    Action_key = 'IN_NodeDown' + @ServerSerial + @ServerName + "#" + getdate();
+    Log("Action_key  = " + Action_key  );
+    Hibernate(Action_key, "Sleeping", sleep_time);
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    EventContainer.HibernateFlag = 2;
+    ReturnEvent(EventContainer);
+    NWEventDB = "OS_Status";
+    NWEventFilter = "Serial = "+@Serial + " and Severity>0";
+    Log("NWEventFilter:"+NWEventFilter);
+    NWEventOutput = GetByFilter(NWEventDB,NWEventFilter,false);
+    NumNWEventOutput = Length(NWEventOutput);
+    log("IBMDEBUG: INNodeDown2 # number of rows: " + NumNWEventOutput);
+    if(NumNWEventOutput==0)
+    {
+        Log("Current event got cleared");
+        exit();
+    }
+    else
+    {
+        Log("Current event still exist so process it to");
+        NWDB = "OS_Status";
+        NWFilter = "Z_Node='"+curr_node+"' and EventId='NET_IN_NODE_001' and Severity>0 and LogTicket>0 and Serial <> " + @Serial;
+        Log("NWFilter :"+NWFilter );
+        NWFilterOutput = GetByFilter(NWDB,NWFilter,false);
+        NumNWFilterOutput = Length(NWFilterOutput);
+        log("IBMDEBUG: INNodeDown3 # number of rows: " + NumNWFilterOutput);
+        if(NumNWFilterOutput>0)
+        {
+            Log("We have event with LogTicket>0 for Serial: " + @Serial);
+            @SyntheticServerName = NWFilterOutput[0].ServerName;
+            @SyntheticServerSerial = NWFilterOutput[0].ServerSerial;
+            ReturnEvent(EventContainer); 
+
+            NWFilterOutputSerial = NWFilterOutput[0].ServerSerial;
+            MobiLib.AddGenericJournal(NWFilterOutputSerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+   
+        }
+        else
+        {
+            Log("We don't have other network events with LogTicket=1");
+            @LogTicket=1;
+            @ImpactFlag=6;
+            ReturnEvent(EventContainer);
+        }
+    }
+ 
+    @ImpactFlag=6;
+    ReturnEvent(EventContainer);
+}
+Log("**** End ML_IN_NodeDown *****");

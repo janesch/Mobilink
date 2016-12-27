@@ -1,0 +1,873 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-048
+#
+#    (C) Copyright IBM Corp. 2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    juniper-JUNIPER-MIB.include.snmptrap.rules 6.0
+#    2008/03/04 Anchala Bansal
+#
+###############################################################################
+#
+# 6.0 - Updated release for JUNOS 9.0
+#
+#          - Repackaged for NIM-06
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-03, Jan 2006)
+#          -  JUNIPER-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2636.4.1": ### Juniper Chassis - Notifications from JUNIPER-MIB
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Chassis"
+    @Class = "40200"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxPowerSupplyFailure
+
+            ##########
+            # $1 = jnxContentsContainerIndex
+            # $2 = jnxContentsL1Index
+            # $3 = jnxContentsL2Index
+            # $4 = jnxContentsL3Index
+            # $5 = jnxContentsDescr
+            # $6 = jnxOperatingState
+            ##########
+            
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            $jnxOperatingState = lookup($6,jnxOperatingState) + " ( " + $6 + " )"
+                
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxPowerSupplyFailure"
+
+            @AlertGroup = "Power Supply Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Power Supply Failure, Bad DC Output  ( " + $5 + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+        case "2": ### jnxFanFailure
+
+            ##########
+            # $1 = jnxContentsContainerIndex
+            # $2 = jnxContentsL1Index
+            # $3 = jnxContentsL2Index
+            # $4 = jnxContentsL3Index
+            # $5 = jnxContentsDescr
+            # $6 = jnxOperatingState
+            ##########
+            
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            $jnxOperatingState = lookup($6,jnxOperatingState) + " ( " + $6 + " )"
+                
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFanFailure"
+
+            @AlertGroup = "Fan Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Fan Failure, Not Spinning  ( " + $5 + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+        case "3": ### jnxOverTemperature
+
+            ##########
+            # $1 = jnxContentsContainerIndex
+            # $2 = jnxContentsL1Index
+            # $3 = jnxContentsL2Index
+            # $4 = jnxContentsL3Index
+            # $5 = jnxContentsDescr
+            # $6 = jnxOperatingTemp
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            $jnxOperatingTemp = $6 + "C"
+                
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingTemp)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingTemp)
+            }
+                        
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxOverTemperature"
+
+            @AlertGroup = "Temperature Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            if(regmatch($jnxOperatingTemp, "^[0-9]+C$"))
+            {
+                @Summary = "Temperature Too High, " + $jnxOperatingTemp + "  ( " + $5 + " )"
+            }
+            else
+            {
+                @Summary = "Temperature Too High  ( " + $5 + " )"
+            }
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### jnxRedundancySwitchover
+
+            ##########
+            # $1 = jnxRedundancyContentsIndex
+            # $2 = jnxRedundancyL1Index
+            # $3 = jnxRedundancyL2Index
+            # $4 = jnxRedundancyL3Index
+            # $5 = jnxRedundancyDescr
+            # $6 = jnxRedundancyConfig
+            # $7 = jnxRedundancyState
+            # $8 = jnxRedundancySwitchoverCount
+            # $9 = jnxRedundancySwitchoverTime
+            # $10 = jnxRedundancySwitchoverReason
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxRedundancyContentsIndex = $1
+            $jnxRedundancyL1Index = $2
+            $jnxRedundancyL2Index = $3
+            $jnxRedundancyL3Index = $4
+            $jnxRedundancyDescr = $5
+            $jnxRedundancyConfig = lookup($6, jnxRedundancyConfig) + " ( " + $6 + " )"
+            $jnxRedundancyState = lookup($7, jnxRedundancyState)
+            $jnxRedundancySwitchoverCount = $8
+            $jnxRedundancySwitchoverTime = $9
+            $jnxRedundancySwitchoverReason = lookup($10, jnxRedundancySwitchoverReason) + " ( " + $10 + " )"
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxRedundancySwitchover"
+
+            @AlertGroup = "Redundancy Switchover"
+            @AlertKey = "jnxRedundancyEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            switch($10)
+            {
+                case "1": ### others
+                    @Summary = "Other Switchover, now " + $jnxRedundancyState
+                case "2": ### never switched
+                    @Summary = "No Switchover, now " + $jnxRedundancyState
+                case "3": ### user-initiated switchover
+                    @Summary = "User-Initiated Switchover, now " + $jnxRedundancyState
+                case "4": ### automatic switchover
+                    @Summary = "Automatic Switchover, now " + $jnxRedundancyState
+                default:
+                    @Summary = "Unknown Switchover Reason, now " + $jnxRedundancyState
+            }
+            @Summary = @Summary + "  ( " + $5 + " )"
+            
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $7 + " " + $10
+            
+            $jnxRedundancyState = $jnxRedundancyState + " ( " + $7 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxRedundancyContentsIndex,$jnxRedundancyL1Index,$jnxRedundancyL2Index,$jnxRedundancyL3Index,$jnxRedundancyDescr,$jnxRedundancyConfig,$jnxRedundancyState,$jnxRedundancySwitchoverCount,$jnxRedundancySwitchoverTime,$jnxRedundancySwitchoverReason)
+            }
+            else
+            {
+                details($jnxRedundancyContentsIndex,$jnxRedundancyL1Index,$jnxRedundancyL2Index,$jnxRedundancyL3Index,$jnxRedundancyDescr,$jnxRedundancyConfig,$jnxRedundancyState,$jnxRedundancySwitchoverCount,$jnxRedundancySwitchoverTime,$jnxRedundancySwitchoverReason)
+            }
+
+        case "5": ### jnxFruRemoval
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruRemoval"
+
+            @AlertGroup = "FRU Insert/Remove"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " Removed from Slot " + $7 + "  ( FRU: " + $5 + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+
+        case "6": ### jnxFruInsertion
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruInsertion"
+
+            @AlertGroup = "FRU Insert/Remove"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " Inserted into Slot " + $7 + "  ( FRU: " + $5 + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+
+        case "7": ### jnxFruPowerOff
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            # $8 = jnxFruOfflineReason
+            # $9 = jnxFruLastPowerOff
+            # $10 = jnxFruLastPowerOn
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+            $jnxFruOfflineReason = lookup($8, jnxFruOfflineReason)
+            $jnxFruLastPowerOff = $9
+            $jnxFruLastPowerOn = $10
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruPowerOff"
+
+            @AlertGroup = "FRU Power Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " Powered Off, " + $jnxFruOfflineReason + "  ( FRU: " + $5 + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $8
+
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            $jnxFruOfflineReason = $jnxFruOfflineReason + " ( " + $8 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot,$jnxFruOfflineReason,$jnxFruLastPowerOff,$jnxFruLastPowerOn)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot,$jnxFruOfflineReason,$jnxFruLastPowerOff,$jnxFruLastPowerOn)
+            }
+
+        case "8": ### jnxFruPowerOn
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            # $8 = jnxFruOfflineReason
+            # $9 = jnxFruLastPowerOff
+            # $10 = jnxFruLastPowerOn
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+            $jnxFruOfflineReason = lookup($8, jnxFruOfflineReason)
+            $jnxFruLastPowerOff = $9
+            $jnxFruLastPowerOn = $10
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruPowerOn"
+
+            @AlertGroup = "FRU Power Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " Powered On, " + $jnxFruOfflineReason + "  ( FRU: " + $5 + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $8
+
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            $jnxFruOfflineReason = $jnxFruOfflineReason + " ( " + $8 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot,$jnxFruOfflineReason,$jnxFruLastPowerOff,$jnxFruLastPowerOn)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot,$jnxFruOfflineReason,$jnxFruLastPowerOff,$jnxFruLastPowerOn)
+            }
+
+        case "9": ### jnxFruFailed
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruFailed"
+
+            @AlertGroup = "FRU Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " Failed  ( FRU: " + $5 + " )"
+            
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+
+        case "10": ### jnxFruOffline
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            # $8 = jnxFruOfflineReason
+            # $9 = jnxFruLastPowerOff
+            # $10 = jnxFruLastPowerOn
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+            $jnxFruOfflineReason = lookup($8, jnxFruOfflineReason)
+            $jnxFruLastPowerOff = $9
+            $jnxFruLastPowerOn = $10
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruOffline"
+
+            @AlertGroup = "FRU Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " Offline  ( FRU: " + $5 + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            $jnxFruOfflineReason = $jnxFruOfflineReason + " ( " + $8 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot,$jnxFruOfflineReason,$jnxFruLastPowerOff,$jnxFruLastPowerOn)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot,$jnxFruOfflineReason,$jnxFruLastPowerOff,$jnxFruLastPowerOn)
+            }
+
+        case "11": ### jnxFruOnline
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruOnline"
+
+            @AlertGroup = "FRU Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " Online  ( FRU: " + $5 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+
+        case "12": ### jnxFruCheck
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruCheck"
+
+            @AlertGroup = "FRU Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " Experienced Operational Errors  ( FRU: " + $5 + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            $jnxFruType = $jnxFruType + " ( " + $6 + " )"
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+    
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+    
+    ##########
+    # End of Severity via Lookup.
+    ##########
+    
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+    
+    include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-MIB_Chassis.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-MIB_Chassis.user.include.snmptrap.rules"
+    
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-MIB.include.snmptrap.rules >>>>>")
+
+case ".1.3.6.1.4.1.2636.4.2": ### Juniper Chassis OK - Notifications from JUNIPER-MIB
+
+    log(DEBUG, "<<<<< Entering... juniper-JUNIPER-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Juniper-Chassis"
+    @Class = "40200"
+
+    switch($specific-trap)
+    {
+        case "1": ### jnxPowerSupplyOK
+
+            ##########
+            # $1 = jnxContentsContainerIndex
+            # $2 = jnxContentsL1Index
+            # $3 = jnxContentsL2Index
+            # $4 = jnxContentsL3Index
+            # $5 = jnxContentsDescr
+            # $6 = jnxOperatingState
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            $jnxOperatingState = lookup($6,jnxOperatingState) + " ( " + $6 + " )"
+                
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxPowerSupplyOK"
+
+            @AlertGroup = "Power Supply Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Power Supply OK  ( " + $5 + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### jnxFanOK
+
+            ##########
+            # $1 = jnxContentsContainerIndex
+            # $2 = jnxContentsL1Index
+            # $3 = jnxContentsL2Index
+            # $4 = jnxContentsL3Index
+            # $5 = jnxContentsDescr
+            # $6 = jnxOperatingState
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            $jnxOperatingState = lookup($6,jnxOperatingState) + " ( " + $6 + " )"
+                
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingState)
+            }
+            
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFanOK"
+
+            @AlertGroup = "Fan Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = "Fan OK  ( " + $5 + " )"
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### jnxTemperatureOK
+
+            ##########
+            # $1 = jnxContentsContainerIndex
+            # $2 = jnxContentsL1Index
+            # $3 = jnxContentsL2Index
+            # $4 = jnxContentsL3Index
+            # $5 = jnxContentsDescr
+            # $6 = jnxOperatingTemp
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxContentsContainerIndex = $1
+            $jnxContentsL1Index = $2
+            $jnxContentsL2Index = $3
+            $jnxContentsL3Index = $4
+            $jnxContentsDescr = $5
+            $jnxOperatingTemp = $6 + "C"
+                
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingTemp)
+            }
+            else
+            {
+                details($jnxContentsContainerIndex,$jnxContentsL1Index,$jnxContentsL2Index,$jnxContentsL3Index,$jnxContentsDescr,$jnxOperatingTemp)
+            }
+                        
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxTemperatureOK"
+
+            @AlertGroup = "Temperature Status"
+            @AlertKey = "jnxContentsEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            if(regmatch($jnxOperatingTemp, "^[0-9]+C$"))
+            {
+                @Summary = "Temperature OK, " + $jnxOperatingTemp + "  ( " + $5 + " )"
+            }
+            else
+            {
+                @Summary = "Temperature OK  ( " + $5 + " )"
+            }
+            
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### jnxFruOK
+
+            ##########
+            # $1 = jnxFruContentsIndex
+            # $2 = jnxFruL1Index
+            # $3 = jnxFruL2Index
+            # $4 = jnxFruL3Index
+            # $5 = jnxFruName 
+            # $6 = jnxFruType
+            # $7 = jnxFruSlot
+            ##########
+
+            include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-RemapVarbinds.include.snmptrap.rules"
+
+            $jnxFruContentsIndex = $1
+            $jnxFruL1Index = $2
+            $jnxFruL2Index = $3
+            $jnxFruL3Index = $4
+            $jnxFruName = $5
+            $jnxFruType = lookup($6, jnxFruType)
+            $jnxFruSlot = $7
+ 
+            if(exists($snmpTrapEnterprise))
+            {
+                details($snmpTrapEnterprise,$jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+            else
+            {
+                details($jnxFruContentsIndex,$jnxFruL1Index,$jnxFruL2Index,$jnxFruL3Index,$jnxFruName,$jnxFruType,$jnxFruSlot)
+            }
+
+            $OS_EventId = "SNMPTRAP-juniper-JUNIPER-MIB-jnxFruOK"
+
+            @AlertGroup = "FRU Status"
+            @AlertKey = "jnxFruEntry." + $1 + "." + $2 + "." + $3 + "." + $4
+            @Summary = $jnxFruType + " in Slot " + $7 + " OK  ( FRU: " + $5 + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+ 
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+    ##########
+    # Handle Severity via Lookup.
+    ##########
+    
+    if(exists($SEV_KEY))
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, juniper-JUNIPER-MIB_sev)
+    }
+    else
+    {
+        [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, juniper-JUNIPER-MIB_sev)
+    }
+    include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+    
+    ##########
+    # End of Severity via Lookup.
+    ##########
+    
+    ##########
+    # Enter "Advanced" and "User" includes.
+    ##########
+    
+    include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-MIB_ChassisOK.adv.include.snmptrap.rules"
+    include "$NC_RULES_HOME/include-snmptrap/juniper/juniper-JUNIPER-MIB_ChassisOK.user.include.snmptrap.rules"
+    
+    ##########
+    # End of "Advanced" and "User" includes.
+    ##########
+    
+    include "$NC_RULES_HOME/include-common/load_include.rules"
+
+    log(DEBUG, "<<<<< Leaving... juniper-JUNIPER-MIB.include.snmptrap.rules >>>>>")

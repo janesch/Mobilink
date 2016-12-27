@@ -1,0 +1,391 @@
+###############################################################################
+#
+#	TKLC-EAGLEEMS-NBI.include.snmptrap.rules
+#
+#       Netcool Mttrapd Rules Include File for Tekelec STP alarms
+#
+#       V0.1	20110506	Mihai Strava of Innovise
+###############################################################################
+
+
+
+case ".1.3.6.1.4.1.323.5.3.24.2.2":         ### - emsNBITraps (from TKLC-EAGLEEMS-NBI)
+
+	log(DEBUG, "<<<<< Entering... TKLC-EAGLEEMS-NBI.include.snmptrap.rules >>>>>")
+
+	@Agent = "NBI"
+	@Class = "9990"
+    	@OmcEms = $PeerIPaddress
+    	@Domain = "CORE"
+    	@Vendor= "TKLC"
+
+#	$OS_ExpireTime = 600
+	@Grade = $specific-trap
+
+	switch($specific-trap) {
+		case "1": ### - alertTrap
+
+			#######################
+			#
+			# The trap is sent by the EAGLE EMS to NMS when an alert is received on the Netboss system.
+			#
+			# $1 = alertTime
+			#
+			#      Timestamp when EMS system received the nbiAlert from the managed sub-domain.
+			#
+			# $2 = alertResourceName
+			#
+			#      Unique name or identifier to identify the NE on the domain.
+			#
+			# $3 = alertSubResourceName
+			#
+			#      Unique name or identifier to identify an alarmable object within the NE.
+			#
+			# $4 = alertSeverity
+			#
+			#      The severity of an nbiAlert in a raise state (INFORMATIONAL|CLEAR|WARNING|MINOR|MAJOR|CRITICAL) .
+			#
+			# $5 = alertAcknowledgeMode
+			#
+			#      The current state of the nbiAlert (UNACKNOWLEDGE|ACKNOWLEDGE).
+			#
+			# $6 = alertTextMessage
+			#
+			#      Original information describing alarm or nbiAlert.
+			#
+			# $7 = alertSequenceNumber
+			#
+			#      Incrementing sequence number allowing NMS to determine if an alarm has been missed.
+			#
+			#######################
+
+			$alertTime = $1
+			$alertResourceName = $3
+			$alertSubResourceName = $4
+			$alertSeverity = $2
+			$alertAcknowledgeMode = lookup($5,tekelecCorp-TKLC-EAGLEEMS-COMMONOBJECTS-alertAcknowledgeMode)
+			$alertTextMessage = $6
+			$alertSequenceNumber = $7
+
+			@FirstOccurrence = DateToTime($1, "%m-%d-%Y%n%H:%M:%S")
+			@LastOccurrence = DateToTime($1, "%m-%d-%Y%n%H:%M:%S")
+
+			@Agent = "TKLC-EAGLEEMS-NBI"
+			@AlertGroup = "NBITrap"
+			@AlertKey = $alertTime + $alertResourceName + $alertSubResourceName + $alertSeverity + $alertAcknowledgeMode + $alertTextMessage + $alertSequenceNumber
+
+			@AddText = $alertTextMessage
+
+			[@Severity, @Type] =  lookup($alertSeverity, tekelecCorp-TKLC-EAGLEEMS-COMMONOBJECTS-Severity-Type)
+
+
+# STP link down alarms
+
+if(regmatch(@AddText, ".* REPT-LKF: .*"))
+	{
+
+			$num_elements = split($alertResourceName,node_arr,"_")
+			@Node = upper(node_arr[1])
+			@NodeAlias = upper(node_arr[1])
+
+			$num_elements = split($alertSubResourceName,linkset_arr,"_")
+			@Information = linkset_arr[$num_elements]
+
+			if(regmatch(@AddText, ".* REPT-LKF: XER - ISERM threshold exceeded .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: XER - ISERM threshold exceeded"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: OSA - received SIOS .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: OSA - received SIOS"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: lost data .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: lost data"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: link test failed .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: link test failed"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: not aligned .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: not aligned"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: ABN - rcvd .* of .* invalid BSN .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: ABN - rcvd invalid BSN"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: ABN - rcvd .* of .* invalid FIB .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: ABN - rcvd invalid FIB"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: APF - lvl-2 T2 expired .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: APF - lvl-2 T2 expired"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: APF - lvl-2 T3 expired .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: APF - lvl-2 T3 expired"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: excess acknowledge delay .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: excess acknowledge delay"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: COO - rcvd changeover order .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: COO - rcvd changeover order"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: rcvd SSCOP END-out of service .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: rcvd SSCOP END-out of service"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: rcvd remote out of service .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: rcvd remote out of service"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKF: rcvd remote protocol error .*"))
+			{
+            			$OS_EventId = "NET_STP_001"
+            			@Summary = "REPT-LKF: rcvd remote protocol error"
+			}
+}
+# STP linkset down alarms
+else if(regmatch(@AddText, ".* REPT-LKSTO: link set .*"))
+	{
+			$num_elements = split($alertResourceName,node_arr,"_")
+			@Node = upper(node_arr[1])
+			@NodeAlias = upper(node_arr[1])
+
+			$num_elements = split($alertSubResourceName,linkset_arr,"_")
+			@Information = linkset_arr[$num_elements]
+
+			if(regmatch(@AddText, ".* REPT-LKSTO: link set prohibited .*"))
+			{
+            			$OS_EventId = "NET_STP_002"
+            			@Summary = "REPT-LKSTO: link set prohibited"
+			}
+			else if(regmatch(@AddText, ".* REPT-LKSTO: link set restricted .*"))
+			{
+            			$OS_EventId = "NET_STP_002"
+            			@Summary = "REPT-LKSTO: link set restricted"
+			}
+	}
+
+# STP DPC down alarms
+else if((regmatch(upper(@AddText), ".* DPC IS .*")) or (regmatch(upper(@AddText), ".* DPC SUBSYSTEM IS .*")) or (regmatch(@AddText, ".* Route is prohibited .*")))
+	{
+			@Node = upper($alertResourceName)
+			@NodeAlias = upper($alertResourceName)
+
+			$num_elements = split($alertSubResourceName,node_arr,"_")
+			$num_elem = split(node_arr[$num_elements],linkset_arr,"-")
+			@Information = linkset_arr[1]
+
+			if(regmatch(@AddText, ".* DPC is restricted .*"))
+			{
+            			$OS_EventId = "NET_STP_003"
+            			@Summary = "DPC is restricted"
+			}
+			else if(regmatch(@AddText, ".* DPC is prohibited .*"))
+			{
+            			$OS_EventId = "NET_STP_003"
+            			@Summary = "DPC is prohibited"
+			}
+			else if(regmatch(upper(@AddText), ".* DPC SUBSYSTEM IS PROHIBITED .*"))
+			{
+            			$OS_EventId = "NET_STP_003"
+            			@Summary = "DPC subsystem is prohibited"
+			}
+			else if(regmatch(@AddText, ".* DPC SUBSYSTEM IS ABNORMAL .*"))
+			{
+            			$OS_EventId = "NET_STP_003"
+            			@Summary = "DPC subsystem is abnormal"
+			}
+			else if(regmatch(@AddText, ".* Route is prohibited .*"))
+			{
+            			$OS_EventId = "NET_STP_003"
+            			@Summary = "Route is prohibited"
+			}
+	}		
+
+# STP Hardware alarms
+else
+	{
+			if(regmatch($alertResourceName, ".*sgaPort.*"))
+			{
+				$OS_EventId = "NET_STP_HW_002"
+			}
+			else
+			{
+				$OS_EventId = "NET_STP_HW_001"
+			}
+
+			$num_elements = split($alertResourceName,node_arr,"_")
+			@Node = upper(node_arr[1])
+			@NodeAlias = upper(node_arr[1])
+
+			if(regmatch(@AddText, ".* Card is not running approved GPL .*"))
+			{
+            			@Summary = "Card is not running approved GPL"
+			}
+			else if(regmatch(@AddText, ".* Card(s) have been denied EROUTE service .*"))
+			{
+            			@Summary = "Card(s) have been denied EROUTE service"
+			}
+			else if(regmatch(@AddText, ".* TSC Sync is in simplex mode .*"))
+			{
+            			@Summary = "TSC Sync is in simplex mode"
+			}
+			else if(regmatch(@AddText, ".* Exceeded Service Error Threshold .*"))
+			{
+            			@Summary = "Exceeded Service Error Threshold"
+			}
+			else if(regmatch(@AddText, ".* Linkset IP TPS threshold exceeded .*"))
+			{
+            			@Summary = "Linkset IP TPS threshold exceeded"
+			}
+			else if(regmatch(@AddText, ".* Ethernet error threshold exceeded .*"))
+			{
+            			@Summary = "Ethernet error threshold exceeded"
+			}
+			else if(regmatch(@AddText, ".* IP Connection Restricted .*"))
+			{
+            			@Summary = "IP Connection Restricted"
+			}
+			else if(regmatch(@AddText, ".* IP Connection Unavailable .*"))
+			{
+            			@Summary = "IP Connection Unavailable"
+			}
+			else if(regmatch(@AddText, ".* Minor Platform Failure(s) .*"))
+			{
+            			@Summary = "Minor Platform Failure(s)"
+			}
+			else if(regmatch(@AddText, ".* Major Platform Failure(s) .*"))
+			{
+            			@Summary = "Major Platform Failure(s)"
+			}
+			else if(regmatch(@AddText, ".* IP Connection Excess Retransmits .*"))
+			{
+            			@Summary = "IP Connection Excess Retransmits"
+			}
+			else if(regmatch(@AddText, ".* Dynamic database is inconsistent .*"))
+			{
+            			@Summary = "Dynamic database is inconsistent"
+			}
+			else if(regmatch(@AddText, ".* Timestamp Invalid .*"))
+			{
+            			@Summary = "Timestamp Invalid"
+			}
+			else if(regmatch(@AddText, ".* Ethernet Interface Down .*"))
+			{
+            			@Summary = "Ethernet Interface Down"
+			}
+			else if(regmatch(@AddText, ".* Active MASP has become isolated .*"))
+			{
+            			@Summary = "Active MASP has become isolated"
+			}
+			else if(regmatch(@AddText, ".* Clock A for card failed, Clock B normal .*"))
+			{
+            			@Summary = "Clock A for card failed, Clock B normal"
+			}
+			else if(regmatch(@AddText, ".* Clock B for card failed, Clock A normal .*"))
+			{
+            			@Summary = "Clock B for card failed, Clock A normal"
+			}
+			else if(regmatch(@AddText, ".* Minor IMT failure detected Card .*"))
+			{
+            			@Summary = "Minor IMT failure detected Card"
+			}
+			else if(regmatch(@AddText, ".* Major IMT failure detected Card .*"))
+			{
+            			@Summary = "Major IMT failure detected Card"
+			}
+			else if(regmatch(@AddText, ".* Failure on both IMT A and IMT B .*"))
+			{
+            			@Summary = "Failure on both IMT A and IMT B"
+			}
+			else if(regmatch(@AddText, ".* GFLEX SERVICE : Service abnormal .*"))
+			{
+            			@Summary = "GFLEX SERVICE : Service abnormal"
+			}
+			else if(regmatch(@AddText, ".* EIR SYSTEM: EIR Subsystem normal, card(s) abnormal .*"))
+			{
+            			@Summary = "EIR SYSTEM: EIR Subsystem normal, card(s) abnormal"
+			}
+			else if(regmatch(@AddText, ".* Alarm in fuse panel .*"))
+			{
+            			@Summary = "Alarm in fuse panel"
+			}
+			else if(regmatch(@AddText, ".* Failure detected on one IMT bus .*"))
+			{
+            			@Summary = "Failure detected on one IMT bus"
+			}
+			else if(regmatch(@AddText, ".* Major failures detected on both IMTs .*"))
+			{
+            			@Summary = "Major failures detected on both IMTs"
+			}
+			else if(regmatch(@AddText, ".* Sentinel socket is inactive .*"))
+			{
+            			@Summary = "Sentinel socket is inactive"
+			}
+			else if(regmatch(@AddText, ".* Card is isolated from the system .*"))
+			{
+             			@Summary = "Card is isolated from the system"
+				$num_elements1 = split($alertTextMessage,node_arr," ")
+				@Information = node_arr[4]
+			}
+			else if(regmatch(@AddText, "Resync Failed"))
+			{
+            			@Summary = "Resync Failed"
+			}
+			else if(regmatch(@AddText, "Detected TCP closed message, must reconnect, Connection Settings .* Terminal .* Hostname .*"))
+			{
+            			@Summary = "Detected TCP closed message, must reconnect"
+			}
+
+	}
+
+#			@Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+			@Identifier = $enterprise + " " + $generic-trap + " " + $specific-trap + " " + @AlertGroup + " " + @Agent + " " + @Type + " " + @Summary
+#			details($alertTime,$alertResourceName,$alertSubResourceName,$alertSeverity,$alertAcknowledgeMode,$alertTextMessage,$alertSequenceNumber)
+			details($*)
+
+		case "2": ### - resyncStartTrap
+
+			discard
+
+
+		case "3": ### - resyncStopTrap
+
+			discard
+
+
+		case "4": ### - resyncRejectTrap
+			
+			discard
+
+
+		case "5": ### - heartbeatTrap
+
+			discard
+
+		default:
+
+			discard
+
+	}
+
+log(DEBUG, "<<<<< Leaving... TKLC-EAGLEEMS-NBI.include.snmptrap.rules >>>>>")

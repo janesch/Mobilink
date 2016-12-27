@@ -1,0 +1,71 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       
+#       
+#       (C) Copyright IBM Corp. 1994, 2005. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+#
+# Ident: $Id: stdin.rules 1.2 2004/04/28 13:31:57 mchana Development $
+#
+#######################################################################
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+        switch(@Summary)
+        {
+        case "Running ...":
+                @Severity = 1
+                @AlertGroup = "probestat"
+                @Type = 2
+        case "Going Down ...":
+                @Severity = 5
+                @AlertGroup = "probestat"
+                @Type = 1
+        default:
+                @Severity = 1
+        }
+        @AlertKey = @Agent
+        @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+
+	@Manager = @Manager + " probe running on " + hostname()
+
+        # The entity that the alarm refers to 
+        @Node = ""
+
+        # This should be the logical address of the entity, eg host:port. 
+        @NodeAlias =  ""
+
+        # Should include name of vendor and system name.
+        @Agent = ""
+ 
+        # Used to determine which set of tools are available when you right click on this event. 
+        @Class = ""
+  
+        # This is the descriptive name of the type of the problem eg "power status", "link status" etc. 
+        @AlertGroup = ""
+ 
+        # This is the 'logical' name of the managed object instance
+        @AlertKey = ""
+
+        # Map the data source severity directly, if it exists. 
+        # (Note: resolution events should be set to severity 1, the generic clear will set them to 0 later)
+        @Severity = ""
+
+        # Set to 1 for a problem, 2 for resolution
+        @Type = "" 
+ 
+        @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + @Type + " " + @Agent + " " + @Manager
+        @Summary = $*
+
+	
+}
+	

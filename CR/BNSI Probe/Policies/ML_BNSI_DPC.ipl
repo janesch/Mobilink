@@ -1,0 +1,140 @@
+/*------------------------------------------------------------------------------------------------------- 
+ Policy Name: ML_BNSI_DPC
+
+ Author: Chris Janes, Innovise 
+
+ Description: This policy processes the Ericsson BNSI DPC alarms.
+ This policy is based on ML_IN_DPC authored by Nitesh Patel
+ 
+ The policy will check for the existence of Synthetic event 
+ and updates the current network event as a child event for the synthetic event.
+ If a synthetic event is not available, then a new one will be generated.
+ 
+ Algorithm:-
+     //Step 1:- Get the DPC value
+     //Step 2:- Fetch the Z_NODE for current DPC value  
+     //Step 3:- For Problem event, Hibernate for 5 minutes. After hibernate check current event exists or not. If still exits then proceed.
+     //Step 4:- For Problem event, update the current n/w event to raise TT with classification as "DPC Down" and populate Information with Z_NODE.  
+     //Step 5:- For Resolution event, clear the current n/w event.
+
+ Further details of the policies design can be found in BNSI-DPC LLD.dox
+ 
+ Reviewed By: 
+ 
+ V 0.0  20111117    Chris Janes     Original
+------------------------------------------------------------------------------------------------------- 
+ Event Reader filter :EventId='NET_IN_DPC_001' and Identifier like 'XXX_INDPC' and ImpactFlag=4 and 
+            MaintFlag in (1,2) and ( (Type=1 and Severity>0) or (Type=2 and Severity=0) )
+------------------------------------------------------------------------------------------------------- */
+
+Log("**** Start ML_IN_DPC *****");
+log("Current alarm Serial = " + @Serial);
+Log("[Node:"+@Node+"],[Identifier:"+@Identifier+"]");
+Log("[ImpactFlag:"+@ImpactFlag+"],[Severity:"+@Severity+"]");
+
+// Set Impact Flag to show we have started
+Log("Set ImapctFlag to 5 mark as start of processing.");
+@ImpactFlag = 5;
+ReturnEvent(EventContainer);
+
+// Set Policy local variables
+isExist = false;
+isClear = false;
+messageType = 'PROBLEM';
+if(@Type==2 and @Severity ==0)
+{
+    messageType = 'RESOLUTION';
+    isClear = true;
+}
+
+//Policy scope variables
+//TODO - Change to 5 minutes
+sleep_time=300;
+dpcValue="";
+z_node="";
+
+dpcExpr="APC=(.*)";
+dpcValue=RExtract(@Summary,dpcExpr);
+Log("dpcValue:"+dpcValue);
+
+// Check to see if we can find an associated Z-Node
+spcDB="SPC";
+spcFilter="POINT_CODE_DEC="+dpcValue;
+spcFilterOutput = GetByFilter(spcDB,spcFilter,false);
+NumspcFilterOutput = Length(spcFilterOutput);
+
+// Z-Node Found
+if(NumspcFilterOutput>0)
+{
+    Log("z_node found");
+    z_node = spcFilterOutput[0].NODE_NAME;
+}
+else
+// Associated Z-Node not found so tidy up and exit
+{
+    Log("z_node doesn't exists so stop processing");
+    @ImpactFlag=6;
+    ReturnEvent(EventContainer);   
+    exit();
+}
+
+// Set @Information as Z-Node
+@Information = z_node;
+ReturnEvent(EventContainer);
+
+if(isClear)
+// Clear Event
+{
+    Log("Current event is clear..");
+}
+else
+// Problem Event
+{
+    Log("This is problem event");
+
+    // Hibernate the problem event for 5 minutes to verify if it is not cleared in the ObjectServer
+    log (" Hibernate for: " +  sleep_time + " seconds ");
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    EventContainer.HibernateFlag = 1;        
+    ReturnEvent(EventContainer);
+
+    // Action_key = 'IN_DPC' + @ServerSerial + @ServerName;
+    Action_key = 'IN_DPC' + @ServerSerial + @ServerName + "#" + getdate();
+    Log("Action_key  = " + Action_key  );
+    Hibernate(Action_key, "Sleeping", sleep_time);
+
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    EventContainer.HibernateFlag = 2;
+    ReturnEvent(EventContainer);
+    // Hibernation Completed
+
+    // Check to see if the Network Event has been cleared
+    NWEventDB = "OS_Status";
+    NWEventFilter = "Serial = "+@Serial + " and Severity>0";
+    Log("NWEventFilter:"+NWEventFilter);
+    NWEventOutput = GetByFilter(NWEventDB,NWEventFilter,false);
+    NumNWEventOutput = Length(NWEventOutput);
+
+    if(NumNWEventOutput==0)
+    // Network Event has been cleared
+    {
+        Log("Current event get cleared");
+        @ImpactFlag=6;
+        ReturnEvent(EventContainer);
+        exit();
+    }
+    else
+    // Network Event still exists
+    {
+        Log("Current event still exist so update it to");
+        //NWEventOutput[0].Information=z_node;
+        NWEventOutput[0].LogTicket=1;
+        ReturnEvent(EventContainer);
+    }
+}
+
+// Mark the end of event processing 
+@ImpactFlag=6;
+ReturnEvent(EventContainer);
+Log("**** End ML_IN_DPC *****");

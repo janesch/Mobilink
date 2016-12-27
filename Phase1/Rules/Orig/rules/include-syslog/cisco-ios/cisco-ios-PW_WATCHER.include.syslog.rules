@@ -1,0 +1,55 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-PW_WATCHER.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "PW_WATCHER": ### Portware Watcher
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-PW_WATCHER.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "NO_RESPONSE_STARTUP_REQ":
+            
+            ##########
+            # The slot did not send a startup message after a given
+            # number of retries. The slot may not have sent the startup
+            # message if the Portware Watcher feature was not
+            # redownloaded with a new image after a router shelf reload
+            # and if the port of the NIP_MODEM_MNGR client was not
+            # reinitialized correctly and therefore remained closed.
+            # This error is not a critical problem, and it should not
+            # affect the operation of the router.
+            #
+            # %PW_WATCHER-3-NO_RESPONSE_STARTUP_REQ : Portware Watcher
+            # detected a missing modem board startup message for slot
+            # [dec]. Resetting the slot    
+            ##########
+            
+            @AlertKey = "Slot: " + extract($Message, " slot ([0-9]+)")
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-PW_WATCHER.include.syslog.rules >>>>>")

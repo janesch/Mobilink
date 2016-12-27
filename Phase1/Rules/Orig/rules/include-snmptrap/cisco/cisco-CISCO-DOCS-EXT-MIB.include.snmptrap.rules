@@ -1,0 +1,413 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    ccisco-CISCO-DOCS-EXT-MIB.include.snmptrap.rules 2.2 
+#    2005/12/19 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-DOCS-EXT-MIB
+#
+###############################################################################
+#
+# 2.2 - Corrected an the OID from which the index is extracted to set @AlertKey
+#       for cdxCmtsCmChOverNotification.
+#
+# 2.1 - Simplified handling of "Severity via lookup" logic.
+#
+#     - Added basic debug logging.
+#
+# 2.0 - Rewritten for improved event presentation.  Includes enhancements which
+#       comply with the Netcool Rules File Standards
+#       (MUSE-STD-RF-02, July 2002)
+#
+#     - Modified to support following features introduced in NCiL 2.0:
+#         - "Advanced" and "User" include files
+#         - "Severity" lookup tables
+#
+# 1.0 - Based on rules extracted from cisco.include.snmptrap.rules 3.1.
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.9.9.116.2": ### Cisco Data Over Cable Service Extension - Notification from CISCO-DOCS-EXT-MIB
+
+    log(DEBUG, "<<<<< Entering... cisco-CISCO-DOCS-EXT-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-Data Over Cable"
+    @Class = "40057"
+    
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### cdxCmtsCmOnOffNotification
+
+            ##########
+            # $1 = docsIfCmtsCmStatusMacAddress 
+            # $2 = docsIfCmtsCmStatusIpAddress
+            # $3 = docsIfCmtsCmStatusDownChannelIfIndex
+            # $4 = docsIfCmtsCmStatusUpChannelIfIndex
+            # $5 = cdxCmCpeCmtsServiceId 
+            # $6 = cdxCmtsCmStatusValue
+            ##########
+
+            $docsIfCmtsCmStatusMacAddress = $1
+            $docsIfCmtsCmStatusIpAddress = $2
+            $docsIfCmtsCmStatusDownChannelIfIndex = $3
+            $docsIfCmtsCmStatusUpChannelIfIndex = $4
+            $cdxCmCpeCmtsServiceId = $5
+            $cdxCmtsCmStatusValue = lookup($6, cdxCmtsCmStatusValue) + " ( " + $6 + " )"
+            details($docsIfCmtsCmStatusMacAddress,$docsIfCmtsCmStatusIpAddress,$docsIfCmtsCmStatusDownChannelIfIndex,$docsIfCmtsCmStatusUpChannelIfIndex,$cdxCmCpeCmtsServiceId,$cdxCmtsCmStatusValue)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DOCS-EXT-MIB-cdxCmtsCmOnOffNotification"
+
+            @AlertGroup = "Cable Modem Status"
+            @AlertKey = "docsIfCmtsCmStatusEntry." + extract($OID6, "\.([0-9]+)$")
+            switch($6)
+            {
+                case "1": ### offline
+                    @Summary = "Cable Modem Offline"
+                    
+                    $SEV_KEY = $OS_EventId + "_offline"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### others
+                    @Summary = "Cable Modem Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_others"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### initRangingRcvd
+                    @Summary = "Cable Modem Ranging Received"
+                    
+                    $SEV_KEY = $OS_EventId + "_initRangingRcvd"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### initDhcpReqRcvd
+                    @Summary = "Cable Modem DHCP Request Received"
+                    
+                    $SEV_KEY = $OS_EventId + "_initDhcpReqRcvd"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### onlineNetAccessDisabled
+                    @Summary = "Cable Modem Online, Network Access Disabled"
+                    
+                    $SEV_KEY = $OS_EventId + "_onlineNetAccessDisabled"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### onlineKekAssigned
+                    @Summary = "Cable Modem Online, KEK Assigned"
+                    
+                    $SEV_KEY = $OS_EventId + "_onlineKekAssigned"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "7": ### onlineTekAssigned
+                    @Summary = "Cable Modem Online, TEK Assigned"
+                    
+                    $SEV_KEY = $OS_EventId + "_onlineTekAssigned"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "8": ### rejectBadMic
+                    @Summary = "Cable Modem Rejected, Bad MIC"
+                    
+                    $SEV_KEY = $OS_EventId + "_rejectBadMic"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "9": ### rejectBadCos
+                    @Summary = "Cable Modem Rejected, Bad COS"
+                    
+                    $SEV_KEY = $OS_EventId + "_rejectBadCos"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "10": ### kekRejected
+                    @Summary = "Cable Modem KEK modem key assignment rejected"
+                    
+                    $SEV_KEY = $OS_EventId + "_kekRejected"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "11": ### tekRejected
+                    @Summary = "Cable Modem TEK modem key assignment rejected"
+                    
+                    $SEV_KEY = $OS_EventId + "_tekRejected"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "12": ### online
+                    @Summary = "Cable Modem Online"
+                    
+                    $SEV_KEY = $OS_EventId + "_online"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "13": ### initTftpPacketRcvd
+                    @Summary = "Cable Modem TFTP File Transfer Started"
+                    
+                    $SEV_KEY = $OS_EventId + "_initTftpPacketRcvd"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "14": ### initTodRequestRcvd
+                    @Summary = "Cable Modem Time of Day Request"
+                    
+                    $SEV_KEY = $OS_EventId + "_initTodRequestRcvd"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "15": ### reset
+                    @Summary = "Cable Modem Resetting"
+                    
+                    $SEV_KEY = $OS_EventId + "_reset"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 11
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "16": ### rangingInProgress
+                    @Summary = "Cable Modem Ranging In Progress"
+                    
+                    $SEV_KEY = $OS_EventId + "_rangingInProgress"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "17": ### rangingCompleted
+                    @Summary = "Cable Modem Ranging Completed"
+                    
+                    $SEV_KEY = $OS_EventId + "_rangingCompleted"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "18": ### dhcpGotIpAddr
+                    @Summary = "Cable Modem Assigned IP Address via DHCP"
+                    
+                    $SEV_KEY = $OS_EventId + "_dhcpGotIpAddr"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 12
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "19": ### rejStaleConfig
+                    @Summary = "Cable Modem Registration Refused, Stale Config"
+                    
+                    $SEV_KEY = $OS_EventId + "_rejStaleConfig"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "20": ### rejIpSpoof
+                    @Summary = "Cable Modem Registration Refused, IP Spoof"
+                    
+                    $SEV_KEY = $OS_EventId + "_rejIpSpoof"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "21": ### rejClassFail
+                    @Summary = "Cable Modem Registration Refused, Class Failure"
+                    
+                    $SEV_KEY = $OS_EventId + "_rejClassFail"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "22": ### rejRegNack
+                    @Summary = "Cable Modem Registration Failed, No Acknowledgement Recieved"
+                    
+                    $SEV_KEY = $OS_EventId + "_rejRegNack"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "23": ### bpiKekExpired
+                    @Summary = "Cable Modem KEK modem key assignment Expired"
+                    
+                    $SEV_KEY = $OS_EventId + "_bpiKekExpired"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "24": ### bpiTekExpired    
+                    @Summary = "Cable Modem TEK modem key assignment Expired"
+                    
+                    $SEV_KEY = $OS_EventId + "_bpiTekExpired"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "25": ### shutdown
+                    @Summary = "Cable Modem Shutdown"
+                    
+                    $SEV_KEY = $OS_EventId + "_shutdown"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = "Cable Modem Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( CM MAC: " + $1 + ", CM IP: " + $2 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $6
+
+        case "2": ### cdxCmtsCmChOverNotification
+
+            ##########
+            # $1 = cdxCmtsCmChOverMacAddress
+            # $2 = cdxCmtsCmChOverDownFrequency
+            # $3 = cdxCmtsCmChOverUpChannelId
+            # $4 = cdxCmtsCmChOverOpInitiatedTime
+            # $5 = cdxCmtsCmChOverState
+            ##########
+
+            $cdxCmtsCmChOverMacAddress = $1
+            $cdxCmtsCmChOverDownFrequency = $2
+            $cdxCmtsCmChOverUpChannelId = $3
+            $cdxCmtsCmChOverOpInitiatedTime = $4
+            $cdxCmtsCmChOverState = lookup($5, cdxCmtsCmChOverState) + " ( " + $5 + " )"
+            details($cdxCmtsCmChOverMacAddress,$cdxCmtsCmChOverDownFrequency,$cdxCmtsCmChOverUpChannelId,$cdxCmtsCmChOverOpInitiatedTime,$cdxCmtsCmChOverState)
+
+            $OS_EventId = "SNMPTRAP-cisco-CISCO-DOCS-EXT-MIB-cdxCmtsCmChOverNotification"
+
+            @AlertGroup = "Channel Change Status"
+            @AlertKey = "cdxCmtsCmChOverEntry." + extract($OID5, "\.([0-9]+)$")
+            @Summary = "Cable Modem Channel Override"
+            switch($5)
+            {
+                case "1": ### messageSent
+                    @Summary = @Summary + ", Message Sent"
+                    
+                    $SEV_KEY = $OS_EventId + "_messageSent"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "2": ### commandNotActive
+                    @Summary = @Summary + ", Command Not Active"
+                    
+                    $SEV_KEY = $OS_EventId + "_commandNotActive"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "3": ### noOpNeed
+                    @Summary = @Summary + ", No Operation Needed"
+                    
+                    $SEV_KEY = $OS_EventId + "_noOpNeed"
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "4": ### modemNotFound
+                    @Summary = @Summary + ", Modem Not Found"
+                    
+                    $SEV_KEY = $OS_EventId + "_modemNotFound"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "5": ### waitToSendMessage
+                    @Summary = @Summary + ", Wait To Send Message"
+                    
+                    $SEV_KEY = $OS_EventId + "_waitToSendMessage"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                case "6": ### timeOut
+                    @Summary = @Summary + ", Time Out"
+                    
+                    $SEV_KEY = $OS_EventId + "_timeOut"
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+                default:
+                    @Summary = @Summary + ", Status Unknown"
+                    
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                    
+            }
+            @Summary = @Summary + "  ( CM MAC: " + $1 + " )"
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $5
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, cisco-CISCO-DOCS-EXT-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, cisco-CISCO-DOCS-EXT-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DOCS-EXT-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/cisco/cisco-CISCO-DOCS-EXT-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-DOCS-EXT-MIB.include.snmptrap.rules >>>>>")

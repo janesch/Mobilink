@@ -1,0 +1,428 @@
+# ----------------------------------------------------------------
+# --
+# --    Copyright (C) 1994 - 2009, Micromuse, Ltd. (an IBM Company)
+# --    All Rights Reserved
+# --
+# --    THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE
+# --    The copyright notice above does not evidence any
+# --    actual or intended publication of such source code.
+# --
+# --    RESTRICTED RIGHTS:
+# --
+# --    This file may have been supplied under a license.
+# --    It may be used, disclosed, and/or copied only as permitted
+# --    under such license agreement.  Any copy must contain the
+# --    above copyright notice and this restricted rights notice.
+# --    Use, copying, and/or disclosure of the file is strictly
+# --    prohibited unless otherwise provided in the license agreement.
+# --
+# --    Ident: $Id$
+# --
+# ------------------------------------------------------------------
+#######################################################################
+# Available elements:
+#   $ClassName - Class name of the TEC event
+#   $EventSeqNo - Event sequence number of this event
+#   All other elements are dynamically created, based on the name/value
+#   pairs in the event.
+#######################################################################
+
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+        switch(@Summary)
+        {
+        case "Running ...":
+                @Severity = 1
+                @AlertGroup = "probestat"
+                @Type = 2
+        case "Going Down ...":
+                @Severity = 5
+                @AlertGroup = "probestat"
+                @Type = 1
+        default:
+                @Severity = 1
+        }
+        @AlertKey = @Agent
+        @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+    @Manager = "tivoli_eif probe on " + hostname()
+    @AlertGroup = $ClassName
+    @Class = 6601
+    #@Type = 1
+
+    # Strip away single quotes
+    if(exists($msg))
+    {
+        if(regmatch($msg, "^'.*'$"))
+        {
+            $msg = extract($msg, "^'(.*)'$")
+        }
+    }
+
+    if(exists($date))
+    {
+        if(regmatch($date, "^'.*'$"))
+        {
+            $date = extract($date, "^'(.*)'$")
+        }
+    }
+
+    if(exists($situation_name))
+    {
+        if(regmatch($situation_name, "^'.*'$"))
+        {
+            $situation_name = extract($situation_name, "^'(.*)'$")
+        }
+    }
+
+    if(exists($situation_origin))
+    {
+        if(regmatch($situation_origin, "^'.*'$"))
+        {
+            $situation_origin = extract($situation_origin, "^'(.*)'$")
+        }
+    }
+
+    if(exists($situation_displayitem))
+    {
+        if(regmatch($situation_displayitem, "^'.*'$"))
+        {
+            $situation_displayitem = extract($situation_displayitem, "^'(.*)'$")
+        }
+    }
+
+    if(exists($source))
+    {
+        if(regmatch($source, "^'.*'$"))
+        {
+            $source = extract($source, "^'(.*)'$")
+        }
+        @Agent = $source
+    }
+
+    if(exists($situation_status))
+    {
+        if(regmatch($situation_status, "^'.*'$"))
+        {
+            $situation_status = extract($situation_status, "^'(.*)'$")
+        }
+    }
+
+    if(exists($integration_type))
+    {
+        if(regmatch($integration_type, "^'.*'$"))
+        {
+            $integration_type = extract($integration_type, "^'(.*)'$")
+        }
+    }
+
+    if(exists($situation_time))
+    {
+        if(regmatch($situation_time, "^'.*'$"))
+        {
+            $situation_time = extract($situation_time, "^'(.*)'$")
+        }
+    }
+
+    if(exists($situation_eventdata))
+    {
+        if(regmatch($situation_eventdata, "^'.*'$"))
+        {
+            $situation_eventdata = extract($situation_eventdata, "^'(.*)'$")
+        }
+    }
+        
+    if(exists($situation_type))
+    {
+        if(regmatch($situation_type, "^'.*'$"))
+        {
+            $situation_type = extract($situation_type, "^'(.*)'$")
+        }
+    }
+        
+    if(exists($situation_thrunode))
+    {
+        if(regmatch($situation_thrunode, "^'.*'$"))
+        {
+            $situation_thrunode = extract($situation_thrunode, "^'(.*)'$")
+        }
+    }
+        
+    if(exists($situation_group))
+    {
+        if(regmatch($situation_group, "^'.*'$"))
+        {
+            $situation_group = extract($situation_group, "^'(.*)'$")
+        }
+    }
+        
+    if(exists($situation_fullname))
+    {
+        if(regmatch($situation_fullname, "^'.*'$"))
+        {
+            $situation_fullname = extract($situation_fullname, "^'(.*)'$")
+        }
+    }
+
+    if(exists($cms_hostname))
+    {
+        if(regmatch($cms_hostname, "^'.*'$"))
+        {
+            $cms_hostname = extract($cms_hostname, "^'(.*)'$")
+        }
+    }
+
+    if(exists($cms_port))
+    {
+        if(regmatch($cms_port, "^'.*'$"))
+        {
+            $cms_port = extract($cms_port, "^'(.*)'$")
+        }
+    }
+
+    if(exists($master_reset_flag))
+    {
+        if(regmatch($master_reset_flag, "^'.*'$"))
+        {
+            $master_reset_flag = extract($master_reset_flag, "^'(.*)'$")
+        }
+    }
+
+    if(exists($hostname))
+    {
+        if(regmatch($hostname, "^'.*'$"))
+        {
+            $hostname = extract($hostname, "^'(.*)'$")
+        }
+    }
+
+    if(exists($fqhostname))
+    {
+        if(regmatch($fqhostname, "^'.*'$"))
+        {
+            $fqhostname = extract($fqhostname, "^'(.*)'$")
+        }
+    }
+
+    if(exists($repeat_count))
+    {
+        if(regmatch($repeat_count, "^'.*'$"))
+        {
+            $repeat_count = extract($repeat_count, "^'(.*)'$")
+        }
+    }
+
+    if(exists($severity))
+    {
+        if(regmatch($severity, "^'.*'$"))
+        {
+            $severity = extract($severity, "^'(.*)'$")
+        }
+    }
+
+    if(exists($appl_label))
+    {
+        if(regmatch($appl_label, "^'.*'$"))
+        {
+            $appl_label = extract($appl_label, "^'(.*)'$")
+        }
+    }
+
+    if(exists($hostname))
+    {
+       	@Identifier = $hostname
+    }
+
+    if(exists($source))
+    {
+        @AlertKey = $source
+        @Identifier = @Identifier + ":" + $source
+    }
+
+    if(exists($sub_source))
+    {
+        @AlertKey = @AlertKey + ":" + $sub_source
+        @Identifier = @Identifier + ":" + $sub_source
+    }
+
+    if(exists($sub_origin))
+    {
+        @AlertKey = @AlertKey + ":" + $sub_origin 
+        @Identifier = @Identifier + ":" + $sub_origin
+    }
+
+    if( exists( $severity ) )
+    {
+        switch ( $severity )
+        {
+        case "FATAL" :
+            @Severity = 5
+        case "60":
+            @Severity = 5
+        case "CRITICAL":
+            @Severity = 5
+        case "50":
+            @Severity = 5
+        case "MINOR":
+            @Severity = 3
+        case "40":
+            @Severity = 3
+        case "WARNING":
+            @Severity = 2
+        case "30":
+            @Severity = 2
+        default:
+            @Severity = 1
+        }
+    }
+    
+    if(exists($origin))
+    {
+        @Node = $origin
+        @NodeAlias = $origin
+    }
+
+    @Identifier = @Identifier + ":" + $ClassName    
+
+    @Summary = $msg
+    @TECHostname = $hostname
+    @TECFQHostname = $fqhostname
+    @TECDate = $date
+    @TECRepeatCount = $repeat_count
+    @LastOccurrence = getdate
+    @FirstOccurrence = getdate
+    
+
+    ###
+    ### Handle ITM Events
+    ###
+    if ( exists( $situation_name ) ){
+        @Identifier = $situation_name + ":" + $situation_origin + ":" + $situation_displayitem + ":" + $ClassName
+        @AlertKey = $situation_name
+        #@Node = $situation_origin
+        @Node = $origin
+        @NodeAlias = $situation_origin
+        @Type = 20
+
+
+        if ( exists( $appl_label ) ){
+
+            # If you want to create context sensitive tools (such as launch in context)  that run against the ITM
+            # infrastructure (e.g. Tivoli Enterprise Monitoring Server or Tivoli Enterprise Portal Server) to handle
+            # enterprise situation events,  use the Class assignment below and ensure this class value is 
+            # defined in your Netcool/OMNIbus ObjectServer.   See the Netcool/OMNIbus documentation for more information
+            # on creating and editing classes if this class is not defined.   
+
+            @ITMApplLabel=$appl_label
+
+            # A:P:S is from Agent:[Private|Enterprise]:[Situation|Lifecycle]
+            if (  match($appl_label, "A:P:S") OR 
+                  match($appl_label, "A:P:L")) {
+                # Private
+                @Class = 87723
+                @Identifier = @Identifier + ":1"
+				if( match($situation_name, "EE_HEARTBEAT")) {
+					@ExpireTime = $situation_eventdata
+				}
+
+            }
+            else{
+                # Enterprise
+                @Class = 87722
+            }
+        }
+                
+                                              
+        # To enable the ITM Performance Analyzer predictive events,
+        # uncomment the following line after applying the appropriate 
+        # SQL file to the Netcool/OMNIbus ObjectServer, and modify the path to the
+        # predictive_event.rules file.  The SQL file and predictive_event.rules file are
+        # available with the versions of Netcool/OMNIbus that support handling 
+        # predictive events.
+        #
+        #include "/path/to/itmpredictive/predictive_event.rules"
+
+        @ITMDisplayItem = $situation_displayitem
+        @ITMStatus = $situation_status
+        @ITMTime = $situation_time
+        @ITMEventData = $situation_eventdata
+        @ITMHostname = $cms_hostname
+        @ITMPort = $cms_port
+        @ITMIntType = $integration_type
+        @ITMSitType = $situation_type
+        @ITMThruNode = $situation_thrunode
+        @ITMSitGroup = $situation_group
+        @ITMSitFullName = $situation_fullname
+
+        #if (( match($situation_status, "E") OR 
+        #   match ($situation_status, "F")) AND
+        #   match($integration_type, "U") )
+        #{
+        #   @ITMStatus= "Y"
+        #}     
+        #update(@ITMStatus)
+        #update(@ITMEventData)
+        #update(@ITMHostname)
+        #update(@ITMTime)
+
+        if( exists($master_reset_flag) )
+        {
+            @ITMResetFlag = $master_reset_flag
+            update(@ITMResetFlag)
+        }
+
+        #
+        # Handle additional sync with ITM Server.
+        #
+        if( match($situation_status, "Y") AND
+            match($integration_type, "U") )
+        {
+            update(@ITMStatus)
+            update(@ITMEventData)
+            update(@ITMHostname)
+            update(@ITMTime)
+        }
+        else if( match($situation_status, "P") AND
+                 match($integration_type, "U") )
+        {          
+            # Situation Stop - Resolution.
+            if( exists($situation_thrunode) )
+            {
+                # avoid de-dup with stops from other nodes
+                @Identifier = @Identifier + ":" + $situation_thrunode
+            }
+            
+            @Type = 21
+            # avoid de-dup with any event
+            @Identifier = @Identifier + ':' + @Type
+        }
+        else if( match($situation_status, "D") AND
+             match($integration_type, "U") )
+        {
+            # Situation Deleted - Resolution.
+            @Type = 21
+            # avoid de-dup with any event
+            @Identifier = @Identifier + ':' + @Type
+        }
+        else if( match($situation_status, "N"))
+        {
+            if ( ! (match($situation_name, "**")))
+            {
+                update(@ITMStatus)
+                update(@ITMEventData)
+                update(@ITMHostname)
+                update(@ITMTime)
+            }
+            else
+            {
+                    # Situation Reset - Resolution.
+                    @Type = 21
+                # avoid de-dup with any event
+                @Identifier = @Identifier + ':' + @Type
+            }
+        }
+    }
+}

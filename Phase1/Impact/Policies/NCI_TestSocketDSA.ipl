@@ -1,0 +1,114 @@
+Seconds = GetDate();
+log("Starting TestSocketDSA with type SocketData at " + LocalTime(Seconds, "HH:mm::ss"));
+Type="SocketData";
+Types={"SocketData"};
+
+// GetByFilter testing
+// First, no filter (should get all the items)
+log("Testing GetByFilter -- finding all");
+
+Filter = "";
+CountOnly = false;
+All = GetByFilter(Type, Filter, CountOnly);
+
+i = 0;
+while (i < Num) {
+  i = i + 1;
+  log("John[" + i + "] => " + All[i-1].FirstName);
+  // Save John's DataItem for later on when we test the Links.
+  if (All[i-1].FirstName == "John") {
+    JohnDataItem = All[i-1];
+  }
+}
+
+// Provide a filter this time.
+log("Testing GetByFilter -- finding Peter");
+
+Filter = "FirstName = 'Peter'";
+CountOnly = false;
+Peter = GetByFilter(Type, Filter, CountOnly);
+
+if (Num == 1) {
+  log("Found Peter!  => " + Peter[0].FirstName + " " + Peter[0].LastName);
+} else {
+  log("Error: Didn't find Peter!");
+}
+
+log("Testing GetByFilter -- finding Nick (bogus entry)");
+
+Filter = "FirstName = 'Nick'";
+CountOnly = false;
+Nick = GetByFilter(Type, Filter, CountOnly);
+
+if (Num == 1) {
+  log("Yikes We found something!  => " + Nick[0]);
+} else {
+  log("Great!  We didn't find Nick!");
+}
+
+
+// GetByLinks testing
+// First, no filter (should get Bill and Carl)
+log("Testing GetByLinks -- finding all links from John");
+
+
+Filter = "";
+CountOnly = false;
+JohnOrgNodes = {};
+JohnOrgNodes = JohnOrgNodes + JohnDataItem;
+
+JohnLinks = GetByLinks(Types, Filter, null, JohnOrgNodes);
+
+i = 0;
+while (i < Num) {
+  i = i + 1;
+  log("JohnLinks[" + i + "] => " + JohnLinks[i-1].FirstName);
+}
+
+// Provide a filter this time.
+log("Testing GetByLinks -- finding Bill");
+
+Filter = "FirstName = 'Bill'";
+CountOnly = false;
+Bill = GetByLinks(Types, Filter, null, JohnOrgNodes);
+
+if (Num == 1) {
+  log("Found Bill!  => " + Bill[0].FirstName + " " + Bill[0].LastName);
+} else {
+  log("Error: Didn't find Bill!");
+}
+
+// Test AddDataItem
+
+log("Testing AddDataItem -- Adding Baks Doe");
+
+John = NewObject();
+John.FirstName = "Baks";
+John.LastName = "Doe";
+John.Hobby = "Playing";
+
+ObjectToCopy=John;
+
+AddDataItem(Type, ObjectToCopy);
+
+
+// Test GetByKey
+log("Testing GetByKey with existing key == Kate");
+Key = "Kate";
+MaxNum = 1;
+Kate = GetByKey(Type, Key, MaxNum);
+if (Kate == NULL) {
+  log("Error:  Didn't find Kate!  Num is " + Num);
+} else {
+  log("Found Kate! => " + Kate[0].FirstName + "  Num is " + Num);
+}
+
+log("Testing GetByKey with nonexistant key == Judy");
+Key = "Judy";
+Judy = GetByKey(Type, Key, MaxNum);
+if (Num == 0) {
+  log("Great!  Didn't find Judy!  Num is " + Num);
+} else {
+  log("Yikes!  Found Judy! => " + Judy[0].FirstName + "  Num is " + Num);
+}
+log("Done with testing Socket");

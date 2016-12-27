@@ -1,0 +1,117 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    adtran-ADTRAN-ADVISOR-MIB.include.snmptrap.rules 1.0 
+#    2005/09/13 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  ADTRAN-ADVISOR-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.664.1.1": ### Adtran ADVISOR - Traps from ADTRAN-ADVISOR-MIB
+
+    log(DEBUG, "<<<<< Entering... adtran-ADTRAN-ADVISOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Adtran-ADVISOR"
+    @Class = "87003"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "101": ### adADVISORPollLinkUp
+
+            ##########
+            # $1 = adProdPhysAddress 
+            ##########
+
+            $adProdPhysAddress = $1
+            details($adProdPhysAddress)
+
+            $OS_EventId = "SNMPTRAP-adtran-ADTRAN-ADVISOR-MIB-adADVISORPollLinkUp"
+
+            @AlertGroup = "Link Status"
+            @AlertKey = "Physical Address: " + $1
+            @Summary = "Link Up  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "102": ### adADVISORPollLinkDown
+
+            ##########
+            # $1 = adProdPhysAddress
+            ##########
+
+            $adProdPhysAddress = $1
+            details($adProdPhysAddress)
+
+            $OS_EventId = "SNMPTRAP-adtran-ADTRAN-ADVISOR-MIB-adADVISORPollLinkDown"
+
+            @AlertGroup = "Link Status"
+            @AlertKey = "Physical Address: " + $1
+            @Summary = "Link Down  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, adtran-ADTRAN-ADVISOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, adtran-ADTRAN-ADVISOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/adtran/adtran-ADTRAN-ADVISOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/adtran/adtran-ADTRAN-ADVISOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... adtran-ADTRAN-ADVISOR-MIB.include.snmptrap.rules >>>>>")

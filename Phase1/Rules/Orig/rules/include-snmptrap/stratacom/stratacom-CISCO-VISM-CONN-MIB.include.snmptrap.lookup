@@ -1,0 +1,82 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    stratacom-CISCO-VISM-CONN-MIB.include.snmptrap.lookup 1.0
+#    2006/05/31 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-VISM-CONN-MIB
+#
+###############################################################################
+table vismChanActivityState =
+{
+    ##########
+    # Indicates whether the PVC is currently used to carry IP traffic or not,
+    # and whether it has failed.
+    # The possible states are:
+    # 'active  (1)' : Channel is healthy and is currently designated to carry
+    #  IP traffic. A channel can only be active if it is also unlocked.
+    # 'standby (2)' : Channel is healthy but not designated to carry IP traffic.
+    #  Switchover to this channel is allowed.
+    # 'failed  (3)' : Channel is unable to carry any traffic.
+    # 'unknown (4)' : Channel is unprotected and hence health of the channel
+    #  is not monitored.
+    # The default value upon creation of the row will be 'standby (2)' for a
+    # protected channel and 'unknown (4)' for an unprotected channel. VISM
+    # may then transition a 'protected (1)' channel to active if it determines
+    # that this channel should be the one carrying the traffic
+    #########
+
+    {"1", "Active"}, ### active
+    {"2", "Standby"}, ### standby
+    {"3", "Failed"}, ### failed
+    {"4", "Unknown"}, ### unknown
+}
+default = "Unknown"
+ 
+table vismChanLockingState =
+{
+    ##########
+    # This object is used to control the switchover of protected channels. 
+    # 'unlock (1)' : Transition state to unlock. A channel which is in lock 
+    #  state has to be brought to 'unlock (1)' state for it to be available 
+    #  for switchover. 
+    #  Whether a switchover to a channel is allowed or not is dependent on 
+    #  both vismChanActivityState and vismChanLockingState.A switchover is 
+    #  allowed if its vismChanActivityState is standby and its 
+    #  vismChanLockingState is unlock. Changing the vismChanLockingState to 
+    #  unlock does not cause a change in the vismChanActivityState.
+    #  A channel which is in unlock state may carry traffic depending on 
+    #  its activity state (active or standby). 
+    # 'lock (2)' : Transition state to 'lock (2)'. If the activity state is 
+    #  active, it transitions to standby and a switchover occurs to another 
+    #  channel which is standby and 'unlocked (1)'.When a channel is in
+    #  'lock (2)' state,switchover to this channel is not allowed.
+    #  A channel which is in 'lock (2)' state, is ways in either standby 
+    #  or failed state.Hence it will not carry any traffic.Switchover to a 
+    #  channel which is in 'lock (2)' state is not allowed.This object can 
+    #  be set to 'locked (2)' to force a switchover and/or to perform 
+    #  maintenance operations related to that channel.A channel that is 
+    #  'unprotected' will always be in 'unlock (1)' state. It can not be 
+    #  set to 'lock (2)' state.             
+    ##########
+    
+    {"1", "Unlocked"}, ### unlock
+    {"2", "Locked"}, ### lock
+}
+default = "Unknown"
+          
+             

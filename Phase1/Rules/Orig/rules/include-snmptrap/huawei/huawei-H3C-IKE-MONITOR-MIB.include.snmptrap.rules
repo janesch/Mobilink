@@ -1,0 +1,671 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-IKE-MONITOR-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-IKE-MONITOR-MIB release V1.2
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-IKE-MONITOR-MIB release V1.0
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.2.30.1.6.1": ### Huawei Technologies - Notifications from H3C-IKE-MONITOR-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-IKE-MONITOR-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cIKETunnelStart
+
+            ##########
+            # This notification is generated when an IPSec
+            # Phase-1 IKE Tunnel is created.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKETunLifeTime - The negotiated LifeTime of the IPSec
+            #        Phase-1 IKE Tunnel in seconds.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunLifeTime = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunLifeTime,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKETunnelStart"
+
+            @AlertGroup = "IKE Tunnel Start/Stop"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPSec Phase-1 IKE Tunnel Created  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### h3cIKETunnelStop
+
+            ##########
+            # This notification is generated when an IPSec
+            # Phase-1 IKE Tunnel is deleted.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKETunActiveTime - The duration the IPSec Phase-1 IKE
+            #        tunnel has been active in seconds.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunActiveTime = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunActiveTime,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKETunnelStop"
+
+            @AlertGroup = "IKE Tunnel Start/Stop"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPSec Phase-1 IKE Tunnel Deleted  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### h3cIKENoSaFailure
+
+            ##########
+            # This notification is generated when the IKE tunnel
+            # has a non-existent SA error.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKENoSaFailure"
+
+            @AlertGroup = "IKE Tunnel Non-Existent SA"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Non-Existent SA Error  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "4": ### h3cIKEEncryFailFailure
+
+            ##########
+            # This notification is generated when the IKE tunnel
+            # has an encrypting failure.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEEncryFailFailure"
+
+            @AlertGroup = "IKE Tunnel Encrypting Failure"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Encrypting Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "5": ### h3cIKEDecryFailFailure
+
+            ##########
+            # This notification is generated when the IKE tunnel
+            # has a decrypting failure.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEDecryFailFailure"
+
+            @AlertGroup = "IKE Tunnel Decrypting Failure"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Decrypting Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### h3cIKEInvalidProposalFailure
+
+            ##########
+            # This notification is generated when the IPSec
+            # phase-1 invalid proposal occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEInvalidProposalFailure"
+
+            @AlertGroup = "IKE Tunnel Invalid Proposal"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Invalid Proposal  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "7": ### h3cIKEAuthFailFailure
+
+            ##########
+            # This notification is generated when the IPSec
+            # phase-1 authentication failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEAuthFailFailure"
+
+            @AlertGroup = "IKE Tunnel Authentication Failure"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Authentication Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "8": ### h3cIKEInvalidCookieFailure
+
+            ##########
+            # This notification is generated when the IPSec
+            # phase-1 invalid cookie failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEInvalidCookieFailure"
+
+            @AlertGroup = "IKE Tunnel Invalid Cookie"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Invalid Cookie Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "9": ### h3cIKEAttrNotSuppFailure
+
+            ##########
+            # This notification is generated when the IPSec
+            # phase-1 unsupported attribute failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEAttrNotSuppFailure"
+
+            @AlertGroup = "IKE Tunnel Unsupported Attribute"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Unsupported Attribute Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### h3cIKEUnsportExchTypeFailure
+
+            ##########
+            # This notification is generated when the IPSec
+            # phase-1 unsupported exchange type failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEUnsportExchTypeFailure"
+
+            @AlertGroup = "IKE Tunnel Unsupported Exchange Type"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Unsupported Exchange Type  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "11": ### h3cIKEInvalidIdFailure
+
+            ##########
+            # This notification is generated when the IPSec
+            # phase-1 invalid id failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKEIdInformation - The id information with a trap.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKEIdInformation = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKEIdInformation,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEInvalidIdFailure"
+
+            @AlertGroup = "IKE Tunnel Invalid ID"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Invalid ID  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "12": ### h3cIKEInvalidProtocolFailure
+
+            ##########
+            # This notification is generated when the processing for an
+            # IPSec Phase-1 IKE Tunnel has a protocol related errors.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKEProtocolNum - The protocol number with a trap
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKEProtocolNum = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKEProtocolNum,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEInvalidProtocolFailure"
+
+            @AlertGroup = "IKE Tunnel Protocol Error ( Protocol Number: " + $3 + " )"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Invalid ID  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### h3cIKECertTypeUnsuppFailure
+
+            ##########
+            # This notification is generated when the IPSec phase-1
+            # unsupported certificate type failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKECertInformation - The certificate information
+            #        with a trap.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKECertInformation = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKECertInformation,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKECertTypeUnsuppFailure"
+
+            @AlertGroup = "IKE Tunnel Certificate Type ( Certificate: " + $3 + " )"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Certificate Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "14": ### h3cIKEInvalidCertAuthFailure
+
+            ##########
+            # This notification is generated when the IPSec phase-1
+            # invalid certificate authorization failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKECertInformation - The certificate information
+            #        with a trap.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKECertInformation = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKECertInformation,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEInvalidCertAuthFailure"
+
+            @AlertGroup = "IKE Tunnel Certificate Authorization ( Certificate: " + $3 + " )"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Certificate Authorization Failure  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "15": ### h3cIKElInvalidSignFailure
+
+            ##########
+            # This notification is generated when the IPSec phase-1
+            # invalid signature failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKECertInformation - The certificate information
+            #        with a trap.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKECertInformation = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKECertInformation,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKElInvalidSignFailure"
+
+            @AlertGroup = "IKE Tunnel Invalid Signature ( Certificate: " + $3 + " )"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Invalid Signature  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "16": ### h3cIKECertUnavailableFailure
+
+            ##########
+            # This notification is generated when the IPSec phase-1
+            # certificate unavailable failure occurs.
+            #
+            # $1 = h3cIKETunLocalAddr - The IP address of the local endpoint
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $2 = h3cIKETunRemoteAddr - The IP address of the remote peer
+            #        for the IPSec Phase-1 IKE Tunnel.
+            # $3 = h3cIKECertInformation - The certificate information
+            #        with a trap.
+            ##########
+
+            $h3cIKETunLocalAddr = $1
+            $h3cIKETunRemoteAddr = $2
+            $h3cIKECertInformation = $3
+            $h3cIKETunIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cIKETunLocalAddr,
+                    $h3cIKETunRemoteAddr,
+                    $h3cIKECertInformation,
+                    $h3cIKETunIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKECertUnavailableFailure"
+
+            @AlertGroup = "IKE Tunnel Certificate Unavailable ( Certificate: " + $3 + " )"
+            @AlertKey = "h3cIKETunnelEntry." + $h3cIKETunIndex
+            @Summary = "IPsec Phase-1 IKE Tunnel Certificate Unavailable  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "17": ### h3cIKEProposalAdd
+
+            ##########
+            # This notification is generated when an IKE proposal is added.
+            #
+            # $1 = h3cIKEProposalNumber - The IKE proposal's number
+            #        with a trap.
+            # $2 = h3cIKEProposalSize - The number of IKE proposals
+            #        with a trap.
+            ##########
+
+            $h3cIKEProposalNumber = $1
+            $h3cIKEProposalSize = $2
+            details($h3cIKEProposalNumber,
+                    $h3cIKEProposalSize)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEProposalAdd"
+
+            @AlertGroup = "IKE Proposal Added"
+            @AlertKey = "Proposal Number: " + $1 + ", Size: " + $2
+            @Summary = "IPsec Phase-1 IKE Tunnel Proposal Added  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "18": ### h3cIKEProposalDel
+
+            ##########
+            # This notification is generated when an IKE proposal is deleted.
+            #
+            # $1 = h3cIKEProposalNumber - The IKE proposal's number
+            #        with a trap.
+            # $2 = h3cIKEProposalSize - The number of IKE proposals
+            #        with a trap.
+            ##########
+
+            $h3cIKEProposalNumber = $1
+            $h3cIKEProposalSize = $2
+            details($h3cIKEProposalNumber,
+                    $h3cIKEProposalSize)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-IKE-MONITOR-MIB-h3cIKEProposalDel"
+
+            @AlertGroup = "IKE Proposal Deleted"
+            @AlertKey = "Proposal Number: " + $1 + ", Size: " + $2
+            @Summary = "IPsec Phase-1 IKE Tunnel Proposal Deleted  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+#########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-IKE-MONITOR-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-IKE-MONITOR-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-IKE-MONITOR-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-IKE-MONITOR-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-H3C-IKE-MONITOR-MIB.include.snmptrap.rules >>>>>")

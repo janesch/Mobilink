@@ -1,0 +1,95 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-NSP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "NSP": ### Network Switch Processor
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-NSP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADSLOT":
+    
+            ##########
+            # An internal error, indicating an invalid slot type
+            # pointer, has occurred.
+            #
+            # %NSP-3-BADSLOT: Invalid slots[]: [hex]
+            ##########
+    
+            @AlertKey = extract($Message, "Invalid (.*):")
+    
+        case "BOGUS_PARAMETER":
+    
+            ##########
+            # An internal error, indicating an invalid parameter
+            # passed to a routine, has occurred.
+            #
+            # %NSP-3-BOGUS_PARAMETER: Bogus parameter passed:
+            # [chars] [dec]
+            ##########
+    
+            @AlertKey = "Parameter: " + extract($Message, "passed: (.*)$")
+    
+        case "NOMEMORY":
+    
+            ##########
+            # An operation could not be accomplished because of a
+            # low memory condition. The current system
+            # configuration, network environment, or possibly a
+            # software error might have exhausted or fragmented the
+            # system memory.
+            #
+            # %NSP-2-NOMEMORY: Unit [dec], no memory for [chars]
+            ##########
+    
+            @AlertKey = "Unit: " + extract($Message, "Unit (.*),? no")
+    
+        case "SONET_ALARM":
+    
+            ##########
+            # A SONET line warning condition has been detected.
+            #
+            # %NSP-4-SONET_ALARM: [chars]: [chars] [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "(.*): ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = @AlertGroup + " ( " + extract($Message, ": ([A-Z]+).*") + " )"
+            @AlertKey = "Interface: " + $MOI_Local
+            if(regmatch($Message, " cleared ?$"))
+            {
+                @Severity = 1
+                @Type = 2
+            }
+
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-NSP.include.syslog.rules >>>>>")

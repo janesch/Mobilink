@@ -1,0 +1,2215 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    adva-FSP2000-R2-MIB.include.snmptrap.rules 1.0
+#    2005/11/11 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  FSP2000-R2-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2544.1.7.2.3": ### ADVA Fiber Service Platform 2000 - Notifications from FSP2000-R2-MIB (020916)
+
+    log(DEBUG, "<<<<< Entering... adva-FSP2000-R2-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "ADVA-Fiber Service Platform 2000"
+    @Class = ""
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "2": ### equipmentHolderObjectCreation
+
+            ##########
+            # $1 = entPhysicalIndex 
+            ##########
+
+            $entPhysicalIndex = $1
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentHolderObjectCreation"
+
+            @AlertGroup = "Equipment Holder Object Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Holder Object Created  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalIndex)
+
+        case "3": ### equipmentHolderObjectDeletion
+
+            ##########
+            # $1 = entPhysicalIndex 
+            ##########
+
+            $entPhysicalIndex = $1
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentHolderObjectDeletion"
+
+            @AlertGroup = "Equipment Holder Object Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Holder Object Deleted  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalIndex)
+
+        case "4": ### containerStateChange
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = containsPhysicalIndex
+            # $3 = containerState 
+            ##########
+
+            $entPhysicalIndex = $1
+            $containsPhysicalIndex = $2
+            $containerState = lookup($3, advaFSP2kContainerState) + " ( " + $3 + " )"
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-containerStateChange"
+
+            @AlertGroup = "Container Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            switch($3)
+            {
+                case "1": ### containerEmpty
+                    $SEV_KEY = $OS_EventId + "_containerEmpty"
+                    @Summary = "Container Empty"
+        
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### containsAcceptedUnit
+                    $SEV_KEY = $OS_EventId + "_containsAcceptedUnit"
+                    @Summary = "Container Contains Accepted Unit"
+        
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### containsNotAcceptedUnit
+                    $SEV_KEY = $OS_EventId + "_containsNotAcceptedUnit"
+                    @Summary = "Container Contains Not Accepted Unit"
+        
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### containsUnknownUnit
+                    $SEV_KEY = $OS_EventId + "_containsUnknownUnit"
+                    @Summary = "Container Contains Unknown Unit"
+        
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Container Status Unknown"
+        
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $3
+
+            details($entPhysicalIndex,$containsPhysicalIndex,$containerState)
+
+        case "5": ### neAttributeValueChange
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-neAttributeValueChange"
+
+            @AlertGroup = "NE Attribute Value Status"
+            @AlertKey = ""
+            @Summary = "Network Element Attribute Value Changed"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "6": ### interfaceAttributeValueChange
+
+            ##########
+            # $1 = ifIndex 
+            ##########
+
+            $ifIndex = $1
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAttributeValueChange"
+
+            @AlertGroup = "Interface Attribute Value Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Attribute Value Changed  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($ifIndex)
+
+        case "7": ### equipmentAttributeValueChange
+
+            ##########
+            # $1 = entPhysicalIndex 
+            ##########
+
+            $entPhysicalIndex = $1
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAttributeValueChange"
+
+            @AlertGroup = "Equipment Attribute Value Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Attribute Value Changed  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalIndex)
+
+        case "8": ### neAuthentificationFail
+
+            ##########
+            # $1 = neAlarmAuthFailSource
+            # $2 = neAlarmAuthFailDescription
+            ##########
+
+            $neAlarmAuthFailSource = lookup($1, advaFSP2kNeAlarmAuthFailSource) + " ( " + $1 + " )"
+            $neAlarmAuthFailDescription = $2
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-neAuthentificationFail"
+
+            @AlertGroup = "NE Authentication Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### nofail
+                    $SEV_KEY = $OS_EventId + "_nofail"
+                    @Summary = "Network Element Authentication Failure Cleared"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### snmpagent
+                    $SEV_KEY = $OS_EventId + "_snmpagent"
+                    @Summary = "SNMP Agent Indicating Wrong Community"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "3": ### logincmd
+                    $SEV_KEY = $OS_EventId + "_logincmd"
+                    @Summary = "Unsuccessful Login Request"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                case "4": ### sucmd
+                    $SEV_KEY = $OS_EventId + "_sucmd"
+                    @Summary = "Unsuccessful Switch User(su) Request"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @Summary = "Network Element Authentication Failure of Unknown Type"
+
+                    $DEFAULT_Severity = 3
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+            if(!match($2, ""))
+            {
+                @Summary = @Summary + ", " + $2
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1 + " " + $2
+
+            details($neAlarmAuthFailSource,$neAlarmAuthFailDescription)
+
+        case "9": ### neINNCDown
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-neINNCDown"
+
+            @AlertGroup = "INNC Status"
+            @AlertKey = ""
+            @Summary = "Inter NEMI Network Connection (INNC) Down"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "10": ### neINNCUp
+
+            ##########
+            # Trap is sent, when the Inter NEMI Network Connection (INNC) is
+            # up. This trap is only send, if NEMIv1 and NEMIv1-Slave is
+            # installed.
+            ##########
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-neINNCUp"
+
+            @AlertGroup = "INNC Status"
+            @AlertKey = ""
+            @Summary = "Inter NEMI Network Connection (INNC) Up"
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "13": ### neSoftwareUpdate
+
+            ##########
+            # $1 = neState 
+            ##########
+
+            $neState = lookup($1, advaFSP2kNEState) + " ( " + $1 + " )"
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-neSoftwareUpdate"
+
+            @AlertGroup = "NE Software Update Status"
+            @AlertKey = ""
+            switch($1)
+            {
+                case "1": ### running - normal operation
+                    $SEV_KEY = $OS_Event_Id + "_running"
+                    @Summary = "Network Element Running, Normal Operation"
+
+                    $DEFAULT_Severity = 1
+                    $DEFAULT_Type = 2
+                    $DEFAULT_ExpireTime = 0
+                case "2": ### ucmUpdate
+                    $SEV_KEY = $OS_Event_Id + "_ucmUpdate"
+                    @Summary = "Network Element UCM Update, Hardware Access Blocked"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+                default:
+                    $SEV_KEY = $OS_Event_Id + "_unknown"
+                    @Summary = "Network Element Status Unknown"
+
+                    $DEFAULT_Severity = 2
+                    $DEFAULT_Type = 1
+                    $DEFAULT_ExpireTime = 0
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($neState)
+
+        case "14": ### neStateChange
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-neStateChange"
+
+            @AlertGroup = "Network Element Status"
+            @AlertKey = ""
+            @Summary = "Network Element Status Changed"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "15": ### interfaceStateChange
+       
+            ##########
+            # $1 = ifIndex 
+            ##########
+
+            $ifIndex = $1
+            
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceStateChange"
+
+            @AlertGroup = "Interface Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Status Changed"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+            
+            details($ifIndex)
+
+        case "16": ### equipmentStateChange
+
+            ##########
+            # $1 = entPhysicalIndex 
+            ##########
+
+            $entPhysicalIndex = $1
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentStateChange"
+
+            @AlertGroup = "Equipment Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Status Changed  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalIndex)
+
+        case "17": ### resetAllTelemetryOutputs
+
+            ##########
+            # $1 = entPhysicalIndex 
+            ##########
+
+            $entPhysicalIndex = $1
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-resetAllTelemetryOutputs"
+
+            @AlertGroup = "NEMI Reset"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "NEMI Reset  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 1800
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($entPhysicalIndex)
+
+        case "18": ### interfaceAlarmSeverityChange
+
+            ##########
+            # $1 = interfaceAlarmSeverityType
+            # $2 = interfaceAlarmSeverityValue 
+            ##########
+
+            $interfaceAlarmSeverityType = lookup($1, advaFSP2kInterfaceAlarmTypes) + " ( " + $1 + " )"
+            [$interfaceAlarmSeverityValue,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmSeverityChange"
+
+            @AlertKey = "interfaceAlarmSeverityEntry." + $1
+            switch($1)
+            {
+                case "1": ### lossOfSignal
+                    $SEV_KEY = $OS_EventId + "_lossOfSignal"
+                    @AlertGroup = "Interface Signal Status"
+                    @Summary = "Interface Loss of Signal"
+                case "2": ### lossOfLinkPulse
+                    $SEV_KEY = $OS_EventId + "_lossOfLinkPulse"
+                    @AlertGroup = "Interface Link Pulse Status"
+                    @Summary = "Interface Loss of Link Pulse"
+                case "3": ### lossOfSync
+                    $SEV_KEY = $OS_EventId + "_lossOfSync"
+                    @AlertGroup = "Interface Sync Status"
+                    @Summary = "Interface Loss of Sync"
+                case "4": ### dmuxDataNoAvail
+                    $SEV_KEY = $OS_EventId + "_dmuxDataNoAvail"
+                    @AlertGroup = "Interface DMUX Data Status"
+                    @Summary = "Interface DMUX Data not Available"
+                case "5": ### partitioned
+                    $SEV_KEY = $OS_EventId + "_partitioned"
+                    @AlertGroup = "Interface Partition Status"
+                    @Summary = "Interface Partitioned"
+                case "6": ### laserBiasCurrentEoL
+                    $SEV_KEY = $OS_EventId + "_laserBiasCurrentEoL"
+                    @AlertGroup = "Interface Laser Bias Current Status"
+                    @Summary = "Interface Laser Bias Current End of life"
+                case "7": ### laserTecEoL
+                    $SEV_KEY = $OS_EventId + "_laserTecEoL"
+                    @AlertGroup = "Interface Laser TEC Status"
+                    @Summary = "Interface Laser Thermoelectric Cooler End of life"
+                case "8": ### ifModuleTempOoR
+                    $SEV_KEY = $OS_EventId + "_ifModuleTempOoR"
+                    @AlertGroup = "Interface Module Temperature Status"
+                    @Summary = "Interface Module Temperature Out of Range"
+                case "9": ### laserTempOoR
+                    $SEV_KEY = $OS_EventId + "_laserTempOoR"
+                    @AlertGroup = "Interface Laser Temperature Status"
+                    @Summary = "Interface Laser Temperature Out of Range"
+                case "10": ### lossOfOop
+                    $SEV_KEY = $OS_EventId + "_lossOfOop"
+                    @AlertGroup = "Interface OOP Status"
+                    @Summary = "Interface Loss of Optical Output Power"
+                case "11": ### oipTooHigh
+                    $SEV_KEY = $OS_EventId + "_oipTooHigh"
+                    @AlertGroup = "Interface OIP Status"
+                    @Summary = "Interface Optical Input Power Too High"
+                case "12": ### oopTooLow
+                    $SEV_KEY = $OS_EventId + "_oopTooLow"
+                    @AlertGroup = "Interface OOP Level Status"
+                    @Summary = "Interface Optical Output Power Too Low"
+                case "13": ### attAtROOR
+                    $SEV_KEY = $OS_EventId + "_attAtROOR"
+                    @AlertGroup = "Interface Plug R Status"
+                    @Summary = "Interface Plug R Line Attenuation Out of Range"
+                case "14": ### attAtTOOR
+                    $SEV_KEY = $OS_EventId + "_attAtTOOR"
+                    @AlertGroup = "Interface Plug T Status"
+                    @Summary = "Interface Plug T Line Attenuation Out of Range"
+                case "15": ### lossOfSignalT
+                    $SEV_KEY = $OS_EventId + "_lossOfSignalT"
+                    @AlertGroup = "Interface Signal Transmission Status"
+                    @Summary = "Interface Loss of Signal Transmission"
+                case "16": ### telemetryInput1
+                    $SEV_KEY = $OS_EventId + "_telemetryInput1"
+                    @AlertGroup = "Interface Telemetry Input 1 Status"
+                    @Summary = "Interface Telemetry Input 1"
+                case "17": ### telemetryInput2
+                    $SEV_KEY = $OS_EventId + "_telemetryInput2"
+                    @AlertGroup = "Interface Telemetry Input 2 Status"
+                    @Summary = "Interface Telemetry Input 2"
+                case "18": ### telemetryInput3
+                    $SEV_KEY = $OS_EventId + "_telemetryInput3"
+                    @AlertGroup = "Interface Telemetry Input 3 Status"
+                    @Summary = "Interface Telemetry Input 3"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @AlertGroup = "Interface Alarm Status"
+                    @Summary = "Interface Alarm Status Unknown"
+            }
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $SEV_KEY + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $SEV_KEY + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $SEV_KEY + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $SEV_KEY + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $SEV_KEY + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $SEV_KEY + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $SEV_KEY + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $interfaceAlarmSeverityValue = $interfaceAlarmSeverityValue + " ( " + $2 + " )"
+            details($interfaceAlarmSeverityType,$interfaceAlarmSeverityValue)
+
+        case "19": ### equipmentAlarmSeverityChange
+
+            ##########
+            # $1 = equipmentAlarmSeverityType 
+            # $2 = equipmentAlarmSeverityValue
+            ##########
+
+            $equipmentAlarmSeverityType = $1
+            [$equipmentAlarmSeverityValue,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmSeverityChange"
+
+            @AlertKey = "equipmentAlarmSeverityEntry." + $1
+            switch($1)
+            {
+                case "1": ### fanFail
+                    $SEV_KEY = $OS_EventId + "_fanFail"
+                    @AlertGroup = "Equipment Fan Status"
+                    @Summary = "Equipment Fan Failure"
+                case "2": ### fanPowerFail
+                    $SEV_KEY = $OS_EventId + "_fanPowerFail"
+                    @AlertGroup = "Equipment Fan Power Status"
+                    @Summary = "Equipment Fan Power Failure"
+                case "3": ### powerFail
+                    $SEV_KEY = $OS_EventId + "_powerFail"
+                    @AlertGroup = "Equipment Power Status"
+                    @Summary = "Equipment Power Failure"
+                case "4": ### tempOoR
+                    $SEV_KEY = $OS_EventId + "_tempOoR"
+                    @AlertGroup = "Equipment Temperature Status"
+                    @Summary = "Equipment Temperature Out of Range"
+                case "5": ### voltageOoR
+                    $SEV_KEY = $OS_EventId + "_voltageOoR"
+                    @AlertGroup = "Equipment Voltage Status"
+                    @Summary = "Equipment Voltage Out of Range"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+                    @AlertGroup = "Equipment Alarm Status"
+                    @Summary = "Equipment Alarm Status Unknown"
+            }
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $SEV_KEY + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $SEV_KEY + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $SEV_KEY + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $SEV_KEY + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $SEV_KEY + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $SEV_KEY + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $SEV_KEY + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $equipmentAlarmSeverityValue = $equipmentAlarmSeverityValue + " ( " + $2 + " )"
+            details($equipmentAlarmSeverityType,$equipmentAlarmSeverityValue)
+
+        case "500": ### interfaceAlarmLossOfSignal
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLossOfSignal"
+
+            @AlertGroup = "Interface Signal Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Loss of Signal  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "501": ### interfaceAlarmNoLossOfSignal
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLossOfSignal"
+
+            @AlertGroup = "Interface Signal Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Loss of Signal  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "502": ### interfaceAlarmLossOfLinkPulse
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLossOfLinkPulse"
+
+            @AlertGroup = "Interface Link Pulse Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Loss of Link Pulse  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "503": ### interfaceAlarmNoLossOfLinkPulse
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLossOfLinkPulse"
+
+            @AlertGroup = "Interface Link Pulse Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Loss of Link Pulse  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "504": ### interfaceAlarmLossOfSync
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLossOfSync"
+
+            @AlertGroup = "Interface Sync Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Loss of Sync  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "505": ### interfaceAlarmNoLossOfSync
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLossOfSync"
+
+            @AlertGroup = "Interface Sync Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Loss of Sync  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "506": ### interfaceAlarmPartitioned
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmPartitioned"
+
+            @AlertGroup = "Interface Partition Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Partitioned  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "507": ### interfaceAlarmNoPartitioned
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoPartitioned"
+
+            @AlertGroup = "Interface Partition Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Partitioned  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "508": ### interfaceAlarmLaserBiasEoL
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLaserBiasEoL"
+
+            @AlertGroup = "Interface Laser Bias Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Laser Bias End of Life  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "509": ### interfaceAlarmNoLaserBiasEoL
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLaserBiasEoL"
+
+            @AlertGroup = "Interface Laser Bias Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Laser Bias End of Life  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "510": ### interfaceAlarmLaserTecEoL
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLaserTecEoL"
+
+            @AlertGroup = "Interface Laser TEC Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Laser Thermoelectric Cooler End of Life  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "511": ### interfaceAlarmNoLaserTecEoL
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLaserTecEoL"
+
+            @AlertGroup = "Interface Laser TEC Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Laser Thermoelectric Cooler End of Life  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "512": ### interfaceAlarmIfModuleTempOoR
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmIfModuleTempOoR"
+
+            @AlertGroup = "Interface Module Temperature Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Module Temperature Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "513": ### interfaceAlarmIfModuleTempNotOoR
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmIfModuleTempNotOoR"
+
+            @AlertGroup = "Interface Module Temperature Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Module Temperature Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "514": ### interfaceAlarmLaserTempOoR
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLaserTempOoR"
+
+            @AlertGroup = "Interface Laser Temperature Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Laser Temperature Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "515": ### interfaceAlarmLaserTempNotOoR
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLaserTempNotOoR"
+
+            @AlertGroup = "Interface Laser Temperature Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Laser Temperature Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "516": ### interfaceAlarmLossOfOOP
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLossOfOOP"
+
+            @AlertGroup = "Interface OOP Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Loss of Optical Output Power  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "517": ### interfaceAlarmNoLossOfOOP
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLossOfOOP"
+
+            @AlertGroup = "Interface OOP Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Loss of Optical Output Power  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "518": ### interfaceAlarmOIPTooHigh
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmOIPTooHigh"
+
+            @AlertGroup = "Interface OIP Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Optical Input Power Too High ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "519": ### interfaceAlarmOIPNotTooHigh
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmOIPNotTooHigh"
+
+            @AlertGroup = "Interface OIP Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Optical Input Power Too High  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "520": ### interfaceAlarmOOPTooLow
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmOOPTooLow"
+
+            @AlertGroup = "Interface OOP Level Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Optical Ouput Power Too Low  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "521": ### interfaceAlarmOOPNotTooLow
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmOOPNotTooLow"
+
+            @AlertGroup = "Interface OOP Level Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Interface Optical Ouput Power Too Low  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "522": ### interfaceAlarmAttAtROOR
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmAttAtROOR"
+
+            @AlertGroup = "Interface Plug R Line Attenuation Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Plug R Line Attenuation Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "523": ### interfaceAlarmAttAtRNormal
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmAttAtRNormal"
+
+            @AlertGroup = "Interface Plug R Line Attenuation Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Plug R Line Attenuation Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "524": ### interfaceAlarmAttAtTOOR
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmAttAtTOOR"
+
+            @AlertGroup = "Interface Plug T Line Attenuation Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Plug T Line Attenuation Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "525": ### interfaceAlarmAttAtTNormal
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmAttAtTNormal"
+
+            @AlertGroup = "Interface Plug T Line Attenuation Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Plug T Line Attenuation Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "526": ### interfaceAlarmLossOfSignalAtT
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmLossOfSignalAtT"
+
+            @AlertGroup = "Interface Signal Transmission Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Interface Loss of Signal Transmission  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "527": ### interfaceAlarmNoLossOfSignalAtT
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-interfaceAlarmNoLossOfSignalAtT"
+
+            @AlertGroup = "Interface Signal Transmission Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Interface Loss of Signal Transmission  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "528": ### telemetryStateOn
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-telemetryStateOn"
+
+            @AlertGroup = "Telemetry Interface Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "Telemetry Interface Error  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "529": ### telemetryStateOff
+
+            ##########
+            # $1 = ifIndex 
+            # $2 = interfaceCurrentAlarmSeverity 
+            ##########
+
+            $ifIndex = $1
+            [$interfaceCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-telemetryStateOff"
+
+            @AlertGroup = "Telemetry Interface Status"
+            @AlertKey = "ifEntry." + $1
+            @Summary = "End of Telemetry Interface Error  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $interfaceCurrentAlarmSeverity = $interfaceCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($ifIndex,$interfaceCurrentAlarmSeverity)
+
+        case "550": ### equipmentAlarmTempOoR
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmTempOoR"
+
+            @AlertGroup = "Equipment Temperature Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Temperature Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "551": ### equipmentAlarmTempNotOoR
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmTempNotOoR"
+
+            @AlertGroup = "Equipment Temperature Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "End of Equipment Temperature Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "552": ### equipmentAlarmFanFail
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmFanFail"
+
+            @AlertGroup = "Equipment Fan Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Fan Failure  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "553": ### equipmentAlarmFanNoFail
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmFanNoFail"
+
+            @AlertGroup = "Equipment Fan Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "End of Equipment Fan Failure  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "554": ### equipmentAlarmFanPsFail
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmFanPsFail"
+
+            @AlertGroup = "Equipment Fan Power Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Fan Power Failure  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "555": ### equipmentAlarmFanPsNoFail
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmFanPsNoFail"
+
+            @AlertGroup = "Equipment Fan Power Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "End of Equipment Fan Power Failure  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "556": ### equipmentAlarmPsFail
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmPsFail"
+
+            @AlertGroup = "Equipment Power Supply Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Power Supply Failure  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "557": ### equipmentAlarmPsNoFail
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmPsNoFail"
+
+            @AlertGroup = "Equipment Power Supply Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "End of Equipment Power Supply Failure  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "558": ### equipmentAlarmVoltageOoR
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmVoltageOoR"
+
+            @AlertGroup = "Equipment Voltage Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "Equipment Voltage Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                    @Summary = "End of " + @Summary
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        case "559": ### equipmentAlarmVoltageOk
+
+            ##########
+            # $1 = entPhysicalIndex 
+            # $2 = equipmentCurrentAlarmSeverity 
+            ##########
+
+            $entPhysicalIndex = $1
+            [$equipmentCurrentAlarmSeverity,$DEFAULT_Severity,$DEFAULT_Type,$DEFAULT_ExpireTime] = lookup($2, advaFSP2kTrapAlarmSeverity)
+
+            $OS_EventId = "SNMPTRAP-adva-FSP2000-R2-MIB-equipmentAlarmVoltageOk"
+
+            @AlertGroup = "Equipment Voltage Status"
+            @AlertKey = "entPhysicalEntry." + $1
+            @Summary = "End of Equipment Voltage Out of Range  ( " + @AlertKey + " )"
+
+            switch($2)
+            {
+                case "1": ### indeterminate
+                    $SEV_KEY = $OS_EventId + "_indeterminate"
+                case "2": ### critical
+                    $SEV_KEY = $OS_EventId + "_critical"
+                case "3": ### major
+                    $SEV_KEY = $OS_EventId + "_major"
+                case "4": ### minor
+                    $SEV_KEY = $OS_EventId + "_minor"
+                case "5": ### warning
+                    $SEV_KEY = $OS_EventId + "_warning"
+                case "6": ### cleared
+                    $SEV_KEY = $OS_EventId + "_cleared"
+                default:
+                    $SEV_KEY = $OS_EventId + "_unknown"
+            }
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $equipmentCurrentAlarmSeverity = $equipmentCurrentAlarmSeverity + " ( " + $2 + " )"
+            details($entPhysicalIndex,$equipmentCurrentAlarmSeverity)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, adva-FSP2000-R2-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, adva-FSP2000-R2-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/adva/adva-FSP2000-R2-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/adva/adva-FSP2000-R2-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... adva-FSP2000-R2-MIB.include.snmptrap.rules >>>>>")

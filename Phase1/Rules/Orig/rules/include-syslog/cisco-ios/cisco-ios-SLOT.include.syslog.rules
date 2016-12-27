@@ -1,0 +1,124 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-SLOT.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "SLOT":
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-SLOT.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "MODULE_DETECTED":
+        
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SLOT-MODULE_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            @Summary = extract($Message, "[A-Z]+ [A-Z]+ (.*)")
+            
+            $CLARIFIER = extract($Message, " ([A-Za-z]+)$")
+            
+            switch($CLARIFIER)
+            {
+                case "empty":
+                    switch(extract($Message, "[A-Z]+ ([A-Z]+) "))
+                    {
+                        case "CRITICAL":
+                            @Severity = 5
+                            @Type = 1
+                        case "MAJOR":
+                            @Severity = 4
+                            @Type = 1
+                        case "MINOR":
+                            @Severity = 3
+                            @Type = 1
+                        case "WARNING":
+                            @Severity = 2
+                            @Type = 1
+                        case "INFO":
+                            @Severity = 2
+                            @Type = 1
+                        default:
+                            @Severity = 2
+                            @Type = 1
+                    }
+                case "detected":
+                    @Summary = @Summary
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            
+        case "MODULE_MISSING":
+        
+            $MOI_Local = rtrim(extract($Message, " [Ss]lot ([0-9]+) "))
+            $MOIType_Local = "slot"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "SLOT-MODULE_Status"
+            @AlertKey = "Slot: " + $MOI_Local
+            @Summary = extract($Message, "[A-Z]+ [A-Z]+ (.*)")
+            
+            $CLARIFIER = extract($Message, " ([A-Za-z]+)$")
+            
+            switch($CLARIFIER)
+            {
+                case "empty":
+                    switch(extract($Message, "[A-Z]+ ([A-Z]+) "))
+                    {
+                        case "CRITICAL":
+                            @Severity = 5
+                            @Type = 1
+                        case "MAJOR":
+                            @Severity = 4
+                            @Type = 1
+                        case "MINOR":
+                            @Severity = 3
+                            @Type = 1
+                        case "WARNING":
+                            @Severity = 2
+                            @Type = 1
+                        case "INFO":
+                            @Severity = 2
+                            @Type = 1
+                        default:
+                            @Severity = 2
+                            @Type = 1
+                    }
+                case "detected":
+                    @Summary = @Summary
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+            
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-SLOT.include.syslog.rules >>>>>")

@@ -1,0 +1,65 @@
+/****************************************************************************
+This policy demonstrates how to use a PackedOid data type. It will do a GET 
+operation (by using the GetByFilter) with appropriate Filter value. It will 
+then print the results of the GET operation, and then update (an SNMP SET 
+operation in the backend) some of these values.
+
+Some possible types of Filter are given here. Only one of them is left
+uncommented.
+
+HowToRun this policy
+--------------------
+1) Make sure the Data Source/Data Type have the correct authentication
+   information and Field/OID values.
+
+2) Make sure an SNMP agent on the proper host and proper portId is
+   running and one which has implemented the RFC1213.
+
+3) Then send a trigger to execute this policy.
+
+*****************************************************************************/
+
+/* Preparing the params to call the GetByFilter or SNMP GET */
+Type = "SysInfo";
+Filter = "";
+
+StartTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Starting PackedOidTest with Type = " + Type + " and Filter = " + Filter + " at " + StartTime + " ***");
+
+/* Doing the SNMP GET operation by using the GetByFilter */
+GetByFilter(Type, Filter, CountOnly);
+
+if (OrgNode.ErrorString == "") {
+  /* Displaying the results of the successful GET operation */  
+  log("HostId = " +OrgNodes[0].HostId);
+  log("SysContact = " + OrgNodes[0].SysContact);
+  log("SysName = " + OrgNodes[0].SysName);
+  log("SysLocation = " + OrgNodes[0].SysLocation);
+} else {
+  log("**Error doing SNMP GET operation **");
+  log("Error is " + OrgNode.ErrorString);
+}
+
+/* This is the way one can update(SNMP SET) a variable.
+ * SysName isn't writeable ???, but contact and location are.
+ */
+log("Trying to set SysName, SysContact and SysLocation.");
+OrgNodes[0].SysName = "New SysName";
+OrgNodes[0].SysContact = "New SysContact";
+OrgNodes[0].SysLocation = "New SysLocation";
+
+ModifiedOrgNodes = GetByFilter(Type, Filter, CountOnly);
+
+if (ModifiedOrgNodes[0].ErrorString == "") {
+  /* Displaying the results of the successful GET operation */  
+  log("HostId = " + ModifiedOrgNodes[0].HostId);
+  log("SysContact = " + ModifiedOrgNodes[0].SysContact);
+  log("SysName = " + ModifiedOrgNodes[0].SysName);
+  log("SysLocation = " + ModifiedOrgNodes[0].SysLocation);
+} else {
+  log("**Error doing SNMP GET operation **");
+  log("Error is " + ModifiedOrgNode.ErrorString);
+}
+
+EndTime = LocalTime(GetDate(), "HH:mm:ss");
+log("*** Done with PackedOidTest at " + EndTime + " ***");

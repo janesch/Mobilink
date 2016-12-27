@@ -1,0 +1,112 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    IETF-MPLS-L3VPN-STD-MIB.adv.include.snmptrap.rules 1.0
+#    2006/10/27 Alka Girdhar
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  MPLS-L3VPN-STD-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... IETF-MPLS-L3VPN-STD-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### mplsL3VpnVrfUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsL3VpnVrfUp"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsL3VpnIfConfEntry." + $mplsL3VpnVrfName_Raw + "." + $mplsL3VpnIfConfIndex
+        $OS_LocalSecObj = "mplsL3VpnVrfEntry." + $mplsL3VpnVrfName_Raw
+        $OS_LocalRootObj = "ifEntry." + $mplsL3VpnIfConfIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "2": ### mplsL3VpnVrfDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsL3VpnVrfDown"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsL3VpnIfConfEntry." + $mplsL3VpnVrfName_Raw + "." + $mplsL3VpnIfConfIndex
+        $OS_LocalSecObj = "mplsL3VpnVrfEntry." + $mplsL3VpnVrfName_Raw
+        $OS_LocalRootObj = "ifEntry." + $mplsL3VpnIfConfIndex
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+        case "3": ### mplsL3VpnVrfRouteMidThreshExceeded
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsL3VpnVrfRouteMidThreshExceeded"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsL3VpnVrfEntry." + $mplsL3VpnVrfName_Raw
+        $OS_LocalRootObj =  $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+        case "4": ### mplsL3VpnVrfNumVrfRouteMaxThreshExceeded
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsL3VpnVrfNumVrfRouteMaxThreshExceeded"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsL3VpnVrfEntry." + $mplsL3VpnVrfName_Raw
+        $OS_LocalRootObj =  $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+        case "5": ### mplsL3VpnNumVrfSecIllglLblThrshExcd
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsL3VpnNumVrfSecIllglLblThrshExcd"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsL3VpnVrfSecEntry." + $mplsL3VpnVrfName_Raw
+        $OS_LocalRootObj = "mplsL3VpnVrfEntry." + $mplsL3VpnVrfName_Raw 
+        $VAR_RelateLRO2LPO = 2 
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+        case "6": ### mplsL3VpnNumVrfRouteMaxThreshCleared
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "mplsL3VpnNumVrfRouteMaxThreshCleared"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "mplsL3VpnVrfEntry." + $mplsL3VpnVrfName_Raw
+        $OS_LocalRootObj =  $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... IETF-MPLS-L3VPN-STD-MIB.adv.include.snmptrap.rules >>>>>")

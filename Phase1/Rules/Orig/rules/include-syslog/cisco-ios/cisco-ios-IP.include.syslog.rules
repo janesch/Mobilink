@@ -1,0 +1,261 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-IP.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+#     - Modified extract for setting $MOI_Local to better handle events from
+#       both Syslog or CISCO-SYSLOG-MIB.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+#     - Added support for additional messages supported by IOS 12.3.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "IP": ### Internet Protocol
+    
+    log(DEBUG, "<<<<< Entering... cisco-ios-IP.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "ACL":
+            
+            ##########
+            # An error occurred during the IP access check.
+            #
+            # %IP-5-ACL: [chars]
+            ##########
+            
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+        
+        case "BADIPALIGN":
+            
+            ##########
+            # The packet data structure is misaligned. This condition may
+            # result in a small amount of overhead in processing IP traffic.
+            #
+            # %IP-3-BADIPALIGN: Invalid alignment in packet for IP.
+            # [chars]=[hex]
+            ##########
+            
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+        
+        case "BADSROUTE":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %IP-3-BADSROUTE: Improper source route. Length [dec] Ptr [dec]
+            ##########
+            
+            @AlertKey = "Pointer: " + extract($Message, " Ptr ([0-9]+)")
+        
+        case "CLASS":
+            
+            ##########
+            # An internal software error has occurred.
+            #
+            # %IP-4-CLASS: Bad IP address and mask [IP_address][IP_netmask] in
+            # class_resolve()
+            ##########
+            
+            @AlertKey = "IP Address: " + extract($Message, " mask (.*) in ")
+        
+        case "CNTRFULL":
+            
+            ##########
+            # An internal software error has occurred.
+            #
+            # %IP-3-CNTRFULL: IP counter block is full (setting protocol [dec])
+            ##########
+            
+            @AlertKey = "Protocol: " + extract($Message, " protocol ([0-9]+)")
+        
+        case "DESTHOST":
+            
+            ##########
+            # An internal software error has occurred.
+            #
+            # %IP-3-DESTHOST: src=[IP_address], dst=[IP_address], NULL desthost
+            ##########
+            
+            $MOI_Local = extract($Message, "src= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Local = "ipaddress"
+            $MOI_Remote = extract($Message, "dst= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Source: " + $MOI_Local + "Destination: " + $MOI_Remote
+        
+        case "DUPADDR":
+            
+            ##########
+            # Another system is using your IP address.
+            #
+            # %IP-4-DUPADDR: Duplicate address [IP_address] on
+            # [chars], sourced by [enet]
+            ##########
+            
+            $MOI_Local = extract($Message, "on ([^ ,]*),? sourced")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", IP Address: " + extract($Message, "address ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) on")
+        
+        case "IPPOOLS":
+            
+            ##########
+            # A local pool and a DHCP pool have been configured with the same
+            # name. This condition may cause conflict during address
+            # allocations.
+            #
+            # %IP-4-IPPOOLS: Detected a local pool and a DHCP pool with the
+            # same name: [chars]
+            ##########
+            
+            @AlertKey = "Pool: " + extract($Message, "same name:? (.*)")
+        
+        case "LOOPPAK":
+            
+            ##########
+            # A software error occurred.
+            #
+            # %IP-3-LOOPPAK: Looping packet detected and dropped -\n
+            # src=[IP_address], dst=[IP_address], hl=[int], tl=[int],
+            # prot=[int], sport=[int], dport=[int]\n in=[chars],
+            # nexthop=[IP_address], out=[chars]\n options=[chars]
+            ##########
+            
+            $MOI_Local = extract($Message, "src= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Local = "ipaddress"
+            $MOI_Remote = extract($Message, "dst= ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Source: " + $MOI_Local + "Destination: " + $MOI_Remote
+        
+        case "STCKYARPOVR":
+            
+            ##########
+            # Multiple stations are configured with the same IP in a private
+            # VLAN. IP address stealing might have occurred.
+            #
+            # %IP-3-STCKYARPOVR: Attempt to overwrite Sticky ARP entry:
+            # [IP_address], hw: [enet] by hw: [enet]\n
+            ##########
+            
+            $MOI_Local = extract($Message, "ARP entry:? ?([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Local = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Local + ", MAC: " + extract($Message, "hw:? (.*) by hw") + ", by MAC: " + extract($Message, "by hw:? (.*)")
+        
+        case "UNICASTRPF":
+            
+            ##########
+            # Unicast Reverse Path Forwarding, which is invoked by entering the
+            # ip verify unicast reverse-path command, was disabled because CEF
+            # was disabled either through configuration or because of an
+            # internal error.
+            #
+            # %IP-4-UNICASTRPF: IP unicast reverse-path check disabled on
+            # [chars]
+            ##########
+            
+            @AlertKey = extract($Message, "disabled on (.*)")
+        
+        case "WEBINST_COMP":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %IP-5-WEBINST_COMP: Selected IP address [IP_address]
+            ##########
+            
+            $MOI_Local = extract($Message, "IP address (.*)")
+            $MOIType_Local = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Local
+        
+        case "WEBINST_KILL":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %IP-5-WEBINST_KILL: Terminating DNS process
+            ##########
+            
+            @AlertKey = ""
+        
+        case "WEBINST_RESP":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %IP-5-WEBINST_RESP: Sending DNS response to [IP_address] (request
+            # was for [IP_address])
+            ##########
+            
+            $MOI_Remote = extract($Message, "response to ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+        
+        case "WEBINST_START":
+            
+            ##########
+            # A hardware or software error has occurred.
+            #
+            # %IP-5-WEBINST_START: Attempting web install from host
+            # [IP_address]
+            ##########
+            
+            $MOI_Remote = extract($Message, "from host ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+        
+        case "ZERO_ADDR":
+            
+            ##########
+            # An entry in the ARP cache has a null MAC address.
+            #
+            # %IP-4-ZERO_ADDR: Zero MAC address for [IP_address] in ARP cache
+            ##########
+            
+            $MOI_Remote = extract($Message, "for (.*) in ARP")
+            $MOIType_Remote = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Remote
+        
+        default:
+            
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-IP.include.syslog.rules >>>>>")

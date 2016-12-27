@@ -1,0 +1,98 @@
+##############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-CISCO-ICSUDSU-MIB.adv.include.snmptrap.rules 1.1 
+#    2005/03/04 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+#        1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-ICSUDSU-MIB
+#
+###############################################################################
+#
+# 1.1 - Added basic debug logging.
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... cisco-CISCO-ICSUDSU-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### ciscoICsuDsuT1LoopStatusNotification
+    
+        $OS_X733EventType = 1
+        switch($1)
+        {
+            case "1": ### lossofSignal
+                $OS_X733ProbableCause = 1001
+            case "2": ### lossofFrame
+                $OS_X733ProbableCause = 1002
+            case "3":
+                $OS_X733ProbableCause = 1001
+            case "4": ### detectedRemoteAlarmIndication
+                $OS_X733ProbableCause = 100012
+            case "8": ### detectedAlarmIndicationSignal
+                $OS_X733ProbableCause = 100002
+            case "16": ### placedInLoopback
+                $OS_X733ProbableCause = 1011
+            default:
+                $OS_X733ProbableCause = 1011
+        }
+        $OS_X733SpecificProb = "ciscoICsuDsuT1LoopStatusNotification"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "ciscoICsuDsuT1StatusEntry." + $ifIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "2": ### ciscoICsuDsuSw56kLoopStatusNotification
+        
+        $OS_X733EventType = 1
+        switch($1)
+        {
+            case "1": ### oosOofFromNetwork
+                $OS_X733ProbableCause = 1011
+            case "2": ### noReceiveSignal
+                $OS_X733ProbableCause = 1011
+            case "4": ### noSealingCurrent
+                $OS_X733ProbableCause = 1011
+            case "8": ### noFrameSync
+                $OS_X733ProbableCause = 1003
+            case "16": ### attemptingToRateAdap
+                $OS_X733ProbableCause = 1011
+            case "32": ### rtTestFromTelco
+                $OS_X733ProbableCause = 1011
+            case "64": ### llTestFromTelco
+                $OS_X733ProbableCause = 1011
+            case "128": ### rdlFromRemoteDSU
+                $OS_X733ProbableCause = 1011
+            default:
+                $OS_X733ProbableCause = 1011
+        }
+        $OS_X733SpecificProb = "ciscoICsuDsuSw56kLoopStatusNotification"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "ciscoICsuDsuSw56kLineStatusEntry." + $ifIndex
+        $OS_LocalRootObj = "ifEntry." + $ifIndex
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... cisco-CISCO-ICSUDSU-MIB.adv.include.snmptrap.rules >>>>>")

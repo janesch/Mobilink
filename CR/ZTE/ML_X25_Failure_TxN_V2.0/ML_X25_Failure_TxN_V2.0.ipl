@@ -1,0 +1,397 @@
+/*  X25 Failure TxN Policy
+    Author: Chris Janes, Innovise Sept 2010
+    Description:
+    V 1.0   20100929    Chris Janes     Original
+    V 2.0   20101004    Chris Janes     RE-written due to a change in customer requirements
+    V 2.1    20101006    Chris Janes     Field NePriority replaced with BusImportance
+    V 2.2    20101008    Chris Janes     Mods to take account of schema changes and some customer requests
+                                                            Enrichment data now put into Information Field in the ObjectServer
+                                                            We now get Key field from CIINFO.Address
+                                                            We now lookup the enrichment in oml_connectivity
+                                                            Where no data is returned we ommit the field name from the enrichment
+    V 2.3   20101220    Chris Janes     EventID changed from X25FailTxN_001 and X25FailTxN_002 to SYN_X25_FAIL_001 
+                                            and SYN_X25_FAIL_002
+    EventReader Filter:
+        EventID = 'SYN_X25_FAIL_001' for Partial OML Down' events
+        EventID = 'SYN_X25_FAIL_002' for Full OML Down' events
+*/
+//log("Return ImpactFlag = 5 to prevent event reprocessing");
+// This have to be changed in order to be in sync with other policies or other  control  flag might be added
+@ImpactFlag = 5; 
+ReturnEvent(EventContainer);
+
+paramSummary=@Summary;
+paramType=@Type;
+paramNodeAlias=@NodeAlias;
+paramLastOcc=@LastOccurrence;
+paramSerial=@Serial;
+alarmServerSerial=@ServerSerial;
+
+if(@Type==2)
+{
+    paramSerial=@ProblemSerial;
+}
+
+// Is there an existing Synthetic Event
+SyntheticEventDataType = "OS_Status";
+SyntheticEventFilter = "BSC_Name = '"+ @BSC_Name + "' and Class = 200017 And Severity > 0";
+//log("SyntheticEventFilter = " + SyntheticEventFilter  );
+SyntheticEvent = GetByFilter(SyntheticEventDataType, SyntheticEventFilter,False);
+NumSyntheticEvent = Length(SyntheticEvent);
+//if so set LogTicket = 1
+log("NumSyntheticEventFilterOutput = " + NumSyntheticEvent );
+    
+if (NumSyntheticEvent = 0)
+{
+    // If there is no synthetic event - wait, check that there still isn't then create one
+    // Get SleepTime
+    If (@EventId = 'NET_X25_FAIL_001')
+    {
+        alarm_id = 'Partial OML Down';
+    }
+    else
+    {
+        alarm_id = 'Partial OML Down';
+    }
+    
+    log("alarm_id = " + alarm_id);
+
+    site_name = @Site;
+    SleepTime = 0;
+    MobiLib.getSleepTime(site_name, alarm_id, SleepTime);
+    // Sleeptime hardcoded until we know better
+    //SleepTime = 600;
+    // Debug
+    //SleepTime = 20;
+            
+    // Updating HibernateFlag and return event. HibernateFlag=1 (Hibernated)
+    @Grade = SleepTime;
+    @HibernateFlag = 1;        
+    ReturnEvent(EventContainer);
+
+    // Action_key = 'SYN_X25_FAIL' + @ServerSerial + @ServerName;
+    Action_key = 'SYN_X25_FAIL' + @ServerSerial + @ServerName + "#" + getdate();
+    Hibernate(Action_key, "Sleeping", SleepTime);
+    //Updating HibernateFlag and return event. HibernateFlag=2 (Awake)
+    RemoveHibernation(Action_key); 
+    @HibernateFlag = 2;        
+    ReturnEvent(EventContainer);
+    
+    
+    // Is the event still there
+    DataType = "OS_Status";
+    Filter = "ServerSerial = "+ alarmServerSerial + " and ServerName = '" + @ServerName + "' And Severity > 0";
+    //log("Filter = " + Filter  );
+    SourceEvent = GetByFilter(DataType, Filter,False);
+    NumSourceEvent = Length(SourceEvent);
+    //if so set LogTicket = 1
+    log("NumSourceEvent = " + NumSourceEvent );
+    if (NumSourceEvent == 0)
+    {
+        // Event no longer Exists
+        Log("Event no longer exists so Exiting");
+        Exit();
+    }
+ 
+    //Get Lookup info
+    // Use BSC name as key to lookup Connectivity Key
+    site_name = EventContainer.BSC_Name;
+
+
+/*    20101008    Changes by Chris Janes of Innovise
+    NodeEntriesDataType = "CIINFO";
+    Information = "No Connectivity Data Found";
+    NodeEntriesFilter = "NAME = '"+site_name +"'";
+    NodeEntries = GetByFilter(NodeEntriesDataType, NodeEntriesFilter,False);
+    NumNodeEntries = Length(NodeEntries);
+    log("NumNodeEntries  = " + NumNodeEntries );
+    if (NumNodeEntries > 0)
+    {
+        LookupAddr = NodeEntries[0].X25_ADDR;
+        log("LookupAddr = " + LookupAddr );
+        if( LookupAddr = "NA")
+        {
+            Information = "No Connectivity Data Found (Data = NA)";
+        }
+        else
+        {
+              LookupDataType = "omc_connectivity";
+              log("LookupDataType = " + LookupDataType );
+              LookupFilter = "DTE_ADDRESS = " + LookupAddr ;
+              log("LookupFilter = " + LookupFilter );
+              LookupData = GetByFilter(LookupDataType , LookupFilter ,False);
+              NumLookupData  = Length(LookupData );
+              log("NumLookupData  = " + NumLookupData  );
+              if( NumLookupData  =1 )
+              {
+                    Information= "ROUTER : " + LookupData[0].ROUTER + ", " +  "NUC_NAME : " + LookupData[0].NUC_NAME + ", " +  "NE_NAME : " + LookupData[0].NE_NAME + ", " +  "DTE_ADDRESS : " + LookupData[0].DTE_ADDRESS + ", " +  "ROUTER_PORT : " + LookupData[0].ROUTER_PORT + ", " +  "ROUTER_TS : " + LookupData[0].ROUTER_TS + ", " +  "LOCAL_MSC : " + LookupData[0].LOCAL_MSC + ", " +  "ROUTER_DIU : " + LookupData[0].ROUTER_DIU + ", " +  "LL_DIU : " + LookupData[0].LL_DIU + ", " +  "LL_NEAR_END_MSC : " + LookupData[0].LL_NEAR_END_MSC + ", " +  "LL_FAR_END_MSC : " + LookupData[0].LL_FAR_END_MSC + ", " +  "NE_DIU : " + LookupData[0].NE_DIU + ", " +  "NE_MSC : " + LookupData[0].NE_MSC + ", ";
+                    Log("Information = " + Information);
+              }
+                elseif( NumLookupData     == 2 )
+                {
+                    Information= "ROUTER : " + LookupData[0].ROUTER + ", " +  "NUC_NAME : " + LookupData[0].NUC_NAME + ", " +  "NE_NAME : " + LookupData[0].NE_NAME + ", " +  "DTE_ADDRESS : " + LookupData[0].DTE_ADDRESS + ", " +  "ROUTER_PORT : " + LookupData[0].ROUTER_PORT + ", " +  "ROUTER_TS : " + LookupData[0].ROUTER_TS + ", " +  "LOCAL_MSC : " + LookupData[0].LOCAL_MSC + ", " +  "ROUTER_DIU : " + LookupData[0].ROUTER_DIU + ", " +  "LL_DIU : " + LookupData[0].LL_DIU + ", " +  "LL_NEAR_END_MSC : " + LookupData[0].LL_NEAR_END_MSC + ", " +  "LL_FAR_END_MSC : " + LookupData[0].LL_FAR_END_MSC + ", " +  "NE_DIU : " + LookupData[0].NE_DIU + ", " +  "NE_MSC : " + LookupData[0].NE_MSC + ", ";
+                    Information= Information + "ROUTER : " + LookupData[1].ROUTER + ", " +  "NUC_NAME : " + LookupData[1].NUC_NAME + ", " +  "NE_NAME : " + LookupData[1].NE_NAME + ", " +  "DTE_ADDRESS : " + LookupData[1].DTE_ADDRESS + ", " +  "ROUTER_PORT : " + LookupData[1].ROUTER_PORT + ", " +  "ROUTER_TS : " + LookupData[1].ROUTER_TS + ", " +  "LOCAL_MSC : " + LookupData[1].LOCAL_MSC + ", " +  "ROUTER_DIU : " + LookupData[1].ROUTER_DIU + ", " +  "LL_DIU : " + LookupData[1].LL_DIU + ", " +  "LL_NEAR_END_MSC : " + LookupData[1].LL_NEAR_END_MSC + ", " +  "LL_FAR_END_MSC : " + LookupData[1].LL_FAR_END_MSC + ", " +  "NE_DIU : " + LookupData[1].NE_DIU + ", " +  "NE_MSC : " + LookupData[1].NE_MSC + ", ";
+                }
+         }
+    }
+*/
+// Get the key fields for the lookuo
+    NodeEntriesDataType = "CIINFO";
+    NodeEntriesFilter = "upper(NAME) = '"+ toUpper(site_name) +"'";
+    NodeEntries = GetByFilter(NodeEntriesDataType, NodeEntriesFilter,False);
+    NumNodeEntries = Length(NodeEntries);
+    log("NumNodeEntries  = " + NumNodeEntries );
+    CountEntries = NumNodeEntries;
+    CountLookups = 0;
+    Information = "";
+    While (CountEntries > 0)    // Loop through all the rows for his BSC
+    {
+        CountEntries = CountEntries - 1;
+        log("CountEntries = " + CountEntries );
+        LookupAddr = NodeEntries[CountEntries].ADDRESS;
+        log("LookupAddr = " + LookupAddr );
+        if( LookupAddr = "NA")    // dont try and lookup NA as there is no data
+        {
+            Information = "No Connectivity Data Found (Data = NA)";
+        }
+        else
+        {
+              // Get the connectivity data
+              LookupDataType = "oml_connectivity";
+              log("LookupDataType = " + LookupDataType );
+              LookupFilter = "DTE_ADDRESS = '" + LookupAddr + "'"  ;
+              //log("LookupFilter = " + LookupFilter );
+              LookupData = GetByFilter(LookupDataType , LookupFilter ,False);
+              NumLookupData  = Length(LookupData );
+              //log("NumLookupData  = " + NumLookupData  );
+              CountLookups = CountLookups + NumLookupData  ;
+              //log("CountLookups = " + CountLookups );
+              if( NumLookupData  > 0) //If there is data add it to the info field (note where there is null data no field name is to be added
+              {
+                    if (LookupData[0].ROUTER <> '')
+                    {
+                            Information = Information + "ROUTER : " + LookupData[0].ROUTER + ", ";
+                    }
+                    if (LookupData[0].NUC_NAME <> '')
+                    {
+                            Information = Information + "NUC_NAME : " + LookupData[0].NUC_NAME + ", ";
+                    }
+                    if (LookupData[0].NE_NAME <> '')
+                    {
+                            Information = Information + "NE_NAME : " + LookupData[0].NE_NAME + ", ";
+                    }
+                    if (LookupData[0].ROUTER <> '')
+                    {
+                            Information = Information + "DTE_ADDRESS : " + LookupData[0].DTE_ADDRESS + ", "  ;
+                    }
+                    if (LookupData[0].ROUTER_PORT <> '')
+                    {
+                            Information = Information + "ROUTER_PORT : " + LookupData[0].ROUTER_PORT + ", "  ;
+                    }
+                    if (LookupData[0].ROUTER_TS <> '')
+                    {
+                            Information = Information + "ROUTER_TS : " + LookupData[0].ROUTER_TS + ", "  ;
+                    }
+                    if (LookupData[0].LOCAL_MSC <> '')
+                    {
+                            Information = Information + "LOCAL_MSC : " + LookupData[0].LOCAL_MSC + ", "   ;
+                    }
+                    if (LookupData[0].ROUTER_DIU <> '')
+                    {
+                            Information = Information + "ROUTER_DIU : " + LookupData[0].ROUTER_DIU + ", "  ;
+                    }
+                    if (LookupData[0].LL_DIU <> '')
+                    {
+                            Information = Information + "LL_DIU : " + LookupData[0].LL_DIU + ", "  ;
+                    }
+                    if (LookupData[0].LL_NEAR_END_MSC <> '')
+                    {
+                            Information = Information + "LL_NEAR_END_MSC : " + LookupData[0].LL_NEAR_END_MSC + ", "   ;
+                    }
+                    if (LookupData[0].LL_FAR_END_MSC <> '')
+                    {
+                            Information = Information + "LL_FAR_END_MSC : " + LookupData[0].LL_FAR_END_MSC + ", "  ;
+                    }
+                    if (LookupData[0].NE_DIU <> '')
+                    {
+                            Information = Information + "NE_DIU : " + LookupData[0].NE_DIU + ", " ;
+                    }
+                    if (LookupData[0].NE_MSC <> '')
+                    {
+                            Information = Information + "NE_MSC : " + LookupData[0].NE_MSC + ", "                      ;
+                    }
+
+              }
+              
+         }
+    }
+    if ( CountLookups == 0  or NumNodeEntries  == 0)// No data found so tell them
+    {
+        Information = "No OMC Connectivity Data Found";
+    }
+    //Log("Final Information = " + Information);
+
+    // Raise Synthetic Event
+    
+    Log("Create New Event");
+    NewEvent = NewEvent(DefaultEventReader);
+    If (@EventId == "NET_X25_FAIL_001" )
+    {
+        NewEvent.Severity= 4;
+        NewEvent.Summary= "OML Partial Down Alarm Handling for " + @BSC_Name;
+        NewEvent.EventId = "SYN_X25_FAIL_001";
+        Log("EventType = SYN_X25_FAIL_001");
+    }
+    Else
+    {
+        NewEvent.Severity= 5;
+        NewEvent.Summary= "OML Full Down Alarm Handling for " + @BSC_Name;
+        NewEvent.EventId = "SYN_X25_FAIL_002";
+        Log("EventType = SYN_X25_FAIL_002");
+    }
+    
+    NewEvent.EventReaderName = "DefaultEventReader";
+    NewEvent.Node= EventContainer.Node;
+    NewEvent.NodeAlias= EventContainer.NodeAlias;
+    NewEvent.ImpactFlag = 2;
+    NewEvent.Domain=EventContainer.Domain;
+    NewEvent.Site=EventContainer.Site;
+//    20101006    Change by Chris Janes of Innovise
+//  NewEvent.NePriority=EventContainer.NePriority;
+    NewEvent.BusImportance=EventContainer.BusImportance;
+//    20101006    End of Change
+    NewEvent.OutsourceContractor=EventContainer.OutsourceContractor;
+    NewEvent.OmcEms=EventContainer.OmcEms;
+    NewEvent.Region=EventContainer.Region;
+    NewEvent.ManCity=EventContainer.ManCity;
+    NewEvent.CovCity=EventContainer.CovCity;
+    NewEvent.Agent = "Netcool Impact";
+    NewEvent.AlertGroup = 'X25 Failure TxN';
+    NewEvent.AlertKey = EventContainer.BSC_Name ;
+    NewEvent.EventType = EventContainer.EventType ;
+    NewEvent.Network= EventContainer.Network;
+    NewEvent.Identifier= "SYN_X25_FAIL" + @BSC_Name + @LastOccurrence;
+    NewEvent.BSC_Name= EventContainer.BSC_Name ;
+    NewEvent.Type= 1;
+    NewEvent.Tally= 1;
+    NewEvent.HibernateFlag = 99;
+    NewEvent.SyntheticServerName = "";
+    NewEvent.SyntheticServerSerial = 0;
+    NewEvent.FirstOccurrence = NowTime ;
+    NewEvent.LastOccurrence = NowTime ;
+    NewEvent.LogTicket = 1;
+    NewEvent.Class = 200017;
+    NewEvent.Information= Information;
+    AddDataItem('OS_Status', NewEvent);
+    Log("New Event Created ");
+    
+}
+// Get Details of Synthetic Event
+// Action_key = 'SYN_X25_FAIL' + @ServerSerial + @ServerName;
+Action_key = 'SYN_X25_FAIL' + @ServerSerial + @ServerName + "#" + getdate();;
+Count = 0;
+//while(Num_Synthetic_Event == 0)
+//{
+    //Wait % seconds
+    Hibernate(Action_key, "Sleeping", 5 );
+    RemoveHibernation(Action_key); 
+    //Does the Synthetic event exist?
+    DataType = "OS_Status";  // this needs to be setup
+    Filter = "Class = 200017 and BSC_Name = '" + @BSC_Name+ "'";  
+//    log("Filter = " + Filter);
+    CountOnly = False;
+    Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Synthetic_Event = Length(Synthetic_Event);
+    log("Num_Synthetic_Event = " + Num_Synthetic_Event );
+    Count = Count + 1;
+    if( Count > 10)
+    {
+        Log("Unable to locate  Synthetic Event after 50 seconds so exiting");
+        Exit();
+    }
+//}
+//Update Source Event with details of the asociated Synthetic event
+EventContainer.SyntheticServerName = Synthetic_Event[0].ServerName;        
+EventContainer.SyntheticServerSerial = Synthetic_Event[0].ServerSerial;        
+ReturnEvent(EventContainer);
+//Update Synthetic Event's Journal
+If (@EventId = "NET_X25_FAIL_001")
+{
+    EventText = "OML Partial Down";
+}
+Else
+{
+    EventText = "OML Full Down";
+}
+SESerial= Synthetic_Event[0].ServerSerial;
+MobiLib.AddGenericJournal(SESerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+// Get the number of Partial OML Down events for this BSC
+DataType = "OS_Status";  // this needs to be setup
+Filter = "Class <> 200017 and Severity > 0 and EventId = 'NET_X25_FAIL_001' and BSC_Name = '" + @BSC_Name+ "'";  
+//log("Filter = " + Filter);
+CountOnly = False;
+PartialOML_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_PartialOML_Event = Length(PartialOML_Event);
+log("Num_PartialOML_Event = " + Num_PartialOML_Event );    
+    
+// Get the number of Full OML Down events for this BSC
+DataType = "OS_Status";  // this needs to be setup
+Filter = "Class <> 200017 and Severity > 0 and EventId = 'NET_X25_FAIL_002' and BSC_Name = '" + @BSC_Name+ "'";  
+//log("Filter = " + Filter);
+CountOnly = False;
+FullOML_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_FullOML_Event = Length(FullOML_Event);
+log("Num_FullOML_Event = " + Num_FullOML_Event );
+log("Synthetic_Event[0].EventId = " + Synthetic_Event[0].EventId  );
+// Do we need to upgrade the Synthetic Event to Full OML Down?
+if ( Synthetic_Event[0].EventId == 'SYN_X25_FAIL_001' and Num_FullOML_Event > 0)
+{
+    // Change the Synthetic Event into a Full OML Down Event
+    Log("Changing EventID to SYN_X25_FAIL_002");
+    NewSeverity= 5;
+    NewSummary= "OML Full Down Alarm Handling for " + @BSC_Name;
+    NewEventId = 'SYN_X25_FAIL_002';
+    NewTally = Synthetic_Event[0].Tally + 1;
+    NewLastOccurrence = @LastOccurrence;
+    DataType = "OS_Status";
+    Filter = "BSC_Name = '"+ @BSC_Name + "' and Class = 200017 ";
+    SummaryText = "X25 Failure TxN Alarm Handling for " + @BSC_Name + " OML Down";
+    UpdateExpression = "Summary = '" + NewSummary + "', Severity = " + NewSeverity + ", EventId = '" + NewEventId + "', Tally = " + NewTally + ", LastOccurrence = " + NewLastOccurrence;
+    //log("Filter = " + Filter );
+    //log("UpdateExpression = " + UpdateExpression );
+    BatchUpdate(DataType, Filter, UpdateExpression);
+    
+    SESerial= Synthetic_Event[0].ServerSerial;
+    MobiLib.AddGenericJournal(SESerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+
+}
+// Do we need to downgrade the Synthetic Event to Partial OML Down?
+elseif ( Synthetic_Event[0].EventId = 'SYN_X25_FAIL_002' and Num_FullOML_Event = 0 and Num_PartialOML_Event > 0)
+{
+    // Change the Synthetic Event into a Full OML Down Event
+    Log("Changing EventID to SYN_X25_FAIL_002");
+    NewSeverity= 4;
+    NewSummary= "OML Partial Down Alarm Handling for " + @BSC_Name;
+    NewEventId = 'SYN_X25_FAIL_001';
+    NewTally = Synthetic_Event[0].Tally + 1;
+    NewLastOccurrence = @LastOccurrence;
+    DataType = "OS_Status";
+    Filter = "BSC_Name = '"+ @BSC_Name + "' and Class = 200017 ";
+    SummaryText = "X25 Failure TxN Alarm Handling for " + @BSC_Name + " OML Down";
+    UpdateExpression = "Summary = '" + NewSummary + "', Severity = " + NewSeverity + ", EventId = '" + NewEventId + "', Tally = " + NewTally + ", LastOccurrence = " + NewLastOccurrence;
+    //log("Filter = " + Filter );
+    //log("UpdateExpression = " + UpdateExpression );
+    BatchUpdate(DataType, Filter, UpdateExpression);
+
+    SESerial=Synthetic_Event[0].ServerSerial;
+    MobiLib.AddGenericJournal(SESerial, paramSummary,paramSerial,paramLastOcc,paramNodeAlias,paramType);
+}
+else // if we dont need to upgrade or downgrade the Syntetic event then leave it alone
+{
+        Log("EventID not being Changed");
+}
+
+// and nicely end the Policy
+@ImpactFlag = 6; 
+ReturnEvent(EventContainer);
+ 

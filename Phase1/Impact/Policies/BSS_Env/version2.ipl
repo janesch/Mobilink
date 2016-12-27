@@ -1,0 +1,109 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// BSSEnvironmental.ipl
+//
+// Impact policy for Mobilink - BSS Environmental Alarms
+// Chris Janes of Innovise ESM
+//
+// V0.0 20100706 Chris Janes Original
+//
+//
+// The policy expects only events to be processed by it to arrive
+///////////////////////////////////////////////////////////////////////////////
+
+//Does the Synthetic Event Exist?
+//  Log("Event DOES Exists");
+DataType = "Status";  // this needs to be setup
+Filter = "Class = 200012 and AlertGroup = '" + @AlertGroup + "'";  // this needs to be setup
+log("Filter2 = " + Filter );
+NowTime = GetDate();
+JournalInsert = "Node: " + @Node + " EventType: " + @AlertGroup+ " Event Text: " + @Summary; 
+CountOnly = False;
+Existing_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+Num_Existing_Synthetic_Event = Num;
+log ("Num_Existing_Synthetic_Event = " + Num_Existing_Synthetic_Event );
+if(Num_Existing_Synthetic_Event == 0)
+{
+    // Create New Synthetic Event
+    Log("Create New Event");
+    Log("AG = " + @AlertGroup);
+    NewEvent = NewEvent(DefaultEventReader);
+    NewEvent.EventReaderName = "DefaultEventReader";
+    NewEvent.Domain=EventContainer.Domain;
+    NewEvent.Region=EventContainer.Region;
+    NewEvent.ManCity=EventContainer.ManCity;
+    NewEvent.CovCity=EventContainer.CovCity;
+    NewEvent.Agent = "Impact";
+    NewEvent.MaximoStatus= 1;
+    NewEvent.AlertGroup = @AlertGroup;
+    NewEvent.AlertKey = SubSet ;
+    NewEvent.EventType = @EventType ;
+    NewEvent.Network= @Network;
+    NewEvent.Identifier= "BSSEnvironmental 20100521" + @EventType  + Network + @AlertGroup ;
+    NewEvent.Summary= "BSS Environmental Alarm Handling for " + @EventType  ;
+    NewEvent.Severity= 5;
+    NewEvent.Type= 1;
+    NewEvent.Tally= 1;
+    NewEvent.HibernateFlag = 99;
+    NewEvent.Node= "Impact";
+    NewEvent.SyntheticServerName = "";
+    NewEvent.SyntheticServerSerial = 0;
+    NewEvent.FirstOccurrence = NowTime ;
+    NewEvent.LastOccurrence = NowTime ;
+    NewEvent.LogTicket = 1;
+    NewEvent.Class = 200012;
+    AddDataItem('Status', NewEvent);
+    Log("New Event Created ");
+    
+    
+    // Here we need to wait for 
+    ActionKey = "BSSEnvironmental" + @ServerSerial + @ServerName;
+    Log("Going To Sleep "  + ActionKey + " for  30");
+    Hibernate(ActionKey , wait, 30);
+    EventContainer.HibernateFlag = 3;
+    ReturnEvent(EventContainer);
+    Log ("Wake Up " + ActionKey );
+    RemoveHibernation(ActionKey); 
+
+    // Get Synthetic Event Data
+    DataType = "Status";  // this needs to be setup
+    Filter = "Class = 200012 and AlertGroup = '" + @AlertGroup + "'";  // this needs to be setup
+    log("Filter3 = " + Filter );
+    NowTime = GetDate();
+    CountOnly = False;
+    New_Synthetic_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_New_Synthetic_Event = Num;
+    log("Num_New_Synthetic_Event  = " + Num_New_Synthetic_Event );
+    // Get latest version of the child Event
+    DataType = "Status";  // this needs to be setup
+    Filter = "ServerSerial = " + EventContainer.ServerSerial;  // this needs to be setup
+    CountOnly = False;
+    Existing_Event = GetByFilter(DataType, Filter, CountOnly);
+    Num_Existing_Event = Num;
+    Log("ParentJournalInsert");
+    MobiLib.ParentJournalInsert(New_Synthetic_Event[0].ServerName, New_Synthetic_Event[0].ServerSerial, JournalInsert);
+    log("New_Synthetic_Event[0].ServerName  = " + New_Synthetic_Event[0].ServerName );
+    log("New_Synthetic_Event[0].ServerSerial = " + New_Synthetic_Event[0].ServerSerial );
+    @SyntheticServerName = New_Synthetic_Event[0].ServerName ;
+    @SyntheticServerSerial = New_Synthetic_Event[0].ServerSerial ;
+    ReturnEvent(EventContainer);
+
+    Log("ParentJournalInsert");
+    MobiLib.ParentJournalInsert(New_Synthetic_Event[0].ServerName, New_Synthetic_Event[0].ServerSerial, JournalInsert);
+
+    
+}
+else
+{
+    log("Update SyntheticEvent");
+    //UPdatre TT
+    NewTally = Existing_Synthetic_Event[0].Tally + 1;
+    DataType = "Status";
+    Filter = "ServerName = '" + Existing_Synthetic_Event[0].ServerName  + "' and ServerSerial = " + Existing_Synthetic_Event[0].ServerSerial  ;
+    UpdateExpression = "LastOccurrence =  " + NowTime + " , Tally = " + NewTally;
+    BatchUpdate(DataType, Filter, UpdateExpression );
+    MobiLib.ParentJournalInsert(Existing_Synthetic_Event[0].ServerName, Existing_Synthetic_Event[0].ServerSerial, JournalInsert);
+
+}
+
+

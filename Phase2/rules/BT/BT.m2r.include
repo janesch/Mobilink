@@ -1,0 +1,106 @@
+######
+# acision include file
+######
+case ".1.3.6.1.4.1.3830.1.1.11.7": # - btErrors
+	@OmcEms = "BT"
+	@Domain = "VAS"
+	switch($specific-trap) {
+		case "1": ### - btError
+			# SNMPv1
+			# This trap informs about an application malfunction and its type and severity.
+				$btErrorTypelook = "btErrorType." + $1
+				$btErrorType = lookup($btErrorTypelook,BT_lookup)
+				if(match($btErrorType,"UNKNOWN")) {
+					$btErrorType = $1
+				} else {
+					$btErrorType = $btErrorType + " ( " + $1 + " )"
+				}
+				$btErrorSeveritylook = "btErrorSeverity." + $2
+				$btErrorSeverity = lookup($btErrorSeveritylook,BT_lookup)
+				if(match($btErrorSeverity,"UNKNOWN")) {
+					$btErrorSeverity = $2
+				} else {
+					$btErrorSeverity = $btErrorSeverity + " ( " + $2 + " )"
+				}
+			$btErrorExtraInfo = $3
+			@AlertGroup = "BT"
+			@Agent = "BT-TRAPS-MIB"
+			@Summary = "btError: This trap informs about an application malfunction and its type and severity."
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup  + @Summary + @Type
+			details($btErrorType,$btErrorSeverity,$btErrorExtraInfo)
+
+		default:
+			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+			@Severity = 1
+			details($*)
+	}
+
+case ".1.3.6.1.4.1.3830.1.1.11.8": # - btAlarms
+	@OmcEms = "BT"
+	switch($specific-trap) {
+		case "1": ### - btAlarm
+			# SNMPv1
+			# This trap is sent if the current state of the specified alarm changes.
+				$btAlarmIdlook = "btAlarmId." + $1
+				$btAlarmId = lookup($btAlarmIdlook,BT_lookup)
+				if(match($btAlarmId,"UNKNOWN")) {
+					$btAlarmId = $1
+				} else {
+					$btAlarmId = $btAlarmId + " ( " + $1 + " )"
+				}
+				$btAlarmSeveritylook = "btAlarmSeverity." + $2
+				$btAlarmSeverity = lookup($btAlarmSeveritylook,BT_lookup)
+				if(match($btAlarmSeverity,"UNKNOWN")) {
+					$btAlarmSeverity = $2
+				} else {
+					$btAlarmSeverity = $btAlarmSeverity + " ( " + $2 + " )"
+				}
+			$btAlarmTime = $3
+				$btAlarmTypelook = "btAlarmType." + $4
+				$btAlarmType = lookup($btAlarmTypelook,BT_lookup)
+				if(match($btAlarmType,"UNKNOWN")) {
+					$btAlarmType = $4
+				} else {
+					$btAlarmType = $btAlarmType + " ( " + $4 + " )"
+				}
+				$btAlarmNaturelook = "btAlarmNature." + $5
+				$btAlarmNature = lookup($btAlarmNaturelook,BT_lookup)
+				if(match($btAlarmNature,"UNKNOWN")) {
+					$btAlarmNature = $5
+				} else {
+					$btAlarmNature = $btAlarmNature + " ( " + $5 + " )"
+				}
+			$btAlarmContext = $6
+			@AlertGroup = "BT"
+			@Agent = "BT-ALARMS-MIB"
+			@Summary = "btAlarm: This trap is sent if the current state of the specified alarm changes."
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup  + @Summary + @Type
+			details($btAlarmId,$btAlarmSeverity,$btAlarmTime,$btAlarmType,$btAlarmNature,$btAlarmContext)
+
+		case "2": ### - btAlive
+			# SNMPv1
+			# This trap is periodically sent and indicates that BT Monitor is running.
+			$btAliveUpTime = $1
+			$btAliveCounter = $2
+			$btAliveMessage = $3
+			@AlertGroup = "BT"
+			@Agent = "BT-ALARMS-MIB"
+			@Summary = "btAlive: This trap is periodically sent and indicates that BT Monitor is running."
+			@Severity = 1
+			@Type = 1
+			@Identifier = @Manager + @Node + @AlertGroup  + @Summary + @Type
+			details($btAliveUpTime,$btAliveCounter,$btAliveMessage)
+
+		default:
+			@Summary = "Unknown specific trap number (" + $specific-trap + ") received for enterprise " + $enterprise
+			@Identifier = @Node + $enterprise + $generic-trap + $specific-trap + @Agent + @Manager
+			@Severity = 1
+			details($*)
+	}
+
+

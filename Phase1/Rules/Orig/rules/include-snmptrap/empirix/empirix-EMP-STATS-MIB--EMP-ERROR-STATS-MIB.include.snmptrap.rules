@@ -1,0 +1,2756 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp.  2005-2008
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB.include.snmptrap.rules 5.0
+#    2008/02/08 Aveek Kumar Gupta
+#
+###############################################################################
+###############################################################################
+#
+# 5.0 - Updated Release
+#
+#        Compatible with: 
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  Empirix Hammer XMS Release 1.7
+#          -  EMP-STATS-MIB, rev. 200603231200Z updated in 2007 for Hammer XMS 1.7 support
+#          -  EMP-ERROR-STATS-MIB, rev. 200601061200Z updated in 2007 for Hammer XMS 1.7 support
+#
+# 4.0 - Updated Release (adding advanced correlation feature)
+#
+#        Compatible with: 
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  Empirix Hammer XMS Release 1.6, 1.4 and 1.3
+#          -  EMP-STATS-MIB, rev. 200603231200Z
+#          -  EMP-ERROR-STATS-MIB, rev. 200601061200Z
+#
+# 3.0 - Updated Release
+#
+#        Compatible with: 
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  Empirix Hammer XMS Release 1.6, 1.4 and 1.3
+#          -  EMP-STATS-MIB, rev. 200603231200Z
+#          -  EMP-ERROR-STATS-MIB, rev. 200601061200Z
+#
+# 2.0 - Updated Release
+#
+#        Compatible with: 
+#
+#          -  Netcool/OMNIbus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  Empirix Hammer XMS Release 1.4 and 1.3
+#          -  EMP-STATS-MIB, rev. 200508261200Z
+#          -  EMP-ERROR-STATS-MIB, rev. 200509021200Z
+#
+# 1.0 - Initial Release
+#  
+#        Compatible with:
+#
+#	   -  Netcool/Omnibus 3.x and 7
+#	   -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#	   -  Empirix Hammer XMS Release 1.3
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.4551.5.1.1.1.2": ### empirix Statistic Objects - Notifications from EMP-STATS-MIB
+                                    ### empirix Statistic Errors Objects - Notifications from EMP-ERROR-STATS-MIB
+
+    log(DEBUG, "<<<<< Entering... empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Empirix-Statistics"
+    @Class = "40605"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+
+        ### empirix Statistic Objects - Notifications from EMP-STATS-MIB         
+
+        case "1": ### empCorrelationStatBelowEvent
+
+            ##########
+            # $1 = empCorrelationStatEventInfo 
+            ##########
+
+            $empCorrelationStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empCorrelationStatBelowEvent"
+
+            @AlertGroup = "Correlation Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empCorrelationStatEventInfo)
+
+        case "2": ### empCorrelationStatAboveEvent
+
+            ##########
+            # $1 = empCorrelationStatEventInfo 
+            ##########
+
+            $empCorrelationStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empCorrelationStatAboveEvent"
+
+            @AlertGroup = "Correlation Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empCorrelationStatEventInfo)
+
+        case "3": ### empSIPStatBelowEvent
+
+            ##########
+            # $1 = empSIPStatEventInfo 
+            ##########
+
+            $empSIPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSIPStatBelowEvent"
+
+            @AlertGroup = "SIP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIPStatEventInfo)
+
+        case "4": ### empSIPStatAboveEvent
+
+            ##########
+            # $1 = empSIPStatEventInfo 
+            ##########
+
+            $empSIPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSIPStatAboveEvent"
+
+            @AlertGroup = "SIP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIPStatEventInfo)
+
+        case "5": ### empMGCPStatBelowEvent
+
+            ##########
+            # $1 = empMGCPStatEventInfo 
+            ##########
+
+            $empMGCPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empMGCPStatBelowEvent"
+
+            @AlertGroup = "MGCP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCPStatEventInfo)
+
+        case "6": ### empMGCPStatAboveEvent
+
+            ##########
+            # $1 = empMGCPStatEventInfo 
+            ##########
+
+            $empMGCPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empMGCPStatAboveEvent"
+
+            @AlertGroup = "MGCP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCPStatEventInfo)
+
+        case "7": ### empMEGACOStatBelowEvent
+
+            ##########
+            # $1 = empMEGACOStatEventInfo 
+            ##########
+
+            $empMEGACOStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empMEGACOStatBelowEvent"
+
+            @AlertGroup = "MEGACO Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACOStatEventInfo)
+
+        case "8": ### empMEGACOStatAboveEvent
+
+            ##########
+            # $1 = empMEGACOStatEventInfo 
+            ##########
+
+            $empMEGACOStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empMEGACOStatAboveEvent"
+
+            @AlertGroup = "MEGACO Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACOStatEventInfo)
+
+        case "9": ### empH225StatBelowEvent
+
+            ##########
+            # $1 = empH225StatEventInfo 
+            ##########
+
+            $empH225StatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empH225StatBelowEvent"
+
+            @AlertGroup = "H.225 Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH225StatEventInfo)
+
+        case "10": ### empH225StatAboveEvent
+
+            ##########
+            # $1 = empH225StatEventInfo 
+            ##########
+
+            $empH225StatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empH225StatAboveEvent"
+
+            @AlertGroup = "H.225 Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH225StatEventInfo)
+
+        case "11": ### empISDNStatBelowEvent
+
+            ##########
+            # $1 = empISDNStatEventInfo 
+            ##########
+
+            $empISDNStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empISDNStatBelowEvent"
+
+            @AlertGroup = "ISDN Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empISDNStatEventInfo)
+
+        case "12": ### empISDNStatAboveEvent
+
+            ##########
+            # $1 = empISDNStatEventInfo 
+            ##########
+
+            $empISDNStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empISDNStatAboveEvent"
+
+            @AlertGroup = "ISDN Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empISDNStatEventInfo)
+
+        case "13": ### empSS7StatBelowEvent
+
+            ##########
+            # $1 = empSS7StatEventInfo 
+            ##########
+
+            $empSS7StatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSS7StatBelowEvent"
+
+            @AlertGroup = "SS7 Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSS7StatEventInfo)
+
+        case "14": ### empSS7StatAboveEvent
+
+            ##########
+            # $1 = empSS7StatEventInfo 
+            ##########
+
+            $empSS7StatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSS7StatAboveEvent"
+
+            @AlertGroup = "SS7 Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSS7StatEventInfo)
+
+        case "15": ### empXPBoardStatBelowEvent
+
+            ##########
+            # $1 = empXPBoardStatEventInfo 
+            ##########
+
+            $empXPBoardStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empXPBoardStatBelowEvent"
+
+            @AlertGroup = "XP Board Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empXPBoardStatEventInfo)
+
+        case "16": ### empXPBoardStatAboveEvent
+
+            ##########
+            # $1 = empXPBoardStatEventInfo 
+            ##########
+
+            $empXPBoardStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empXPBoardStatAboveEvent"
+
+            @AlertGroup = "XP Board Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empXPBoardStatEventInfo)
+
+        case "17": ### empCorrelationStatCorrectedEvent
+
+            ##########
+            # $1 = empCorrelationStatEventInfo 
+            ##########
+
+            $empCorrelationStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empCorrelationStatCorrectedEvent"
+
+            @AlertGroup = "Correlation Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empCorrelationStatEventInfo)
+
+        case "18": ### empSIPStatCorrectedEvent
+
+            ##########
+            # $1 = empSIPStatEventInfo 
+            ##########
+
+            $empSIPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSIPStatCorrectedEvent"
+
+            @AlertGroup = "SIP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIPStatEventInfo)
+
+        case "19": ### empMGCPStatCorrectedEvent
+
+            ##########
+            # $1 = empMGCPStatEventInfo 
+            ##########
+
+            $empMGCPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empMGCPStatCorrectedEvent"
+
+            @AlertGroup = "MGCP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCPStatEventInfo)
+
+        case "20": ### empMEGACOStatCorrectedEvent
+
+            ##########
+            # $1 = empMEGACOStatEventInfo 
+            ##########
+
+            $empMEGACOStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empMEGACOStatCorrectedEvent"
+
+            @AlertGroup = "MEGACO Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACOStatEventInfo)
+
+        case "21": ### empH225StatCorrectedEvent
+
+            ##########
+            # $1 = empH225StatEventInfo 
+            ##########
+
+            $empH225StatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empH225StatCorrectedEvent"
+
+            @AlertGroup = "H.225 Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH225StatEventInfo)
+
+        case "22": ### empISDNStatCorrectedEvent
+
+            ##########
+            # $1 = empISDNStatEventInfo 
+            ##########
+
+            $empISDNStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empISDNStatCorrectedEvent"
+
+            @AlertGroup = "ISDN Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empISDNStatEventInfo)
+
+        case "23": ### empSS7StatCorrectedEvent
+
+            ##########
+            # $1 = empSS7StatEventInfo 
+            ##########
+
+            $empSS7StatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSS7StatCorrectedEvent"
+
+            @AlertGroup = "SS7 Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSS7StatEventInfo)
+
+        case "24": ### empXPBoardStatCorrectedEvent
+
+            ##########
+            # $1 = empXPBoardStatEventInfo 
+            ##########
+
+            $empXPBoardStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empXPBoardStatCorrectedEvent"
+
+            @AlertGroup = "XP Board Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empXPBoardStatEventInfo)
+
+        ## empirix Statistic Errors Objects -  Notifications from EMP-ERROR-STATS-MIB
+
+        case "25": ### empSIP4xxErrorsBelowEvent
+
+            ##########
+            # $1 = empSIP4xxStatEventInfo 
+            ##########
+
+            $empSIP4xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP4xxErrorsBelowEvent"
+
+            @AlertGroup = "SIP 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP4xxStatEventInfo)
+
+        case "26": ### empSIP4xxErrorsAboveEvent
+
+            ##########
+            # $1 = empSIP4xxStatEventInfo 
+            ##########
+
+            $empSIP4xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP4xxErrorsAboveEvent"
+
+            @AlertGroup = "SIP 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP4xxStatEventInfo)
+
+        case "27": ### empSIP4xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empSIP4xxStatEventInfo 
+            ##########
+
+            $empSIP4xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP4xxErrorsCorrectedEvent"
+
+            @AlertGroup = "SIP 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP4xxStatEventInfo)
+
+        case "28": ### empSIP5xxErrorsBelowEvent
+
+            ##########
+            # $1 = empSIP5xxStatEventInfo 
+            ##########
+
+            $empSIP5xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP5xxErrorsBelowEvent"
+
+            @AlertGroup = "SIP 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP5xxStatEventInfo)
+
+        case "29": ### empSIP5xxErrorsAboveEvent
+
+            ##########
+            # $1 = empSIP5xxStatEventInfo 
+            ##########
+
+            $empSIP5xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP5xxErrorsAboveEvent"
+
+            @AlertGroup = "SIP 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP5xxStatEventInfo)
+
+        case "30": ### empSIP5xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empSIP5xxStatEventInfo 
+            ##########
+
+            $empSIP5xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP5xxErrorsCorrectedEvent"
+
+            @AlertGroup = "SIP 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP5xxStatEventInfo)
+
+        case "31": ### empSIP6xxErrorsBelowEvent
+
+            ##########
+            # $1 = empSIP6xxStatEventInfo 
+            ##########
+
+            $empSIP6xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP6xxErrorsBelowEvent"
+
+            @AlertGroup = "SIP 600s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP6xxStatEventInfo)
+
+        case "32": ### empSIP6xxErrorsAboveEvent
+
+            ##########
+            # $1 = empSIP6xxStatEventInfo 
+            ##########
+
+            $empSIP6xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP6xxErrorsAboveEvent"
+
+            @AlertGroup = "SIP 600s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP6xxStatEventInfo)
+
+        case "33": ### empSIP6xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empSIP6xxStatEventInfo 
+            ##########
+
+            $empSIP6xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSIP6xxErrorsCorrectedEvent"
+
+            @AlertGroup = "SIP 600s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSIP6xxStatEventInfo)
+
+        case "34": ### empSS7CauseValuesBelowEvent
+
+            ##########
+            # $1 = empSS7CauseValuesEventInfo 
+            ##########
+
+            $empSS7CauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSS7CauseValuesBelowEvent"
+
+            @AlertGroup = "SS7 Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSS7CauseValuesEventInfo)
+
+        case "35": ### empSS7CauseValuesAboveEvent
+
+            ##########
+            # $1 = empSS7CauseValuesEventInfo 
+            ##########
+
+            $empSS7CauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSS7CauseValuesAboveEvent"
+
+            @AlertGroup = "SS7 Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSS7CauseValuesEventInfo)
+
+        case "36": ### empSS7CauseValuesCorrectedEvent
+
+            ##########
+            # $1 = empSS7CauseValuesEventInfo 
+            ##########
+
+            $empSS7CauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empSS7CauseValuesCorrectedEvent"
+
+            @AlertGroup = "SS7 Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSS7CauseValuesEventInfo)
+
+        case "37": ### empMGCP4xxErrorsBelowEvent
+
+            ##########
+            # $1 = empMGCP4xxErrorsEventInfo 
+            ##########
+
+            $empMGCP4xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP4xxErrorsBelowEvent"
+
+            @AlertGroup = "MGCP 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP4xxErrorsEventInfo)
+
+        case "38": ### empMGCP4xxErrorsAboveEvent
+
+            ##########
+            # $1 = empMGCP4xxErrorsEventInfo 
+            ##########
+
+            $empMGCP4xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP4xxErrorsAboveEvent"
+
+            @AlertGroup = "MGCP 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP4xxErrorsEventInfo)
+
+        case "39": ### empMGCP4xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empMGCP4xxErrorsEventInfo 
+            ##########
+
+            $empMGCP4xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP4xxErrorsCorrectedEvent"
+
+            @AlertGroup = "MGCP 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP4xxErrorsEventInfo)
+
+        case "40": ### empMGCP5xxErrorsBelowEvent
+
+            ##########
+            # $1 = empMGCP5xxErrorsEventInfo 
+            ##########
+
+            $empMGCP5xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP5xxErrorsBelowEvent"
+
+            @AlertGroup = "MGCP 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP5xxErrorsEventInfo)
+
+        case "41": ### empMGCP5xxErrorsAboveEvent
+
+            ##########
+            # $1 = empMGCP5xxErrorsEventInfo 
+            ##########
+
+            $empMGCP5xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP5xxErrorsAboveEvent"
+
+            @AlertGroup = "MGCP 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP5xxErrorsEventInfo)
+
+        case "42": ### empMGCP5xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empMGCP5xxErrorsEventInfo 
+            ##########
+
+            $empMGCP5xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP5xxErrorsCorrectedEvent"
+
+            @AlertGroup = "MGCP 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP5xxErrorsEventInfo)
+
+        case "43": ### empMGCP9xxErrorsBelowEvent
+
+            ##########
+            # $1 = empMGCP9xxErrorsEventInfo 
+            ##########
+
+            $empMGCP9xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP9xxErrorsBelowEvent"
+
+            @AlertGroup = "MGCP 900s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP9xxErrorsEventInfo)
+
+        case "44": ### empMGCP9xxErrorsAboveEvent
+
+            ##########
+            # $1 = empMGCP9xxErrorsEventInfo 
+            ##########
+
+            $empMGCP9xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP9xxErrorsAboveEvent"
+
+            @AlertGroup = "MGCP 900s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP9xxErrorsEventInfo)
+
+        case "45": ### empMGCP9xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empMGCP9xxErrorsEventInfo 
+            ##########
+
+            $empMGCP9xxErrorsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMGCP9xxErrorsCorrectedEvent"
+
+            @AlertGroup = "MGCP 900s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMGCP9xxErrorsEventInfo)
+
+        case "46": ### empH323CauseValuesBelowEvent
+
+            ##########
+            # $1 = empH323CauseValuesEventInfo 
+            ##########
+
+            $empH323CauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323CauseValuesBelowEvent"
+
+            @AlertGroup = "H323 Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323CauseValuesEventInfo)
+
+        case "47": ### empH323CauseValuesAboveEvent
+
+            ##########
+            # $1 = empH323CauseValuesEventInfo 
+            ##########
+
+            $empH323CauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323CauseValuesAboveEvent"
+
+            @AlertGroup = "H323 Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323CauseValuesEventInfo)
+
+        case "48": ### empH323CauseValuesCorrectedEvent
+
+            ##########
+            # $1 = empH323CauseValuesEventInfo 
+            ##########
+
+            $empH323CauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323CauseValuesCorrectedEvent"
+
+            @AlertGroup = "H323 Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323CauseValuesEventInfo)
+
+        case "49": ### empH323ARJStringReasonsBelowEvent
+
+            ##########
+            # $1 = empH323ARJStringReasonsEventInfo 
+            ##########
+
+            $empH323ARJStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323ARJStringReasonsBelowEvent"
+
+            @AlertGroup = "H.323 ARJ String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323ARJStringReasonsEventInfo)
+
+        case "50": ### empH323ARJStringReasonsAboveEvent
+
+            ##########
+            # $1 = empH323ARJStringReasonsEventInfo 
+            ##########
+
+            $empH323ARJStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323ARJStringReasonsAboveEvent"
+
+            @AlertGroup = "H.323 ARJ String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323ARJStringReasonsEventInfo)
+
+        case "51": ### empH323ARJStringReasonsCorrectedEvent
+
+            ##########
+            # $1 = empH323ARJStringReasonsEventInfo 
+            ##########
+
+            $empH323ARJStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323ARJStringReasonsCorrectedEvent"
+
+            @AlertGroup = "H.323 ARJ String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323ARJStringReasonsEventInfo)
+
+        case "52": ### empH323RLCStringReasonsBelowEvent
+
+            ##########
+            # $1 = empH323RLCStringReasonsEventInfo 
+            ##########
+
+            $empH323RLCStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323RLCStringReasonsBelowEvent"
+
+            @AlertGroup = "H.323 RLC String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323RLCStringReasonsEventInfo)
+
+        case "53": ### empH323RLCStringReasonsAboveEvent
+
+            ##########
+            # $1 = empH323RLCStringReasonsEventInfo 
+            ##########
+
+            $empH323RLCStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323RLCStringReasonsAboveEvent"
+
+            @AlertGroup = "H.323 RLC String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323RLCStringReasonsEventInfo)
+
+        case "54": ### empH323RLCStringReasonsCorrectedEvent
+
+            ##########
+            # $1 = empH323RLCStringReasonsEventInfo 
+            ##########
+
+            $empH323RLCStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323RLCStringReasonsCorrectedEvent"
+
+            @AlertGroup = "H.323 RLC String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323RLCStringReasonsEventInfo)
+
+        case "55": ### empH323DRQStringReasonsBelowEvent
+
+            ##########
+            # $1 = empH323DRQStringReasonsEventInfo 
+            ##########
+
+            $empH323DRQStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323DRQStringReasonsBelowEvent"
+
+            @AlertGroup = "H.323 DRQ String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323DRQStringReasonsEventInfo)
+
+        case "56": ### empH323DRQStringReasonsAboveEvent
+
+            ##########
+            # $1 = empH323DRQStringReasonsEventInfo 
+            ##########
+
+            $empH323DRQStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323DRQStringReasonsAboveEvent"
+
+            @AlertGroup = "H.323 DRQ String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323DRQStringReasonsEventInfo)
+
+        case "57": ### empH323DRQStringReasonsCorrectedEvent
+
+            ##########
+            # $1 = empH323DRQStringReasonsEventInfo 
+            ##########
+
+            $empH323DRQStringReasonsEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empH323DRQStringReasonsCorrectedEvent"
+
+            @AlertGroup = "H.323 DRQ String Reason Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empH323DRQStringReasonsEventInfo)
+
+        case "58": ### empISDNCauseValuesBelowEvent
+
+            ##########
+            # $1 = empISDNCauseValuesEventInfo 
+            ##########
+
+            $empISDNCauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empISDNCauseValuesBelowEvent"
+
+            @AlertGroup = "ISDN Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empISDNCauseValuesEventInfo)
+
+        case "59": ### empISDNCauseValuesAboveEvent
+
+            ##########
+            # $1 = empISDNCauseValuesEventInfo 
+            ##########
+
+            $empISDNCauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empISDNCauseValuesAboveEvent"
+
+            @AlertGroup = "ISDN Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empISDNCauseValuesEventInfo)
+
+        case "60": ### empISDNCauseValuesCorrectedEvent
+
+            ##########
+            # $1 = empISDNCauseValuesEventInfo 
+            ##########
+
+            $empISDNCauseValuesEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empISDNCauseValuesCorrectedEvent"
+
+            @AlertGroup = "ISDN Cause Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empISDNCauseValuesEventInfo)
+
+        case "61": ### empMEGACO4xxErrorsBelowEvent
+
+            ##########
+            # $1 = empMEGACO4xxStatEventInfo 
+            ##########
+
+            $empMEGACO4xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO4xxErrorsBelowEvent"
+
+            @AlertGroup = "MEGACO 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO4xxStatEventInfo)
+
+        case "62": ### empMEGACO4xxErrorsAboveEvent
+
+            ##########
+            # $1 = empMEGACO4xxStatEventInfo 
+            ##########
+
+            $empMEGACO4xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO4xxErrorsAboveEvent"
+
+            @AlertGroup = "MEGACO 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO4xxStatEventInfo)
+
+        case "63": ### empMEGACO4xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empMEGACO4xxStatEventInfo 
+            ##########
+
+            $empMEGACO4xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO4xxErrorsCorrectedEvent"
+
+            @AlertGroup = "MEGACO 400s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO4xxStatEventInfo)
+
+        case "64": ### empMEGACO5xxErrorsBelowEvent
+
+            ##########
+            # $1 = empMEGACO5xxStatEventInfo 
+            ##########
+
+            $empMEGACO5xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO5xxErrorsBelowEvent"
+
+            @AlertGroup = "MEGACO 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO5xxStatEventInfo)
+
+        case "65": ### empMEGACO5xxErrorsAboveEvent
+
+            ##########
+            # $1 = empMEGACO5xxStatEventInfo 
+            ##########
+
+            $empMEGACO5xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO5xxErrorsAboveEvent"
+
+            @AlertGroup = "MEGACO 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO5xxStatEventInfo)
+
+        case "66": ### empMEGACO5xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empMEGACO5xxStatEventInfo 
+            ##########
+
+            $empMEGACO5xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO5xxErrorsCorrectedEvent"
+
+            @AlertGroup = "MEGACO 500s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO5xxStatEventInfo)
+
+        case "67": ### empMEGACO6xxErrorsBelowEvent
+
+            ##########
+            # $1 = empMEGACO6xxStatEventInfo 
+            ##########
+
+            $empMEGACO6xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO6xxErrorsBelowEvent"
+
+            @AlertGroup = "MEGACO 600s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO6xxStatEventInfo)
+
+        case "68": ### empMEGACO6xxErrorsAboveEvent
+
+            ##########
+            # $1 = empMEGACO6xxStatEventInfo 
+            ##########
+
+            $empMEGACO6xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO6xxErrorsAboveEvent"
+
+            @AlertGroup = "MEGACO 600s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO6xxStatEventInfo)
+
+        case "69": ### empMEGACO6xxErrorsCorrectedEvent
+
+            ##########
+            # $1 = empMEGACO6xxStatEventInfo 
+            ##########
+
+            $empMEGACO6xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO6xxErrorsCorrectedEvent"
+
+            @AlertGroup = "MEGACO 600s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO6xxStatEventInfo)
+
+        case "70": ### empMEGACO9xxReasonsBelowEvent
+
+            ##########
+            # $1 = empMEGACO9xxStatEventInfo 
+            ##########
+
+            $empMEGACO9xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO9xxReasonsBelowEvent"
+
+            @AlertGroup = "MEGACO 900s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO9xxStatEventInfo)
+
+        case "71": ### empMEGACO9xxReasonsAboveEvent
+
+            ##########
+            # $1 = empMEGACO9xxStatEventInfo 
+            ##########
+
+            $empMEGACO9xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO9xxReasonsAboveEvent"
+
+            @AlertGroup = "MEGACO 900s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO9xxStatEventInfo)
+
+        case "72": ### empMEGACO9xxReasonsCorrectedEvent
+
+            ##########
+            # $1 = empMEGACO9xxStatEventInfo 
+            ##########
+
+            $empMEGACO9xxStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-ERROR-STATS-MIB-empMEGACO9xxReasonsCorrectedEvent"
+
+            @AlertGroup = "MEGACO 900s Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empMEGACO9xxStatEventInfo)
+
+        ## empirix Statistic Errors Objects -  Notifications from EMP-STATS-MIB
+
+        case "73": ### empTDMStatBelowEvent
+
+            ##########
+            # $1 = empTDMStatEventInfo 
+            ##########
+
+            $empTDMStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empTDMStatBelowEvent"
+
+            @AlertGroup = "TDM Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0 
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empTDMStatEventInfo)
+
+        case "74": ### empTDMStatAboveEvent
+
+            ##########
+            # $1 = empTDMStatEventInfo 
+            ##########
+
+            $empTDMStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empTDMStatAboveEvent"
+
+            @AlertGroup = "TDM Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empTDMStatEventInfo)
+
+        case "75": ### empTDMStatCorrectedEvent
+
+            ##########
+            # $1 = empTDMStatEventInfo 
+            ##########
+
+            $empTDMStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empTDMStatCorrectedEvent"
+
+            @AlertGroup = "TDM Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empTDMStatEventInfo)
+
+        case "76": ### empSigTranSCTPStatBelowEvent
+
+            ##########
+            # $1 = empSigTranSCTPStatEventInfo 
+            ##########
+
+            $empSigTranSCTPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranSCTPStatBelowEvent"
+
+            @AlertGroup = "SigTran SCTP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranSCTPStatEventInfo)
+
+        case "77": ### empSigTranSCTPStatAboveEvent
+
+            ##########
+            # $1 = empSigTranSCTPStatEventInfo 
+            ##########
+
+            $empSigTranSCTPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranSCTPStatAboveEvent"
+
+            @AlertGroup = "SigTran SCTP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranSCTPStatEventInfo)
+
+        case "78": ### empSigTranSCTPStatCorrectedEvent
+
+            ##########
+            # $1 = empSigTranSCTPStatEventInfo 
+            ##########
+
+            $empSigTranSCTPStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranSCTPStatCorrectedEvent"
+
+            @AlertGroup = "SigTran SCTP Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranSCTPStatEventInfo)
+
+        case "79": ### empSigTranM3UAStatBelowEvent
+
+            ##########
+            # $1 = empSigTranM3UAStatEventInfo 
+            ##########
+
+            $empSigTranM3UAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranM3UAStatBelowEvent"
+
+            @AlertGroup = "SigTran M3UA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranM3UAStatEventInfo)
+
+        case "80": ### empSigTranM3UAStatAboveEvent
+
+            ##########
+            # $1 = empSigTranM3UAStatEventInfo 
+            ##########
+
+            $empSigTranM3UAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranM3UAStatAboveEvent"
+
+            @AlertGroup = "SigTran M3UA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranM3UAStatEventInfo)
+
+        case "81": ### empSigTranM3UAStatCorrectedEvent
+
+            ##########
+            # $1 = empSigTranM3UAStatEventInfo 
+            ##########
+
+            $empSigTranM3UAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranM3UAStatCorrectedEvent"
+
+            @AlertGroup = "SigTran M3UA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranM3UAStatEventInfo)
+
+        case "82": ### empSigTranM2PAStatBelowEvent
+
+            ##########
+            # $1 = empSigTranM2PAStatEventInfo 
+            ##########
+
+            $empSigTranM2PAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranM2PAStatBelowEvent"
+
+            @AlertGroup = "SigTran M2PA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranM2PAStatEventInfo)
+
+        case "83": ### empSigTranM2PAStatAboveEvent
+
+            ##########
+            # $1 = empSigTranM2PAStatEventInfo 
+            ##########
+
+            $empSigTranM2PAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranM2PAStatAboveEvent"
+
+            @AlertGroup = "SigTran M2PA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranM2PAStatEventInfo)
+
+        case "84": ### empSigTranM2PAStatCorrectedEvent
+
+            ##########
+            # $1 = empSigTranM2PAStatEventInfo 
+            ##########
+
+            $empSigTranM2PAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranM2PAStatCorrectedEvent"
+
+            @AlertGroup = "SigTran M2PA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranM2PAStatEventInfo)
+
+        case "85": ### empSigTranSUAStatBelowEvent
+
+            ##########
+            # $1 = empSigTranSUAStatEventInfo 
+            ##########
+
+            $empSigTranSUAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranSUAStatBelowEvent"
+
+            @AlertGroup = "SigTran SUA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranSUAStatEventInfo)
+
+        case "86": ### empSigTranSUAStatAboveEvent
+
+            ##########
+            # $1 = empSigTranSUAStatEventInfo 
+            ##########
+
+            $empSigTranSUAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranSUAStatAboveEvent"
+
+            @AlertGroup = "SigTran SUA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranSUAStatEventInfo)
+
+        case "87": ### empSigTranSUAStatCorrectedEvent
+
+            ##########
+            # $1 = empSigTranSUAStatEventInfo 
+            ##########
+
+            $empSigTranSUAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranSUAStatCorrectedEvent"
+
+            @AlertGroup = "SigTran SUA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranSUAStatEventInfo)
+
+        case "88": ### empSigTranIUAStatBelowEvent
+
+            ##########
+            # $1 = empSigTranIUAStatEventInfo 
+            ##########
+
+            $empSigTranIUAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranIUAStatBelowEvent"
+
+            @AlertGroup = "SigTran IUA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranIUAStatEventInfo)
+
+        case "89": ### empSigTranIUAStatAboveEvent
+
+            ##########
+            # $1 = empSigTranIUAStatEventInfo 
+            ##########
+
+            $empSigTranIUAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranIUAStatAboveEvent"
+
+            @AlertGroup = "SigTran IUA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranIUAStatEventInfo)
+
+        case "90": ### empSigTranIUAStatCorrectedEvent
+
+            ##########
+            # $1 = empSigTranIUAStatEventInfo 
+            ##########
+
+            $empSigTranIUAStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSigTranIUAStatCorrectedEvent"
+
+            @AlertGroup = "SigTran IUA Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSigTranIUAStatEventInfo)
+
+        case "91": ### empCOPSStatBelowEvent
+
+            ##########
+            # $1 = empCOPSStatEventInfo 
+            ##########
+
+            $empCOPSStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empCOPSStatBelowEvent"
+
+            @AlertGroup = "COPS Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empCOPSStatEventInfo)
+
+        case "92": ### empCOPSStatAboveEvent
+
+            ##########
+            # $1 = empCOPSStatEventInfo 
+            ##########
+
+            $empCOPSStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empCOPSStatAboveEvent"
+
+            @AlertGroup = "COPS Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empCOPSStatEventInfo)
+
+        case "93": ### empCOPSStatCorrectedEvent
+
+            ##########
+            # $1 = empCOPSStatEventInfo 
+            ##########
+
+            $empCOPSStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empCOPSStatCorrectedEvent"
+
+            @AlertGroup = "COPS Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empCOPSStatEventInfo)
+
+        case "94": ### empProtocolStatAboveEvent
+
+            ##########
+            # $1 = empProtocolStatEventInfo 
+            ##########
+
+            $empProtocolStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empProtocolStatAboveEvent"
+
+            @AlertGroup = "Protocol Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empProtocolStatEventInfo)
+
+        case "95": ### empProtocolStatBelowEvent
+
+            ##########
+            # $1 = empProtocolStatEventInfo 
+            ##########
+
+            $empProtocolStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empProtocolStatBelowEvent"
+
+            @AlertGroup = "Protocol Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empProtocolStatEventInfo)
+
+        case "96": ### empProtocolStatCorrectedEvent
+
+            ##########
+            # $1 = empProtocolStatEventInfo 
+            ##########
+
+            $empProtocolStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empProtocolStatCorrectedEvent"
+
+            @AlertGroup = "Protocol Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empProtocolStatEventInfo)
+
+        case "97": ### empDiameterStatAboveEvent
+
+            ##########
+            # $1 = empDiameterStatEventInfo 
+            ##########
+
+            $empDiameterStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterStatAboveEvent"
+
+            @AlertGroup = "Diameter Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterStatEventInfo)
+
+        case "98": ### empDiameterStatBelowEvent
+
+            ##########
+            # $1 = empDiameterStatEventInfo 
+            ##########
+
+            $empDiameterStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterStatBelowEvent"
+
+            @AlertGroup = "Diameter Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterStatEventInfo)
+
+        case "99": ### empDiameterStatCorrectedEvent
+
+            ##########
+            # $1 = empDiameterStatEventInfo 
+            ##########
+
+            $empDiameterStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterStatCorrectedEvent"
+
+            @AlertGroup = "Diameter Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterStatEventInfo)
+
+        case "100": ### empDiameterPlusStatAboveEvent
+
+            ##########
+            # $1 = empDiameterPlusStatEventInfo 
+            ##########
+
+            $empDiameterPlusStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterPlusStatAboveEvent"
+
+            @AlertGroup = "Diameter Plus Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterPlusStatEventInfo)
+
+        case "101": ### empDiameterPlusStatBelowEvent
+
+            ##########
+            # $1 = empDiameterPlusStatEventInfo 
+            ##########
+
+            $empDiameterPlusStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterPlusStatBelowEvent"
+
+            @AlertGroup = "Diameter Plus Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterPlusStatEventInfo)
+
+        case "102": ### empDiameterPlusStatCorrectedEvent
+
+            ##########
+            # $1 = empDiameterPlusStatEventInfo 
+            ##########
+
+            $empDiameterPlusStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterPlusStatCorrectedEvent"
+
+            @AlertGroup = "Diameter Plus Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterPlusStatEventInfo)
+
+        case "103": ### empSystemStatAboveEvent
+
+            ##########
+            # $1 = empSystemStatEventInfo 
+            ##########
+
+            $empSystemStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSystemStatAboveEvent"
+
+            @AlertGroup = "System Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSystemStatEventInfo)
+
+        case "104": ### empSystemStatBelowEvent
+
+            ##########
+            # $1 = empSystemStatEventInfo 
+            ##########
+
+            $empSystemStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSystemStatBelowEvent"
+
+            @AlertGroup = "System Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSystemStatEventInfo)
+
+        case "105": ### empSystemStatCorrectedEvent
+
+            ##########
+            # $1 = empSystemStatEventInfo 
+            ##########
+
+            $empSystemStatEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empSystemStatCorrectedEvent"
+
+            @AlertGroup = "System Statistic Object Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empSystemStatEventInfo)
+
+        ## empirix Statistic Errors Objects -  Notifications from EMP-ERROR-STATS-MIB
+
+        case "106": ### empDiameterGeneralErrorsCorrectedEvent
+
+            ##########
+            # $1 = empDiameterGeneralErrorEventInfo 
+            ##########
+
+            $empDiameterGeneralErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterGeneralErrorsCorrectedEvent"
+
+            @AlertGroup = "Diameter General Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterGeneralErrorEventInfo)
+
+        case "107": ### empDiameterGeneralErrorsAboveEvent
+
+            ##########
+            # $1 = empDiameterGeneralErrorEventInfo 
+            ##########
+
+            $empDiameterGeneralErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterGeneralErrorsAboveEvent"
+
+            @AlertGroup = "Diameter General Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterGeneralErrorEventInfo)
+
+        case "108": ### empDiameterGeneralErrorsBelowEvent
+
+            ##########
+            # $1 = empDiameterGeneralErrorEventInfo 
+            ##########
+
+            $empDiameterGeneralErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterGeneralErrorsBelowEvent"
+
+            @AlertGroup = "Diameter General Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterGeneralErrorEventInfo)
+
+        case "109": ### empDiameter3GPPErrorsCorrectedEvent
+
+            ##########
+            # $1 = empDiameter3GPPErrorEventInfo 
+            ##########
+
+            $empDiameter3GPPErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameter3GPPErrorsCorrectedEvent"
+
+            @AlertGroup = "Diameter 3GPP Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameter3GPPErrorEventInfo)
+
+        case "110": ### empDiameter3GPPErrorsAboveEvent
+
+            ##########
+            # $1 = empDiameter3GPPErrorEventInfo 
+            ##########
+
+            $empDiameter3GPPErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameter3GPPErrorsAboveEvent"
+
+            @AlertGroup = "Diameter 3GPP Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameter3GPPErrorEventInfo)
+
+        case "111": ### empDiameter3GPPErrorsBelowEvent
+
+            ##########
+            # $1 = empDiameter3GPPErrorEventInfo 
+            ##########
+
+            $empDiameter3GPPErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameter3GPPErrorsBelowEvent"
+
+            @AlertGroup = "Diameter 3GPP Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameter3GPPErrorEventInfo)
+
+        case "112": ### empDiameterPlusErrorsCorrectedEvent
+
+            ##########
+            # $1 = empDiameterPlusErrorEventInfo 
+            ##########
+
+            $empDiameterPlusErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterPlusErrorsCorrectedEvent"
+
+            @AlertGroup = "Diameter Plus Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 1
+            $DEFAULT_Type = 2
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterPlusErrorEventInfo)
+
+        case "113": ### empDiameterPlusErrorsAboveEvent
+
+            ##########
+            # $1 = empDiameterPlusErrorEventInfo 
+            ##########
+
+            $empDiameterPlusErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterPlusErrorsAboveEvent"
+
+            @AlertGroup = "Diameter Plus Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterPlusErrorEventInfo)
+
+        case "114": ### empDiameterPlusErrorsBelowEvent
+
+            ##########
+            # $1 = empDiameterPlusErrorEventInfo 
+            ##########
+
+            $empDiameterPlusErrorEventInfo = $1
+
+            $OS_EventId = "SNMPTRAP-empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB-empDiameterPlusErrorsBelowEvent"
+
+            @AlertGroup = "Diameter Plus Error Status"
+            @AlertKey = "Object: " + extract($1, "^(.*) value went")
+            @Summary = $1 + " ( " + @AlertKey + " )"
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            details($empDiameterPlusErrorEventInfo)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB_sev)
+}
+
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/empirix/empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/empirix/empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB.user.include.snmptrap.rules"
+
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... empirix-EMP-STATS-MIB--EMP-ERROR-STATS-MIB.include.snmptrap.rules >>>>>")

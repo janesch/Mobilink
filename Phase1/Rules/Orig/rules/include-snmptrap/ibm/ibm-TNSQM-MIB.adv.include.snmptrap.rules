@@ -1,0 +1,85 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    ibm-TNSQM-MIB.adv.include.snmptrap.rules 1.0
+#    2007/10/04 Aveek Kumar Gupta
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  TNSQM-MIB
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... ibm-TNSQM-MIB.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "800": ### kqiAlarm
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "kqiAlarm"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = $kqiName + " " + $resourceName 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "801": ### slaAlarm
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "slaAlarm"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = $customerName + " "  + $slaName + " " + $kqiName + " " + $serviceName + " " + $serviceElementName
+        $OS_LocalSecObj = $customerName + " "  + $slaName + " " + $kqiName + " " + $serviceName
+        $OS_LocalRootObj = $customerName + " "  + $slaName + " " + $kqiName
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 3
+        $VAR_RelateLSO2LPO = 3
+
+    case "802": ### adapterAlarm
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "adapterAlarm"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = $adapterName 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "803": ### heartbeatTrap
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "heartbeatTrap"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "saProcessEntry." + $7 
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... ibm-TNSQM-MIB.adv.include.snmptrap.rules >>>>>")

@@ -1,0 +1,1023 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    rapidcity-RAPID-CITY.adv.include.snmptrap.rules 1.2
+#    2006/08/20 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added logic to handle additional specific traps.
+#
+# 1.1 - Added specific traps 15-23, 25-40, 59, 60, and 62-64.
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  RAPID-CITY
+#
+###############################################################################
+
+log(DEBUG, "<<<<< Entering... rapidcity-RAPID-CITY.adv.include.snmptrap.rules >>>>>")
+
+switch($specific-trap)
+{
+    case "1": ### rcCardDown
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rcCardDown"
+        $OS_OsiLayer = 1
+
+        $OS_LocalPriObj = "rcCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "2": ### rcCardUp
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rcCardUp"
+        $OS_OsiLayer = 1
+
+        $OS_LocalPriObj = "rcCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "3": ### rcErrorNotification
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3005
+        $OS_X733SpecificProb = "rcErrorNotification"
+        $OS_OsiLayer = 7
+
+    case "4": ### rcStpNewRoot
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcStpNewRoot"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcStgEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "5": ### rcStpTopologyChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcStpTopologyChange"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcStgEntry." + $1 + ", rcPortEntry." + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "6": ### rcChasPowerSupplyDown
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4001
+        $OS_X733SpecificProb = "rcChasPowerSupplyDown"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "rcChasPowerSupplyEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "7": ### rcChasFanDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 100043
+        $OS_X733SpecificProb = "rcChasFanDown"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "rcChasFanEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "8": ### rcLinkOscillation
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcLinkOscillation"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "9": ### rcMacViolation
+
+        $OS_X733EventType = 8
+        $OS_X733ProbableCause = 100078
+        $OS_X733SpecificProb = "rcMacViolation"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "10": ### rcSonetTrap
+
+        $OS_X733EventType = 1
+        switch($3)
+        {
+            case "1": ### noDefect
+                $OS_X733ProbableCause = 1008
+            case "2": ### sectionLossOfSignal
+                $OS_X733ProbableCause = 1001
+            case "3": ### sectionLossOfFrame
+                $OS_X733ProbableCause = 1002
+            case "4": ### lineAlarmIndication
+                $OS_X733ProbableCause = 100002
+            case "5": ### lineRemoteDefectIndication
+                $OS_X733ProbableCause = 100012
+            case "6": ### pathLossOfPointer
+                $OS_X733ProbableCause = 100008
+            case "7": ### pathAlarmIndication
+                $OS_X733ProbableCause = 100002
+            case "8": ### pathRemoteDefectIndication
+                $OS_X733ProbableCause = 100012
+            case "9": ### pathUnequipped
+                $OS_X733ProbableCause = 1008
+            case "10": ### pathSignalLabelMismatch
+                $OS_X733ProbableCause = 100016
+            case "11": ### pathTraceMismatch
+                $OS_X733ProbableCause = 100014
+            default:
+                $OS_X733ProbableCause = 1008
+        }
+        $OS_X733SpecificProb = "rcSonetTrap"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "rcPortEntry." + $2
+        $OS_LocalRootObj = "ifEntry." + $2
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "11": ### rc2kCardDown
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rc2kCardDown"
+        $OS_OsiLayer = 1
+
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "12": ### rc2kCardUp
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rc2kCardUp"
+        $OS_OsiLayer = 1
+
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "13": ### rc2kTemperature
+
+        $OS_X733EventType = 5
+        $OS_X733ProbableCause = 5001
+        $OS_X733SpecificProb = "rc2kTemperature"
+        $OS_OsiLayer = 0
+
+    case "14": ### rcChasPowerSupplyUp
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4001
+        $OS_X733SpecificProb = "rcChasPowerSupplyUp"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "rcChasPowerSupplyEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "15": ### rc2kAtmPvcLinkStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcn2kAtmPvcLinkStateChange"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rc2kAtmPvcEntry." + $1 + "." + $2 + "." + $3
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "16": ### rcStpTCN
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcn2kAtmPvcLinkStateChange"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcPortEntry." + $2
+        $OS_LocalRootObj = "ifEntry." + $2
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "17": ### rcSmltIstLinkUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcSmltIstLinkUp"
+        $OS_OsiLayer = 2
+    
+    case "18": ### rcSmltIstLinkDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnSmltIstLinkDown"
+        $OS_OsiLayer = 2
+    
+    case "19": ### rcSmltLinkUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnSmltLinkUp"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcMltEntry." + $rcMltId
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "20": ### rcSmltLinkDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnSmltLinkDown"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcMltEntry." + $rcMltId
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "21": ### rcChasFanUp
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100043
+        $OS_X733SpecificProb = "rcChasFanUp"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "rcChasFanEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "22": ### rcPasswordChange
+
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100092
+        $OS_X733SpecificProb = "rcPasswordChange"
+        $OS_OsiLayer = 0
+    
+    case "23": ### rcEmError
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rcEmError"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "25": ### rcPcmciaCardRemoved
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100029
+        $OS_X733SpecificProb = "rcPcmciaCardRemoved"
+        $OS_OsiLayer = 0
+    
+    case "26": ### rcSmartCpldTimerFired
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rcSmartCpldTimerFired"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "27": ### rcCardCpldNotUpDate
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 100022
+        $OS_X733SpecificProb = "rcCardCpldNotUpDate"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "28": ### rcIgapLogFileFull
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3007
+        $OS_X733SpecificProb = "rcIgapLogFileFull"
+        $OS_OsiLayer = 0
+    
+    case "29": ### rcCpLimitShutDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcCpLimitShutDown"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "30": ### rcSshServerEnabled
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3005
+        $OS_X733SpecificProb = "rcSshServerEnabled"
+        $OS_OsiLayer = 7
+    
+    case "31": ### rcSshServerDisabled
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3005
+        $OS_X733SpecificProb = "rcSshServerDisabled"
+        $OS_OsiLayer = 7
+    
+    case "32": ### rcSshSessionLogin
+
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100091
+        $OS_X733SpecificProb = "rcSshSessionLogin"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "Remote Host: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    case "33": ### rcSshSessionLogout
+
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100091
+        $OS_X733SpecificProb = "rcSshSessionLogout"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "Remote Host: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    case "34": ### rcSshUnauthorizedAccess
+
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100091
+        $OS_X733SpecificProb = "rcSshUnauthorizedAccess"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "Remote Host: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    case "35": ### rcHaCpuState
+    
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "rcHaCpuState"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "36": ### rcInsufficientMemory
+    
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3008
+        $OS_X733SpecificProb = "rcInsufficientMemory"
+        $OS_OsiLayer = 0
+
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "37": ### rcSaveConfigAction
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3011
+        $OS_X733SpecificProb = "rcSaveConfigAction"
+        $OS_OsiLayer = 0
+    
+    case "38": ### rcLoopDetectOnPort
+    
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcLoopDetectOnPort"
+        $OS_OsiLayer = 2
+
+        $OS_LocalPriObj = "rcPortEntry." + $2
+        $OS_LocalRootObj = "ifEntry." + $2
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "39": ### rcnbgpEstablished
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcnbgpEstablished"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalNodeAlias = @NodeAlias
+        $OS_LocalPriObj = "rcIpBgpPeerEntry." + $rcIpBgpPeerIpAddress
+        $OS_LocalRootObj = "bgpPeerEntry." + $rcIpBgpPeerIpAddress
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $rcIpBgpPeerIpAddress
+        
+    case "40": ### rcnbgpBackwardTransition
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcnbgpBackwardTransition"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalNodeAlias = @NodeAlias
+        $OS_LocalPriObj = "rcIpBgpPeerEntry." + $rcIpBgpPeerIpAddress
+        $OS_LocalRootObj = "bgpPeerEntry." + $rcIpBgpPeerIpAddress
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+        $OS_RemoteNodeAlias = $rcIpBgpPeerIpAddress
+
+    case "41": ### rcAggLinkUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcAggLinkUp"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcMltEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "42": ### rcAggLinkDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcAggLinkDown"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcMltEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "43": ### rcIgmpNewGroupMember
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcIgmpNewGroupMember"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "rcIgmpGroupEntry." + $2 + "." + $4
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "44": ### rcIgmpLossGroupMember
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcIgmpLossGroupMember"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "rcIgmpGroupEntry." + $2 + "." + $1
+        $OS_LocalRootObj = "ifEntry." + $4
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "45": ### rcIgmpNewQuerier
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcIgmpNewQuerier"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "igmpInterfaceEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "46": ### rcIgmpQuerierChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcIgmpQuerierChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "igmpInterfaceEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "47": ### rcDvmrpIfStateChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcDvmrpIfStateChange"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "dvmrpInterfaceEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "48": ### rcDvmrpNewNbrChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcDvmrpNewNbrChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "dvmrpNeighborEntry." + $1 + "." + $2
+        $OS_LocalRootObj = "ifIndex." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "49": ### rcDvmrpNbrLossChange
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcDvmrpNbrLossChange"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "dvmrpNeighborEntry." + $1 + "." + $2
+        $OS_LocalRootObj = "ifIndex." + $1
+        $VAR_RelateLRO2LPO = 3
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "56": ### rcTlsWatermarkTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2005
+        $OS_X733SpecificProb = "rcTlsWatermarkTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcTlsTdiEndptEntry." + $1 + "." + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "57": ### rcTdcTestResultTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2005
+        $OS_X733SpecificProb = "rcTdcTestResultTrap"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "rcTlsTestTdcEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "58": ### rcTdcTestRttExceedTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2001
+        $OS_X733SpecificProb = "rcTdcTestRttExceedTrap"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "rcTlsTestTdcEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "59": ### rcnFdbProtectViolation
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnFdbProtectViolation"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "60": ### rcnLogMsgControl
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3005
+        $OS_X733SpecificProb = "rcnLogMsgControl"
+        $OS_OsiLayer = 7
+    
+    case "61": ### rcnSaveConfigFile
+
+        $OS_X733EventType = 3
+        $OS_X733ProbableCause = 3011
+        $OS_X733SpecificProb = "rcnSaveConfigFile"
+        $OS_OsiLayer = 7
+        
+        $OS_LocalPriObj = "File: " + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "62": ### rcnDNSRequestResponse
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcnDNSRequestResponse"
+        $OS_OsiLayer = 4
+        
+        $OS_LocalPriObj = "DNS Server: " + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    case "63": ### rcnDuplicateIpAddress
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1008
+        $OS_X733SpecificProb = "rcnDuplicateIpAddress"
+        $OS_OsiLayer = 3
+        
+        $OS_LocalPriObj = "IP: " + $1 + ", MAC: " + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+    
+    case "64": ### rcnLoopDetectPortDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnLoopDetectPortDown"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+        
+    case "66": ### rcnTlsPortWatermarkTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2005
+        $OS_X733SpecificProb = "rcnTlsPortWatermarkTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "67": ### rcnLoopDetectMacDiscard
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnLoopDetectMacDiscard"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "68": ### rcnAutoRecoverPort
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnAutoRecoverPort"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "69": ### rcnAutoRecoverLoopDetectedPort
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnAutoRecoverLoopDetectedPort"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "70": ### rcnExtCpLimitShutDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnExtCpLimitShutDown"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "71": ### rcnExtCpLimitSopCongestion
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1009
+        $OS_X733SpecificProb = "rcnExtCpLimitSopCongestion"
+        $OS_OsiLayer = 2
+        
+    case "73": ### rcnTlsUniIpServiceWatermarkTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2005
+        $OS_X733SpecificProb = "rcnTlsUniIpServiceWatermarkTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcTlsUniIpServiceEntry." + $1 + "." + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "80": ### rcnVlacpPortDown
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnVlacpPortDown"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "81": ### rcnVlacpPortUp
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnVlacpPortUp"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "82": ### rcnExtCpLimitShutDownNormal
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1011
+        $OS_X733SpecificProb = "rcnExtCpLimitShutDownNormal"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "83": ### rcnEapMacIntrusion
+
+        $OS_X733EventType = 9
+        $OS_X733ProbableCause = 100085
+        $OS_X733SpecificProb = "rcnEapMacIntrusion"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "Port: " + $2 + ", MAC: " + $4
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "84": ### rcnInterCpuCommStatus
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1009
+        $OS_X733SpecificProb = "rcnInterCpuCommStatus"
+        $OS_OsiLayer = 0
+        
+        $OS_LocalPriObj = "rc2kCardEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "88": ### rcnBanRingStateChangeTrap
+
+        $OS_X733EventType = 1
+        $OS_X733ProbableCause = 1009
+        $OS_X733SpecificProb = "rcnBanRingStateChangeTrap"
+        $OS_OsiLayer = 1
+        
+        $OS_LocalPriObj = "rcBanRingEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "89": ### rcPlugOptModTemperatureStatusTrap
+
+        $OS_X733EventType = 5
+        $OS_X733ProbableCause = 5001
+        $OS_X733SpecificProb = "rcPlugOptModTemperatureStatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "90": ### rcPlugOptModVoltageStatusTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4001
+        $OS_X733SpecificProb = "rcPlugOptModVoltageStatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "91": ### rcPlugOptModBiasStatusTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "rcPlugOptModBiasStatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "92": ### rcPlugOptModTxPowerStatusTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4007
+        $OS_X733SpecificProb = "rcPlugOptModTxPowerStatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "93": ### rcPlugOptModRxPowerStatusTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4006
+        $OS_X733SpecificProb = "rcPlugOptModRxPowerStatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "94": ### rcPlugOptModAux1StatusTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "rcPlugOptModAux1StatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "95": ### rcPlugOptModAux2StatusTrap
+
+        $OS_X733EventType = 4
+        $OS_X733ProbableCause = 4010
+        $OS_X733SpecificProb = "rcPlugOptModAux2StatusTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcPortEntry." + $1
+        $OS_LocalRootObj = "ifEntry." + $1
+        $VAR_RelateLRO2LPO = 2
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "104": ### rcTlsTdiWatermarkTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2005
+        $OS_X733SpecificProb = "rcTlsTdiWatermarkTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "rcTlsTdiEntry." + $1
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    case "105": ### rcTlsIsidWatermarkTrap
+
+        $OS_X733EventType = 2
+        $OS_X733ProbableCause = 2005
+        $OS_X733SpecificProb = "rcTlsIsidWatermarkTrap"
+        $OS_OsiLayer = 2
+        
+        $OS_LocalPriObj = "I-SID: " + $1 + ", Slot: " + $2
+        $OS_LocalRootObj = $OS_LocalPriObj
+        $VAR_RelateLRO2LPO = 1
+        $VAR_RelateLRO2LSO = 0
+        $VAR_RelateLSO2LPO = 0
+
+    default:
+}
+
+log(DEBUG, "<<<<< Leaving... rapidcity-RAPID-CITY.adv.include.snmptrap.rules >>>>>")

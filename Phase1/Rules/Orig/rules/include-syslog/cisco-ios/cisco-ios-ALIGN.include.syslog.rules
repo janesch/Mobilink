@@ -1,0 +1,112 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-ALIGN.include.syslog.rules 1.2
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.2 - Added basic debug logging.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules 
+#
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "ALIGN": ### Memory optimization in Reduced Instruction-Set Computer (RISC) processor
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-ALIGN.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "CORRECT":
+    
+            ##########
+            # A software component within the router needs memory
+            # optimization.
+            #
+            # %ALIGN-3-CORRECT: Alignment correction made at [hex]
+            # [chars]ing [hex]
+            ##########
+    
+            @AlertKey = extract($Message, "made at (.*) [A-Z|a-z]")
+    
+        case "FULL":
+    
+            ##########
+            # The router identified more software components in
+            # need of memory optimization than it can record.
+            #
+            # %ALIGN-3-FULL: Alignment log is full - no new entries
+            # will be recorded
+            ##########
+    
+            @AlertKey = ""
+    
+        case "READEXCEPTION":
+    
+            ##########
+            # In ls1010, read access failures prevent the router
+            # from reloading. The failures can be caused by either
+            # a bad register value in release 3.3 of the ASP or a
+            # problem in the hardware.
+            #
+            # %ALIGN-3-READEXCEPTION: Warning : read accees failed
+            # at [chars], still continuing
+            ##########
+    
+            @AlertKey = extract($Message, "at (.*),? still")
+    
+        case "SPURIOUS":
+    
+            ##########
+            # An error was identified (and temporarily corrected)
+            # within a software component in the router.
+            #
+            # %ALIGN-3-SPURIOUS: Spurious memory access made at
+            # [hex] reading [hex]
+            ##########
+    
+            @AlertKey = "Memory Address: " + extract($Message, "at (.*) reading")
+    
+        case "TRACE":
+    
+            ##########
+            # This tracing message provides information about a
+            # previous ALIGN error.
+            #
+            # %ALIGN-3-TRACE: -Traceback= [hex] [hex] [hex] [hex]
+            # [hex] [hex] [hex] [hex]
+            ##########
+    
+            discard
+    
+        case "TRACEX":
+    
+            ##########
+            # This tracing message provides information about a
+            # memory optimization error that involves the RISC
+            # processor.
+            #
+            # %ALIGN-3-TRACEX: [chars]
+            ##########
+    
+            @AlertKey = ""
+
+            $CLARIFIER = $Message
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-ALIGN.include.syslog.rules >>>>>")

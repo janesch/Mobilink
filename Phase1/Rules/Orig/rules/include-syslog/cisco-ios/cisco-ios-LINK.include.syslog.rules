@@ -1,0 +1,497 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    cisco-ios-LINK.include.syslog.rules 1.3
+#    2005/03/07 Robert Cowart
+#
+###############################################################################
+###############################################################################
+#
+# 1.3 - Added basic debug logging.
+#
+# 1.2 - Improved logic for hanling of different states in CHANGED and UPDOWN
+#       messages.
+#
+# 1.1 - Modified to support default Cisco IOS message handling.
+#
+#     - Modified to support MOI fields in OMNIbus 3.6
+#
+# 1.0 - Initial Release based on logic extracted from
+#       cisco-ios.include.syslog.rules
+# 
+#     - Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#       
+###############################################################################
+
+case "LINK": ### Data Link
+
+    log(DEBUG, "<<<<< Entering... cisco-ios-LINK.include.syslog.rules >>>>>")
+
+    switch($Mnemonic)
+    {
+        case "BADENCAP":
+    
+            ##########
+            # The lower-level software was unable to write a MAC header for a
+            # datagram. A configuration error has probably occurred.
+            #
+            # %LINK-3-BADENCAP: Interface [chars], Bad encapsulation code
+            # ([dec])
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? Bad")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "BADMACREG":
+    
+            ##########
+            # An attempt to map a network level address to a MAC level address
+            # has failed.
+            #
+            # %LINK-3-BADMACREG: Interface [chars], non-existent MACADDR
+            # registry for link [dec]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? non")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Link: " + extract($Message, "for link ([0-9]+)$")
+    
+        case "BADQID":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-4-BADQID: Interface [chars], bad output queue ID specified
+            # ([dec]). Packet dropped
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? bad")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "BADVCALL":
+    
+            ##########
+            # An internal software error has occurred. The high-level system
+            # code tried to use an unimplemented entry point with the virtual
+            # IDB driver.
+            #
+            # %LINK-2-BADVCALL: Interface [chars], undefined entry point
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? undefined")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "BERTSTATUS":
+    
+            ##########
+            # BERT has been completed for this interface.
+            #
+            # %LINK-6-BERTSTATUS: Interface [chars], [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "BOGUSENCAP":
+    
+            ##########
+            # A serial interface has been configured with an unknown
+            # encapsulation.
+            #
+            # %LINK-3-BOGUSENCAP: Interface [chars], bad encapsulation in
+            # idb->enctype = [hex]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? bad")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "BOOTP":
+    
+            ##########
+            # An interface IP address was successfully learned dynamically
+            # through BOOTP. The first address specified in the message is the
+            # learned IP address. The second IP address specified in the
+            # message is the IP address of the BOOTP server that provided the
+            # information.
+            #
+            # %LINK-5-BOOTP: [chars] address [IP_address], resolved by
+            # [IP_address]
+            ##########
+
+            $MOI_Local = rtrim(extract($Message, "address ([^, ]+),? resolved"))
+            $MOIType_Local = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+            
+            $CLARIFIER = extract($Message, "(.*) address [0-9]+")
+    
+        case "BRIDGECONFLICT":
+    
+            ##########
+            # An FCIT running in nonencapsulating transparent mode has detected
+            # an FDDI bridge running in encapsulation mode on the same fiber.
+            # This condition indicates an unstable situation and should be
+            # corrected. The incoming interface is displayed, along with the
+            # FDDI MAC address in standard form.
+            #
+            # %LINK-4-BRIDGECONFLICT: Interface [chars], encapsulated BPDU
+            # recvd from [enet]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? encapsulated")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "CHANGED":
+    
+            ##########
+            # The interface hardware has changed state.
+            #
+            # %LINK-5-CHANGED: Interface [chars], changed state to [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? changed")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "LINK-Status"
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = rtrim(extract($Message, "to (.*)$"))
+            
+            switch($CLARIFIER)
+            {
+                case "administratively up":
+                    $SEV_KEY = $OS_EventId + "__adminup"
+                    @Severity = 1
+                    @Type = 2
+                case "administratively down":
+                    $SEV_KEY = $OS_EventId + "__admindown"
+                    @Severity = 2
+                    @Type = 1
+                case "going down":
+                    $SEV_KEY = $OS_EventId + "__goingdown"
+                    @Severity = 2
+                    @Type = 11
+                case "initializing":
+                    $SEV_KEY = $OS_EventId + "__initializing"
+                    @Severity = 2
+                    @Type = 12
+                default:
+            }
+    
+        case "COMPREG":
+    
+            ##########
+            # A software or hardware error has occurred.
+            #
+            # %LINK-3-COMPREG: Interface [chars], non-existent (de)compression
+            # registry. Packet dropped
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? non")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "EMPTYPAK":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-3-EMPTYPAK: Interface [chars], empty packet dequeued;
+            # linktype [dec], queue [dec].
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? empty")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", Link Type: " + extract($Message, " linktype ([0-9]+),? queue") + ", Queue " + extract($Message, " queue ([0-9]+)\.")
+    
+#        case "ERROR":
+#    
+#            ##########
+#            # 
+#            ##########
+#    
+#            $MOI_Local = extract($Message, "Interface ([^, ]+),? ")
+#            $MOIType_Local = "interface"
+#            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+#            
+#            @AlertKey = "Interface: " + $MOI_Local + ", Link Type: " + extract($Message, " linktype ([0-9]+),? queue") + ", Queue " + extract($Message, " queue ([0-9]+)\.")
+    
+        case "FDDISTAT":
+    
+            ##########
+            # A state change has occurred on the FDDI ring.
+            #
+            # %LINK-4-FDDISTAT: Interface [chars], FDDI state [chars] detected
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? FDDI")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "IDBLISCRE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-3-IDBLISCRE: Unable to create [chars] interface list
+            ##########
+    
+            $MOI_Local = extract($Message, "create (.*) interface")
+            
+            @AlertKey = "List: " + $MOI_Local
+ 
+        case "IDBLISINS":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-3-IDBLISINS: Not able to insert interface [chars] into
+            # [chars] list
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]*),? into")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local + ", List: " + extract($Message, "into (.*) list")
+    
+        case "INTVULN":
+    
+            ##########
+            # An internal software error has occurred. The high-level system
+            # code has attempted to call this routine with interrupts enabled.
+            #
+            # %LINK-2-INTVULN: In critical region with interrupt level=[dec],
+            # intfc=[chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "LINEST":
+    
+            ##########
+            # An internal software inconsistency has occurred.
+            #
+            # %LINK-2-LINEST: No linestate vector for [chars]
+            ##########
+    
+            @AlertKey = rtrim(extract($Message, " for (.*)$"))
+    
+        case "LOOPSTATUS":
+    
+            ##########
+            # The interface has entered or exited loopback.
+            #
+            # %LINK-5-LOOPSTATUS: Interface [chars], [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]*),? ")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "Interface [^, ]+,? (.*)$")
+
+        case "NOMAC":
+    
+            ##########
+            # An addressing inconsistency has occurred.
+            #
+            # %LINK-4-NOMAC: A random default MAC address of [enet] has been
+            # chosen. Ensure that this address is unique, or specify MAC
+            # addresses for commands (such as 'novell routing') that allow the
+            # use of this address as a default.
+            ##########
+    
+            @AlertKey = extract($Message, " address of (.*) has ")
+    
+        case "NOSOURCE":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-2-NOSOURCE: Source idb not set
+            ##########
+    
+            @AlertKey = ""
+    
+        case "NOSSB":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-4-NOSSB: SSB deleted with timer running
+            ##########
+    
+            @AlertKey = ""
+    
+        case "RARP":
+    
+            ##########
+            # RARP has resolved an IP address.
+            #
+            # %LINK-5-RARP: [chars] address [IP_address], resolved by
+            # [IP_address]
+            ##########
+    
+            $MOI_Local = rtrim(extract($Message, "address ([^, ]+),? resolved"))
+            $MOIType_Local = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+            
+            $CLARIFIER = extract($Message, "(.*) address [0-9]+")
+    
+        case "REENTER":
+    
+            ##########
+            # An internal software error has occurred. The system code has
+            # attempted to access a critical data structure that was already in
+            # use.
+            #
+            # %LINK-0-REENTER: Fatal reentrancy, level=[dec], intfc=[chars]
+            ##########
+    
+            @AlertKey = ""
+    
+        case "REMLOOP":
+    
+            ##########
+            # The interface has entered or exited a remote loopback.
+            #
+            # %LINK-5-REMLOOP: Interface [chars], remote loop [chars] [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? remote")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = rtrim(extract($Message, "remote loop (.*)$"))
+    
+        case "SLARP":
+    
+            ##########
+            # The SLARP has resolved an IP address.
+            #
+            # %LINK-5-SLARP: [chars] address [IP_address], resolved by
+            # [IP_address]
+            ##########
+    
+            $MOI_Local = rtrim(extract($Message, "address ([^, ]+),? resolved"))
+            $MOIType_Local = "ipaddress"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "IP Address: " + $MOI_Local
+            @Severity = 1
+            @Type = 2
+            
+            $CLARIFIER = extract($Message, "(.*) address [0-9]+")
+    
+        case "TOOBIG":
+    
+            ##########
+            # An internal software error has occurred.
+            #
+            # %LINK-4-TOOBIG: Interface [chars], Output packet size of [dec]
+            # bytes too big
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? Output")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "TOOSMALL":
+    
+            ##########
+            # An output packet has been detected that was smaller than the
+            # minimum allowable datagram size. An error in another driver or an
+            # error in the system software probably triggered this error
+            # message.
+            #
+            # %LINK-3-TOOSMALL: Interface [chars], Output runt packet of [dec]
+            # bytes
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? Output")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertKey = "Interface: " + $MOI_Local
+    
+        case "UPDOWN":
+    
+            ##########
+            # The interface hardware has gone either up or down.
+            #
+            # %LINK-3-UPDOWN: Interface [chars], changed state to [chars]
+            ##########
+    
+            $MOI_Local = extract($Message, "Interface ([^, ]+),? changed")
+            $MOIType_Local = "interface"
+            include "$NC_RULES_HOME/include-syslog/cisco-ios/cisco-ios-AssignMOI.include.syslog.rules"
+            
+            @AlertGroup = "LINK-Status"
+            @AlertKey = "Interface: " + $MOI_Local
+            
+            $CLARIFIER = extract($Message, "to ([A-Za-z]+)")
+            
+            switch($CLARIFIER)
+            {
+                case "DOWN"|"down"|"Down":
+                    $SEV_KEY = $OS_EventId + "__down"
+                    @Severity = 3
+                    @Type = 1
+                case "UP"|"up"|"Up":
+                    $SEV_KEY = $OS_EventId + "__up"
+                    @Severity = 1
+                    @Type = 2
+                default:
+            }
+    
+        default:
+        
+            $UseCiscoIosDefaults = 1
+    }
+
+log(DEBUG, "<<<<< Leaving... cisco-ios-LINK.include.syslog.rules >>>>>")

@@ -1,0 +1,418 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#
+#    (C) Copyright IBM Corp. 2006
+#    All Rights Reserved
+#
+#    latitude-CISCO-LATITUDE-MIB.include.snmptrap.rules 1.0
+#    2006/05/31 Rajyalakshmi Reddy
+#
+###############################################################################
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/Omnibus 3.x and 7
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#
+#          -  CISCO-LATITUDE-MIB
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.7185.3.1.3": ### Cisco (Formerly Latitude) MeetingPlace - Notifications from CISCO-LATITUDE-MIB (20040816)
+
+    log(DEBUG, "<<<<< Entering... latitude-CISCO-LATITUDE-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Cisco-MeetingPlace"
+    @Class = "40057"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### mpT1Down
+
+            $OS_EventId = "SNMPTRAP-latitude-CISCO-LATITUDE-MIB-mpT1Down"
+
+            @AlertGroup = "MeetingPlace Telephony Port Status"
+            @AlertKey = ""
+            @Summary = "MeetingPlace Telephony Port Problem, T1 Down"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+                    
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+        case "2": ### mpGWSimAlarm
+            
+            $OS_EventId = "SNMPTRAP-latitude-CISCO-LATITUDE-MIB-mpGWSimAlarm"
+
+            @AlertGroup = "MeetingPlace Gateway Status"
+            @AlertKey = ""
+            @Summary = "MeetingPlace Gateway Alarm"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+                    
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap 
+
+
+        case "3": ### mpMajHwAlarm
+
+            ##########
+            # $1 = mpExCode 
+            # $2 = mpSysUnit 
+            # $3 = mpHwDev 
+            # $4 = mpHwUnit 
+            # $5 = mpHwSlot 
+            # $6 = mpHwPort 
+            ##########
+
+            $mpExCode = lookup($1, mpExCode) + " ( " + $1 + " )"            
+            $mpSysUnit = $2            
+            $mpHwDev = lookup($3, mpHwDev) 
+            $mpHwUnit = $4            
+            $mpHwSlot = $5            
+            $mpHwPort = $6            
+
+            $OS_EventId = "SNMPTRAP-latitude-CISCO-LATITUDE-MIB-mpMajHwAlarm"
+
+            @AlertGroup = "MeetingPlace " + $mpHwDev + " Status"
+            switch($1)
+            {
+                case "45176": ### EX_SPAN_RED_ALARM - Red Alarm detected on this T1 span ([%d], card %d, [%d], span %d)
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4 + ", Slot: " + $5 + ", Span: " + $6
+                    @Summary = "Red Alarm Detected on T1 Span"
+                case "1179906": ### EX_MPDATASVC_STATUSNOTRESP - WebPub Data Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "WebPub Data Service Not Responding"
+                case "1179970": ### EX_MPAGENT_STATUSNOTRESP - WebPub Agent (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "WebPub Agent Not Responding"
+                case "1180034": ### EX_MPAUDIO_STATUSNOTRESP - WebPub Audio Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "WebPub Audio Service Not Responding"
+                case "1180162": ### EX_SMTP_STATUSNOTRESP - SMTP Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "SMTP Gateway Not Responding"
+                case "1180674": ### EX_OUTLOOK_STATUSNOTRESP - Outlook Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "Outlook Gateway Not Responding"
+                case "1180930": ### EX_NOTES_STATUSNOTRESP - Notes Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "Notes Gateway Not Responding"
+                case "1180994": ### EX_MPNOTIFY_STATUSNOTRESP - MPNotify Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "MPNotify Service Not Responding"
+                case "1181186": ### EX_DATACONF_STATUSNOTRESP - DataConf Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf Gateway Not Responding"
+                case "1181250": ### EX_DATACONFGCC_STATUSNOTRESP - DataConf GCC Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf GCC Service Not Responding"
+                case "1181314": ### EX_DATACONFMCS_STATUSNOTRESP - DataConf MCS Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf MCS Service Not Responding"
+                case "1181378": ### EX_DATACONFSAMETIME_STATUSNOTRESP - DataConf Sametime Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf Sametime Service Not Responding"
+                case "1181506": ### EX_VOIPMPSTREAM_STATUSNOTRESP - VoIP MPStream Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "VoIP MPStream Service Not Responding"
+                case "1181698": ### EX_DCDIR_STATUSNOTRESP - MP Directory Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "MP Directory Service Not Responding"
+                case "1183490": ### EX_GWSIMAGENT_STATUSNOTRESP - Gateway SIM Agent (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "Gateway SIM Agent Not Responding"
+                case "": ### EX_UNITFAULT - Communication lost with unit %d An active unit was down
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4 + ", Slot: " + $5 + ", Port: " + $6
+                    @Summary = "Unit Communication Lost"
+                case "": ### EX_CRASH - System crashed: power fail, reset, or watchdog timer
+                    @AlertKey = "Server: " + $2
+                    @Summary = "System Crashed: Power Fail, Reset, or Watchdog Timer"
+                default:
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4 + ", Slot: " + $5 + ", Port: " + $6
+                    @Summary = @AlertGroup + " Major"
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+                    
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $mpHwDev = $mpHwDev + " ( " + $3 + " )"           
+            details($mpExCode,$mpSysUnit,$mpHwDev,$mpHwUnit,$mpHwSlot,$mpHwPort)
+
+        case "4": ### mpMinHwAlarm
+
+            ##########
+            # $1 = mpExCode 
+            # $2 = mpSysUnit 
+            # $3 = mpHwDev 
+            # $4 = mpHwUnit 
+            # $5 = mpHwSlot 
+            # $6 = mpHwPort 
+            ##########
+
+            $mpExCode = lookup($1, mpExCode) + " ( " + $1 + " )"            
+            $mpSysUnit = $2            
+            $mpHwDev = lookup($3, mpHwDev) 
+            $mpHwUnit = $4            
+            $mpHwSlot = $5            
+            $mpHwPort = $6            
+
+            $OS_EventId = "SNMPTRAP-latitude-CISCO-LATITUDE-MIB-mpMinHwAlarm"
+
+            @AlertGroup = "MeetingPlace " + $mpHwDev + " Status"
+            switch($1)
+            {
+                case "45176": ### EX_SPAN_RED_ALARM - Red Alarm detected on this T1 span ([%d], card %d, [%d], span %d)
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4 + ", Slot: " + $5 + ", Span: " + $6
+                    @Summary = "Red Alarm Detected on T1 Span"
+                case "1179906": ### EX_MPDATASVC_STATUSNOTRESP - WebPub Data Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "WebPub Data Service Not Responding"
+                case "1179970": ### EX_MPAGENT_STATUSNOTRESP - WebPub Agent (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "WebPub Agent Not Responding"
+                case "1180034": ### EX_MPAUDIO_STATUSNOTRESP - WebPub Audio Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "WebPub Audio Service Not Responding"
+                case "1180162": ### EX_SMTP_STATUSNOTRESP - SMTP Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "SMTP Gateway Not Responding"
+                case "1180674": ### EX_OUTLOOK_STATUSNOTRESP - Outlook Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "Outlook Gateway Not Responding"
+                case "1180930": ### EX_NOTES_STATUSNOTRESP - Notes Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "Notes Gateway Not Responding"
+                case "1180994": ### EX_MPNOTIFY_STATUSNOTRESP - MPNotify Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "MPNotify Service Not Responding"
+                case "1181186": ### EX_DATACONF_STATUSNOTRESP - DataConf Gateway (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf Gateway Not Responding"
+                case "1181250": ### EX_DATACONFGCC_STATUSNOTRESP - DataConf GCC Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf GCC Service Not Responding"
+                case "1181314": ### EX_DATACONFMCS_STATUSNOTRESP - DataConf MCS Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf MCS Service Not Responding"
+                case "1181378": ### EX_DATACONFSAMETIME_STATUSNOTRESP - DataConf Sametime Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "DataConf Sametime Service Not Responding"
+                case "1181506": ### EX_VOIPMPSTREAM_STATUSNOTRESP - VoIP MPStream Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "VoIP MPStream Service Not Responding"
+                case "1181698": ### EX_DCDIR_STATUSNOTRESP - MP Directory Service (Unit %d) Not Responding
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4
+                    @Summary = "MP Directory Service Not Responding"
+                case "": ### EX_UNITFAULT - Communication lost with unit %d An active unit was down
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4 + ", Slot: " + $5 + ", Port: " + $6
+                    @Summary = "Unit Communication Lost"
+                case "": ### EX_CRASH - System crashed: power fail, reset, or watchdog timer
+                    @AlertKey = "Server: " + $2
+                    @Summary = "System Crashed: Power Fail, Reset, or Watchdog Timer"
+                default:
+                    @AlertKey = "Server: " + $2 + ", HW Unit: " + $4 + ", Slot: " + $5 + ", Port: " + $6
+                    @Summary = @AlertGroup + " Minor"
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+                    
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+                    
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            $mpHwDev = $mpHwDev + " ( " + $3 + " )"           
+            details($mpExCode,$mpSysUnit,$mpHwDev,$mpHwUnit,$mpHwSlot,$mpHwPort)
+
+
+        case "5": ### mpMajSwAlarm
+
+            ##########
+            # $1 = mpExCode 
+            # $2 = mpSysUnit 
+            # $3 = mpAlarmDesc 
+            ##########
+
+            $mpExCode = lookup($1, mpExCode) + " ( " + $1 + " )"            
+            $mpSysUnit = $2            
+            $mpAlarmDesc = $3
+
+            $OS_EventId = "SNMPTRAP-latitude-CISCO-LATITUDE-MIB-mpMajSwAlarm"
+
+            @AlertGroup = "MeetingPlace Software Status"
+            @AlertKey = "Server: " + $2
+            switch($1)
+            {
+                case "45176": ### EX_SPAN_RED_ALARM - Red Alarm detected on this T1 span ([%d], card %d, [%d], span %d)
+                    @Summary = "Red Alarm Detected on T1 Span"
+                case "1179906": ### EX_MPDATASVC_STATUSNOTRESP - WebPub Data Service (Unit %d) Not Responding
+                    @Summary = "WebPub Data Service Not Responding"
+                case "1179970": ### EX_MPAGENT_STATUSNOTRESP - WebPub Agent (Unit %d) Not Responding
+                    @Summary = "WebPub Agent Not Responding"
+                case "1180034": ### EX_MPAUDIO_STATUSNOTRESP - WebPub Audio Service (Unit %d) Not Responding
+                    @Summary = "WebPub Audio Service Not Responding"
+                case "1180162": ### EX_SMTP_STATUSNOTRESP - SMTP Gateway (Unit %d) Not Responding
+                    @Summary = "SMTP Gateway Not Responding"
+                case "1180674": ### EX_OUTLOOK_STATUSNOTRESP - Outlook Gateway (Unit %d) Not Responding
+                    @Summary = "Outlook Gateway Not Responding"
+                case "1180930": ### EX_NOTES_STATUSNOTRESP - Notes Gateway (Unit %d) Not Responding
+                    @Summary = "Notes Gateway Not Responding"
+                case "1180994": ### EX_MPNOTIFY_STATUSNOTRESP - MPNotify Service (Unit %d) Not Responding
+                    @Summary = "MPNotify Service Not Responding"
+                case "1181186": ### EX_DATACONF_STATUSNOTRESP - DataConf Gateway (Unit %d) Not Responding
+                    @Summary = "DataConf Gateway Not Responding"
+                case "1181250": ### EX_DATACONFGCC_STATUSNOTRESP - DataConf GCC Service (Unit %d) Not Responding
+                    @Summary = "DataConf GCC Service Not Responding"
+                case "1181314": ### EX_DATACONFMCS_STATUSNOTRESP - DataConf MCS Service (Unit %d) Not Responding
+                    @Summary = "DataConf MCS Service Not Responding"
+                case "1181378": ### EX_DATACONFSAMETIME_STATUSNOTRESP - DataConf Sametime Service (Unit %d) Not Responding
+                    @Summary = "DataConf Sametime Service Not Responding"
+                case "1181506": ### EX_VOIPMPSTREAM_STATUSNOTRESP - VoIP MPStream Service (Unit %d) Not Responding
+                    @Summary = "VoIP MPStream Service Not Responding"
+                case "1181698": ### EX_DCDIR_STATUSNOTRESP - MP Directory Service (Unit %d) Not Responding
+                    @Summary = "MP Directory Service Not Responding"
+                case "1183490": ### EX_GWSIMAGENT_STATUSNOTRESP - Gateway SIM Agent (Unit %d) Not Responding
+                    @Summary = "Gateway SIM Agent Not Responding"
+                case "": ### EX_UNITFAULT - Communication lost with unit %d An active unit was down
+                    @Summary = "Unit Communication Lost"
+                case "": ### EX_CRASH - System crashed: power fail, reset, or watchdog timer
+                    @Summary = "System Crashed: Power Fail, Reset, or Watchdog Timer"
+                default:
+                    @Summary = @AlertGroup + " Major"
+            }
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 4
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+                    
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($mpExCode,$mpSysUnit,$mpAlarmDesc)
+
+        case "6": ### mpMinSwAlarm
+
+            ##########
+            # $1 = mpExCode 
+            # $2 = mpSysUnit 
+            # $3 = mpAlarmDesc 
+            ##########
+
+            $mpExCode = lookup($1, mpExCode) + " ( " + $1 + " )"            
+            $mpSysUnit = $2            
+            $mpAlarmDesc = $3
+
+            $OS_EventId = "SNMPTRAP-latitude-CISCO-LATITUDE-MIB-mpMinSwAlarm"
+
+            @AlertGroup = "MeetingPlace Software Status"
+            @AlertKey = "Server: " + $2
+            switch($1)
+            {
+                case "45176": ### EX_SPAN_RED_ALARM - Red Alarm detected on this T1 span ([%d], card %d, [%d], span %d)
+                    @Summary = "Red Alarm Detected on T1 Span"
+                case "1179906": ### EX_MPDATASVC_STATUSNOTRESP - WebPub Data Service (Unit %d) Not Responding
+                    @Summary = "WebPub Data Service Not Responding"
+                case "1179970": ### EX_MPAGENT_STATUSNOTRESP - WebPub Agent (Unit %d) Not Responding
+                    @Summary = "WebPub Agent Not Responding"
+                case "1180034": ### EX_MPAUDIO_STATUSNOTRESP - WebPub Audio Service (Unit %d) Not Responding
+                    @Summary = "WebPub Audio Service Not Responding"
+                case "1180162": ### EX_SMTP_STATUSNOTRESP - SMTP Gateway (Unit %d) Not Responding
+                    @Summary = "SMTP Gateway Not Responding"
+                case "1180674": ### EX_OUTLOOK_STATUSNOTRESP - Outlook Gateway (Unit %d) Not Responding
+                    @Summary = "Outlook Gateway Not Responding"
+                case "1180930": ### EX_NOTES_STATUSNOTRESP - Notes Gateway (Unit %d) Not Responding
+                    @Summary = "Notes Gateway Not Responding"
+                case "1180994": ### EX_MPNOTIFY_STATUSNOTRESP - MPNotify Service (Unit %d) Not Responding
+                    @Summary = "MPNotify Service Not Responding"
+                case "1181186": ### EX_DATACONF_STATUSNOTRESP - DataConf Gateway (Unit %d) Not Responding
+                    @Summary = "DataConf Gateway Not Responding"
+                case "1181250": ### EX_DATACONFGCC_STATUSNOTRESP - DataConf GCC Service (Unit %d) Not Responding
+                    @Summary = "DataConf GCC Service Not Responding"
+                case "1181314": ### EX_DATACONFMCS_STATUSNOTRESP - DataConf MCS Service (Unit %d) Not Responding
+                    @Summary = "DataConf MCS Service Not Responding"
+                case "1181378": ### EX_DATACONFSAMETIME_STATUSNOTRESP - DataConf Sametime Service (Unit %d) Not Responding
+                    @Summary = "DataConf Sametime Service Not Responding"
+                case "1181506": ### EX_VOIPMPSTREAM_STATUSNOTRESP - VoIP MPStream Service (Unit %d) Not Responding
+                    @Summary = "VoIP MPStream Service Not Responding"
+                case "1181698": ### EX_DCDIR_STATUSNOTRESP - MP Directory Service (Unit %d) Not Responding
+                    @Summary = "MP Directory Service Not Responding"
+                case "1183490": ### EX_GWSIMAGENT_STATUSNOTRESP - Gateway SIM Agent (Unit %d) Not Responding
+                    @Summary = "Gateway SIM Agent Not Responding"
+                case "": ### EX_UNITFAULT - Communication lost with unit %d An active unit was down
+                    @Summary = "Unit Communication Lost"
+                case "": ### EX_CRASH - System crashed: power fail, reset, or watchdog timer
+                    @Summary = "System Crashed: Power Fail, Reset, or Watchdog Timer"
+                default:
+                    @Summary = @AlertGroup + " Minor"
+            }
+            if(!match($3, ""))
+            {
+                @Summary = @Summary + ", " + $3
+            }
+            @Summary = @Summary + "  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+                    
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap + " " + $1
+
+            details($mpExCode,$mpSysUnit,$mpAlarmDesc)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+##########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, latitude-CISCO-LATITUDE-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, latitude-CISCO-LATITUDE-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/latitude/latitude-CISCO-LATITUDE-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/latitude/latitude-CISCO-LATITUDE-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-common/load_include.rules"
+
+log(DEBUG, "<<<<< Leaving... latitude-CISCO-LATITUDE-MIB.include.snmptrap.rules >>>>>")

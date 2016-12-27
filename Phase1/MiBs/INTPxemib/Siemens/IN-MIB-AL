@@ -1,0 +1,408 @@
+
+        IN-MIB-AL DEFINITIONS ::= BEGIN 
+
+        IMPORTS
+                MODULE-IDENTITY, OBJECT-TYPE,
+                NOTIFICATION-TYPE, Counter32           FROM SNMPv2-SMI
+
+                TEXTUAL-CONVENTION, DisplayString      FROM SNMPv2-TC
+
+                enterprises                            FROM RFC1155-SMI
+
+                in, TiBoolean, inModules               FROM INC-MIB-C;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        --
+        -- Module Identity :
+        --
+
+        inInMibAL MODULE-IDENTITY
+                LAST-UPDATED "0104121000Z"
+                ORGANIZATION "Siemens AG"
+                CONTACT-INFO
+                         "        TMN/IN-Team
+                                  K.Schmidtke
+                          Postal: Siemens AG
+                                  Information and Communication Mobile
+                                  Otto-Hahn-Ring 6
+                                  D-81739 Muenchen
+                                  Germany
+                          E-mail: Klaus.Schmidtke@icn.siemens.de"
+         
+                DESCRIPTION
+                         "The MIB module describes the managed object
+                          types of additional NE's using the IN standard
+                          SNMP interface regarding alarm reporting."
+         
+                REVISION    "0104121000Z"
+                DESCRIPTION "Substituted openViewSourceName with inEtSourceName."
+
+                REVISION    "0012181400Z"
+                DESCRIPTION "Reduced size of inEtText and inEtParams."
+
+                REVISION    "0002281600Z"
+                DESCRIPTION "added inTaskTable and increased range for inEtErrID"
+         
+                REVISION    "9910201600Z"
+                DESCRIPTION "Shortened some identifier names."
+
+                REVISION    "9907271600Z"
+                DESCRIPTION "Further adaptations to TeMIP MIB loader."
+
+                REVISION    "9906171600Z"
+                DESCRIPTION "Adaptations to TeMIP MIB loader."
+
+                REVISION "9811091700Z"
+                DESCRIPTION "added object type inEtNeType"
+
+                REVISION "9810221600Z"
+                DESCRIPTION "added object type inNeType"
+
+                REVISION "9810161600Z"
+                DESCRIPTION "using inModules"
+
+                REVISION "9810011200Z"
+                DESCRIPTION "Added object type for the APS version."
+
+        ::= { inModules 100 } 
+
+        genericNE OBJECT IDENTIFIER ::= { in 1000 }
+
+        --
+        -- Textual conventions :
+        --
+
+        SequenceNumber ::= TEXTUAL-CONVENTION
+             STATUS       current
+             DESCRIPTION
+                     "The event sequence number type."
+             SYNTAX       INTEGER (1..2147483647)
+
+ 
+        -- Traps/Notifications in IN-MIB-AL
+
+        inTraps OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                   "Base OID for the notification OIDs
+                    of the generic Siemens IN NEs."
+        ::= { genericNE 0 }
+
+        -- groups in IN-MIB-AL
+
+        in99 OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                   "The authoritative identity of the generic Siemens 
+                    IN NE's based on UNIX as well as Win-NT maschines."
+        ::= { genericNE 99 }
+
+          -- the in99 group
+      
+          -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -- object types for subsystem EMV5 running 
+          -- on UNIX maschines only:
+          --
+          inProcessTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF ProcessTableEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                 "The processTable represents the NE entities that 
+                  created the events; used for subsystem EMV5 
+                  running on UNIX maschines only."
+          ::= { in99  1 }
+
+          inProcessTableEntry OBJECT-TYPE
+              SYNTAX  ProcessTableEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                 "A processTable entry - processIDIndex and cloneIDIndex 
+                  serve as indices to the processTable." 
+              INDEX   { inPtProcessIDIndex , inPtCloneIDIndex }
+          ::= { inProcessTable 1 }
+
+          ProcessTableEntry ::=
+              SEQUENCE {
+                  inPtProcessIDIndex
+                      INTEGER,
+                  inPtCloneIDIndex
+                      INTEGER,
+                  inPtName 
+                      DisplayString  
+              }
+
+          inPtProcessIDIndex OBJECT-TYPE
+              SYNTAX  INTEGER ( 1..65535)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION 
+                 "Identifier of the NE process that caused the event."
+          ::= { inProcessTableEntry 1 }
+
+          inPtCloneIDIndex OBJECT-TYPE
+              SYNTAX  INTEGER ( 1..65535)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION 
+                 "Identifier to distinguish multiple instances of 
+                  the same program."
+              ::= { inProcessTableEntry 2 }
+
+          inPtName OBJECT-TYPE
+              SYNTAX DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION 
+                 "Name of the process that caused the event." 
+          ::= { inProcessTableEntry 3 }
+
+          --
+          --            End of processTable of subsystem EMV5
+          -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -- object types for subsystem Safeguard running 
+          -- on Win-NT maschines only :
+          --
+
+          inSafeguard OBJECT-IDENTITY
+                STATUS current
+                DESCRIPTION
+                   "The base OID for the object types of the subsystem 
+                    Safeguard of the Win-NT based generic Siemens IN NE's."
+          ::= { in99 100 }
+
+          sgSafeguardPresent OBJECT-TYPE
+                SYNTAX TiBoolean
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the Safeguard NT service activitiy flag. false
+                   indicates, that the service is not running"
+          ::= { inSafeguard 1 }
+
+          sgSafeguardVersion OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..10 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION "contains the Safeguard (mib) version number"
+                ::= { inSafeguard 2 }
+
+          sgConfigurationFile OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..256 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the location of the safeguard.ini file. this is
+                   read at Safeguard startup time."
+          ::= { inSafeguard 3 }
+
+          sgLoggingFile OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..256 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                   "contains the location of the safeguard.log file. this is
+                    written at Safeguard run time."
+          ::= { inSafeguard 4 }        
+
+          sgServiceCount OBJECT-TYPE
+                SYNTAX INTEGER(0..65535)
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the number of entries in the service table. each
+                   entry of the service table stores information related to
+                   one service observed by safeguard.zero (0) indicates that
+                   there is no service to observe."
+          ::= { inSafeguard 5 }
+
+          sgServiceTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF ServiceEntry
+                MAX-ACCESS  not-accessible
+                STATUS current
+                DESCRIPTION 
+                  "contains an list of services observed by Safeguard."
+          ::= { inSafeguard 6 }        
+
+          sgServiceEntry OBJECT-TYPE
+                SYNTAX ServiceEntry
+                MAX-ACCESS  not-accessible
+                STATUS current
+                DESCRIPTION "refers to an entry in the service table."
+                INDEX { sgServiceIndex }
+          ::= { sgServiceTable 1 }
+
+          ServiceEntry ::= 
+                SEQUENCE { sgServiceIndex INTEGER,
+                           sgServiceName DisplayString,
+                           sgServiceFile DisplayString,
+                           sgServiceStatus INTEGER,
+                           sgServiceRestart INTEGER,
+                           sgRestartTrigger TiBoolean,
+                           sgRestartSuccess DisplayString,
+                           sgRestartsMax INTEGER,
+                           sgRestartsDone Counter32,
+                           sgRestartsGood Counter32
+                         }        
+
+          sgServiceIndex OBJECT-TYPE
+                SYNTAX INTEGER(0..65535)
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the SNMP table index used to access the service
+                   table entries. zero (0) indicates that there is no service
+                   in the service table."
+          ::= { sgServiceEntry 1 }        
+
+          sgServiceName OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..20 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the name of the service read from the
+                   safeguard.ini file. used as search criteria in NT service
+                   table. also used as a part of trap informations."
+          ::= { sgServiceEntry 2 }        
+
+          sgServiceFile OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..256 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the command name (full path and arguments) of the
+                   service read from the safeguard.ini file. used for restart
+                   of service."
+          ::= { sgServiceEntry 3 }        
+
+          sgServiceStatus OBJECT-TYPE
+                SYNTAX INTEGER { notstarted(0), started(1), running(2), stoped(3), 
+                                                unknown(4) }
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the service state. default is unknown(4). also
+                   used as a part of trap informations."
+          ::= { sgServiceEntry 4 }        
+
+          sgServiceRestart OBJECT-TYPE
+                SYNTAX INTEGER { diabled(0), automatic(1), manual(2) }
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the restart mode. default is automatic(1). in
+                   v1.0 only automatic(1) is implemented."
+          ::= { sgServiceEntry 5 }        
+
+          sgRestartTrigger OBJECT-TYPE
+                SYNTAX TiBoolean
+                MAX-ACCESS  read-write
+                STATUS current
+                DESCRIPTION 
+                  "contains an trigger to stop and restart services on agent
+                   side. true will stop and restart the service and resets
+                   this value to false. default is false. in v1.0 not 
+                   implemented."
+          ::= { sgServiceEntry 6 }        
+
+          sgRestartSuccess OBJECT-TYPE
+                SYNTAX DisplayString( SIZE( 1..19 ))
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains an string representation of the last successful
+                   restart time."
+          ::= { sgServiceEntry 7}        
+
+          sgRestartsMax OBJECT-TYPE
+                SYNTAX INTEGER(0..65535)
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the (max.) number of retries for restart before
+                   safeguard emits an trap. default is 1."
+          ::= { sgServiceEntry 8 }        
+
+          sgRestartsDone OBJECT-TYPE
+                SYNTAX Counter32
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the total number of restart operations. used for
+                   statistics."
+          ::= { sgServiceEntry 9 }        
+
+          sgRestartsGood OBJECT-TYPE
+                SYNTAX Counter32
+                MAX-ACCESS  read-only
+                STATUS current
+                DESCRIPTION 
+                  "contains the number of successful restart operations."
+          ::= { sgServiceEntry 10 }        
+
+          --
+          --          End of sgServiceTable of subsystem Safeguard
+          -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -- tasktable 
+          --
+          inTaskTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF TaskTableEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                 "The TaskTable is used only to generate the OID
+                  for inEtReportingObject and inEtFaultyObj."
+          ::= { in99  9 }
+
+          inTaskTableEntry OBJECT-TYPE
+              SYNTAX  TaskTableEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                 "A TaskTable entry"                 
+
+              INDEX   { inTaskIndex }
+          ::= { inTaskTable 1 }
+
+          TaskTableEntry ::=
+              SEQUENCE {
+                  inTaskName 
+                      DisplayString,
+                  inTaskIndex
+                      DisplayString
+              }
+
+          inTaskName OBJECT-TYPE
+              SYNTAX DisplayString( SIZE( 1..32 ))
+              MAX-ACCESS accessible-for-notify
+              STATUS  current
+              DESCRIPTION 
+               "The Name of faulty object is used to generate the OID for
+                inEtReportingObject and inEtFaultyObj the following way:
+                <OID of inTaskName> + <length of inTaskName> + <inTaskName as OID>
+                Before inTaskName is converted to an OID, it's transfered 
+                to an upper case string. 
+                If it's is greater than 32 characters, only the last 32 
+                characters are used." 
+          ::= { inTaskTableEntry 1 }
+
+          inTaskIndex OBJECT-TYPE
+              SYNTAX DisplayString( SIZE( 1..32 ))
+              MAX-ACCESS not-accessible
+              STATUS  current
+              DESCRIPTION 
+                 "The index for inTaskTableEntry."
+          ::= { inTaskTableEntry 2 }
+
+          --
+          --            End of taskTable
+          -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+END -- IN-MIB-AL
+

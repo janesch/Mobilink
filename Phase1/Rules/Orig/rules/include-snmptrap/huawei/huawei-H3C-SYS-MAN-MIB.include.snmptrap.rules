@@ -1,0 +1,189 @@
+###############################################################################
+#
+#    Licensed Materials - Property of IBM
+#    5724-O48
+#
+#    (C) Copyright IBM Corp. 2007
+#    All Rights Reserved
+#
+#    US Government Users Restricted Rights - Use, duplication or
+#    disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+#    huawei-H3C-SYS-MAN-MIB.include.snmptrap.rules 3.0
+#    2007/05/07 Gerry van der Zanden
+#
+###############################################################################
+#
+# 3.0 - Updated release for NIM-03
+#
+#          -  Supports "Advanced" and "User" include files
+#          -  Supports "Severity" lookup tables
+#
+###############################################################################
+#
+# 2.0 - Updated release
+#
+#          -  Repackage for NIM-02
+#          -  H3C-SYS-MAN-MIB release V2.1
+#
+###############################################################################
+#
+# 1.0 - Initial Release.
+#
+#        Compatible with:
+#
+#          -  Netcool/OMNIbus 3.6 and 7.x
+#          -  Netcool Rules File Standards (MUSE-STD-RF-02, July 2002)
+#          -  H3C-SYS-MAN-MIB release V1.8
+#
+###############################################################################
+
+case ".1.3.6.1.4.1.2011.10.2.3.2": ### Huawei - Notifications from H3C-SYS-MAN-MIB
+
+    log(DEBUG, "<<<<< Entering... huawei-H3C-SYS-MAN-MIB.include.snmptrap.rules >>>>>")
+
+    @Agent = "Huawei AR- and S-Series"
+    @Class = "40579"
+
+    $OPTION_TypeFieldUsage = "3.6"
+
+    switch($specific-trap)
+    {
+        case "1": ### h3cSysClockChangedNotification
+
+            ##########
+            # A clock changed notification is generated when the current
+            # local date and time for the system has been manually changed.
+            # The value of h3cSysLocalClock reflects new date and time. 
+            #
+            # $1 = h3cSysLocalClock -  This node gives the current local
+            #        time of the system. The unit of it is DateAndTime. 
+            ##########
+
+            $h3cSysLocalClock = $1
+            details($h3cSysLocalClock)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-SYS-MAN-MIB-h3cSysClockChangedNotification"
+
+            @AlertGroup = "System Clock Change"
+            @AlertKey = ""
+            @Summary = "System Clock has Changed"
+
+            $DEFAULT_Severity = 2
+            $DEFAULT_Type = 13
+            $DEFAULT_ExpireTime = 900
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "2": ### h3cSysReloadNotification
+
+            ##########
+            # A h3cSysReloadNotification will be sent before the corresponding
+            # entity is rebooted. It will also be sent if the entity fails to
+            # reboot because the clock has changed. 
+            #
+            # $1 = h3cSysReloadImage - The value indicates an entry in
+            #        h3cSysImageTable. It defines an image file for reload action.
+            #        It is the value of corresponding h3cSysImageIndex in
+            #        h3cSysImageTable.
+            # $2 = h3cSysReloadCfgFile - Configuration file for reload
+            #        action. The zero value means no configuration file has
+            #        been set for this entry, and no configuration file is
+            #        used during system reloading. 
+            # $3 = h3cSysReloadReason - The reason of system's reloading.
+            #        It is a zero length octet string when not set. 
+            # $4 = h3cSysReloadScheduleTime -  Specify the local time at which
+            #        the reload action will occur.
+            # $5 = h3cSysReloadAction -  Reload Action
+            ##########
+
+            $h3cSysReloadImage = $1
+            $h3cSysReloadCfgFile = $2
+            $h3cSysReloadReason = $3
+            $h3cSysReloadScheduleTime = $4
+            $h3cSysReloadAction = lookup($5,h3cSysReloadAction) + "  ( " + $5 + " )"
+            $h3cSysReloadScheduleIndex = extract($OID1, "\.([0-9]+)$")
+            details($h3cSysReloadImage,$h3cSysReloadCfgFile,
+                    $h3cSysReloadReason,$h3cSysReloadScheduleTime,
+                    $h3cSysReloadAction,$h3cSysReloadScheduleIndex)
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-SYS-MAN-MIB-h3cSysReloadNotification"
+
+            @AlertGroup = "System Reload"
+            @AlertKey = "h3cSysReloadScheduleEntry." + $h3cSysReloadScheduleIndex
+            @Summary = "System Reload Notification, see details  ( " + @AlertKey + " )"
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+        case "3": ### h3cSysStartUpNotification
+
+            ##########
+            # A h3cSysStartUpNotification trap will be sent when the system
+            # starts up with 'main' image file failed, a trap will be sent to
+            # indicate which type the current image file (backup or secure) is
+            #
+            # $1 = h3cSysImageType -  It indicates the reloading sequence
+            #        attribute of the image.
+            ##########
+
+            $h3cSysImageType = lookup($1,h3cSysImageType)
+            $h3cSysImageIndex = extract($OID1, "\.([0-9]+)$")
+
+            $OS_EventId = "SNMPTRAP-huawei-H3C-SYS-MAN-MIB-h3cSysStartUpNotification"
+
+            @AlertGroup = "Sys Startup"
+            @AlertKey = "h3cSysImageEntry." + $h3cSysImageIndex
+            @Summary = "System Startup Sequence: " + $h3cSysImageType
+            update(@Summary)
+
+            $DEFAULT_Severity = 3
+            $DEFAULT_Type = 1
+            $DEFAULT_ExpireTime = 0
+
+            @Identifier = @Node + " " + @AlertKey + " " + @AlertGroup + " " + $DEFAULT_Type + " " + @Agent + " " + @Manager + " " + $specific-trap
+
+            $h3cSysImageType = $h3cSysImageType + "  ( " + $1 + " )"
+            details($h3cSysImageType,$h3cSysImageIndex)
+
+        default:
+
+            @Summary = "Unknown Specific Trap Number (" + $specific-trap + ") Received for Enterprise " + $enterprise
+            @Severity = 1
+            @Identifier = @Node + " " + @Agent + " " + @Manager + " " + $enterprise + " " + $generic-trap + " " + $specific-trap
+            details($*)
+    }
+
+#########
+# Handle Severity via Lookup.
+##########
+
+if(exists($SEV_KEY))
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($SEV_KEY, huawei-H3C-SYS-MAN-MIB_sev)
+}
+else
+{
+    [$OS_Severity,$OS_Type,$OS_ExpireTime] = lookup($OS_EventId, huawei-H3C-SYS-MAN-MIB_sev)
+}
+include "$NC_RULES_HOME/include-common/AssignSev.include.common.rules"
+
+##########
+# End of Severity via Lookup.
+##########
+
+##########
+# Enter "Advanced" and "User" includes.
+##########
+
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-SYS-MAN-MIB.adv.include.snmptrap.rules"
+include "$NC_RULES_HOME/include-snmptrap/huawei/huawei-H3C-SYS-MAN-MIB.user.include.snmptrap.rules"
+
+##########
+# End of "Advanced" and "User" includes.
+##########
+
+log(DEBUG, "<<<<< Leaving... huawei-H3C-SYS-MAN-MIB.include.snmptrap.rules >>>>>")
